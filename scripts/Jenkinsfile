@@ -1,0 +1,111 @@
+pipeline {
+    agent any
+    stages {
+        
+        stage ('Deploy to dev') {
+            when {
+                expression { 
+                   return params.environment == 'dev'
+                }
+            }  
+            steps {
+                nodejs(nodeJSInstallationName: 'nodejs16.16.0') {
+                   sh 'npm -v'  //substitute with your code
+                   sh 'node -v'
+                   sh 'yarn --version'
+                checkout([$class: 'GitSCM', branches: [[name: 'refs/remotes/origin/release/develop']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'd2f7dbd9-5a18-4632-b5b4-5cd9f8a74071', url: 'https://github.com/ThitsaX/DFSP-Portal-Frontend.git']]])  
+                    sh '''
+                           yarn install
+                           echo "Build Yarn"
+                           yarn build
+                           echo "Packaging the target"
+                           mkdir -p staging
+                           cp -f -r dist staging
+                           echo "Deploying to web server"
+                           cd scripts
+                           sudo apt install -y wireguard openresolv
+                           sudo cp dev-tunnel.conf /etc/wireguard/
+                           interface=$(ip addr | grep dev-tunnel 2> /dev/null | wc -l)
+                           if [ $interface = 0 ]; then
+                           echo "WG UP"
+                           sudo mv -f dev-tunnel.conf /etc/wireguard/
+                           sudo wg-quick up dev-tunnel
+                           else
+                           echo "WG DOWN and UP"
+                           sudo wg-quick down dev-tunnel
+                           sudo mv -f dev-tunnel.conf /etc/wireguard/
+                           sudo wg-quick up dev-tunnel
+                           fi
+                           cd ..
+                           echo "Stopping the service"  
+                           ssh -o StrictHostKeyChecking=no ubuntu@10.25.128.18 sudo systemctl stop apache2.service
+                           echo "Copying the deployment files to the program folder"
+                           scp -r -o StrictHostKeyChecking=no  staging/dist ubuntu@10.25.128.18:/home/ubuntu
+                           ssh -o StrictHostKeyChecking=no  ubuntu@10.25.128.18 sudo cp -r /home/ubuntu/dist/* /var/www/html/
+                           ssh -o StrictHostKeyChecking=no  ubuntu@10.25.128.18 sudo rm -rf /home/ubuntu/dist 
+                           echo "Starting the service"
+                           ssh -o StrictHostKeyChecking=no ubuntu@10.25.128.18 sudo systemctl start apache2.service
+                           echo "Checking the service status"
+                           ssh -o StrictHostKeyChecking=no ubuntu@10.25.128.18 sudo systemctl status apache2.service
+                           wg-quick down dev-tunnel
+                           echo "Deployed to dev"
+
+                    '''
+                  }
+                 }
+        }     
+        
+        stage('Deploy to stg') {
+            when {
+                expression { 
+                   return params.environment == 'stg'
+                }
+            }
+            steps {
+                nodejs(nodeJSInstallationName: 'nodejs16.16.0') {
+                   sh 'npm -v'  //substitute with your code
+                   sh 'node -v'
+                   sh 'yarn --version'
+                checkout([$class: 'GitSCM', branches: [[name: 'refs/remotes/origin/main/stg']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'd2f7dbd9-5a18-4632-b5b4-5cd9f8a74071', url: 'https://github.com/ThitsaX/DFSP-Portal-Frontend.git']]])  
+                    sh '''
+                           yarn install
+                           echo "Build Yarn"
+                           yarn build
+                           echo "Packaging the target"
+                           mkdir -p staging
+                           cp -f -r dist staging
+                           echo "Deploying to web server"
+                           cd scripts
+                           sudo apt install -y wireguard openresolv
+                           sudo cp stg-tunnel.conf /etc/wireguard/
+                           interface=$(ip addr | grep stg-tunnel 2> /dev/null | wc -l)
+                           if [ $interface = 0 ]; then
+                           echo "WG UP"
+                           sudo mv -f stg-tunnel.conf /etc/wireguard/
+                           sudo wg-quick up stg-tunnel
+                           else
+                           echo "WG DOWN and UP"
+                           sudo wg-quick down stg-tunnel
+                           sudo mv -f stg-tunnel.conf /etc/wireguard/
+                           sudo wg-quick up stg-tunnel
+                           fi
+                           cd ..
+                           echo "Stopping the service"  
+                           ssh -o StrictHostKeyChecking=no ubuntu@10.25.129.114 sudo systemctl stop apache2.service
+                           echo "Copying the deployment files to the program folder"
+                           scp -r -o StrictHostKeyChecking=no  staging/dist ubuntu@10.25.129.114:/home/ubuntu
+                           ssh -o StrictHostKeyChecking=no  ubuntu@10.25.129.114 sudo cp -r /home/ubuntu/dist/* /var/www/html/
+                           ssh -o StrictHostKeyChecking=no  ubuntu@10.25.129.114 sudo rm -rf /home/ubuntu/dist 
+                           echo "Starting the service"
+                           ssh -o StrictHostKeyChecking=no ubuntu@10.25.129.114 sudo systemctl start apache2.service
+                           echo "Checking the service status"
+                           ssh -o StrictHostKeyChecking=no ubuntu@10.25.129.114 sudo systemctl status apache2.service
+                           wg-quick down stg-tunnel
+                           echo "Deployed to stg"
+
+                    '''
+                  }
+                 }
+            }    
+   }
+    }
