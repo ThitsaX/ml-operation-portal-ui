@@ -32,7 +32,7 @@ export const generateAccessToken = async ({
 }
 
 const AxiosRequest = (authToken?: string, authKey?: string | number) => {
-  const baseURL = `${configs.BASE_URL}`
+  const baseURL = ``
   const abortController = new AbortController()
   const axios = Axios.create({
     baseURL,

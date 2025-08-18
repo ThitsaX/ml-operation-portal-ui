@@ -14,8 +14,8 @@ export const createNewParticipantUser = async (data: ICreateUserValues) => {
     user: { auth }
   } = store.getState()
   const uri = routes.create_new_participant_user
-  const accessKey = auth?.access_key as string
-  const secretKey = auth?.secret_key as string
+  const accessKey = auth?.accessKey as string
+  const secretKey = auth?.secretKey as string
   const accessToken = await generateAccessToken({
     method: 'POST',
     uri,
@@ -44,8 +44,8 @@ export const modifyParticipantUser = async (data: IModifyUserValues) => {
     user: { auth }
   } = store.getState()
   const uri = routes.modify_participant_user
-  const accessKey = auth?.access_key as string
-  const secretKey = auth?.secret_key as string
+  const accessKey = auth?.accessKey as string
+  const secretKey = auth?.secretKey as string
   const accessToken = await generateAccessToken({
     method: 'POST',
     uri,
@@ -77,8 +77,8 @@ export const removeParticipantUser = async (data: {
     user: { auth }
   } = store.getState()
   const uri = routes.remove_participant_user
-  const accessKey = auth?.access_key as string
-  const secretKey = auth?.secret_key as string
+  const accessKey = auth?.accessKey as string
+  const secretKey = auth?.secretKey as string
   const accessToken = await generateAccessToken({
     method: 'POST',
     uri,
@@ -107,8 +107,8 @@ export const resetPasswordUser = async (data: IResetPasswordValues) => {
     user: { auth }
   } = store.getState()
   const uri = routes.reset_password
-  const accessKey = auth?.access_key as string
-  const secretKey = auth?.secret_key as string
+  const accessKey = auth?.accessKey as string
+  const secretKey = auth?.secretKey as string
   const accessToken = await generateAccessToken({
     method: 'POST',
     uri,
@@ -137,8 +137,8 @@ export const getAllParticipantUsers = async () => {
     user: { auth, data }
   } = store.getState()
   const uri = routes.get_all_participant_users
-  const accessKey = auth?.access_key as string
-  const secretKey = auth?.secret_key as string
+  const accessKey = auth?.accessKey as string
+  const secretKey = auth?.secretKey as string
   const accessToken = await generateAccessToken({
     method: 'GET',
     uri,

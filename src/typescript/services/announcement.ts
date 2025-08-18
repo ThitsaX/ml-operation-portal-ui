@@ -1,5 +1,5 @@
 export interface IGetAllAnnouncement {
-  announcement_info_list: AnnouncementInfo[]
+  announcementInfoList: AnnouncementInfo[]
 }
 
 export interface AnnouncementInfo {

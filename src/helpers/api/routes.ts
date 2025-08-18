@@ -1,12 +1,12 @@
 export const publicRoutes = {
-  login: '/public/login_user_account',
+  login: '/public/loginUserAccount',
 
-  get_all_announcement: '/public/get_all_announcement'
+  get_all_announcement: '/public/getAnnouncements'
 };
 
 export const privateRoutes = {
   get_dashboard_data: '/secured/get_dashboard_data',
-  get_user_profile: '/secured/get_user_profile',
+  get_user_profile: '/secured/getUserProfile',
   change_password: '/secured/change_password',
 
   get_participant: '/secured/get_participant',

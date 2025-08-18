@@ -9,8 +9,8 @@ export const getDashboardData = async () => {
     user: { auth }
   } = store.getState()
   const uri = routes.get_dashboard_data
-  const accessKey = auth?.access_key as string
-  const secretKey = auth?.secret_key as string
+  const accessKey = auth?.accessKey as string
+  const secretKey = auth?.secretKey as string
   const accessToken = await generateAccessToken({
     method: 'GET',
     uri,
