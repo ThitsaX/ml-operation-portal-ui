@@ -18,8 +18,8 @@ export const getAllOtherParticipants = async () => {
     user: { auth, data }
   } = store.getState();
   const uri = routes.get_all_other_participants;
-  const accessKey = auth?.access_key as string;
-  const secretKey = auth?.secret_key as string;
+  const accessKey = auth?.accessKey as string;
+  const secretKey = auth?.secretKey as string;
 
   const accessToken = await generateAccessToken({
     method: 'GET',
@@ -55,8 +55,8 @@ export const getAllIdTypes = async () => {
   } = store.getState();
 
   const uri = routes.get_all_id_type;
-  const accessKey = auth?.access_key as string;
-  const secretKey = auth?.secret_key as string;
+  const accessKey = auth?.accessKey as string;
+  const secretKey = auth?.secretKey as string;
 
   const accessToken = await generateAccessToken({
     method: 'GET',
@@ -88,8 +88,8 @@ export const getAllTransferStates = async () => {
   } = store.getState();
 
   const uri = routes.get_all_transfer_state;
-  const accessKey = auth?.access_key as string;
-  const secretKey = auth?.secret_key as string;
+  const accessKey = auth?.accessKey as string;
+  const secretKey = auth?.secretKey as string;
 
   const accessToken = await generateAccessToken({
     method: 'GET',
@@ -121,8 +121,8 @@ export const getAllTransfers = async (data: Partial<ITransferValues>) => {
   } = store.getState();
 
   const uri = routes.get_all_transfer;
-  const accessKey = auth?.access_key as string;
-  const secretKey = auth?.secret_key as string;
+  const accessKey = auth?.accessKey as string;
+  const secretKey = auth?.secretKey as string;
 
   const accessToken = await generateAccessToken({
     method: 'GET',
@@ -146,8 +146,8 @@ export const getTransferDetails = async (transferId: string, timezone?: string) 
   } = store.getState();
 
   const uri = routes.get_transfer_detail;
-  const accessKey = auth?.access_key as string;
-  const secretKey = auth?.secret_key as string;
+  const accessKey = auth?.accessKey as string;
+  const secretKey = auth?.secretKey as string;
 
   const accessToken = await generateAccessToken({
     method: 'GET',

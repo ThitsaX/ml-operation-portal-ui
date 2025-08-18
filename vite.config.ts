@@ -14,4 +14,18 @@ export default defineConfig({
       brotliSize: true,
     }),
   ],
+  server: {
+    proxy: {
+      '/public': {
+        target: 'http://localhost:8003',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/secured': {
+        target: 'http://localhost:8003',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });

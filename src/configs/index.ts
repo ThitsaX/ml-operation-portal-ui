@@ -7,7 +7,7 @@ export class Configs {
   public static readonly __DEV__: boolean = true;
   public static readonly AppName: string = 'DFSP Portal';
   // public readonly BASE_URL: string = 'https://dfspportal.participant.test.sanbox.wynepayhubsanbox-pre.com:444'
-  public readonly BASE_URL: string = 'http://localhost:8080/';
+  public readonly BASE_URL: string = 'http://localhost:8003';
   // prevent new with private constructor
   private constructor() {}
 

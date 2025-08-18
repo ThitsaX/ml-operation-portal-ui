@@ -23,10 +23,10 @@ export const generateSettlementDetailReport = async (params: any) => {
   const accessToken = await generateAccessToken({
     method: 'POST',
     uri: routes.generate_settlement_detail_report,
-    secret: auth?.secret_key as string
+    secret: auth?.secretKey as string
   });
 
-  const { axios } = AxiosRequest(accessToken, auth?.access_key);
+  const { axios } = AxiosRequest(accessToken, auth?.accessKey);
   return axios
     .post<any>(routes.generate_settlement_detail_report, null, {
       params
@@ -54,10 +54,10 @@ export const generateSettlementReport = async (params: any) => {
   const accessToken = await generateAccessToken({
     method: 'POST',
     uri: routes.generate_settlement_report,
-    secret: auth?.secret_key as string
+    secret: auth?.secretKey as string
   });
 
-  const { axios } = AxiosRequest(accessToken, auth?.access_key);
+  const { axios } = AxiosRequest(accessToken, auth?.accessKey);
   return axios
     .post<any>(routes.generate_settlement_report, null, { params })
     .then((d) => d.data)
@@ -89,10 +89,10 @@ export const generateSettlementStatementReport = async (
   const accessToken = await generateAccessToken({
     method: 'POST',
     uri: routes.generate_settlement_statement_report,
-    secret: user.auth?.secret_key as string
+    secret: user.auth?.secretKey as string
   });
 
-  const { axios } = AxiosRequest(accessToken, user.auth?.access_key);
+  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
   return axios
     .post<any>(routes.generate_settlement_statement_report, null, {
       params
@@ -129,10 +129,10 @@ export const generateFeeReport = async (
   const accessToken = await generateAccessToken({
     method: 'POST',
     uri: routes.generate_fee_report,
-    secret: user.auth?.secret_key as string
+    secret: user.auth?.secretKey as string
   });
 
-  const { axios } = AxiosRequest(accessToken, user.auth?.access_key);
+  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
   return axios
     .post<any>(routes.generate_fee_report, null, {
       params
@@ -163,10 +163,10 @@ export const getSettlementIds = async (
   const accessToken = await generateAccessToken({
     method: 'GET',
     uri: routes.get_settlementIds,
-    secret: user.auth?.secret_key as string
+    secret: user.auth?.secretKey as string
   });
 
-  const { axios } = AxiosRequest(accessToken, user.auth?.access_key);
+  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
   return axios
     .get<IGetSettlementIds>(routes.get_settlementIds, {
       params: {
@@ -199,10 +199,10 @@ export const getAllOtherParticipants = async (
   const accessToken = await generateAccessToken({
     method: 'GET',
     uri: routes.get_all_other_participants,
-    secret: user.auth?.secret_key as string
+    secret: user.auth?.secretKey as string
   });
 
-  const { axios } = AxiosRequest(accessToken, user.auth?.access_key);
+  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
   return axios
     .get<IGetAllOtherParticipant>(routes.get_all_other_participants, {
       params: { participant_id: participantId }
