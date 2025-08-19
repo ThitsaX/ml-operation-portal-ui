@@ -1,6 +1,6 @@
-# DFSP Portal Frontend
+# Operation Portal Frontend
 
-DFSP Portal Frontend using [React](https://reactjs.org/)
+Operation Portal Frontend using [React](https://reactjs.org/)
 
 ## Available Scripts
 

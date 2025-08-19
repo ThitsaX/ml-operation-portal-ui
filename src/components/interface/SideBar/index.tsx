@@ -1,40 +1,16 @@
 import { memo } from 'react';
-import { HStack, Link, Stack, VStack } from '@chakra-ui/layout';
+import { HStack, Link, Stack, VStack, Text } from '@chakra-ui/react';
 import { Resizable, type ResizeCallback } from 're-resizable';
 import SideBarAccordion from './SideBarAccordion';
-import SideBarItem, { type SideBarItemProps } from './SideBarItem';
+import SideBarItem from './SideBarItem';
 import { useToken } from '@chakra-ui/react';
 import { useGetUserState } from '@store/hooks';
-
-const reportItems: SideBarItemProps[] = [
-  {
-    to: '/reports/settlement',
-    children: 'DFSP Settlement Report'
-  },
-  {
-    to: '/reports/settlement-details',
-    children: 'DFSP Settlement Details Report'
-  },
-  {
-    to: '/reports/settlement-statement',
-    children: 'DFSP Settlement Statement Report'
-  },
-  {
-    to: '/reports/transactions-fee-settlement',
-    children: 'DFSP Transactions for Fee Settlement'
-  }
-];
-
-const userItems: SideBarItemProps[] = [
-  {
-    to: '/users/all',
-    children: 'Users'
-  },
-  {
-    to: '/users/create',
-    children: 'Create User'
-  }
-];
+import { FiHome, FiRepeat, FiBarChart2, FiHelpCircle } from 'react-icons/fi';
+import { HiOutlineBuildingLibrary } from "react-icons/hi2";
+import { AiOutlineAudit } from "react-icons/ai";
+import { MdPendingActions } from "react-icons/md";
+import { FaHandshake } from "react-icons/fa";
+import { IoPeopleCircle } from "react-icons/io5";
 
 const DEFAULT_WIDTH = 260;
 const MIN_WIDTH = 260;
@@ -76,23 +52,111 @@ const SideBar = ({ onResizeHandler }: { onResizeHandler: ResizeCallback }) => {
           justify="space-between"
           overflowY="scroll">
           <VStack spacing="2" w={'100%'}>
-            <SideBarItem to="/dashboard">Dashboard</SideBarItem>
-            {data?.user_role_type === 'OPERATION' ? (
+            <VStack
+              border="1px"
+              borderColor="teal.700"
+              borderRadius="md"
+              px={3}
+              py={2}
+              mb={1}
+              w="full"
+              spacing={0}
+              bg="white"
+            >
+              <Text
+                fontSize="sm"
+                fontWeight="bold"
+                color="teal.700"
+                letterSpacing="widest"
+                textTransform="uppercase"
+                w="full"
+                textAlign="center"
+              >
+                Operational
+              </Text>
+              <Text
+                fontSize="sm"
+                fontWeight="bold"
+                color="teal.700"
+                letterSpacing="widest"
+                textTransform="uppercase"
+                w="full"
+                textAlign="center"
+              >
+                Portal
+              </Text>
+            </VStack>
+
+            <SideBarItem to="/home" id="1" icon={<FiHome />} label="Home" menuId="home" />
+
+            <SideBarAccordion icon={<HiOutlineBuildingLibrary />} label="Participant"
+              menuId="participant"
+              items={[
+                { id: 'position', label: 'Participant Positions', to: '/participant/position', menuId: "participant_positions" },
+                { id: 'list', label: 'Participant List', to: '/participant/list', menuId: "participant" },
+              ]}
+            />
+
+            <SideBarAccordion icon={<IoPeopleCircle />} label="User Management"
+              menuId="participant"
+              items={[
+                { id: 'user', label: 'User', to: '/user-management/user', menuId: "participant_positions" },
+              ]}
+            />
+
+            <SideBarItem to="/transfers" id="3" icon={<FiRepeat />} label="Transfers"
+              menuId="transfers"
+            />
+
+            <SideBarAccordion icon={<FaHandshake />} label="Settlement"
+              menuId="pending_approvals"
+              items={[
+                { id: 'settlementModels', label: 'Settlement Models', to: 'settlement/settlement-models', menuId: "pending_approvals" },
+                { id: 'settlementWindows', label: 'Settlement Windows', to: 'settlement/settlement-windows', menuId: "pending_approvals" },
+                { id: 'finalizeSettlement', label: 'Finalize Settlements', to: 'settlement/finalize-settlement', menuId: "pending_approvals" },
+              ]}
+            />
+
+            <SideBarAccordion icon={<FiBarChart2 />} label="Reports"
+              menuId="pending_approvals"
+              items={[
+                { id: 'settlementBankReport', label: 'Settlement Bank Report', to: 'reports/settlement-bank-report', menuId: "pending_approvals" },
+                { id: 'settlementDetailReport', label: 'Settlement Detail Report', to: 'reports/settlement-detail-report', menuId: "pending_approvals" },
+                { id: 'settlementSummary', label: 'Settlement Summary Report', to: 'reports/settlement-summary-report', menuId: "pending_approvals" },
+                { id: 'settlementStatementReport', label: 'Settlement Statement Report', to: 'reports/settlement-statement-report', menuId: "pending_approvals" },
+                { id: 'settlementAuditReport', label: 'Settlement Audit Report', to: 'reports/settlement-audit-report', menuId: "pending_approvals" },
+                { id: 'auditReport', label: 'Audit Report', to: 'reports/audit-report', menuId: "pending_approvals" },
+              ]}
+            />
+
+            <SideBarItem to="/pending-approvals" id="5" icon={<MdPendingActions />} label="Pending Approvals"
+              menuId="pending_approvals"
+            />
+
+            <SideBarItem to="/audit" id="6" icon={<AiOutlineAudit />} label="Audit"
+              menuId="audit" />
+
+            <SideBarItem to="/support-center" id="7" icon={<FiHelpCircle />} label="Support Center"
+              menuId="support_center"
+            />
+
+            {/* <SideBarItem to="/dashboard">Dashboard</SideBarItem> */}
+            {/* {data?.userRoleType === 'OPERATION' ? (
               <>
                 <SideBarAccordion items={reportItems}>Reports</SideBarAccordion>
               </>
             ) : null}
             <SideBarItem to="/audit">Audit</SideBarItem>
-            {data?.user_role_type === 'OPERATION' ? (
+            {data?.userRoleType === 'OPERATION' ? (
               <SideBarItem to="/transfer">Transfer</SideBarItem>
             ) : null}
 
-            {data?.user_role_type === 'ADMIN' ? (
+            {data?.userRoleType === 'ADMIN' ? (
               <SideBarAccordion items={userItems}>Users</SideBarAccordion>
-            ) : null}
+            ) : null} */}
           </VStack>
           <Stack spacing="4" pt="2" pl="4" pb="5">
-            <Link
+            {/* <Link
               href="https://thitsa.atlassian.net/wiki/spaces/WynePay/pages/2658140172/DFSP+Portal"
               isExternal>
               About
@@ -101,8 +165,23 @@ const SideBar = ({ onResizeHandler }: { onResizeHandler: ResizeCallback }) => {
               href="https://thitsa.atlassian.net/servicedesk/customer/user/login?destination=portals/"
               isExternal>
               Help
-            </Link>
-            <Link href="mailto:support@wynepay.com">Contact Informations</Link>
+            </Link> */}
+            {/* <Link href="mailto:support@wynepay.com">Contact Informations</Link> */}
+            <span style={{ fontSize: '0.9em', color: '#666' }}>
+              Powered by{' '}
+              <Link
+                href="https://www.thitsaworks.com/"
+                isExternal
+                color="blue.800"
+                fontWeight="bold"
+                _hover={{ color: 'blue.900' }}
+              >
+                ThitsaWorks
+              </Link>
+            </span>
+            <span style={{ fontSize: '0.8em', color: '#999', display: 'block', marginTop: '2px' }}>
+              version1
+            </span>
           </Stack>
         </VStack>
       </Resizable>
