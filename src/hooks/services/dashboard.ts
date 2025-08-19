@@ -1,12 +1,14 @@
 import { getDashboardData } from '@services/dashboard'
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
-import { type IApiErrorResponse, type IGetDashboardData } from '@typescript/services'
+import { type IApiErrorResponse, type IParticipantPositionData } from '@typescript/services'
+
 
 export const useGetDashboard = (
-  options?: UseQueryOptions<IGetDashboardData, IApiErrorResponse>
+  options?: UseQueryOptions<IParticipantPositionData[], IApiErrorResponse>
 ) =>
-  useQuery<IGetDashboardData, IApiErrorResponse>({
+  useQuery<IParticipantPositionData[], IApiErrorResponse>({
     queryKey: ['getDashboardData'],
     queryFn: getDashboardData,
     ...options
   })
+

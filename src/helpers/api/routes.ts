@@ -5,6 +5,7 @@ export const publicRoutes = {
 };
 
 export const privateRoutes = {
+  get_participant_positions_data: '/secured/getParticipantPositionsData',
   get_dashboard_data: '/secured/get_dashboard_data',
   get_user_profile: '/secured/getUserProfile',
   change_password: '/secured/change_password',
