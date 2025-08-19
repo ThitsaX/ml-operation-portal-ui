@@ -3,7 +3,7 @@ export interface IGetAuditByParticipant {
 }
 
 export interface AuditInfo {
-  user_name: string;
-  action_name: string;
-  action_date: number;
+  userName: string;
+  actionName: string;
+  actionDate: number;
 }

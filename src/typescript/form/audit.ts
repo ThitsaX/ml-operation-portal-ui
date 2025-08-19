@@ -1,11 +1,13 @@
 export interface IGetAuditByParticipantValues {
-  from_date: number;
-  to_date: number;
+  fromDate: number;
+  toDate: number;
   participantId: string;
+  actionName: string;
+  userId: string;
 }
 
-export interface IGetAuditByParticipant{
-  user_name: string;
-  action_name: string;
-  action_date: number;
+export interface IGetAuditByParticipant {
+  userName: string;
+  actionName: string;
+  actionDate: number;
 }
