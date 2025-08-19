@@ -117,7 +117,7 @@ const Header = () => {
           w="full"
           cursor="pointer"
           onClick={() => navigate('/company-informations')}>
-          {data?.dfsp_name || 'DFSP Portal'}
+          {data?.dfsp_name || 'Operation Portal'}
         </Heading>
       </Flex>
       {data != null ? (

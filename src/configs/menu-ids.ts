@@ -1,0 +1,23 @@
+export const menuIds : Record<string, number>= {
+    'home': 2,
+    'participants': 3,
+    'participant_positions': 4,
+    'participant': 5,
+    'user_management': 6,
+    'users': 7,
+    'transfers': 8,
+    'settlement': 9,
+    'settlement_models': 10,
+    'settlement_windows': 11,
+    'finalize_settlement': 12,
+    'reports': 13,
+    'settlement_bank_report': 14,
+    'settlement_detail_report': 15,
+    'settlement_summary_report': 16,
+    'settlement_statement_report': 17,
+    'settlement_audit_report': 18,
+    'audit_report': 19,
+    'pending_approvals': 20,
+    'audit': 21,
+    'support_center': 22
+}

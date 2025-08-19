@@ -8,7 +8,7 @@ export interface IParticipantUser {
   last_name: string;
   job_title: string;
   status: UserStatus;
-  user_role_type: RoleType;
+  userRoleType: RoleType;
   created_date: number;
 }
 

@@ -14,15 +14,20 @@ export interface IAuthResponse {
 }
 
 export interface IUserProfile {
-  user_id: string;
+  userId: string;
   name: string;
   email: string;
-  first_name: string;
-  last_name: string;
-  job_title: string;
-  dfsp_code: string;
-  dfsp_name: string;
-  participant_id: string;
-  user_role_type: RoleType;
-  created_date: number;
+  firstName: string;
+  lastName: string;
+  jobTitle: string;
+  participantName: string;
+  description: string;
+  roleList: string[];
+  participantId: string;
+  userRoleType: RoleType;
+  createdDate: number;
+  logoFileType: string | null;
+  logo: string | null;
+  accessMenuList: [];
+  accessActionList: [];
 }

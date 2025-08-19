@@ -88,7 +88,7 @@ const Login = () => {
       bg="primary">
       <Box mb="10">
         <Heading color="white" fontSize="2xl" textAlign="center">
-          DFSP Portal for Mojaloop
+          Operation Portal
         </Heading>
       </Box>
 
