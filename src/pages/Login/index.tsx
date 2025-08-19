@@ -60,7 +60,7 @@ const Login = () => {
     dispatch(UserActions.login(values))
       .unwrap()
       .then(() => {
-        navigate('/dashboard', { replace: true });
+        navigate('/home', { replace: true });
       })
       .catch((e: IApiErrorResponse) => {
         toast({

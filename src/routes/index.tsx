@@ -13,12 +13,22 @@ import Settlement from '@pages/Reports/Settlement';
 import FeeStatement from '@pages/Reports/FeeStatement';
 import Transfer from '@pages/Transfer';
 import Audit from '@pages/Audit';
+import Home from '@pages/Home';
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <Main />,
     children: [
+      {
+        index: true,
+        element: <Navigate to="/home" replace />
+      },
+      {
+        path: 'home',
+        caseSensitive: true,
+        element: <Home />
+      },
       {
         index: true,
         element: <Navigate to="/dashboard" replace />
