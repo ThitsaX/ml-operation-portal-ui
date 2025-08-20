@@ -16,16 +16,16 @@ export interface ICreateUserValues extends ISignInValues {
 }
 
 export interface IModifyUserValues
-  extends Omit<ICreateUserValues, 'password'> {}
+  extends Omit<ICreateUserValues, 'password'> { }
 export interface IResetPasswordValues {
   email: string;
   new_password: string;
 }
 
 export interface IChangePwdValues {
-  old_password: string;
-  new_password: string;
-  confirm_password?: string;
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword?: string;
 }
 
 export * from './audit';
