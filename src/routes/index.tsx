@@ -14,6 +14,8 @@ import FeeStatement from '@pages/Reports/FeeStatement';
 import Transfer from '@pages/Transfer';
 import Audit from '@pages/Audit';
 import Home from '@pages/Home';
+import ParticipantList from '@pages/Participant/ParticipantList';
+import ParticipantPositions from '@pages/Participant/ParticipantPositions';
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +30,16 @@ export const router = createBrowserRouter([
         path: 'home',
         caseSensitive: true,
         element: <Home />
+      },
+      {
+        path: 'participant/position',
+        caseSensitive: true,
+        element: <ParticipantPositions />
+      },
+      {
+        path: 'participant/list',
+        caseSensitive: true,
+        element: <ParticipantList />
       },
       {
         index: true,
