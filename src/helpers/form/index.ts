@@ -13,13 +13,13 @@ export class AuthHelper extends FormHelper {
   get passwordChangeSchema(): any {
     return z
       .object({
-        old_password: z.string({ required_error: 'Required' }),
-        new_password: z.string({ required_error: 'Required' }),
-        confirm_password: z.string({ required_error: 'Required' })
+        oldPassword: z.string({ required_error: 'Required' }),
+        newPassword: z.string({ required_error: 'Required' }),
+        confirmPassword: z.string({ required_error: 'Required' })
       })
-      .refine((data) => data.new_password === data.confirm_password, {
+      .refine((data) => data.newPassword === data.confirmPassword, {
         message: 'password-not-match',
-        path: ['confirm_password']
+        path: ['confirmPassword']
       });
   }
 }

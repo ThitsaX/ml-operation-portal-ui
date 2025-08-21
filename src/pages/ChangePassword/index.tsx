@@ -24,10 +24,15 @@ import { type IApiErrorResponse } from '@typescript/services'
 import { changePassword } from '@services/change-password'
 import { getRequestErrorMessage } from '@helpers/errors'
 import { useLoadingContext } from '@contexts/hooks'
+import { useAppDispatch } from '@store';
+import { IAuthResponse } from '@typescript/services';
+import { UserActions } from '@store/features/user';
 
 const authHelper = new AuthHelper()
 
 const ChangePassword = () => {
+
+  const dispatch = useAppDispatch();
   const toast = useToast()
   const { start, complete } = useLoadingContext()
 
@@ -46,7 +51,8 @@ const ChangePassword = () => {
     onMutate: () => {
       start()
     },
-    onSuccess: () => {
+    onSuccess: (data: IAuthResponse) => {
+      dispatch(UserActions.updateAuth(data));
       toast({
         position: 'top',
         title: 'Success',
@@ -81,15 +87,15 @@ const ChangePassword = () => {
 
   const onCancelHandler = useCallback(() => {
     reset({
-      old_password: '',
-      new_password: '',
-      confirm_password: ''
+      oldPassword: '',
+      newPassword: '',
+      confirmPassword: ''
     })
   }, [reset])
 
   // Use effect hook
   useEffect(() => {
-    setFocus('old_password')
+    setFocus('oldPassword')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -103,12 +109,12 @@ const ChangePassword = () => {
 
       <Flex justify="center" flexDirection="column" w="md" p="5" gap="8">
         <FormControl
-          isInvalid={!isEmpty(formState.errors.old_password)}
+          isInvalid={!isEmpty(formState.errors.oldPassword)}
           isRequired>
           <FormLabel>Old Password</FormLabel>
           <InputGroup>
             <Input
-              {...register('old_password')}
+              {...register('oldPassword')}
               type={showPassword ? 'text' : 'password'}
             />
             <InputRightElement>
@@ -127,17 +133,17 @@ const ChangePassword = () => {
             </InputRightElement>
           </InputGroup>
           <FormErrorMessage>
-            {formState.errors.old_password?.message}
+            {formState.errors.oldPassword?.message}
           </FormErrorMessage>
         </FormControl>
 
         <FormControl
-          isInvalid={!isEmpty(formState.errors.new_password)}
+          isInvalid={!isEmpty(formState.errors.newPassword)}
           isRequired>
           <FormLabel>New Password</FormLabel>
           <InputGroup>
             <Input
-              {...register('new_password')}
+              {...register('newPassword')}
               type={showPassword ? 'text' : 'password'}
             />
             <InputRightElement>
@@ -156,17 +162,17 @@ const ChangePassword = () => {
             </InputRightElement>
           </InputGroup>
           <FormErrorMessage>
-            {formState.errors.new_password?.message}
+            {formState.errors.newPassword?.message}
           </FormErrorMessage>
         </FormControl>
 
         <FormControl
-          isInvalid={!isEmpty(formState.errors.confirm_password)}
+          isInvalid={!isEmpty(formState.errors.confirmPassword)}
           isRequired>
           <FormLabel>Confirm Password</FormLabel>
           <InputGroup>
             <Input
-              {...register('confirm_password')}
+              {...register('confirmPassword')}
               type={showPassword ? 'text' : 'password'}
             />
             <InputRightElement>
@@ -185,7 +191,7 @@ const ChangePassword = () => {
             </InputRightElement>
           </InputGroup>
           <FormErrorMessage>
-            {formState.errors.confirm_password?.message}
+            {formState.errors.confirmPassword?.message}
           </FormErrorMessage>
         </FormControl>
 
