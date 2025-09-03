@@ -16,7 +16,15 @@ import App from './App';
 import { PersistGate } from 'redux-persist/integration/react';
 
 // Create a client
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnMount: false,
+      retry: 2,
+      staleTime: 3 * 60 * 1000, // 3 minutes
+    },
+  },
+});
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
