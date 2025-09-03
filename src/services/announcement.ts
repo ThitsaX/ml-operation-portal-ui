@@ -11,7 +11,7 @@ export const getAllAnnouncement = async () => {
   const { axios } = AxiosRequest();
   return axios
     .get<IGetAllAnnouncement>(uri)
-    .then((d) => d.data.announcement_info_list)
+    .then((d) => d.data.announcementInfoList)
     .catch((error: AxiosError<IApiErrorResponse>) => {
       const { code, message, ...rest } = axiosErrorHandler(error);
       if (code && message) {

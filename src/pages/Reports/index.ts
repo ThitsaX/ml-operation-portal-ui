@@ -1,9 +1,13 @@
-import SettlementDetails from './SettlementDetails'
+import SettlementDetailReport from './SettlementDetailReport'
+import SettlementSummaryReport from './SettlementSummaryReport'
 import SettlementReport from './Settlement'
-import SettlementStatement from './SettlementStatement'
+import SettlementStatementReport from './SettlementStatementReport'
+import SettlementAuditReport from './SettlementAuditReport'
 
 export {
-  SettlementDetails,
+  SettlementDetailReport,
+  SettlementSummaryReport,
   SettlementReport,
-  SettlementStatement
+  SettlementStatementReport,
+  SettlementAuditReport
 }

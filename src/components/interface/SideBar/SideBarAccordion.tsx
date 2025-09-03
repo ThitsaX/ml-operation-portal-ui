@@ -12,6 +12,9 @@ import SideBarItem, { type SideBarItemProps } from './SideBarItem';
 import { useGetUserState } from '@store/hooks';
 import { menuIds } from '../../../configs/menu-ids';
 import { useState, useEffect } from 'react';
+import { store } from '../../../store';
+import { useSelector } from 'react-redux';
+import { RootState } from "../../../store";
 
 export interface SideBarAccordionProps extends AccordionProps {
   items: SideBarItemProps[];
@@ -29,13 +32,13 @@ const SideBarAccordion = ({
 }: SideBarAccordionProps) => {
 
   const { data } = useGetUserState();
-  const [menuList, setMenuList] = useState<number[]>([]);
+  const [menuList, setMenuList] = useState<number[]>([]);      
 
   useEffect(() => {
     if (data?.accessMenuList) {
       setMenuList(data.accessMenuList);
     }
-  }, [data?.accessMenuList]);
+  }, [data]);
 
   const checkMenuIds = () => {
     const id = menuIds[menuId];

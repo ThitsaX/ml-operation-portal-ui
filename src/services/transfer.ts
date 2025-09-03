@@ -32,7 +32,7 @@ export const getAllOtherParticipants = async () => {
   return axios
     .get<IGetOtherParticipantsArr>(uri, {
       params: {
-        participant_id: data?.participant_id
+        participantId: data?.participantId
       }
     })
     .then((d) => d.data)

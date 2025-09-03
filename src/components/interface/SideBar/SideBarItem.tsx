@@ -17,11 +17,12 @@ const SideBarItem = (props: SideBarItemProps) => {
   const { data } = useGetUserState();
   const [menuList, setMenuList] = useState<number[]>([]);
 
+
   useEffect(() => {
     if (data?.accessMenuList) {
       setMenuList(data.accessMenuList);
     }
-  }, [data?.accessMenuList]);
+  }, [data]);
 
   const checkMenuIds = () => {
     const id = menuIds[menuId];
