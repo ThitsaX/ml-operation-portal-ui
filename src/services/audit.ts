@@ -4,6 +4,8 @@ import { store } from '@store';
 import { IGetAuditByParticipantValues } from '@typescript/form';
 import {
   IGetAuditByParticipant,
+  IGetMadeBy,
+  IGetAction,
   type IApiErrorResponse
 } from '@typescript/services';
 import { type AxiosError } from 'axios';
@@ -27,7 +29,105 @@ export const getAllAuditByParticipant = async (
     .get<IGetAuditByParticipant>(uri, {
       params: values
     })
-    .then((d) => d.data.audit_info_list)
+    .then((d) => d.data.auditInfoList)
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
+};
+
+export const getMadeByList = async () => {
+  const {
+    user: { auth, data }
+  } = store.getState()
+
+  const uri = routes.getMadeByList
+  const accessKey = auth?.accessKey as string
+  const secretKey = auth?.secretKey as string
+  const accessToken = await generateAccessToken({
+    method: 'GET',
+    uri,
+    secret: secretKey
+  })
+  const { axios } = AxiosRequest(accessToken, accessKey)
+  return axios
+    .get<{ madeByList: IGetMadeBy[] }>(uri, {
+      params: {
+        participantId: data?.participantId
+      }
+    })
+    .then((d) => d.data.madeByList)
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error)
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        }
+      }
+      throw rest
+    })
+}
+
+export const getActionList = async () => {
+  const {
+    user: { auth }
+  } = store.getState()
+
+  const uri = routes.getActionList
+  const accessKey = auth?.accessKey as string
+  const secretKey = auth?.secretKey as string
+  const accessToken = await generateAccessToken({
+    method: 'GET',
+    uri,
+    secret: secretKey
+  })
+  const { axios } = AxiosRequest(accessToken, accessKey)
+  return axios
+    .get<{ actionNames: IGetAction[] }>(uri, {
+    })
+    .then((d) => d.data.actionNames)
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error)
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        }
+      }
+      throw rest
+    })
+}
+
+export const getAllAuditList = async (
+  values: IGetAuditByParticipantValues
+) => {
+  const {
+    user: { auth }
+  } = store.getState();
+  const uri = routes.getAuditList;
+  const accessKey = auth?.accessKey as string;
+  const secretKey = auth?.secretKey as string;
+  const accessToken = await generateAccessToken({
+    method: 'GET',
+    uri,
+    secret: secretKey
+  });
+  const { axios } = AxiosRequest(accessToken, accessKey);
+  return axios
+    .get<IGetAuditByParticipant>(uri, {
+      params: values
+    })
+    .then((d) => d.data.auditInfoList)
     .catch((error: AxiosError<IApiErrorResponse>) => {
       const { code, message, ...rest } = axiosErrorHandler(error);
       if (code && message) {
