@@ -88,11 +88,11 @@ const Transfer = () => {
   const selectedTZString = selectedTimezone.value;
   const timezone = selectedTimezone.offset === 0
     ? "0000"
-    : moment().tz(selectedTZString).format('ZZ');
+    : moment().tz(selectedTZString).format('ZZ').replace('+', '');
 
   //Form initial values
   const initialValues = {
-    payeeFspId: user.data?.dfsp_code,
+    payeeFspId: user.data?.participantName,
     payerFspId: '',
     fromDate: moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'),
     toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
@@ -127,14 +127,14 @@ const Transfer = () => {
     (type: TransferType) => {
       if (type === 'inbound') {
         setValue('payerFspId', '', { shouldDirty: true, shouldValidate: true });
-        setValue('payeeFspId', user.data?.dfsp_code, { shouldDirty: true });
+        setValue('payeeFspId', user.data?.participantName, { shouldDirty: true });
       } else {
-        setValue('payerFspId', user.data?.dfsp_code, { shouldDirty: true });
+        setValue('payerFspId', user.data?.participantName, { shouldDirty: true });
         setValue('payeeFspId', '', { shouldDirty: true, shouldValidate: true });
       }
       setTransferType(type);
     },
-    [setValue, user.data?.dfsp_code]
+    [setValue, user.data?.participantName]
   );
 
   const onChangeDateRange = useCallback(
@@ -211,11 +211,12 @@ const Transfer = () => {
         .tz(selectedTZString ? selectedTZString : currentTimeZone)
         .utc()
         .format();
+        values.timezone = timezone;
 
       start();
       getAllTransfers(omitBy(values, isEmpty))
         .then((data) => {
-          setTransferData(data.transfer_info_list);
+          setTransferData(data.transferInfoList);
         })
         .catch((error) => {
           toast({
@@ -262,7 +263,7 @@ const Transfer = () => {
     () => [
       {
         Header: 'Transfer ID',
-        accessor: 'transfer_id', // accessor is the "key" in the data
+        accessor: 'transferId', // accessor is the "key" in the data
         disableSortBy: true
       },
       {
@@ -285,20 +286,20 @@ const Transfer = () => {
       },
       {
         Header: 'Payer DFSP',
-        accessor: 'payer_dfsp'
+        accessor: 'payerDfsp'
       },
       {
         Header: 'Payee DFSP',
-        accessor: 'payee_dfsp'
+        accessor: 'payeeDfsp'
       },
       {
         Header: 'Settlement Batch',
-        accessor: 'settlement_batch',
+        accessor: 'settlementBatch',
         disableSortBy: true
       },
       {
         Header: 'Date Submitted',
-        accessor: 'submitted_on_date'
+        accessor: 'submittedOnDate'
       }
     ],
     []
@@ -400,7 +401,7 @@ const Transfer = () => {
                       type="datetime-local"
                       value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
                       onChange={(event) => {
-                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm')
+                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
                         trigger('fromDate')
                         onChange(date);
                       }}
@@ -423,7 +424,7 @@ const Transfer = () => {
                       type="datetime-local"
                       value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
                       onChange={(event) => {
-                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm')
+                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
                         trigger('toDate')
                         onChange(date);
                       }}
@@ -451,7 +452,7 @@ const Transfer = () => {
           <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
             {transferType === 'inbound' ? (
               <Select placeholder="Payer FSP ID"  {...register('payerFspId')}>
-                {participantRes?.data?.participant_info_list.map(
+                {participantRes?.data?.participantInfoList?.map(
                   (item, index) => {
                     return (
                       <option key={index} value={item.dfsp_code}>
@@ -465,7 +466,7 @@ const Transfer = () => {
               <Input
                 type="input"
                 {...register('payerFspId')}
-                value={user.data?.dfsp_code}
+                value={user.data?.participantName}
                 readOnly
               />
             )}
@@ -478,12 +479,12 @@ const Transfer = () => {
               <Input
                 type="input"
                 {...register('payeeFspId')}
-                value={user.data?.dfsp_code}
+                value={user.data?.participantName}
                 readOnly
               />
             ) : (
               <Select placeholder="Payer FSP ID"  {...register('payeeFspId')}>
-                {participantRes?.data?.participant_info_list.map(
+                {participantRes?.data?.participantInfoList?.map(
                   (item, index) => {
                     return (
                       <option key={index} value={item.dfsp_code}>
@@ -508,16 +509,16 @@ const Transfer = () => {
             <Select
               placeholder="Transfer State"
               {...register('transferStateId')}>
-              {tranStateRes?.data?.transfer_state_list.map((item, index) => {
+              {tranStateRes?.data?.transferStateInfoList.map((item, index) => {
                 return (
-                  <option key={index} value={item.transfer_state_id}>
-                    {item.transfer_state}
+                  <option key={index} value={item.transferStateId}>
+                    {item.transferState}
                   </option>
                 );
               })}
             </Select>
             <FormErrorMessage>
-              {errors.transferStateId?.message}
+              {errors?.transferStateId?.message}
             </FormErrorMessage>
           </FormControl>
         </Flex>
@@ -527,9 +528,9 @@ const Transfer = () => {
             <Select
               placeholder="Payer ID Type"
               {...register('payerIdentifierTypeId')}>
-              {idTypeRes?.data?.id_type_list.map((item, index) => {
+              {idTypeRes?.data?.idTypeInfoList.map((item, index) => {
                 return (
-                  <option key={index} value={item.party_identifier_type_id}>
+                  <option key={index} value={item.partyIdentifierTypeId}>
                     {item.name}
                   </option>
                 );
@@ -543,9 +544,9 @@ const Transfer = () => {
             <Select
               placeholder="Payee ID Type"
               {...register('payeeIdentifierTypeId')}>
-              {idTypeRes?.data?.id_type_list.map((item, index) => {
+              {idTypeRes?.data?.idTypeInfoList.map((item, index) => {
                 return (
-                  <option key={index} value={item.party_identifier_type_id}>
+                  <option key={index} value={item.partyIdentifierTypeId}>
                     {item.name}
                   </option>
                 );
@@ -600,7 +601,7 @@ const Transfer = () => {
         rounded="lg"
         mt="4">
         <Table variant="simple" {...getTableProps()}>
-          <Thead>
+          <Thead bg="gray.100">
             {headerGroups.map((headerGroup) => (
               <Tr {...headerGroup.getHeaderGroupProps()}>
                 {headerGroup.headers.map((column) => (
@@ -656,7 +657,7 @@ const Transfer = () => {
                   cursor="pointer"
                   _hover={{ bg: 'muted.50' }}
                   {...row.getRowProps()}
-                  onClick={() => onTrClickHandler(row.original.transfer_id)}>
+                  onClick={() => onTrClickHandler(row.original.transferId)}>
                   {row.cells.map((cell) => (
                     <Td {...cell.getCellProps()}>{cell.render('Cell')}</Td>
                   ))}

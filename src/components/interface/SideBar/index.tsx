@@ -11,6 +11,8 @@ import { AiOutlineAudit } from "react-icons/ai";
 import { MdPendingActions } from "react-icons/md";
 import { FaHandshake } from "react-icons/fa";
 import { IoPeopleCircle } from "react-icons/io5";
+import { menuIds } from '../../../configs/menu-ids';
+
 
 const DEFAULT_WIDTH = 260;
 const MIN_WIDTH = 260;
@@ -19,8 +21,10 @@ const MAX_WIDTH = 360;
 const SideBar = ({ onResizeHandler }: { onResizeHandler: ResizeCallback }) => {
   const space12 = useToken('space', '12');
 
+
+
   /* Redux */
-  const { data } = useGetUserState();
+  // const { data } = useGetUserState();
 
   return (
     <HStack spacing={0}>
@@ -90,15 +94,15 @@ const SideBar = ({ onResizeHandler }: { onResizeHandler: ResizeCallback }) => {
             <SideBarItem to="/home" id="1" icon={<FiHome />} label="Home" menuId="home" />
 
             <SideBarAccordion icon={<HiOutlineBuildingLibrary />} label="Participant"
-              menuId="participant"
+              menuId="participant_positions"
               items={[
                 { id: 'position', label: 'Participant Positions', to: '/participant/position', menuId: "participant_positions" },
-                { id: 'list', label: 'Participant List', to: '/participant/list', menuId: "participant" },
+                { id: 'list', label: 'Participant List', to: '/participant/list', menuId: "participant_positions" },
               ]}
             />
 
             <SideBarAccordion icon={<IoPeopleCircle />} label="User Management"
-              menuId="participant"
+              menuId="participant_positions"
               items={[
                 { id: 'user', label: 'User', to: '/user-management/user', menuId: "participant_positions" },
               ]}
