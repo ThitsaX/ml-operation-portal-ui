@@ -11,7 +11,7 @@ export interface ICreateUserValues extends ISignInValues {
   last_name: string;
   job_title: string;
   participant_id: string;
-  user_role_type: RoleType;
+  userRoleType: RoleType;
   status: UserStatus;
 }
 
@@ -26,6 +26,16 @@ export interface IChangePwdValues {
   oldPassword: string;
   newPassword: string;
   confirmPassword?: string;
+}
+
+export interface IGetUserDataList {
+  userInfoList: IGetUserData[];
+}
+export interface IGetUserData {
+  email: string;
+  name: string;
+  role: string;
+  status: string;
 }
 
 export * from './audit';
