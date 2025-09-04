@@ -36,6 +36,21 @@ export const privateRoutes = {
   getActionList: '/secured/getActionList',
   getMadeByList: '/secured/getMadeByList',
   getAuditList: '/secured/getAuditList',
+
+  getParticipantList: '/secured/getParticipantList',
+  removeLiquidityProfile: '/secured/removeLiquidityProfile',
+  removeContact: '/secured/removeContact',
+  modifyParticipant: '/secured/modifyParticipant',
+  modifyContact: '/secured/modifyContact',
+  modifyLiquidityProfile: '/secured/modifyLiquidityProfile',
+
+  getParticipantProfile: '/secured/getParticipantProfile',
+  getContactList: '/secured/getContactList',
+  getLiquidityProfileList: '/secured/getLiquidityProfileList',
+  createContact: '/secured/createContact',
+  createLiquidityProfile: '/secured/createLiquidityProfile',
+  getParticipantCurrency: '/secured/getParticipantCurrency',
+
 };
 
 const routes = {

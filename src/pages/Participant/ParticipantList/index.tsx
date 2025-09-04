@@ -64,7 +64,7 @@ const ParticipantList = () => {
 
   return (
     <VStack w="full" align="flex-start" spacing={6} p={4}>
-      <Heading size="lg">Participant List</Heading>
+      <Heading size="lg">User Management</Heading>
 
       <HStack w="full" justifyContent="space-between">
         <Select
