@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export class FormHelper {}
+export class FormHelper { }
 
 export class AuthHelper extends FormHelper {
   get loginSchema() {
@@ -173,16 +173,18 @@ export class AuditHelper extends FormHelper {
   get schema() {
     return z
       .object({
-        from_date: z.number({ required_error: 'Required' }),
-        to_date: z.number({ required_error: 'Required' })
+        fromDate: z.number({ required_error: 'Required' }),
+        toDate: z.number({ required_error: 'Required' }),
+        userId: z.string().optional(),
+        actionName: z.string().optional(),
       })
-      .refine((value) => value.from_date < value.to_date, {
+      .refine((value) => value.fromDate < value.toDate, {
         message: 'Should be less than to date',
-        path: ['from_date']
+        path: ['fromDate']
       })
-      .refine((value) => value.from_date < value.to_date, {
+      .refine((value) => value.fromDate < value.toDate, {
         message: 'Should be greater than from date',
-        path: ['to_date']
+        path: ['toDate']
       });
   }
 }

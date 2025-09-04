@@ -31,7 +31,11 @@ export const privateRoutes = {
   get_all_transfer: '/secured/get_all_transfer',
   get_transfer_detail: '/secured/get_transfer_detail',
 
-  get_all_audit_by_participant: '/secured/get_all_audit_by_participant'
+  get_all_audit_by_participant: '/secured/get_all_audit_by_participant',
+
+  getActionList: '/secured/getActionList',
+  getMadeByList: '/secured/getMadeByList',
+  getAuditList: '/secured/getAuditList',
 };
 
 const routes = {

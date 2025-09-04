@@ -19,6 +19,8 @@ import {
   Divider,
   IconButton,
   Text,
+  Select,
+  Icon
 } from '@chakra-ui/react';
 import {
   TfiAngleDoubleLeft,
@@ -30,7 +32,7 @@ import { useLoadingContext } from '@contexts/hooks';
 import { getRequestErrorMessage } from '@helpers/errors';
 import { AuditHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useGetAllAuditByParticipant } from '@hooks/services';
+import { useGetActionList, useGetAllAudit, useGetMadeByList } from '@hooks/services';
 import { useGetUserState } from '@store/hooks';
 import { IGetAuditByParticipantValues } from '@typescript/form';
 import { IGetAuditByParticipant } from '@typescript/form';
@@ -42,6 +44,7 @@ import { isNumber, isEmpty } from 'lodash-es';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { ITimezoneOption } from 'react-timezone-select';
+import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 
 const auditHelper = new AuditHelper();
 
@@ -58,20 +61,25 @@ const Audit = () => {
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(
     (s) => s.app.selectedTimezone
   );
-
+  
   const selectedTZString = useMemo(
     () => (selectedTimezone.value),
     [selectedTimezone]
   );
 
   /* React Query */
-  const { data, mutateAsync } = useGetAllAuditByParticipant();
+  const { data: madeByList } = useGetMadeByList();
+  const { data: actionNames } = useGetActionList();
+
+  const { data, mutateAsync } = useGetAllAudit();
 
   useEffect(() => {
     if (data) {
       setTableData(data);
     }
   }, [data]);
+
+
 
   /* Form */
   const {
@@ -80,12 +88,15 @@ const Audit = () => {
     trigger,
     formState: { isValid, errors, defaultValues },
     getValues,
+    setValue,
     reset
   } = useForm<IGetAuditByParticipantValues>({
     defaultValues: {
-      participantId: user?.participant_id,
-      from_date: moment().tz(selectedTZString).startOf('d').unix(),
-      to_date: moment().tz(selectedTZString).endOf('d').unix()
+      participantId: user?.participantId,
+      fromDate: moment().tz(selectedTZString).startOf('d').unix(),
+      toDate: moment().tz(selectedTZString).endOf('d').unix(),
+      userId: '',
+      actionName: '',
     },
     resolver: zodResolver(auditHelper.schema),
     mode: 'onChange'
@@ -93,8 +104,13 @@ const Audit = () => {
 
   const onSearchHandler = useCallback(
     (values: IGetAuditByParticipantValues) => {
+      const payload = {
+        ...values,
+        participantId: values.participantId || user?.participantId || '',
+      };
+
       start();
-      mutateAsync(values)
+      mutateAsync(payload)
         .catch((err) => {
           toast({
             position: 'top',
@@ -106,58 +122,32 @@ const Audit = () => {
         })
         .finally(() => complete());
     },
-    [complete, mutateAsync, start, toast]
+    [complete, mutateAsync, start, toast, user?.participantId]
   );
 
-  useEffect(() => {
-    if (user) {
-      onSearchHandler(getValues());
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    const from_date = moment().tz(selectedTZString).startOf('d').unix();
-    const to_date = moment().tz(selectedTZString).endOf('d').unix();
-    if (
-      from_date !== defaultValues?.from_date &&
-      to_date !== defaultValues?.to_date
-    ) {
-      reset({
-        ...defaultValues,
-        from_date,
-        to_date
-      });
-
-      // refresh the table
-      onSearchHandler(getValues());
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTimezone]);
-
   // Pagination start here
-
   const columns = useMemo<
     { Header: string; accessor: keyof IGetAuditByParticipant }[]
   >(
     () => [
       {
         Header: 'DATE',
-        accessor: 'action_date'
+        accessor: 'actionDate'
       },
       {
         Header: 'ACTION',
-        accessor: 'action_name'
+        accessor: 'actionName'
       },
       {
         Header: 'MADE BY',
-        accessor: 'user_name'
+        accessor: 'userName'
       }
     ],
     []
   );
 
   const {
+    headerGroups,
     page,
     prepareRow,
     canPreviousPage,
@@ -198,9 +188,11 @@ const Audit = () => {
       <VStack align="flex-start">
         <Heading fontSize="3xl">Audit</Heading>
       </VStack>
-      <VStack align="flex-start" alignSelf="stretch" spacing="3" maxW="500px">
+      <VStack align="flex-start" alignSelf="stretch" spacing="4" gap={4} w="full">
         <HStack alignItems="flex-start" alignSelf="stretch">
-          <FormControl isInvalid={!isEmpty(errors.from_date)}>
+          {/* Hidden participantId to ensure it's included in submission */}
+
+          <FormControl isInvalid={!isEmpty(errors.fromDate)}>
             <FormLabel>From</FormLabel>
             <Controller
               control={control}
@@ -217,16 +209,16 @@ const Audit = () => {
                         .startOf('day')
                         .unix();
                       onChange(date);
-                      trigger('to_date');
+                      trigger('toDate');
                     }}
                   />
                 );
               }}
-              name="from_date"
+              name="fromDate"
             />
-            <FormErrorMessage>{errors.from_date?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
           </FormControl>
-          <FormControl isInvalid={!isEmpty(errors.to_date)}>
+          <FormControl isInvalid={!isEmpty(errors.toDate)}>
             <FormLabel>To</FormLabel>
             <Controller
               control={control}
@@ -243,17 +235,50 @@ const Audit = () => {
                         .endOf('day')
                         .unix();
                       onChange(date);
-                      trigger('from_date');
+                      trigger('fromDate');
                     }}
                   />
                 );
               }}
-              name="to_date"
+              name="toDate"
             />
-            <FormErrorMessage>{errors.to_date?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
+          </FormControl>
+          <FormControl>
+            <FormLabel>Action</FormLabel>
+            <Controller
+              control={control}
+              name="actionName"
+              render={({ field }) => (
+                <Select {...field} placeholder="All">
+                  {actionNames?.map((item) => (
+                    <option key={item.actionId} value={item.actionName}>
+                      {item.actionName}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            />
+          </FormControl>
+
+          <FormControl>
+            <FormLabel>MadeBy</FormLabel>
+            <Controller
+              control={control}
+              name="userId"
+              render={({ field }) => (
+                <Select {...field} placeholder="All">
+                  {madeByList?.map((action) => (
+                    <option key={action.userId} value={action.userId}>
+                      {action.name}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            />
           </FormControl>
         </HStack>
-        <Box alignSelf="stretch">
+        <Box w="full" display="flex" justifyContent="flex-end">
           <Button
             colorScheme="brand"
             isDisabled={!isValid}
@@ -262,6 +287,7 @@ const Audit = () => {
           </Button>
         </Box>
       </VStack>
+
       <TableContainer
         w="full"
         borderWidth={1}
@@ -269,12 +295,52 @@ const Audit = () => {
         borderColor="gray.100"
         rounded="lg">
         <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>Date</Th>
-              <Th>Action</Th>
-              <Th>Made By</Th>
-            </Tr>
+          <Thead bg="gray.100">
+            {headerGroups.map((headerGroup) => (
+              <Tr {...headerGroup.getHeaderGroupProps()}>
+                {headerGroup.headers.map((column) => (
+                  <Th
+                    {...column.getHeaderProps(
+                      column.disableSortBy
+                        ? undefined
+                        : column.getSortByToggleProps()
+                    )}>
+                    <HStack align="center" spacing="2" flex={1}>
+                      <Text flex={1}>{column.render('Header')}</Text>
+                      {column.disableSortBy ? null : (
+                        <VStack
+                          display="inline-flex"
+                          align="center"
+                          spacing={0}>
+                          <Icon
+                            as={IoChevronUp}
+                            size={12}
+                            color={
+                              !column.isSorted
+                                ? 'gray.400'
+                                : !column.isSortedDesc
+                                  ? 'gray.700'
+                                  : 'gray.400'
+                            }
+                          />
+                          <Icon
+                            as={IoChevronDown}
+                            size={12}
+                            color={
+                              !column.isSorted
+                                ? 'gray.400'
+                                : column.isSortedDesc
+                                  ? 'gray.700'
+                                  : 'gray.400'
+                            }
+                          />
+                        </VStack>
+                      )}
+                    </HStack>
+                  </Th>
+                ))}
+              </Tr>
+            ))}
           </Thead>
           <Tbody>
             {page.map((row, index) => {
