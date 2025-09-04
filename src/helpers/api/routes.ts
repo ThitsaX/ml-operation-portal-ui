@@ -33,6 +33,11 @@ export const privateRoutes = {
 
   get_all_audit_by_participant: '/secured/get_all_audit_by_participant',
 
+  getPendingApprovals: '/secured/getPendingApprovalList',
+  createApprovalRequest: '/secured/createApprovalRequest',
+  modifyApprovalAction: '/secured/modifyApprovalAction',
+
+
   getActionList: '/secured/getActionList',
   getMadeByList: '/secured/getMadeByList',
   getAuditList: '/secured/getAuditList',
