@@ -188,3 +188,83 @@ export class AuditHelper extends FormHelper {
       });
   }
 }
+
+export class ContactHelper extends FormHelper {
+  get schema() {
+    return z.object({
+      participantId: z.string().optional(),
+      contactId: z.string().optional(),
+      name: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Name is required'),
+      position: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Position is required'),
+      email: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Email is required'),
+      mobile: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Mobile is required')
+        .regex(/^\+[^a-zA-Z]*$/, 'Invalid mobile number format'),
+      contactType: z.string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Contact Type is required'),
+    });
+  }
+}
+
+
+export class OrganizationHelper extends FormHelper {
+  get schema() {
+    return z.object({
+      participantId: z.string().optional(),
+      participantName: z.string().optional(),
+      description: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Description is required'),
+      address: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Address is required'),
+      mobile: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Mobile is required'),
+      logoFileType: z.string().nullable().optional(),
+
+      logo: z.string().optional(),
+      createdDate: z.number().optional(),
+    });
+  }
+}
+
+export class LiquidityHelper extends FormHelper {
+  get schema() {
+    return z.object({
+      participantId: z.string().optional(),
+      liquidityProfileId: z.string().optional(),
+      bankName: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Bank Name is required'),
+      accountName: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Account Name is required'),
+      accountNumber: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Account Number is required'),
+      currency: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Currency is required'),
+    });
+  }
+}

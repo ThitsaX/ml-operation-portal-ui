@@ -3,7 +3,6 @@ import {
     Button,
     HStack,
     IconButton,
-    Select,
     Switch,
     Table,
     TableContainer,
@@ -16,13 +15,6 @@ import {
     Heading,
     Text,
     useDisclosure,
-    Modal,
-    ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalCloseButton,
-    ModalBody,
-    ModalFooter,
     Tooltip,
     Menu,
     MenuButton,
@@ -33,29 +25,27 @@ import {
     Icon
 } from '@chakra-ui/react';
 import { FiChevronDown } from 'react-icons/fi';
+import { IoReload, IoChevronDown, IoChevronUp } from 'react-icons/io5';
+import { TfiAngleDoubleLeft, TfiAngleDoubleRight, TfiAngleLeft, TfiAngleRight } from 'react-icons/tfi';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useGetDashboard } from '@hooks/services';
-import { IParticipantPositionData } from '@typescript/services';
+import { usePagination, useSortBy, useTable, Column, Row } from 'react-table';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { RootState } from '@store';
-import type { ITimezoneOption } from 'react-timezone-select';
 import moment from 'moment';
-import { IoReload } from 'react-icons/io5';
-import { TfiAngleDoubleLeft, TfiAngleDoubleRight, TfiAngleLeft, TfiAngleRight } from 'react-icons/tfi';
-import { usePagination, useSortBy, useTable, Column } from 'react-table';
-import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 
-const netDebitCardList = [{
-    label: 'Fixed',
-    value: 'fixed',
-},
-{ label: 'Percentage', value: 'percentage' },
-]
+import { RootState } from '@store';
+import { useGetDashboard } from '@hooks/services';
+import { IParticipantPositionData } from '@typescript/services';
+import type { ITimezoneOption } from 'react-timezone-select';
+
+import DepositModal from '@components/interface/Participant';
+import WithdrawModal from '@components/interface/Participant/WidthdrawModal';
+import NetDebitCapModal from '@components/interface/Participant/NetDebitCardModal';
 
 const ParticipantPositions = () => {
 
     const [pageNumber, setPageNumber] = useState<String>('1');
+    const [tableData, setTableData] = useState<IParticipantPositionData[]>([]);
 
     // Redux
     const selectedTimezone = useSelector<RootState, ITimezoneOption>(
@@ -74,18 +64,16 @@ const ParticipantPositions = () => {
 
     const [stringDateTime, setStringDateTime] = useState<String>(handleTimeZone(stringTimezone))
 
-    useEffect(() => {
-        setStringDateTime(handleTimeZone(stringTimezone))
-    }, [selectedTimezone, stringTimezone])
-
+    // Hooks
     const navigate = useNavigate();
-    const { data, isLoading, isError, error, refetch } = useGetDashboard();
-    const [tableData, setTableData] = useState<IParticipantPositionData[]>([]);
-
-    const [openRowIndex, setOpenRowIndex] = useState<number | null>(null);
+    const { data } = useGetDashboard();
     const { isOpen: isDepositOpen, onOpen: onDepositOpen, onClose: onDepositClose } = useDisclosure();
     const { isOpen: isWithdrawOpen, onOpen: onWithdrawOpen, onClose: onWithdrawClose } = useDisclosure();
     const { isOpen: isNdcOpen, onOpen: onNdcOpen, onClose: onNdcClose } = useDisclosure();
+
+    useEffect(() => {
+        setStringDateTime(handleTimeZone(stringTimezone))
+    }, [selectedTimezone, stringTimezone])
 
 
     const columns = useMemo(
@@ -124,7 +112,7 @@ const ParticipantPositions = () => {
             {
                 Header: 'Current Position',
                 accessor: 'currentPosition',
-                Cell: ({ row }: any) => (
+                Cell: ({ row }: { row: Row<IParticipantPositionData> }) => (
                     <Box>
                         {row.original.currentPosition?.toFixed(2)}
                     </Box>
@@ -146,9 +134,9 @@ const ParticipantPositions = () => {
             {
                 Header: 'Enable/Disable',
                 disableSortBy: true,
-                Cell: ({ row }: any) => {
+                Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
                     const isEnabled = row.original.ndc > 0;
-                    const id = row.original.id;
+                    const id = row.original.dfspId; // change to your actual identifier
 
                     return (
                         <Switch
@@ -162,7 +150,7 @@ const ParticipantPositions = () => {
             {
                 Header: 'Action',
                 disableSortBy: true,
-                width: 180,
+                width: 180, // You can adjust this value
                 minWidth: 200,
                 Cell: ({ row }: any) => (
                     <Menu>
@@ -232,16 +220,29 @@ const ParticipantPositions = () => {
         }
     }
 
-    const toggleDropdown = (index: number) => {
-        setOpenRowIndex(prev => (prev === index ? null : index));
-    };
 
     const handleClick = (dfspId: string) => {
         navigate(`/participant/position/${dfspId}`);
     };
 
+    const handleDeposit = (amount: number) => {
+        console.log("Deposited Amount:", amount);
+    };
+
+    const handleWithdraw = (amount: number) => {
+        console.log("Withdraw Amount:", amount);
+        // call your API here
+    };
+
+    const handleNetDebitCard = (amount: number) => {
+        console.log("handleNetDebitCard:", amount);
+        // call your API here
+    };
+
     const toggleStatus = (id: string | number, newValue: boolean) => {
+        // Example: Send update to API or update local state
         console.log('Toggle row id:', id, 'New status:', newValue);
+        // ...your logic here
     };
 
     const {
@@ -426,80 +427,13 @@ const ParticipantPositions = () => {
                 </HStack>
             </TableContainer>
 
-            {/* Deposit Dialog */}
-            <Modal isOpen={isDepositOpen} onClose={onDepositClose}>
-                <ModalOverlay />
-                <ModalContent>
-                    <ModalHeader textAlign="center">Deposit Funds</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>
-                        <Box mb={4}>
-                            <Text mb={2}>Amount</Text>
-                            <Input placeholder='Enter Amount...' type='number' />
-                        </Box>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button variant="ghost" onClick={onDepositClose} mr={3} >Cancel</Button>
-                        <Button colorScheme='blue' type='submit'>Submit</Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
+            {/* Modals */}
 
-            {/* Withdraw Dialog */}
-            <Modal isOpen={isWithdrawOpen} onClose={onWithdrawClose}>
-                <ModalOverlay />
-                <ModalContent>
-                    <ModalHeader textAlign="center">Withdraw Funds</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>
-                        <Box mb={4}>
-                            <Text mb={2}>Enter Amount...</Text>
-                            <Input placeholder='Enter Amount...' type='number' />
-                        </Box>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button variant="ghost" onClick={onWithdrawClose} mr={3} >Cancel</Button>
-                        <Button colorScheme='blue' type='submit'>Submit</Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
+            <DepositModal isOpen={isDepositOpen} onClose={onDepositClose} onSubmit={handleDeposit} />
 
-            {/* Net Debit Cap Dialog */}
-            <Modal isOpen={isNdcOpen} onClose={onNdcClose}>
-                <ModalOverlay />
-                <ModalContent>
-                    <ModalHeader textAlign="center">Net Debit Cap</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>
-                        <Box mb={4}>
-                            <Select
-                                mb={4}
-                                name="currency"
-                                placeholder="Choose Fixed/Percentage"
-                                isRequired
-                            >
-                                {netDebitCardList?.map((item, index) => (
-                                    <option key={index} value={item.value}>
-                                        {item.label}
-                                    </option>
-                                ))}
-                            </Select>
-                            <Box mb={4}>
-                                <Text mb={2}>Fixed</Text>
-                                <Input placeholder='Enter Amount...' type='number' />
-                            </Box>
-                            <Box mb={4}>
-                                <Text mb={2}>Percentage</Text>
-                                <Input placeholder='Enter Percentage...' type='number' />
-                            </Box>
-                        </Box>
-                    </ModalBody>
-                    <ModalFooter>
-                        <Button variant="ghost" onClick={onNdcClose} mr={3} >Cancel</Button>
-                        <Button colorScheme='blue' type="submit">Submit</Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
+            <WithdrawModal isOpen={isWithdrawOpen} onClose={onWithdrawClose} onSubmit={handleWithdraw} />
+
+            <NetDebitCapModal isOpen={isNdcOpen} onClose={onNdcClose} onSubmit={handleNetDebitCard} />
         </VStack>
     );
 };
