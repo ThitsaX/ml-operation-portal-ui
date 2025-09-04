@@ -268,3 +268,37 @@ export class LiquidityHelper extends FormHelper {
     });
   }
 }
+
+export class FinalizeSettlementHelper extends FormHelper {
+  get schema() {
+    return z
+      .object({
+        startDate: z.coerce.date({ required_error: 'Required' }),
+        endDate: z.coerce.date({ required_error: 'Required' }),
+        state: z.string().optional(),
+        currency: z.string().optional(),
+        timeZoneOffset: z.string().optional()
+      })
+      .refine((data) => data.startDate < data.endDate, {
+        message: 'End Date must not earlier than Start Date',
+        path: ['endDate']
+      });
+  }
+}
+
+export class SettlementWindowHelper extends FormHelper {
+  get schema() {
+    return z
+      .object({
+        startDate: z.coerce.date({ required_error: 'Required' }),
+        endDate: z.coerce.date({ required_error: 'Required' }),
+        state: z.string().optional(),
+        currency: z.string().optional(),
+        timeZoneOffset: z.string().optional()
+      })
+      .refine((data) => data.startDate < data.endDate, {
+        message: 'End Date must not earlier than Start Date',
+        path: ['endDate']
+      });
+  }
+}
