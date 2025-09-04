@@ -97,13 +97,12 @@ const Header = () => {
       {data != null ? (
         <VStack w={10} h={10} justifyContent="center" alignItems="center">
           <Image
-            alt={data.dfsp_code}
-            src={`/assets/images/mfis/${data.dfsp_code}.png`}
+            alt={data.participantName}
+            src={`data:${data.logoFileType};base64,${data.logo}`}
             fallback={
               <Text fontSize="xs" color="muted.400">
-                {data.dfsp_code}
-              </Text>
-            }
+                {data.participantName}
+              </Text>}
             objectFit="contain"
             width="8"
             height="8"
@@ -117,7 +116,7 @@ const Header = () => {
           w="full"
           cursor="pointer"
           onClick={() => navigate('/company-informations')}>
-          {data?.dfsp_name || 'Operation Portal'}
+          {data?.participantName || 'Operation Portal'}
         </Heading>
       </Flex>
       {data != null ? (

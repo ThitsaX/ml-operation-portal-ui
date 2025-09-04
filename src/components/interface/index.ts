@@ -3,5 +3,6 @@ import SideBar from './SideBar';
 import AnnouncementCard from './AnnouncementCard';
 import Carousel from './Carousel';
 import TimezoneSelect from './TimezoneSelect';
+import MultiSelect from './MultiSelect';
 
-export { Header, SideBar, AnnouncementCard, Carousel, TimezoneSelect };
+export { Header, SideBar, AnnouncementCard, Carousel, TimezoneSelect,MultiSelect };

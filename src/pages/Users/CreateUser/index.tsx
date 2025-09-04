@@ -50,7 +50,7 @@ const CreateUser = () => {
     formState: { errors, isValid, isDirty }
   } = useForm<ICreateUserValues & { confirm_password: string }>({
     defaultValues: {
-      participant_id: user.data?.participant_id,
+      participant_id: user.data?.participantId,
       email: '',
       password: '',
       confirm_password: '',
@@ -58,7 +58,7 @@ const CreateUser = () => {
       first_name: '',
       last_name: '',
       job_title: '',
-      user_role_type: 'ADMIN',
+      userRoleType: 'ADMIN',
       status: 'ACTIVE'
     },
     mode: 'onChange',
@@ -75,7 +75,7 @@ const CreateUser = () => {
       values = {
         ...values,
         name: `${trim(values.first_name)} ${trim(values.last_name)}`,
-        participant_id: user.data?.participant_id as string
+        participant_id: user.data?.participantId as string
       };
       // perform api stuffs here
       start();
@@ -103,7 +103,7 @@ const CreateUser = () => {
           complete();
         });
     },
-    [complete, reset, start, toast, user.data?.participant_id]
+    [complete, reset, start, toast, user.data?.participantId]
   );
 
   const onCancelHandler = useCallback(() => {
@@ -150,7 +150,7 @@ const CreateUser = () => {
           </FormControl>
           <FormControl>
             <FormLabel>Organization</FormLabel>
-            <Input type="text" value={user.data?.dfsp_code} isReadOnly />
+            <Input type="text" value={user.data?.participantName} isReadOnly />
           </FormControl>
         </HStack>
         <HStack align="flex-start" w="full" spacing="3">
@@ -162,14 +162,14 @@ const CreateUser = () => {
             </Select>
             <FormErrorMessage>{errors.first_name?.message}</FormErrorMessage>
           </FormControl>
-          <FormControl isInvalid={!isEmpty(errors.user_role_type)}>
+          <FormControl isInvalid={!isEmpty(errors.userRoleType)}>
             <FormLabel>Roles</FormLabel>
-            <Select {...register('user_role_type')}>
+            <Select {...register('userRoleType')}>
               <option value="ADMIN">Admin</option>
               <option value="OPERATION">Operation</option>
             </Select>
             <FormErrorMessage>
-              {errors.user_role_type?.message}
+              {errors.userRoleType?.message}
             </FormErrorMessage>
           </FormControl>
         </HStack>

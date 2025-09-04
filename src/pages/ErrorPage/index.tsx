@@ -1,4 +1,5 @@
-import { Text, Heading, VStack } from '@chakra-ui/react'
+import { Text, Heading, VStack, Button } from '@chakra-ui/react'
+import { Link } from 'react-router-dom'
 import { memo } from 'react'
 
 export interface IErrorPageProps {
@@ -13,6 +14,10 @@ const ErrorPage = ({ title, message }: IErrorPageProps) => {
       <Text textAlign="center" color="gray.500">
         {message || 'Unknown error thown.'}
       </Text>
+
+      <Button as={Link} to="/" colorScheme="blue" variant="link">
+        Return Home
+      </Button>
     </VStack>
   )
 }
