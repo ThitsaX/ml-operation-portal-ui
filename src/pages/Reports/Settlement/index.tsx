@@ -1,7 +1,276 @@
+import { memo, useCallback, useState } from 'react';
+import {
+  Box,
+  Button,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Heading,
+  Input,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Stack,
+  useToast,
+  VStack
+} from '@chakra-ui/react';
+import { SettlementReportHelper } from '@helpers/form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  downloadFile,
+  generateSettlementReport,
+  getSettlementIds
+} from '@services/report';
 
-import { memo, useState, useMemo } from "react";
+import { useGetUserState } from '@store/hooks';
+import { type ISettlementDetailReport } from '@typescript/form/settlement-detail-report';
+
+import moment from 'moment-timezone';
+
+import { Controller, useForm } from 'react-hook-form';
+import { FaCaretDown, FaSearch } from 'react-icons/fa';
+import { IGetSettlementIds } from '@typescript/services/report';
+import { useLoadingContext } from '@contexts/hooks';
+import Select from 'react-select';
+import { ITimezoneOption } from 'react-timezone-select';
+import { isEmpty } from 'lodash-es';
+import { useSelector } from 'react-redux';
+import { RootState } from '@store';
+
+const settlementHelper = new SettlementReportHelper();
+const initialFileName = 'Settlement-Report';
+
 const Settlement = () => {
-  return <div>Settlement</div>;
+
+  const toast = useToast();
+  const { start, complete } = useLoadingContext();
+  const user = useGetUserState();
+
+  const [runButtonState, setRunButtonState] = useState(true);
+  const [settlementIdOptions, setSettlementIdOptions] = useState<any[]>([]);
+  const [selectedSettlementId, setSelectedSettlementId] = useState<any>();
+
+  // Redux
+  const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
+
+  /* Hook Form*/
+  const {
+    handleSubmit,
+    getValues,
+    control,
+    trigger,
+    formState: { errors, isValid }
+  } = useForm<ISettlementDetailReport>({
+    resolver: zodResolver(settlementHelper.schema),
+    defaultValues: {
+      start_date: moment().format('yyyy-MM-DD'),
+      end_date: moment().format('yyyy-MM-DD')
+    },
+    mode: 'onChange'
+  });
+
+  /* Handler */
+  const onDownloadChangeHandler = (e: any) => {
+    start();
+    setRunButtonState(false);
+
+    const fileType = e.target.value;
+
+    const selectedTZString = selectedTimezone.value;
+    let tzOffSet: string = selectedTimezone.offset === 0
+      ? "0000"
+      : moment().tz(selectedTZString).format('ZZ').replace('+', '');
+
+    generateSettlementReport({
+      settlement_id: selectedSettlementId?.value,
+      fsp_id: user.data?.participantName,
+      file_type: fileType,
+      timezoneOffset: tzOffSet
+    })
+      .then((res: any) => {
+        if (res?.generated?.length > 0) {
+          downloadFile(initialFileName, fileType, res?.generated);
+        } else {
+          toast({
+            position: 'top',
+            description: 'No data found',
+            status: 'warning',
+            isClosable: true,
+            duration: 3000
+          });
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      })
+      .finally(() => {
+        complete();
+        setRunButtonState(true);
+      });
+  };
+
+  const search = () => {
+    start();
+    setRunButtonState(false);
+
+    const startDate = getValues().start_date;
+    const endDate = getValues().end_date;
+
+    let utcStartDate = moment.utc(startDate).startOf('day').format();
+    let utcEndDate = moment.utc(endDate).endOf('day').format();
+
+    let tzOffSet: string = selectedTimezone.offset === 0
+      ? "0000"
+      : moment().tz(selectedTimezone.value).format('ZZ').replace('+', '')
+
+    getSettlementIds(user, utcStartDate, utcEndDate, tzOffSet)
+      .then((data: IGetSettlementIds) => {
+        if (data.settlement_id_list?.length === 0) {
+          toast({
+            position: 'top',
+            description: 'No data found',
+            status: 'warning',
+            isClosable: true,
+            duration: 3000
+          });
+        }
+
+        let options: any[] = [];
+
+        data.settlement_id_list.map((item) => {
+          options.push({ value: item.settlementId, label: item.settlementId });
+        });
+
+        setSettlementIdOptions(options);
+        setSelectedSettlementId(null);
+      })
+      .finally(() => {
+        setRunButtonState(true);
+        complete();
+      });
+  };
+
+  const onSearchClick = useCallback(() => {
+    search();
+  },
+    [selectedTimezone]
+  );
+
+  return (
+    <Box height="full" w="400px" p="4">
+      <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" pb="3">
+        DFSP Settlement Report
+      </Heading>
+      <Stack borderWidth="1px" borderRadius="lg" height="full">
+        <VStack p="4">
+          <FormControl pb="1">
+            <FormLabel>DFSP ID:</FormLabel>
+            <Input value={user.data?.participantName} readOnly={true} />
+          </FormControl>
+          <FormControl
+            isInvalid={!isEmpty(errors.start_date)}
+            isRequired
+            pb="1">
+            <FormLabel>Start Date</FormLabel>
+            <Controller
+              control={control}
+              render={({ field: { value, onChange, onBlur } }) => {
+                return (
+                  <Input
+                    value={value}
+                    onChange={(e) => {
+                      onChange(e);
+                      trigger('end_date');
+                    }}
+                    onBlur={onBlur}
+                    type="date"
+                  />
+                );
+              }}
+              name="start_date"
+            />
+            <FormErrorMessage>{errors.start_date?.message}</FormErrorMessage>
+          </FormControl>
+          <FormControl isInvalid={!isEmpty(errors.end_date)} isRequired pb="1">
+            <FormLabel>End Date</FormLabel>
+            <Controller
+              control={control}
+              render={({
+                field: { value, onChange, onBlur },
+                fieldState: { error }
+              }) => {
+                return (
+                  <Input
+                    value={value}
+                    onChange={(e) => {
+                      onChange(e);
+                      trigger('start_date');
+                    }}
+                    onBlur={onBlur}
+                    type="date"
+                  />
+                );
+              }}
+              name="end_date"
+            />
+            <FormErrorMessage>{errors.end_date?.message}</FormErrorMessage>
+          </FormControl>
+
+          <FormControl
+            isInvalid={!isEmpty(errors.fspid)}
+            pt="3"
+            textAlign="right">
+            <Button
+              onClick={handleSubmit(onSearchClick)}
+              isDisabled={!isValid || !runButtonState}
+              colorScheme="teal"
+              gap="2"
+              size="md">
+              <FaSearch /> Search
+            </Button>
+          </FormControl>
+
+          <FormControl
+            isInvalid={!isEmpty(errors.settlement_id)}
+            pt="3"
+            visibility={
+              settlementIdOptions?.length == 0 ? 'hidden' : 'visible'
+            }>
+            <FormLabel>Settlement Id</FormLabel>
+            <Select
+              options={settlementIdOptions}
+              value={selectedSettlementId}
+              onChange={(option: any) => {
+                setSelectedSettlementId(option);
+              }}
+            />
+          </FormControl>
+          <Box
+            width="100%"
+            textAlign="right"
+            visibility={
+              settlementIdOptions?.length == 0 ? 'hidden' : 'visible'
+            }>
+            <Menu>
+              <MenuButton
+                as={Button}
+                rightIcon={<FaCaretDown />}
+                isDisabled={
+                  !isValid || !runButtonState || selectedSettlementId == null
+                }>
+                Run
+              </MenuButton>
+              <MenuList onClick={onDownloadChangeHandler} placeholder="Choose">
+                <MenuItem value="csv">Download CSV</MenuItem>
+                <MenuItem value="xlsx">Download Excel</MenuItem>
+              </MenuList>
+            </Menu>
+          </Box>
+        </VStack>
+      </Stack>
+    </Box>
+  );
 };
 
 export default memo(Settlement);

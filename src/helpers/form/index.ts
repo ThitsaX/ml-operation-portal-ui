@@ -302,3 +302,45 @@ export class SettlementWindowHelper extends FormHelper {
       });
   }
 }
+
+export class AuditReportHelper extends FormHelper {
+  get schema() {
+    return z
+      .object({
+        fromDate: z.string({ required_error: 'Required' }),
+        toDate: z.string({ required_error: 'Required' }),
+        userId: z.string().optional(),
+        action: z.string().optional(),
+        fileType: z.string().optional(),
+      })
+      .refine((value) => value.fromDate < value.toDate, {
+        message: 'Should be less than to date',
+        path: ['fromDate']
+      })
+      .refine((value) => value.fromDate < value.toDate, {
+        message: 'Should be greater than from date',
+        path: ['toDate']
+      });
+  }
+}
+
+export class SettlementAuditReportHelper extends FormHelper {
+  get schema() {
+    return z
+      .object({
+        startDate: z.string({ required_error: 'Required' }),
+        endDate: z.string({ required_error: 'Required' }),
+        dfspId: z.string().optional(),
+        currencyId: z.string().optional(),
+        fileType: z.string().optional(),
+      })
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be less than end date',
+        path: ['startDate']
+      })
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be greater than start date',
+        path: ['endDate']
+      });
+  }
+}
