@@ -136,57 +136,60 @@ const SettlementWindows = () => {
     };
 
 
-    const columns: Column<ISettlementWindow>[] = useMemo(
-        () => [
-            {
-                Header: 'Settlement ID',
-                accessor: 'settlementId',
-                Cell: ({ row }: any) => (
-                    <Box
-                        color="blue.600"
-                        fontWeight="bold"
-                        cursor="pointer"
-                        _hover={{ textDecoration: 'underline' }}
-                        onClick={() => onTrClickHandler(row.original)}
-                    >
-                        {row.original.settlementId}
-                    </Box>)
-            },
-            {
-                Header: 'Window ID',
-                accessor: 'windowId',
-            },
-            {
-                Header: 'State',
-                accessor: 'state',
-            },
-            {
-                Header: 'Open Date',
-                accessor: 'openDate',
-                Cell: ({ value }: any) => moment(value).format('YYYY-MM-DD HH:mm'),
-            },
-            {
-                Header: 'Closed Date',
-                accessor: 'closeDate',
-                Cell: ({ value }: any) => moment(value).format('YYYY-MM-DD HH:mm'),
-            },
-            {
-                Header: 'Action',
-                disableSortBy: true,
-                Cell: ({ row }: any) => (
-                    <HStack spacing={4}>
-                        <Button
-                            size="sm"
-                            colorScheme="green"
-                            variant="solid"
-                            onClick={() => handleFinalize(row.original)}>
-                            Close Window
-                        </Button>
-                    </HStack>
-                )
+    const columns = useMemo<Column<ISettlementWindow>[]>(() => [
+        {
+            Header: 'Settlement ID',
+            accessor: 'settlementId',
+            Cell: ({ row }: any) => (
+                <Box
+                    color="blue.600"
+                    fontWeight="bold"
+                    cursor="pointer"
+                    _hover={{ textDecoration: 'underline' }}
+                    onClick={() => onTrClickHandler(row.original)}
+                >
+                    {row.original.settlementId}
+                </Box>)
+        },
+        {
+            Header: 'Window ID',
+            accessor: 'windowId',
+        },
+        {
+            Header: 'State',
+            accessor: 'state',
+        },
+        {
+            Header: 'Open Date',
+            accessor: 'openDate',
+            Cell: ({ value }) => (
+                <Text>{moment(value).format('YYYY-MM-DD HH:mm')}</Text>
+            ),
+        },
+        {
+            Header: 'Closed Date',
+            accessor: 'closeDate',
+            Cell: ({ value }) => (
+                <Text>{moment(value).format('YYYY-MM-DD HH:mm')}</Text>
+            ),
+        },
+        {
+            Header: 'Action',
+            disableSortBy: true,
+            Cell: ({ row }: any) => (
+                <HStack spacing={4}>
+                    <Button
+                        size="sm"
+                        colorScheme="green"
+                        variant="solid"
+                        onClick={() => handleFinalize(row.original)}>
+                        Close Window
+                    </Button>
+                </HStack>
+            )
 
-            },
-        ],
+        },
+    ],
         []
     );
 

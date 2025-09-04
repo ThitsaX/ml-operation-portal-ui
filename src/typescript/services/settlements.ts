@@ -1,9 +1,8 @@
 export interface ISettlementModel {
     modelName: string;
-    modelType: number;
+    modelType: string;
     currency: string;
 }
-
 export interface ISettlementWindow {
     settlementId: string;
     windowId: number;
@@ -13,9 +12,17 @@ export interface ISettlementWindow {
 }
 
 export interface IFinalizeSettlement {
-    settlementId: string;
-    windowId: [string];
-    state: string;
-    settlementCreatedDate: string;
-    settlementFinalizeDate: string;
+    settlementId: string
+    windowId: string[]
+    state: string
+    settlementCreatedDate: string
+    settlementFinalizeDate: string
+    details: {
+        dfsp: string
+        currency: string
+        debit: number | null
+        credit: number | null
+    }[]
 }
+
+

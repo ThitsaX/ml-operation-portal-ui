@@ -2,7 +2,6 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { Auth, Main } from '@layouts';
 
 /* Pages */
-import Dashboard from '@pages/Dashboard';
 import ErrorPage from '@pages/ErrorPage';
 import Login from '@pages/Login';
 import CompanyInfo from '@pages/CompanyInfo';

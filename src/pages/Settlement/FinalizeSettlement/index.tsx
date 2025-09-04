@@ -83,21 +83,24 @@ const sampleSettlementFinalizeData = [
         windowId: ['WIN-20250804-002'],
         state: 'Pending',
         settlementCreatedDate: '2025-08-04T11:00:00Z',
-        settlementFinalizeDate: '2025-08-04T13:30:00Z'
+        settlementFinalizeDate: '2025-08-04T13:30:00Z',
+        details: []
     },
     {
         settlementId: 'SETT-20250804-003',
         windowId: ['WIN-20250804-003'],
         state: 'Failed',
         settlementCreatedDate: '2025-08-04T09:00:00Z',
-        settlementFinalizeDate: '2025-08-04T10:15:00Z'
+        settlementFinalizeDate: '2025-08-04T10:15:00Z',
+        details: []
     },
     {
         settlementId: 'SETT-20250804-004',
         windowId: ['WIN-20250804-004'],
         state: 'Completed',
         settlementCreatedDate: '2025-08-04T08:45:00Z',
-        settlementFinalizeDate: '2025-08-04T09:45:00Z'
+        settlementFinalizeDate: '2025-08-04T09:45:00Z',
+        details: []
     },
 ];
 
@@ -165,12 +168,16 @@ const FinalizeSettlement = () => {
         {
             Header: 'Settlement Created Date',
             accessor: 'settlementCreatedDate',
-            Cell: ({ value }: any) => moment(value).format('YYYY-MM-DD HH:mm'),
+            Cell: ({ value }) => (
+                <Text>{moment(value).format('YYYY-MM-DD HH:mm')}</Text>
+            ),
         },
         {
             Header: 'Settlement Finalize Date',
             accessor: 'settlementFinalizeDate',
-            Cell: ({ value }) => moment(value).format('YYYY-MM-DD HH:mm')
+            Cell: ({ value }) => (
+                <Text>{moment(value).format('YYYY-MM-DD HH:mm')}</Text>
+            )
         },
         {
             Header: 'Action',
