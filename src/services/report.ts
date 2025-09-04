@@ -74,6 +74,38 @@ export const generateSettlementReport = async (params: any) => {
     });
 };
 
+export const generateAuditReport = async (params: any) => {
+  const {
+    user: { auth }
+  } = store.getState();
+
+  const accessToken = await generateAccessToken({
+    method: 'POST',
+    uri: routes.generateAuditReport,
+    secret: auth?.secretKey as string
+  });
+
+  const { axios } = AxiosRequest(accessToken, auth?.accessKey);
+  return axios
+    .post<any>(routes.generateAuditReport, null, {
+      params
+    })
+    .then((d) => {
+      return d.data;
+    })
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
+};
+
 export const generateSettlementStatementReport = async (
   user: IUserState,
   paramsValues: any
@@ -112,6 +144,39 @@ export const generateSettlementStatementReport = async (
       throw rest;
     });
 };
+
+export const generateSettlementAuditReport = async (params: any) => {
+  const {
+    user: { auth }
+  } = store.getState();
+
+  const accessToken = await generateAccessToken({
+    method: 'POST',
+    uri: routes.generateSettlementAuditReport,
+    secret: auth?.secretKey as string
+  });
+
+  const { axios } = AxiosRequest(accessToken, auth?.accessKey);
+  return axios
+    .post<any>(routes.generateSettlementAuditReport, null, {
+      params
+    })
+    .then((d) => {
+      return d.data;
+    })
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
+};
+
 
 export const generateFeeReport = async (
   user: IUserState,

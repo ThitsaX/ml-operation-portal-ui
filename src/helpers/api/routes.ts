@@ -33,6 +33,9 @@ export const privateRoutes = {
 
   get_all_audit_by_participant: '/secured/get_all_audit_by_participant',
 
+  generateAuditReport: '/secured/generateAuditReport',
+  generateSettlementAuditReport: '/secured/generateSettlementAuditReport',
+
   getPendingApprovals: '/secured/getPendingApprovalList',
   createApprovalRequest: '/secured/createApprovalRequest',
   modifyApprovalAction: '/secured/modifyApprovalAction',
