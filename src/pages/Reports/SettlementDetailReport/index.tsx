@@ -11,7 +11,7 @@ import {
   HStack,
   Select
 } from '@chakra-ui/react';
-import { SettlementReportHelper } from '@helpers/form';
+import { SettlementDetailReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   downloadFile,
@@ -34,7 +34,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 
 
-const settlementReportHelper = new SettlementReportHelper();
+const settlementDetailReportHelper = new SettlementDetailReportHelper();
 const initialFileName = 'Settlement-Details-Report';
 
 const SettlementDetailReport = () => {
@@ -57,7 +57,7 @@ const SettlementDetailReport = () => {
     getValues,
     formState: { errors, isValid }
   } = useForm<ISettlementDetailReport>({
-    resolver: zodResolver(settlementReportHelper.schema),
+    resolver: zodResolver(settlementDetailReportHelper.schema),
     defaultValues: {
       start_date: moment().format('yyyy-MM-DD'),
       end_date: moment().format('yyyy-MM-DD')
@@ -227,18 +227,27 @@ const SettlementDetailReport = () => {
       <Stack borderWidth="1px" borderRadius="lg" height="full" p="2">
         <HStack alignItems={'flex-start'} p={2} spacing={4}>
 
-          <FormControl width={{ base: '200px', md: '250px' }}
-            isInvalid={!isEmpty(errors.settlement_id)}
-            pt="3">
+          <FormControl
+            width={{ base: '200px', md: '250px' }}
+            isInvalid={!isEmpty(errors.fspid)}
+            isRequired
+          >
             <FormLabel>Settlement Id</FormLabel>
-            <Select
-              options={settlementIdOptions}
-              value={selectedSettlementId}
-              onChange={(option: any) => {
-                setSelectedSettlementId(option);
-              }}
+            <Controller
+              name="fspid"
+              control={control}
+              render={({ field }) => (
+                <Select {...field} placeholder="Select Settlement ID">
+                  {settlementIdOptions.map((opt, index) => (
+                    <option key={index} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </Select>
+              )}
             />
           </FormControl>
+
         </HStack>
         <HStack justifyContent='flex-end' p={2}>
           <Select

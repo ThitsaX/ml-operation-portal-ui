@@ -6,3 +6,8 @@ export interface IFeeReport {
   time_zone_offset: string
   file_type: string
 }
+
+
+export interface ISettlementBankReport {
+  settlementId: string
+}

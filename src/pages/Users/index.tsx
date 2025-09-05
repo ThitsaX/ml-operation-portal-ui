@@ -245,7 +245,7 @@ const Users = () => {
                           variant="ghost"
                           aria-label="Reset Password"
                           icon={<IoReload />}
-                          isDisabled={data.participant_user_id === user?.user_id}
+                          isDisabled={data.participant_user_id === user?.userId}
                           onClick={() => {
                             onClickReset(data);
                           }}
@@ -268,7 +268,7 @@ const Users = () => {
                           variant="ghost"
                           aria-label="Remove Account"
                           icon={<IoTrashOutline />}
-                          isDisabled={data.participant_user_id === user?.user_id}
+                          isDisabled={data.participant_user_id === user?.userId}
                           onClick={() => {
                             onClickRemove(data);
                           }}
