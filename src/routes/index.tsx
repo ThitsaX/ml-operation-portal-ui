@@ -39,11 +39,6 @@ export const router = createBrowserRouter([
         element: <Home />
       },
       {
-        path: 'dashboard',
-        caseSensitive: true,
-        element: <Dashboard />
-      },
-      {
         path: "/user-management",
         element: <ProtectedRoute allowedMenuId="participant_positions" />,
         children: [

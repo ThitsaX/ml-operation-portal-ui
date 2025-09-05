@@ -133,6 +133,73 @@ export class SettlementReportHelper extends FormHelper {
   }
 }
 
+export class SettlementDetailReportHelper extends FormHelper {
+  get schema() {
+    return z
+      .object({
+        start_date: z.coerce.date({
+          required_error: 'Required'
+        }),
+        end_date: z.coerce.date({
+          required_error: 'Required'
+        }),
+        settlement_id: z.string().optional(),
+        fspid: z.string().optional(),
+        file_type: z.string().optional(),
+        time_zone_offset: z.string().optional()
+      })
+      .refine((data) => data.start_date < data.end_date, {
+        message: 'End Date must not earlier than Start Date',
+        path: ['end_date']
+      });
+  }
+}
+
+export class SettlementSummaryReportHelper extends FormHelper {
+  get schema() {
+    return z
+      .object({
+        start_date: z.coerce.date({
+          required_error: 'Required'
+        }),
+        end_date: z.coerce.date({
+          required_error: 'Required'
+        }),
+        settlement_id: z.string().optional(),
+        fspid: z.string().optional(),
+        file_type: z.string().optional(),
+        time_zone_offset: z.string().optional()
+      })
+      .refine((data) => data.start_date < data.end_date, {
+        message: 'End Date must not earlier than Start Date',
+        path: ['end_date']
+      });
+  }
+}
+
+export class SettlementStatementReportHelper extends FormHelper {
+  get schema() {
+    return z
+      .object({
+        start_date: z.coerce.date({
+          required_error: 'Required'
+        }),
+        end_date: z.coerce.date({
+          required_error: 'Required'
+        }),
+        settlement_id: z.string().optional(),
+        fspid: z.string().optional(),
+        currency: z.string().optional(),
+        file_type: z.string().optional(),
+        time_zone_offset: z.string().optional()
+      })
+      .refine((data) => data.start_date < data.end_date, {
+        message: 'End Date must not earlier than Start Date',
+        path: ['end_date']
+      });
+  }
+}
+
 export class TransferHelper extends FormHelper {
   get schema() {
     return z.object({
@@ -166,6 +233,15 @@ export class FeeReportHelper extends FormHelper {
         message: 'End Date must not earlier than Start Date',
         path: ['end_date']
       });
+  }
+}
+
+export class SettlementBankReportHelper extends FormHelper {
+  get schema() {
+    return z
+      .object({
+        settlementId: z.coerce.date({ required_error: 'Required' }),
+      })
   }
 }
 

@@ -11,12 +11,12 @@ import {
   HStack,
   Select
 } from '@chakra-ui/react';
-import { SettlementReportHelper } from '@helpers/form';
+import { SettlementSummaryReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { downloadFile, generateSettlementDetailReport, getSettlementIds } from '@services/report';
 
 import { useGetUserState } from '@store/hooks';
-import { type ISettlementDetailReport } from '@typescript/form/settlement-detail-report';
+import { type ISettlementSummaryReport } from '@typescript/form/settlement-detail-report';
 
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone';
@@ -30,7 +30,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 
 
-const settlementReportHelper = new SettlementReportHelper();
+const settlementSummaryReportHelper = new SettlementSummaryReportHelper();
 const initialFileName = 'Settlement-Details-Report';
 
 const SettlementSummaryReport = () => {
@@ -51,8 +51,8 @@ const SettlementSummaryReport = () => {
     handleSubmit,
     getValues,
     formState: { errors, isValid }
-  } = useForm<ISettlementDetailReport>({
-    resolver: zodResolver(settlementReportHelper.schema),
+  } = useForm<ISettlementSummaryReport>({
+    resolver: zodResolver(settlementSummaryReportHelper.schema),
     defaultValues: {
       start_date: moment().format('yyyy-MM-DD'),
       end_date: moment().format('yyyy-MM-DD')
@@ -144,8 +144,8 @@ const SettlementSummaryReport = () => {
   }, [complete, getValues, start, toast, user]);
 
   const onSearchClick = useCallback(() => {
-      search();
-    },
+    search();
+  },
     [search]
   );
 
@@ -221,18 +221,23 @@ const SettlementSummaryReport = () => {
         <HStack justifyContent='flex-end' p={2}>
 
           <FormControl
+            width={{ base: '200px', md: '250px' }}
             isInvalid={!isEmpty(errors.settlement_id)}
-            pt="3"
-            visibility={
-              settlementIdOptions?.length == 0 ? 'hidden' : 'visible'
-            }>
+            isRequired
+          >
             <FormLabel>Settlement Id</FormLabel>
-            <Select
-              options={settlementIdOptions}
-              value={selectedSettlementId}
-              onChange={(option: any) => {
-                setSelectedSettlementId(option);
-              }}
+            <Controller
+              name="settlement_id"
+              control={control}
+              render={({ field }) => (
+                <Select {...field} placeholder="Select Settlement ID">
+                  {settlementIdOptions.map((opt, index) => (
+                    <option key={index} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </Select>
+              )}
             />
           </FormControl>
           <Select

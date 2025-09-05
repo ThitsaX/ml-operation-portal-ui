@@ -1,11 +1,11 @@
 import { Box, Button, FormControl, FormErrorMessage, FormLabel, HStack, Heading, Input, Menu, MenuButton, MenuItem, MenuList, Stack, useToast, Select } from "@chakra-ui/react";
 import { useLoadingContext } from "@contexts/hooks";
-import { SettlementReportHelper } from "@helpers/form";
+import { SettlementStatementReportHelper } from "@helpers/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { downloadFile, generateSettlementStatementReport } from "@services/report";
 
 import { useGetUserState } from '@store/hooks'
-import { type ISettlementDetailReport } from '@typescript/form/settlement-detail-report'
+import { type ISettlementStatementReport } from '@typescript/form/settlement-detail-report'
 
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone'
@@ -16,7 +16,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@store";
 import { useGetCurrencyList } from '@hooks/services/participant';
 
-const settlementHelper = new SettlementReportHelper()
+const settlementStatementReportHelper = new SettlementStatementReportHelper()
 const initialFileName = 'Settlement-Statement-Report'
 
 const SettlementStatementReport = () => {
@@ -72,8 +72,8 @@ const SettlementStatementReport = () => {
       })
   }
 
-  const { control, trigger, getValues, formState: { errors, isValid } } = useForm<ISettlementDetailReport>({
-    resolver: zodResolver(settlementHelper.schema),
+  const { control, trigger, getValues, formState: { errors, isValid } } = useForm<ISettlementStatementReport>({
+    resolver: zodResolver(settlementStatementReportHelper.schema),
     defaultValues: {
       start_date: moment().format('yyyy-MM-DD'),
       end_date: moment().format('yyyy-MM-DD')
@@ -138,7 +138,7 @@ const SettlementStatementReport = () => {
             />
             <FormErrorMessage>{errors.end_date?.message}</FormErrorMessage>
           </FormControl>
-          <FormControl isInvalid={!isEmpty(errors.currency)}>
+          <FormControl isInvalid={!isEmpty(errors.currency)} isRequired>
             <FormLabel>Currency</FormLabel>
             <Controller
               name="currency"

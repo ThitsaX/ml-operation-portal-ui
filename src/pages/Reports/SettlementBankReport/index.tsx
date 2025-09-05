@@ -9,7 +9,7 @@ import {
   useToast,
   Select
 } from '@chakra-ui/react';
-import { FeeReportHelper } from '@helpers/form';
+import { SettlementBankReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   downloadFile,
@@ -21,25 +21,37 @@ import { useGetUserState } from '@store/hooks';
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone';
 import { memo, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { type IGetAllOtherParticipant } from '@typescript/services';
-import { type IFeeReport } from '@typescript/form/fee-report';
+import { type ISettlementBankReport } from '@typescript/form/fee-report';
 import { useLoadingContext } from '@contexts/hooks';
 import { ITimezoneOption } from 'react-timezone-select';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { TransferType } from '@typescript/pages';
 
-const feeReportHelper = new FeeReportHelper();
+const settlementBankReport = new SettlementBankReportHelper();
 const initialFileName = 'Fee-Settlement-Transactions';
 
 const SettlementBankReport = () => {
 
   const [runButtonState, setRunButtonState] = useState(true);
   const [transferType, setTransferType] = useState<TransferType>('outbound');
-  const [selectedSettlementId, setSelectedSettlementId] = useState<any>();
   const [settlementModel, setSettlementModel] = useState<string>('');
-  const [settlementIdOptions, setSettlementIdOptions] = useState<any[]>([]);
+  const [settlementIdOptions, setSettlementIdOptions] = useState<
+    { value: string; label: string }[]
+  >([
+    { value: '', label: 'Select Settlement ID' }, // placeholder
+    { value: 'SETTLEMENT-001', label: 'Settlement ID - 001' },
+    { value: 'SETTLEMENT-002', label: 'Settlement ID - 002' },
+    { value: 'SETTLEMENT-003', label: 'Settlement ID - 003' },
+  ]);
+
+  const [selectedSettlementId, setSelectedSettlementId] = useState<{
+    value: string;
+    label: string;
+  } | null>(null);
+
   const [toFspOptions, setToFspOptions] = useState<any[]>([]);
   const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string; }>();
 
@@ -49,18 +61,17 @@ const SettlementBankReport = () => {
   const { start, complete } = useLoadingContext();
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
 
-  const schema = feeReportHelper.schema;
+  const schema = settlementBankReport.schema;
 
   const {
     control,
     getValues,
     trigger,
     formState: { errors, isValid }
-  } = useForm<IFeeReport>({
+  } = useForm<ISettlementBankReport>({
     resolver: zodResolver(schema),
     defaultValues: {
-      start_date: moment().format('yyyy-MM-DD'),
-      end_date: moment().format('yyyy-MM-DD')
+      settlementId: ''
     },
     mode: 'onChange'
   });
@@ -92,17 +103,15 @@ const SettlementBankReport = () => {
 
     const fileType = e.target.value;
 
-    const startDate = getValues().start_date;
-    const endDate = getValues().end_date;
+    // const startDate = getValues().start_date;
+    // const endDate = getValues().end_date;
 
-    const utcStartDate = moment.utc(startDate).startOf('day').format();
-    const utcEndDate = moment.utc(endDate).endOf('day').format();
+    // const utcStartDate = moment.utc(startDate).startOf('day').format();
+    // const utcEndDate = moment.utc(endDate).endOf('day').format();
 
     const selectedTZString = selectedTimezone.value;
 
     generateFeeReport(user, {
-      startDate: utcStartDate,
-      endDate: utcEndDate,
       fromFspId: transferType === 'outbound' ? user.data?.participantName : selectedToFspOption?.value,
       toFspId: transferType === 'outbound' ? selectedToFspOption?.value : user.data?.participantName,
       tzOffSet: selectedTimezone.offset === 0
@@ -140,18 +149,28 @@ const SettlementBankReport = () => {
       <Stack borderWidth="1px" borderRadius="lg" height="full" p="2">
         <HStack alignItems={'flex-start'} p={2} spacing={4}>
 
-          <FormControl width={{ base: '200px', md: '250px' }}
-            isInvalid={!isEmpty(errors.settlement_id)}
-            pt="3">
+          <FormControl
+            width={{ base: '200px', md: '250px' }}
+            isInvalid={!isEmpty(errors.settlementId)}
+            isRequired
+          >
             <FormLabel>Settlement Id</FormLabel>
-            <Select
-              options={settlementIdOptions}
-              value={selectedSettlementId}
-              onChange={(option: any) => {
-                setSelectedSettlementId(option);
-              }}
+            <Controller
+              name="settlementId"
+              control={control}
+              render={({ field }) => (
+                <Select {...field} placeholder="Select Settlement ID">
+                  {settlementIdOptions.map((opt, index) => (
+                    <option key={index} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </Select>
+              )}
             />
           </FormControl>
+
+
         </HStack>
         <HStack justifyContent='flex-end' p={2}>
           <Select
