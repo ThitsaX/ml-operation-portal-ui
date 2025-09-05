@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  operation-portal-frontend:
+    container_name: operation-portal-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: operation-portal-frontend:latest
+    environment:
+      - BASE_URL=http://localhost:8003
+    ports:
+      - "3000:3000"
+    
