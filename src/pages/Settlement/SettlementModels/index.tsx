@@ -124,8 +124,7 @@ const SettlementModels = () => {
 
     
 
-    const columns: Column<ISettlementModel>[] = useMemo(
-        () => [
+    const columns = useMemo<Column<ISettlementModel>[]>(() => [
             {
                 Header: 'Model Name',
                 accessor: 'modelName',
@@ -141,7 +140,7 @@ const SettlementModels = () => {
             {
                 Header: 'Action',
                 disableSortBy: true,
-                Cell: ({ row }: { row: Row<IGetUserData> }) => (
+                Cell: ({ row }: { row: Row<ISettlementModel> }) => (
 
                     <HStack spacing={3}>
                         <Button colorScheme="blue" size="md"

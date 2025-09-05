@@ -19,7 +19,7 @@ export class AuthHelper extends FormHelper {
       })
       .refine((data) => data.newPassword === data.confirmPassword, {
         message: 'password-not-match',
-        path: ['confirmPassword']
+        path: ['confirm_password']
       });
   }
 }
@@ -33,7 +33,7 @@ export class ParticipantHelper extends FormHelper {
         email: z.string({ required_error: 'Required' }).email('invalid-email'),
         job_title: z.string({ required_error: 'Required' }),
         participant_id: z.string({ required_error: 'Required' }),
-        user_role_type: z.enum(['ADMIN', 'OPERATION'], {
+        userRoleType: z.enum(['ADMIN', 'OPERATION'], {
           required_error: 'Required'
         }),
         status: z.enum(['INACTIVE', 'ACTIVE'], {
@@ -55,7 +55,7 @@ export class ParticipantHelper extends FormHelper {
       email: z.string({ required_error: 'Required' }).email('invalid-email'),
       job_title: z.string({ required_error: 'Required' }),
       participant_id: z.string({ required_error: 'Required' }),
-      user_role_type: z.enum(['ADMIN', 'OPERATION'], {
+      userRoleType: z.enum(['ADMIN', 'OPERATION'], {
         required_error: 'Required'
       }),
       status: z.enum(['INACTIVE', 'ACTIVE'], {
@@ -169,103 +169,20 @@ export class FeeReportHelper extends FormHelper {
   }
 }
 
-export class AuditHelper extends FormHelper {
+export class SettlementWindowHelper extends FormHelper {
   get schema() {
     return z
       .object({
-        fromDate: z.number({ required_error: 'Required' }),
-        toDate: z.number({ required_error: 'Required' }),
-        userId: z.string().optional(),
-        actionName: z.string().optional(),
+        startDate: z.coerce.date({ required_error: 'Required' }),
+        endDate: z.coerce.date({ required_error: 'Required' }),
+        state: z.string().optional(),
+        currency: z.string().optional(),
+        timeZoneOffset: z.string().optional()
       })
-      .refine((value) => value.fromDate < value.toDate, {
-        message: 'Should be less than to date',
-        path: ['fromDate']
-      })
-      .refine((value) => value.fromDate < value.toDate, {
-        message: 'Should be greater than from date',
-        path: ['toDate']
+      .refine((data) => data.startDate < data.endDate, {
+        message: 'End Date must not earlier than Start Date',
+        path: ['endDate']
       });
-  }
-}
-
-export class ContactHelper extends FormHelper {
-  get schema() {
-    return z.object({
-      participantId: z.string().optional(),
-      contactId: z.string().optional(),
-      name: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Name is required'),
-      position: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Position is required'),
-      email: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Email is required'),
-      mobile: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Mobile is required')
-        .regex(/^\+[^a-zA-Z]*$/, 'Invalid mobile number format'),
-      contactType: z.string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Contact Type is required'),
-    });
-  }
-}
-
-
-export class OrganizationHelper extends FormHelper {
-  get schema() {
-    return z.object({
-      participantId: z.string().optional(),
-      participantName: z.string().optional(),
-      description: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Description is required'),
-      address: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Address is required'),
-      mobile: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Mobile is required'),
-      logoFileType: z.string().nullable().optional(),
-
-      logo: z.string().optional(),
-      createdDate: z.number().optional(),
-    });
-  }
-}
-
-export class LiquidityHelper extends FormHelper {
-  get schema() {
-    return z.object({
-      participantId: z.string().optional(),
-      liquidityProfileId: z.string().optional(),
-      bankName: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Bank Name is required'),
-      accountName: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Account Name is required'),
-      accountNumber: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Account Number is required'),
-      currency: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Currency is required'),
-    });
   }
 }
 
@@ -286,19 +203,22 @@ export class FinalizeSettlementHelper extends FormHelper {
   }
 }
 
-export class SettlementWindowHelper extends FormHelper {
+export class AuditHelper extends FormHelper {
   get schema() {
     return z
       .object({
-        startDate: z.coerce.date({ required_error: 'Required' }),
-        endDate: z.coerce.date({ required_error: 'Required' }),
-        state: z.string().optional(),
-        currency: z.string().optional(),
-        timeZoneOffset: z.string().optional()
+        fromDate: z.number({ required_error: 'Required' }),
+        toDate: z.number({ required_error: 'Required' }),
+        userId: z.string().optional(),
+        actionName: z.string().optional(),
       })
-      .refine((data) => data.startDate < data.endDate, {
-        message: 'End Date must not earlier than Start Date',
-        path: ['endDate']
+      .refine((value) => value.fromDate < value.toDate, {
+        message: 'Should be less than to date',
+        path: ['fromDate']
+      })
+      .refine((value) => value.fromDate < value.toDate, {
+        message: 'Should be greater than from date',
+        path: ['toDate']
       });
   }
 }
@@ -342,5 +262,84 @@ export class SettlementAuditReportHelper extends FormHelper {
         message: 'Should be greater than start date',
         path: ['endDate']
       });
+  }
+}
+
+export class OrganizationHelper extends FormHelper {
+  get schema() {
+    return z.object({
+      participantId: z.string().optional(),
+      participantName: z.string().optional(),
+      description: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Description is required'),
+      address: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Address is required'),
+      mobile: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Mobile is required'),
+      logoFileType: z.string().nullable().optional(),
+
+      logo: z.string().optional(),
+      createdDate: z.number().optional(),
+    });
+  }
+}
+
+export class ContactHelper extends FormHelper {
+  get schema() {
+    return z.object({
+      participantId: z.string().optional(),
+      contactId: z.string().optional(),
+      name: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Name is required'),
+      position: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Position is required'),
+      email: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Email is required'),
+      mobile: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Mobile is required')
+        .regex(/^\+[^a-zA-Z]*$/, 'Invalid mobile number format'),
+      contactType: z.string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Contact Type is required'),
+    });
+  }
+}
+
+export class LiquidityHelper extends FormHelper {
+  get schema() {
+    return z.object({
+      participantId: z.string().optional(),
+      liquidityProfileId: z.string().optional(),
+      bankName: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Bank Name is required'),
+      accountName: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Account Name is required'),
+      accountNumber: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Account Number is required'),
+      currency: z
+        .string({ required_error: 'Required' })
+        .trim()
+        .min(1, 'Currency is required'),
+    });
   }
 }

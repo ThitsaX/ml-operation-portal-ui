@@ -71,7 +71,7 @@ export const useGetParticipantList = (
 ) =>
   useQuery<IParticipantProfile[], IApiErrorResponse>({
     queryKey: ['getParticipantList'],
-    queryFn: getParticipantList,
+    queryFn: getParticipantList,  
     ...options
   })
 

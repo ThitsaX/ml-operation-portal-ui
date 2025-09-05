@@ -47,33 +47,6 @@ export const generateSettlementDetailReport = async (params: any) => {
     });
 };
 
-export const generateSettlementReport = async (params: any) => {
-  const {
-    user: { auth }
-  } = store.getState();
-  const accessToken = await generateAccessToken({
-    method: 'POST',
-    uri: routes.generate_settlement_report,
-    secret: auth?.secretKey as string
-  });
-
-  const { axios } = AxiosRequest(accessToken, auth?.accessKey);
-  return axios
-    .post<any>(routes.generate_settlement_report, null, { params })
-    .then((d) => d.data)
-    .catch((error: AxiosError<IApiErrorResponse>) => {
-      const { code, message, ...rest } = axiosErrorHandler(error);
-      if (code && message) {
-        throw {
-          error_code: code,
-          default_error_message: getErrorMessageByCode(code),
-          i18n_error_messages: null
-        };
-      }
-      throw rest;
-    });
-};
-
 export const generateAuditReport = async (params: any) => {
   const {
     user: { auth }
@@ -88,45 +61,6 @@ export const generateAuditReport = async (params: any) => {
   const { axios } = AxiosRequest(accessToken, auth?.accessKey);
   return axios
     .post<any>(routes.generateAuditReport, null, {
-      params
-    })
-    .then((d) => {
-      return d.data;
-    })
-    .catch((error: AxiosError<IApiErrorResponse>) => {
-      const { code, message, ...rest } = axiosErrorHandler(error);
-      if (code && message) {
-        throw {
-          error_code: code,
-          default_error_message: getErrorMessageByCode(code),
-          i18n_error_messages: null
-        };
-      }
-      throw rest;
-    });
-};
-
-export const generateSettlementStatementReport = async (
-  user: IUserState,
-  paramsValues: any
-) => {
-  const params = {
-    start_date: paramsValues.startDate,
-    end_date: paramsValues.endDate,
-    fsp_id: user.data?.dfsp_code,
-    timezoneoffset: paramsValues.timezoneoffset,
-    file_type: paramsValues.fileType
-  };
-
-  const accessToken = await generateAccessToken({
-    method: 'POST',
-    uri: routes.generate_settlement_statement_report,
-    secret: user.auth?.secretKey as string
-  });
-
-  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
-  return axios
-    .post<any>(routes.generate_settlement_statement_report, null, {
       params
     })
     .then((d) => {
@@ -177,6 +111,71 @@ export const generateSettlementAuditReport = async (params: any) => {
     });
 };
 
+export const generateSettlementReport = async (params: any) => {
+  const {
+    user: { auth }
+  } = store.getState();
+  const accessToken = await generateAccessToken({
+    method: 'POST',
+    uri: routes.generate_settlement_report,
+    secret: auth?.secretKey as string
+  });
+
+  const { axios } = AxiosRequest(accessToken, auth?.accessKey);
+  return axios
+    .post<any>(routes.generate_settlement_report, null, { params })
+    .then((d) => d.data)
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
+};
+
+export const generateSettlementStatementReport = async (
+  user: IUserState,
+  paramsValues: any
+) => {
+  const params = {
+    start_date: paramsValues.startDate,
+    end_date: paramsValues.endDate,
+    fsp_id: user.data?.participantName,
+    timezoneoffset: paramsValues.timezoneoffset,
+    file_type: paramsValues.fileType
+  };
+
+  const accessToken = await generateAccessToken({
+    method: 'POST',
+    uri: routes.generate_settlement_statement_report,
+    secret: user.auth?.secretKey as string
+  });
+
+  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
+  return axios
+    .post<any>(routes.generate_settlement_statement_report, null, {
+      params
+    })
+    .then((d) => {
+      return d.data;
+    })
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
+};
 
 export const generateFeeReport = async (
   user: IUserState,
@@ -270,7 +269,7 @@ export const getAllOtherParticipants = async (
   const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
   return axios
     .get<IGetAllOtherParticipant>(routes.get_all_other_participants, {
-      params: { participant_id: participantId }
+      params: { participantId: participantId }
     })
     .then((d) => d.data)
     .catch((error: AxiosError<IApiErrorResponse>) => {

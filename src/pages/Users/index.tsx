@@ -111,7 +111,7 @@ const Users = () => {
     start();
     removeParticipantUser({
       participant_user_id: currentUser?.participant_user_id as string,
-      participant_id: user?.participant_id as string
+      participant_id: user?.participantId as string
     })
       .then(() => {
         toast({
@@ -143,7 +143,7 @@ const Users = () => {
     refetch,
     start,
     toast,
-    user?.participant_id
+    user?.participantId
   ]);
 
   return (
@@ -236,7 +236,7 @@ const Users = () => {
                 <Tr key={data.email}>
                   <Td>{data.email}</Td>
                   <Td>{data.name}</Td>
-                  <Td>{capitalize(data.user_role_type)}</Td>
+                  <Td>{capitalize(data.userRoleType)}</Td>
                   <Td>
                     <HStack align="center" spacing="2">
                       <Tooltip label='Reset Password' bg='white' color='black'>

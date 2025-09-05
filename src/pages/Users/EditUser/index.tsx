@@ -49,7 +49,7 @@ const EditUser = ({ data, onSave }: IModifyUserProps): JSX.Element => {
   } = useForm<IModifyUserValues & { confirm_password: string }>({
     defaultValues: {
       ...data,
-      participant_id: user.data?.participant_id
+      participant_id: user.data?.participantId
     },
     mode: 'onChange',
     resolver: zodResolver(participantUser.editUserSchema)
@@ -65,7 +65,7 @@ const EditUser = ({ data, onSave }: IModifyUserProps): JSX.Element => {
       values = {
         ...values,
         name: `${trim(values.first_name)} ${trim(values.last_name)}`,
-        participant_id: user.data?.participant_id as string
+        participant_id: user.data?.participantId as string
       }
       // perform api stuffs here
       start()
@@ -96,7 +96,7 @@ const EditUser = ({ data, onSave }: IModifyUserProps): JSX.Element => {
           complete()
         })
     },
-    [complete, data, onSave, start, toast, user.data?.participant_id]
+    [complete, data, onSave, start, toast, user.data?.participantId]
   )
 
   useEffect(() => {
@@ -135,7 +135,7 @@ const EditUser = ({ data, onSave }: IModifyUserProps): JSX.Element => {
         </FormControl>
         <FormControl>
           <FormLabel>Organization</FormLabel>
-          <Input type="text" value={user.data?.dfsp_code} isReadOnly />
+          <Input type="text" value={user.data?.participantName} isReadOnly />
         </FormControl>
       </HStack>
       <HStack align="flex-start" w="full" spacing="3">
@@ -147,13 +147,13 @@ const EditUser = ({ data, onSave }: IModifyUserProps): JSX.Element => {
           </Select>
           <FormErrorMessage>{errors.first_name?.message}</FormErrorMessage>
         </FormControl>
-        <FormControl isInvalid={!isEmpty(errors.user_role_type)}>
+        <FormControl isInvalid={!isEmpty(errors.userRoleType)}>
           <FormLabel>Roles</FormLabel>
-          <Select {...register('user_role_type')}>
+          <Select {...register('userRoleType')}>
             <option value="ADMIN">Admin</option>
             <option value="OPERATION">Operation</option>
           </Select>
-          <FormErrorMessage>{errors.user_role_type?.message}</FormErrorMessage>
+          <FormErrorMessage>{errors.userRoleType?.message}</FormErrorMessage>
         </FormControl>
       </HStack>
       <Button
