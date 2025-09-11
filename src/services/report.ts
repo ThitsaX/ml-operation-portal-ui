@@ -22,13 +22,13 @@ export const generateSettlementDetailReport = async (params: any) => {
 
   const accessToken = await generateAccessToken({
     method: 'POST',
-    uri: routes.generate_settlement_detail_report,
+    uri: routes.generateDetailReport,
     secret: auth?.secretKey as string
   });
 
   const { axios } = AxiosRequest(accessToken, auth?.accessKey);
   return axios
-    .post<any>(routes.generate_settlement_detail_report, null, {
+    .post<any>(routes.generateDetailReport, null, {
       params
     })
     .then((d) => {
@@ -117,13 +117,13 @@ export const generateSettlementReport = async (params: any) => {
   } = store.getState();
   const accessToken = await generateAccessToken({
     method: 'POST',
-    uri: routes.generate_settlement_report,
+    uri: routes.generateSettlementReport,
     secret: auth?.secretKey as string
   });
 
   const { axios } = AxiosRequest(accessToken, auth?.accessKey);
   return axios
-    .post<any>(routes.generate_settlement_report, null, { params })
+    .post<any>(routes.generateSettlementReport, null, { params })
     .then((d) => d.data)
     .catch((error: AxiosError<IApiErrorResponse>) => {
       const { code, message, ...rest } = axiosErrorHandler(error);
@@ -152,13 +152,13 @@ export const generateSettlementStatementReport = async (
 
   const accessToken = await generateAccessToken({
     method: 'POST',
-    uri: routes.generate_settlement_statement_report,
+    uri: routes.generateSettlementStatementReport,
     secret: user.auth?.secretKey as string
   });
 
   const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
   return axios
-    .post<any>(routes.generate_settlement_statement_report, null, {
+    .post<any>(routes.generateSettlementStatementReport, null, {
       params
     })
     .then((d) => {
@@ -226,16 +226,16 @@ export const getSettlementIds = async (
   /** Generate Access Token */
   const accessToken = await generateAccessToken({
     method: 'GET',
-    uri: routes.get_settlementIds,
+    uri: routes.getSettlementId,
     secret: user.auth?.secretKey as string
   });
 
   const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
   return axios
-    .get<IGetSettlementIds>(routes.get_settlementIds, {
+    .get<IGetSettlementIds>(routes.getSettlementId, {
       params: {
-        start_date: startDate,
-        end_date: endDate,
+        startDate: startDate,
+        endDate: endDate,
         timezoneOffset: tzOffSet
       }
     })

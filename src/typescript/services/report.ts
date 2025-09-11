@@ -1,8 +1,7 @@
 export interface IGetSettlementIds {
-  settlement_id_list: ISettlementId[]
+  settlementIdDataList: ISettlementId[]
 }
 
 export interface ISettlementId {
   settlementId: string
-  settlement_id: string
 }

@@ -14,14 +14,13 @@ import { Controller, useForm } from 'react-hook-form'
 import { ITimezoneOption } from "react-timezone-select";
 import { useSelector } from "react-redux";
 import { RootState } from "@store";
-import { useGetCurrencyList } from '@hooks/services/participant';
+import { useGetHubCurrency } from '@hooks/services';
 
 const settlementStatementReportHelper = new SettlementStatementReportHelper()
 const initialFileName = 'Settlement-Statement-Report'
 
 const SettlementStatementReport = () => {
   const { start, complete } = useLoadingContext();
-  const { data } = useGetCurrencyList();
   const toast = useToast();
   const [settlementModel, setSettlementModel] = useState<string>('');
   const [runButtonState, setRunButtonState] = useState(true);
@@ -30,6 +29,7 @@ const SettlementStatementReport = () => {
   // Redux
   const user = useGetUserState()
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
+  const { data: currencyList } = useGetHubCurrency();
 
   const onDownloadChangeHandler = (e: any) => {
     start()
@@ -138,14 +138,14 @@ const SettlementStatementReport = () => {
             />
             <FormErrorMessage>{errors.end_date?.message}</FormErrorMessage>
           </FormControl>
-          <FormControl isInvalid={!isEmpty(errors.currency)} isRequired>
+          <FormControl isInvalid={!isEmpty(errors.currency)}>
             <FormLabel>Currency</FormLabel>
             <Controller
               name="currency"
               control={control}
               render={({ field }) => (
                 <Select {...field} placeholder="Select Currency">
-                  {data?.map((item, index) => (
+                  {currencyList?.map((item, index) => (
                     <option key={index} value={item.currency}>
                       {item.currency}
                     </option>

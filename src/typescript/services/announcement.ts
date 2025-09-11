@@ -8,3 +8,10 @@ export interface AnnouncementInfo {
   detail: string | null
   date: string
 }
+
+export interface IGreetingMessage {
+  greetingId: string
+  greetingTitle: string
+  greetingDetail: string
+  createdDate: number
+}

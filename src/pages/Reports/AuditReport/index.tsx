@@ -49,8 +49,8 @@ const AuditReport = () => {
     );
 
     /* React Query */
-    const { data: madeByList } = useGetMadeByList();
-    const { data: actionNames } = useGetActionList();
+    const { data: userList } = useGetMadeByList();
+    const { data: actionList } = useGetActionList();
 
     /* Hook Form */
     const {
@@ -182,7 +182,7 @@ const AuditReport = () => {
                             name="action"
                             render={({ field }) => (
                                 <Select {...field} placeholder="All">
-                                    {actionNames?.map((item) => (
+                                    {actionList?.map((item) => (
                                         <option key={item.actionId} value={item.actionName}>
                                             {item.actionName}
                                         </option>
@@ -199,9 +199,9 @@ const AuditReport = () => {
                             name="userId"
                             render={({ field }) => (
                                 <Select {...field} placeholder="All">
-                                    {madeByList?.map((action) => (
-                                        <option key={action.userId} value={action.userId}>
-                                            {action.name}
+                                    {userList?.map((user) => (
+                                        <option key={user.userId} value={user.userId}>
+                                            {user.email}
                                         </option>
                                     ))}
                                 </Select>

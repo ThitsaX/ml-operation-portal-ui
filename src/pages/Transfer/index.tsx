@@ -37,7 +37,8 @@ import { ITransferValues } from '@typescript/form/transfer';
 import {
   useGetAllOtherParticipants,
   useGetAllIdTypes,
-  useGetAllTransferStates
+  useGetAllTransferStates,
+  useGetHubCurrency
 } from '@hooks/services';
 import { getAllTransfers } from '@services/transfer';
 import { IGetTransferData, IApiErrorResponse } from '@typescript/services';
@@ -73,6 +74,7 @@ const Transfer = () => {
   const participantRes = useGetAllOtherParticipants();
   const idTypeRes = useGetAllIdTypes();
   const tranStateRes = useGetAllTransferStates();
+  const { data: currencyList } = useGetHubCurrency();
 
   // State
   const [transferType, setTransferType] = useState<TransferType>('inbound');
@@ -211,7 +213,7 @@ const Transfer = () => {
         .tz(selectedTZString ? selectedTZString : currentTimeZone)
         .utc()
         .format();
-        values.timezone = timezone;
+      values.timezone = timezone;
 
       start();
       getAllTransfers(omitBy(values, isEmpty))
@@ -390,7 +392,7 @@ const Transfer = () => {
             <option value="custom">Custom Range</option>
           </Select>
           <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
-            <FormLabel fontSize="sm">Start Date</FormLabel>
+            {/* <FormLabel fontSize="sm">Start Date</FormLabel> */}
             {selectedTZString ?
               <Controller
                 control={control}
@@ -413,7 +415,7 @@ const Transfer = () => {
             <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
-            <FormLabel fontSize="sm">End Date</FormLabel>
+            {/* <FormLabel fontSize="sm">End Date</FormLabel> */}
             {selectedTZString ?
               <Controller
                 control={control}
@@ -439,39 +441,43 @@ const Transfer = () => {
         </Flex>
 
         <Flex flexDirection="column" flex={1} p="5" gap="7">
-          <Select
-            value={transferType}
-            onChange={(e) =>
-              onChangeTransferType(e.target.value as TransferType)
-            }>
-            <option value="inbound">Inbound</option>
-            <option value="outbound">Outbound</option>
-          </Select>
-
-          {/* Top payerFspID field */}
-          <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
-            {transferType === 'inbound' ? (
-              <Select placeholder="Payer FSP ID"  {...register('payerFspId')}>
-                {participantRes?.data?.participantInfoList?.map(
-                  (item, index) => {
-                    return (
-                      <option key={index} value={item.dfsp_code}>
-                        {item.dfsp_code}
-                      </option>
-                    );
-                  }
-                )}
-              </Select>
-            ) : (
-              <Input
-                type="input"
-                {...register('payerFspId')}
-                value={user.data?.participantName}
-                readOnly
-              />
-            )}
-            <FormErrorMessage>{errors.payerFspId?.message}</FormErrorMessage>
+          <FormControl isInvalid={!isEmpty(errors.transferStateId)}>
+            <Select
+              placeholder="Transfer State"
+              {...register('transferStateId')}>
+              {tranStateRes?.data?.transferStateInfoList.map((item, index) => {
+                return (
+                  <option key={index} value={item.transferStateId}>
+                    {item.transferState}
+                  </option>
+                );
+              })}
+            </Select>
+            <FormErrorMessage>
+              {errors?.transferStateId?.message}
+            </FormErrorMessage>
           </FormControl>
+
+          <FormControl isInvalid={!isEmpty(errors.currencyId)}>
+            <Select placeholder="Select Currency" {...register('currencyId')}>
+              {currencyList?.map((item, index) => (
+                <option key={index} value={item.currency}>
+                  {item.currency}
+                </option>
+              ))}
+            </Select>
+            <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
+          </FormControl>
+
+
+          {/* <FormControl isInvalid={!isEmpty(errors.currencyId)}>
+            <Input
+              type="input"
+              placeholder="Currency"
+              {...register('currencyId')}
+            />
+            <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
+          </FormControl> */}
 
           {/* Bottom payeeFspID field */}
           <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
@@ -497,33 +503,41 @@ const Transfer = () => {
             )}
             <FormErrorMessage>{errors.payeeFspId?.message}</FormErrorMessage>
           </FormControl>
-          <FormControl isInvalid={!isEmpty(errors.currencyId)}>
-            <Input
-              type="input"
-              placeholder="Currency"
-              {...register('currencyId')}
-            />
-            <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
-          </FormControl>
-          <FormControl isInvalid={!isEmpty(errors.transferStateId)}>
-            <Select
-              placeholder="Transfer State"
-              {...register('transferStateId')}>
-              {tranStateRes?.data?.transferStateInfoList.map((item, index) => {
-                return (
-                  <option key={index} value={item.transferStateId}>
-                    {item.transferState}
-                  </option>
-                );
-              })}
-            </Select>
-            <FormErrorMessage>
-              {errors?.transferStateId?.message}
-            </FormErrorMessage>
-          </FormControl>
         </Flex>
 
         <Flex flexDirection="column" flex={1} p="5" gap="7">
+          <Select
+            value={transferType}
+            onChange={(e) =>
+              onChangeTransferType(e.target.value as TransferType)
+            }>
+            <option value="inbound">Inbound</option>
+            <option value="outbound">Outbound</option>
+          </Select>
+          {/* Top payerFspID field */}
+          <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
+            {transferType === 'inbound' ? (
+              <Select placeholder="Payer FSP ID"  {...register('payerFspId')}>
+                {participantRes?.data?.participantInfoList?.map(
+                  (item, index) => {
+                    return (
+                      <option key={index} value={item.dfsp_code}>
+                        {item.dfsp_code}
+                      </option>
+                    );
+                  }
+                )}
+              </Select>
+            ) : (
+              <Input
+                type="input"
+                {...register('payerFspId')}
+                value={user.data?.participantName}
+                readOnly
+              />
+            )}
+            <FormErrorMessage>{errors.payerFspId?.message}</FormErrorMessage>
+          </FormControl>
           <FormControl isInvalid={!isEmpty(errors.payerIdentifierTypeId)}>
             <Select
               placeholder="Payer ID Type"
