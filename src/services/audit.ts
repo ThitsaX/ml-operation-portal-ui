@@ -58,12 +58,12 @@ export const getMadeByList = async () => {
   })
   const { axios } = AxiosRequest(accessToken, accessKey)
   return axios
-    .get<{ madeByList: IGetMadeBy[] }>(uri, {
+    .get<{ userList: IGetMadeBy[] }>(uri, {
       params: {
         participantId: data?.participantId
       }
     })
-    .then((d) => d.data.madeByList)
+    .then((d) => d.data.userList)
     .catch((error: AxiosError<IApiErrorResponse>) => {
       const { code, message, ...rest } = axiosErrorHandler(error)
       if (code && message) {
@@ -92,9 +92,9 @@ export const getActionList = async () => {
   })
   const { axios } = AxiosRequest(accessToken, accessKey)
   return axios
-    .get<{ actionNames: IGetAction[] }>(uri, {
+    .get<{ actionList: IGetAction[] }>(uri, {
     })
-    .then((d) => d.data.actionNames)
+    .then((d) => d.data.actionList)
     .catch((error: AxiosError<IApiErrorResponse>) => {
       const { code, message, ...rest } = axiosErrorHandler(error)
       if (code && message) {

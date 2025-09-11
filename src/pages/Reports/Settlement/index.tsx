@@ -126,7 +126,7 @@ const Settlement = () => {
 
     getSettlementIds(user, utcStartDate, utcEndDate, tzOffSet)
       .then((data: IGetSettlementIds) => {
-        if (data.settlement_id_list?.length === 0) {
+        if (data.settlementIdDataList?.length === 0) {
           toast({
             position: 'top',
             description: 'No data found',
@@ -138,7 +138,7 @@ const Settlement = () => {
 
         let options: any[] = [];
 
-        data.settlement_id_list.map((item) => {
+        data.settlementIdDataList.map((item) => {
           options.push({ value: item.settlementId, label: item.settlementId });
         });
 
@@ -232,7 +232,7 @@ const Settlement = () => {
           </FormControl>
 
           <FormControl
-            isInvalid={!isEmpty(errors.settlement_id)}
+            isInvalid={!isEmpty(errors.settlementId)}
             pt="3"
             visibility={
               settlementIdOptions?.length == 0 ? 'hidden' : 'visible'

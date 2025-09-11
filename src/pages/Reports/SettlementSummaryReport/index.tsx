@@ -74,7 +74,7 @@ const SettlementSummaryReport = () => {
 
     generateSettlementDetailReport({
       settlement_id: selectedSettlementId?.value,
-      fspid: user.data?.participantName,
+      fspid: getValues().fspid,
       file_type: fileType,
       timezoneOffset: tzOffSet
     })
@@ -117,7 +117,7 @@ const SettlementSummaryReport = () => {
 
     getSettlementIds(user, utcStartDate, utcEndDate, tzOffSet)
       .then((data: IGetSettlementIds) => {
-        if (data.settlement_id_list?.length === 0) {
+        if (data.settlementIdDataList?.length === 0) {
           toast({
             position: 'top',
             description: 'No data found',
@@ -129,7 +129,7 @@ const SettlementSummaryReport = () => {
 
         let options: any[] = [];
 
-        data.settlement_id_list.map((item) => {
+        data.settlementIdDataList.map((item) => {
           options.push({ value: item.settlementId, label: item.settlementId });
         });
 
@@ -154,11 +154,20 @@ const SettlementSummaryReport = () => {
       <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" pb="3">
         Settlement Summary Report
       </Heading>
-      <Stack borderWidth="1px" borderRadius='lg' height="full" p="4">
-        <HStack alignItems={'flex-end'} spacing={4}>
-          <FormControl pb="1">
-            <FormLabel>DFSP ID:</FormLabel>
-            <Input value={user.data?.participantName} readOnly={true} />
+      <Stack borderWidth="1px" borderRadius="lg" height="full" p="2" mb={4}>
+        <HStack alignItems={'flex-end'} p={2} spacing={4}>
+          <FormControl pb="1" isInvalid={!isEmpty(errors.fspid)}>
+            <FormLabel>DFSP Name</FormLabel>
+            <Controller
+              name="fspid"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                />
+              )}
+            />
+            <FormErrorMessage>{errors.fspid?.message}</FormErrorMessage>
           </FormControl>
 
           <FormControl
@@ -218,19 +227,20 @@ const SettlementSummaryReport = () => {
           </FormControl>
 
         </HStack>
-        <HStack justifyContent='flex-end' p={2}>
+      </Stack>
+      <Stack borderWidth="1px" borderRadius="lg" p={4} height="full">
+        <HStack alignItems={'flex-start'} p={2} spacing={4}>
 
           <FormControl
             width={{ base: '200px', md: '250px' }}
-            isInvalid={!isEmpty(errors.settlement_id)}
-            isRequired
-          >
-            <FormLabel>Settlement Id</FormLabel>
+            isInvalid={!isEmpty(errors.settlement_id)}>
+            <FormLabel>Settlement ID:</FormLabel>
             <Controller
               name="settlement_id"
               control={control}
               render={({ field }) => (
-                <Select {...field} placeholder="Select Settlement ID">
+                <Select {...field} placeholder="Select Settlement ID"
+                  onChange={field.onChange} >
                   {settlementIdOptions.map((opt, index) => (
                     <option key={index} value={opt.value}>
                       {opt.label}
@@ -240,6 +250,8 @@ const SettlementSummaryReport = () => {
               )}
             />
           </FormControl>
+        </HStack>
+        <HStack justifyContent='flex-end' p={2}>
           <Select
             placeholder="Choose Format"
             value={settlementModel}
@@ -253,6 +265,7 @@ const SettlementSummaryReport = () => {
             Download
           </Button>
         </HStack>
+
       </Stack>
     </Box>
   );

@@ -60,7 +60,7 @@ const SettlementDetailReport = () => {
     resolver: zodResolver(settlementDetailReportHelper.schema),
     defaultValues: {
       start_date: moment().format('yyyy-MM-DD'),
-      end_date: moment().format('yyyy-MM-DD')
+      end_date: moment().format('yyyy-MM-DD'),
     },
     mode: 'onChange'
   });
@@ -69,17 +69,18 @@ const SettlementDetailReport = () => {
     start();
     setRunButtonState(false);
 
-    const fileType = e.target.value;
+    const formData = getValues();
+    const fileType = formData.file_type;
 
     const selectedTZString = selectedTimezone.value;
     let tzOffSet: string = selectedTimezone.offset === 0
       ? "0000"
       : moment().tz(selectedTZString).format('ZZ').replace('+', '');
-
+    console.log("Values for the selected", getValues());
     generateSettlementDetailReport({
-      settlement_id: selectedSettlementId?.value,
-      fspid: user.data?.participantName,
-      file_type: fileType,
+      settlementId: selectedSettlementId?.value,
+      fspid: getValues().fspid,
+      fileType: fileType,
       timezoneOffset: tzOffSet
     })
       .then((res: any) => {
@@ -120,7 +121,7 @@ const SettlementDetailReport = () => {
 
     getSettlementIds(user, utcStartDate, utcEndDate, tzOffSet)
       .then((data: IGetSettlementIds) => {
-        if (data.settlement_id_list?.length === 0) {
+        if (data.settlementIdDataList?.length === 0) {
           toast({
             position: 'top',
             description: 'No data found',
@@ -132,7 +133,7 @@ const SettlementDetailReport = () => {
 
         let options: any[] = [];
 
-        data.settlement_id_list.map((item) => {
+        data.settlementIdDataList.map((item) => {
           options.push({ value: item.settlementId, label: item.settlementId });
         });
 
@@ -157,12 +158,21 @@ const SettlementDetailReport = () => {
       <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" pb="3">
         Settlement Detail Report
       </Heading>
-      <Stack borderWidth="1px" borderRadius="lg" height="full" p="2">
-        <HStack alignItems={'flex-end'} p={2} spacing={4}>
+      <Stack borderWidth="1px" borderRadius="lg" height="full" p="2" mb={4}>
+        <HStack alignItems={'flex-start'} p={2} spacing={8}>
 
-          <FormControl pb="1">
-            <FormLabel>DFSP ID:</FormLabel>
-            <Input value={user.data?.participantName} readOnly={true} />
+          <FormControl pb="1" isInvalid={!isEmpty(errors.fspid)}>
+            <FormLabel>DFSP Name</FormLabel>
+            <Controller
+              name="fspid"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                />
+              )}
+            />
+            <FormErrorMessage>{errors.fspid?.message}</FormErrorMessage>
           </FormControl>
 
           <FormControl
@@ -217,27 +227,28 @@ const SettlementDetailReport = () => {
           <FormControl isInvalid={!isEmpty(errors.fspid)} textAlign="right">
             <Button onClick={handleSubmit(onSearchClick)} isDisabled={!isValid}
               colorScheme='blue' gap="2"
-              size='md'>
+              size='md'
+              mt="30px">
               <FaSearch /> Search
             </Button>
           </FormControl>
 
         </HStack>
       </Stack>
-      <Stack borderWidth="1px" borderRadius="lg" height="full" p="2">
+      <Stack borderWidth="1px" borderRadius="lg" p={4} height="full">
         <HStack alignItems={'flex-start'} p={2} spacing={4}>
 
           <FormControl
             width={{ base: '200px', md: '250px' }}
-            isInvalid={!isEmpty(errors.fspid)}
-            isRequired
-          >
-            <FormLabel>Settlement Id</FormLabel>
+            isInvalid={!isEmpty(errors.fspid)}>
+            <FormLabel>Settlement ID</FormLabel>
             <Controller
-              name="fspid"
+              name="settlementId"
               control={control}
               render={({ field }) => (
-                <Select {...field} placeholder="Select Settlement ID">
+                <Select {...field}
+                  onChange={(e) => field.onChange(e.target.value)}  // ✅ make sure only value goes into form
+                  value={field.value || ""} placeholder="Select Settlement ID">
                   {settlementIdOptions.map((opt, index) => (
                     <option key={index} value={opt.value}>
                       {opt.label}

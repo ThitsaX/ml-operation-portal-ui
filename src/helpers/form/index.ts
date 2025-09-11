@@ -143,7 +143,7 @@ export class SettlementDetailReportHelper extends FormHelper {
         end_date: z.coerce.date({
           required_error: 'Required'
         }),
-        settlement_id: z.string().optional(),
+        settlementId: z.string().optional(),
         fspid: z.string().optional(),
         file_type: z.string().optional(),
         time_zone_offset: z.string().optional()
@@ -165,7 +165,7 @@ export class SettlementSummaryReportHelper extends FormHelper {
         end_date: z.coerce.date({
           required_error: 'Required'
         }),
-        settlement_id: z.string().optional(),
+        settlementId: z.string().optional(),
         fspid: z.string().optional(),
         file_type: z.string().optional(),
         time_zone_offset: z.string().optional()
@@ -240,8 +240,19 @@ export class SettlementBankReportHelper extends FormHelper {
   get schema() {
     return z
       .object({
-        settlementId: z.coerce.date({ required_error: 'Required' }),
+        start_date: z.coerce.date({
+          required_error: 'Required'
+        }),
+        end_date: z.coerce.date({
+          required_error: 'Required'
+        }),
+        currency: z.string().optional(),
+        settlementId: z.string().optional(),
       })
+      .refine((data) => data.start_date < data.end_date, {
+        message: 'End Date must not earlier than Start Date',
+        path: ['end_date']
+      });
   }
 }
 
@@ -283,10 +294,8 @@ export class AuditHelper extends FormHelper {
   get schema() {
     return z
       .object({
-        fromDate: z.number({ required_error: 'Required' }),
-        toDate: z.number({ required_error: 'Required' }),
-        userId: z.string().optional(),
-        actionName: z.string().optional(),
+        fromDate: z.string({ required_error: 'Required' }),
+        toDate: z.string({ required_error: 'Required' }),
       })
       .refine((value) => value.fromDate < value.toDate, {
         message: 'Should be less than to date',

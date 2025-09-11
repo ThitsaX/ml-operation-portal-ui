@@ -20,31 +20,53 @@ import {
   IconButton,
   Text,
   Select,
-  Icon
+  Icon,
 } from '@chakra-ui/react';
 import {
   TfiAngleDoubleLeft,
   TfiAngleDoubleRight,
   TfiAngleLeft,
-  TfiAngleRight
+  TfiAngleRight,
 } from 'react-icons/tfi';
 import { useLoadingContext } from '@contexts/hooks';
 import { getRequestErrorMessage } from '@helpers/errors';
 import { AuditHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useGetActionList, useGetAllAudit, useGetMadeByList } from '@hooks/services';
+import { useGetAllAudit } from '@hooks/services';
 import { useGetUserState } from '@store/hooks';
-import { IGetAuditByParticipantValues } from '@typescript/form';
-import { IGetAuditByParticipant } from '@typescript/form';
+import { IGetAuditByParticipantValues, IGetAuditByParticipant } from '@typescript/form';
 import moment from 'moment';
 import { useCallback, useEffect, useState, useMemo } from 'react';
-import { usePagination, useSortBy, useTable } from 'react-table';
+import {
+  useGlobalFilter,
+  usePagination,
+  useSortBy,
+  useTable,
+} from 'react-table';
 import { Controller, useForm } from 'react-hook-form';
 import { isNumber, isEmpty } from 'lodash-es';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { ITimezoneOption } from 'react-timezone-select';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
+import { InputGroup, InputLeftElement } from '@chakra-ui/react';
+import { TbSearch } from "react-icons/tb";
+import { FaSearch } from "react-icons/fa";
+
+const GlobalFilter = ({ globalFilter, setGlobalFilter }: any) => (
+  <InputGroup w="250px">
+    <InputLeftElement pointerEvents="none">
+      <TbSearch color="gray.400" />
+    </InputLeftElement>
+    <Input
+      placeholder="Search..."
+      value={globalFilter || ''}
+      onChange={(e) => setGlobalFilter(e.target.value || undefined)}
+      variant="flushed"
+      focusBorderColor='blue.400'
+    />
+  </InputGroup>
+);
 
 const auditHelper = new AuditHelper();
 
@@ -52,7 +74,7 @@ const Audit = () => {
   const toast = useToast();
   const { start, complete } = useLoadingContext();
   const [tableData, setTableData] = useState<IGetAuditByParticipant[]>([]);
-  const [pageNumber, setPageNumber] = useState<String>('1')
+  const [pageNumber, setPageNumber] = useState<String>('1');
 
   /* Redux */
   const { data: user } = useGetUserState();
@@ -61,15 +83,10 @@ const Audit = () => {
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(
     (s) => s.app.selectedTimezone
   );
-  
-  const selectedTZString = useMemo(
-    () => (selectedTimezone.value),
-    [selectedTimezone]
-  );
+
+  const selectedTZString = useMemo(() => selectedTimezone.value, [selectedTimezone]);
 
   /* React Query */
-  const { data: madeByList } = useGetMadeByList();
-  const { data: actionNames } = useGetActionList();
 
   const { data, mutateAsync } = useGetAllAudit();
 
@@ -79,34 +96,33 @@ const Audit = () => {
     }
   }, [data]);
 
-
-
   /* Form */
   const {
     control,
     handleSubmit,
     trigger,
-    formState: { isValid, errors, defaultValues },
-    getValues,
-    setValue,
-    reset
+    formState: { isValid, errors },
   } = useForm<IGetAuditByParticipantValues>({
     defaultValues: {
-      participantId: user?.participantId,
-      fromDate: moment().tz(selectedTZString).startOf('d').unix(),
-      toDate: moment().tz(selectedTZString).endOf('d').unix(),
-      userId: '',
-      actionName: '',
+      fromDate: moment().format('yyyy-MM-DD'),
+      toDate: moment().format('yyyy-MM-DD'),
     },
     resolver: zodResolver(auditHelper.schema),
-    mode: 'onChange'
+    mode: 'onChange',
   });
 
   const onSearchHandler = useCallback(
     (values: IGetAuditByParticipantValues) => {
+
+      const startDate = values.fromDate;
+      const endDate = values.toDate;
+
+      let fromDate = moment.utc(startDate).startOf('day').format().toString();
+      const toDate = moment.utc(endDate).endOf('day').format().toString();
+
       const payload = {
-        ...values,
-        participantId: values.participantId || user?.participantId || '',
+        fromDate,
+        toDate,
       };
 
       start();
@@ -117,7 +133,7 @@ const Audit = () => {
             description: getRequestErrorMessage(err),
             status: 'error',
             isClosable: true,
-            duration: 3000
+            duration: 3000,
           });
         })
         .finally(() => complete());
@@ -125,23 +141,14 @@ const Audit = () => {
     [complete, mutateAsync, start, toast, user?.participantId]
   );
 
-  // Pagination start here
+  // Pagination + Search + Sort
   const columns = useMemo<
     { Header: string; accessor: keyof IGetAuditByParticipant }[]
   >(
     () => [
-      {
-        Header: 'DATE',
-        accessor: 'actionDate'
-      },
-      {
-        Header: 'ACTION',
-        accessor: 'actionName'
-      },
-      {
-        Header: 'MADE BY',
-        accessor: 'userName'
-      }
+      { Header: 'DATE', accessor: 'date' },
+      { Header: 'ACTION', accessor: 'action' },
+      { Header: 'MADE BY', accessor: 'madeBy' },
     ],
     []
   );
@@ -157,143 +164,88 @@ const Audit = () => {
     gotoPage,
     nextPage,
     previousPage,
-    state: { pageIndex }
+    state: { pageIndex, globalFilter },
+    setGlobalFilter,
   } = useTable(
     {
       columns,
       data: tableData,
-      initialState: {
-        pageIndex: 0,
-        pageSize: 10
-      }
+      initialState: { pageIndex: 0, pageSize: 10 },
     },
+    useGlobalFilter,
     useSortBy,
     usePagination
   );
 
   const handlePageValidation = (value: string) => {
     if (Number(value) > pageOptions.length) {
-      setPageNumber(pageNumber)
+      setPageNumber(pageNumber);
+    } else if (value.startsWith('0')) {
+      setPageNumber('');
+    } else {
+      setPageNumber(value);
     }
-    else if (value.startsWith('0')) {
-      setPageNumber('')
-    }
-    else {
-      setPageNumber(value)
-    }
-  }
+  };
 
   return (
     <VStack align="flex-start" w="full" h="full" p="3" spacing={4}>
       <VStack align="flex-start">
         <Heading fontSize="3xl">Audit</Heading>
       </VStack>
-      <VStack align="flex-start" alignSelf="stretch" spacing="4" gap={4} w="full">
-        <HStack alignItems="flex-start" alignSelf="stretch">
-          {/* Hidden participantId to ensure it's included in submission */}
 
-          <FormControl isInvalid={!isEmpty(errors.fromDate)}>
-            <FormLabel>From</FormLabel>
-            <Controller
-              control={control}
-              render={({ field: { value, onChange } }) => {
-                return (
-                  <Input
-                    type="date"
-                    value={moment
-                      .unix(value)
-                      .tz(selectedTZString)
-                      .format('YYYY-MM-DD')}
-                    onChange={(event) => {
-                      const date = moment(event.target.value, 'YYYY-MM-DD')
-                        .startOf('day')
-                        .unix();
-                      onChange(date);
-                      trigger('toDate');
-                    }}
-                  />
-                );
-              }}
-              name="fromDate"
-            />
-            <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
-          </FormControl>
-          <FormControl isInvalid={!isEmpty(errors.toDate)}>
-            <FormLabel>To</FormLabel>
-            <Controller
-              control={control}
-              render={({ field: { value, onChange } }) => {
-                return (
-                  <Input
-                    type="date"
-                    value={moment
-                      .unix(value)
-                      .tz(selectedTZString)
-                      .format('YYYY-MM-DD')}
-                    onChange={(event) => {
-                      const date = moment(event.target.value, 'YYYY-MM-DD')
-                        .endOf('day')
-                        .unix();
-                      onChange(date);
-                      trigger('fromDate');
-                    }}
-                  />
-                );
-              }}
-              name="toDate"
-            />
-            <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
-          </FormControl>
-          <FormControl>
-            <FormLabel>Action</FormLabel>
-            <Controller
-              control={control}
-              name="actionName"
-              render={({ field }) => (
-                <Select {...field} placeholder="All">
-                  {actionNames?.map((item) => (
-                    <option key={item.actionId} value={item.actionName}>
-                      {item.actionName}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            />
-          </FormControl>
+      {/* Search Filters */}
+      <HStack alignItems="flex-end" alignSelf="stretch" spacing={4}>
+        <FormControl isInvalid={!isEmpty(errors.fromDate)}>
+          <FormLabel>From</FormLabel>
+          <Controller
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <Input
+                type="date"
+                value={value}
+                onChange={(e) => {
+                  onChange(e);
+                  trigger('fromDate');
+                }}
+              />
+            )}
+            name="fromDate"
+          />
+          <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
+        </FormControl>
 
-          <FormControl>
-            <FormLabel>MadeBy</FormLabel>
-            <Controller
-              control={control}
-              name="userId"
-              render={({ field }) => (
-                <Select {...field} placeholder="All">
-                  {madeByList?.map((action) => (
-                    <option key={action.userId} value={action.userId}>
-                      {action.name}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            />
-          </FormControl>
-        </HStack>
-        <Box w="full" display="flex" justifyContent="flex-end">
-          <Button
-            colorScheme="brand"
-            isDisabled={!isValid}
-            onClick={handleSubmit(onSearchHandler)}>
-            Search
+        <FormControl isInvalid={!isEmpty(errors.toDate)}>
+          <FormLabel>To</FormLabel>
+          <Controller
+            control={control}
+            render={({ field: { value, onChange } }) => (
+              <Input
+                type="date"
+                value={value}
+                onChange={(e) => {
+                  onChange(e);
+                  trigger('toDate');
+                }}
+              />
+            )}
+            name="toDate"
+          />
+          <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
+        </FormControl>
+
+        <FormControl isInvalid={!isEmpty(errors.fromDate)} textAlign="right">
+          <Button onClick={handleSubmit(onSearchHandler)} isDisabled={!isValid}
+            colorScheme='blue' gap="2"
+            size='md'>
+            <FaSearch /> Search
           </Button>
-        </Box>
-      </VStack>
+        </FormControl>
+      </HStack>
 
-      <TableContainer
-        w="full"
-        borderWidth={1}
-        borderBottom={0}
-        borderColor="gray.100"
-        rounded="lg">
+      <GlobalFilter globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+
+      {/* Table */}
+      <TableContainer w="full" borderWidth={1} borderBottom={0} borderColor="gray.100" rounded="lg">
         <Table variant="simple">
           <Thead bg="gray.100">
             {headerGroups.map((headerGroup) => (
@@ -301,17 +253,13 @@ const Audit = () => {
                 {headerGroup.headers.map((column) => (
                   <Th
                     {...column.getHeaderProps(
-                      column.disableSortBy
-                        ? undefined
-                        : column.getSortByToggleProps()
-                    )}>
+                      column.disableSortBy ? undefined : column.getSortByToggleProps()
+                    )}
+                  >
                     <HStack align="center" spacing="2" flex={1}>
                       <Text flex={1}>{column.render('Header')}</Text>
-                      {column.disableSortBy ? null : (
-                        <VStack
-                          display="inline-flex"
-                          align="center"
-                          spacing={0}>
+                      {!column.disableSortBy && (
+                        <VStack display="inline-flex" align="center" spacing={0}>
                           <Icon
                             as={IoChevronUp}
                             size={12}
@@ -342,22 +290,16 @@ const Audit = () => {
               </Tr>
             ))}
           </Thead>
+
           <Tbody>
-            {page.map((row, index) => {
+            {page.map((row) => {
               prepareRow(row);
               return (
-                <Tr
-                  fontSize="sm"
-                  cursor="pointer"
-                  _hover={{ bg: 'muted.50' }}
-                  {...row.getRowProps()}>
+                <Tr fontSize="sm" cursor="pointer" _hover={{ bg: 'muted.50' }} {...row.getRowProps()}>
                   {row.cells.map((cell) => (
                     <Td {...cell.getCellProps()}>
                       {isNumber(cell.value)
-                        ? moment
-                          .unix(cell.value)
-                          .tz(selectedTZString)
-                          .format('DD/MM/YYYY hh:mm:ss A')
+                        ? moment.unix(cell.value).tz(selectedTZString).format('DD/MM/YYYY hh:mm:ss A')
                         : cell.value}
                     </Td>
                   ))}
@@ -366,6 +308,8 @@ const Audit = () => {
             })}
           </Tbody>
         </Table>
+
+        {/* Pagination */}
         <HStack px="6" py="2">
           <HStack flex={2}>
             <IconButton
@@ -397,30 +341,26 @@ const Audit = () => {
               onClick={() => gotoPage(pageCount - 1)}
             />
           </HStack>
+
           <Text>
-            Page{' '}
-            <strong>
-              {pageIndex + 1} of {pageOptions.length || 1}
-            </strong>
+            Page <strong>{pageIndex + 1} of {pageOptions.length || 1}</strong>
           </Text>
-          <Box h="6">
-            <Divider orientation="vertical" />
-          </Box>
+
+          <Box h="6"><Divider orientation="vertical" /></Box>
+
           <HStack>
-            <Text> Go to page : </Text>
+            <Text>Go to page :</Text>
             <Input
               value={pageNumber ? Number(pageNumber) : ''}
               textAlign="center"
               w="14"
               type="number"
-              min={pageIndex + 1}
+              min={1}
               max={pageOptions.length}
               onChange={(e) => {
-                handlePageValidation(e.target.value)
-                const pageNumber = e.target.value
-                  ? Number(e.target.value) - 1
-                  : 0;
-                gotoPage(pageNumber);
+                handlePageValidation(e.target.value);
+                const pageNum = e.target.value ? Number(e.target.value) - 1 : 0;
+                gotoPage(pageNum);
               }}
             />
           </HStack>

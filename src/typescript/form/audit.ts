@@ -1,9 +1,6 @@
 export interface IGetAuditByParticipantValues {
-  fromDate: number;
-  toDate: number;
-  participantId: string;
-  actionName: string;
-  userId: string;
+  fromDate: string;
+  toDate: string;
 }
 
 export interface IGetAuditReport {
@@ -17,7 +14,7 @@ export interface IGetAuditReport {
 }
 
 export interface IGetAuditByParticipant {
-  userName: string;
-  actionName: string;
-  actionDate: number;
+  date: string;
+  action: string;
+  madeBy: number;
 }

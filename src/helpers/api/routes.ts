@@ -1,7 +1,9 @@
+
 export const publicRoutes = {
   login: '/public/loginUserAccount',
 
-  get_all_announcement: '/public/getAnnouncements'
+  get_all_announcement: '/public/getAnnouncements',
+  getGreetingMessages: '/public/getGeetingMessages',
 };
 
 export const privateRoutes = {
@@ -14,12 +16,12 @@ export const privateRoutes = {
   modify_participant: '/secured/modify_participant',
   get_all_other_participants: '/secured/getAllOtherParticipants',
 
-  get_settlementIds: '/secured/get_settlement_id',
-  generate_settlement_detail_report: '/secured/generate_detail_report',
+  getSettlementId: '/secured/getSettlementId',
+  generateDetailReport: '/secured/generateDetailReport',
   generateAuditReport: '/secured/generateAuditReport',
   generateSettlementAuditReport: '/secured/generateSettlementAuditReport',
-  generate_settlement_report: '/secured/generate_settlement_report',
-  generate_settlement_statement_report: '/secured/generate_statement_report',
+  generateSettlementReport: '/secured/generateSettlementReport',
+  generateSettlementStatementReport: '/secured/generateSettlementStatementReport',
   get_all_participant_users: '/secured/get_all_participant_users',
   generate_fee_report: '/secured/generate_fee_report',
 
@@ -42,6 +44,7 @@ export const privateRoutes = {
   createContact: '/secured/createContact',
   createLiquidityProfile: '/secured/createLiquidityProfile',
   getParticipantCurrency: '/secured/getParticipantCurrency',
+  getHubCurrency: '/secured/getHubCurrency',
 
   removeLiquidityProfile: '/secured/removeLiquidityProfile',
   removeContact: '/secured/removeContact',
@@ -53,8 +56,8 @@ export const privateRoutes = {
   createApprovalRequest: '/secured/createApprovalRequest',
   modifyApprovalAction: '/secured/modifyApprovalAction',
 
-  getActionList: '/secured/getActionList',
-  getMadeByList: '/secured/getMadeByList',
+  getActionList: '/secured/getActionListByUser',
+  getMadeByList: '/secured/getParticipantUserListByParticipant',
   getAuditList: '/secured/getAuditList',
   getParticipantList: '/secured/getParticipantList',
   getParticipantContactList: '/secured/getParticipantContactList',

@@ -299,6 +299,37 @@ export const getCurrencyList = async () => {
     })
 }
 
+export const getHubCurrency = async () => {
+  const {
+    user: { auth, data }
+  } = store.getState()
+
+  const uri = routes.getHubCurrency
+  const accessKey = auth?.accessKey as string
+  const secretKey = auth?.secretKey as string
+  const accessToken = await generateAccessToken({
+    method: 'GET',
+    uri,
+    secret: secretKey
+  })
+  const { axios } = AxiosRequest(accessToken, accessKey)
+  return axios
+    .get<{ currencyInfoList: ICurrency[] }>(uri, {
+    })
+    .then((d) => d.data.currencyInfoList)
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error)
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        }
+      }
+      throw rest
+    })
+}
+
 export const getParticipantProfile = async () => {
   const {
     user: { auth, data }

@@ -1,6 +1,6 @@
 import {
   getAllParticipantUsers, getContactList, getParticipantProfile,
-  getCurrencyList, getLiquidityProfileList, getParticipantList
+  getCurrencyList, getHubCurrency, getLiquidityProfileList, getParticipantList
 } from '@services/participant'
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
 import {
@@ -28,6 +28,17 @@ export const useGetCurrencyList = (
   useQuery<ICurrency[], IApiErrorResponse>({
     queryKey: ['getCurrencyList'],
     queryFn: getCurrencyList,
+    ...options
+  })
+
+export const useGetHubCurrency = (
+  options?: UseQueryOptions<ICurrency[],
+    IApiErrorResponse
+  >
+) =>
+  useQuery<ICurrency[], IApiErrorResponse>({
+    queryKey: ['getHubCurrency'],
+    queryFn: getHubCurrency,
     ...options
   })
 
@@ -71,7 +82,7 @@ export const useGetParticipantList = (
 ) =>
   useQuery<IParticipantProfile[], IApiErrorResponse>({
     queryKey: ['getParticipantList'],
-    queryFn: getParticipantList,  
+    queryFn: getParticipantList,
     ...options
   })
 
