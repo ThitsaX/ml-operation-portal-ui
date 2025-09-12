@@ -1,15 +1,34 @@
 import { type UserStatus, type RoleType } from '@typescript/form';
 
 export interface IParticipantUser {
-  participant_user_id: string;
+  userId: string;
   name: string;
   email: string;
-  first_name: string;
-  last_name: string;
-  job_title: string;
+  firstName: string;
+  lastName: string;
+  roleList: [string];
   status: UserStatus;
-  userRoleType: RoleType;
-  created_date: number;
+  createdDate: number;
+}
+
+export interface IUserRoleList {
+  roleList: IParticipantUserRole[];
+}
+
+export interface IParticipantUserRole {
+  roleId: string,
+  name: string,
+  active: boolean
+}
+
+export interface IParticipantOrganizationList {
+  participantInfoList: IParticipantOrganization[];
+}
+
+export interface IParticipantOrganization {
+  participantId: string,
+  participantName: string,
+  participantDescription: string
 }
 
 export interface IGetAllOtherParticipant {

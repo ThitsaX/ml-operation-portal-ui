@@ -61,49 +61,9 @@ import { Ranges } from '@typescript/pages';
 import { IFinalizeSettlement } from '@typescript/services';
 import { usePagination, useSortBy, useTable, Row, Column } from 'react-table';
 import { useGetCurrencyList } from '@hooks/services/participant';
+import { getFinalizeSettlementList } from '@services/settlements';
 
 const finalizeSettlementHelper = new FinalizeSettlementHelper();
-
-const sampleSettlementFinalizeData = [
-    {
-        settlementId: 'SETT-20250804-001',
-        windowId: ['WIN-20250804-001', '2'],
-        state: 'Completed',
-        settlementCreatedDate: '2025-08-04T10:30:00Z',
-        settlementFinalizeDate: '2025-08-04T12:00:00Z',
-        details: [
-            { dfsp: 'dfsp1', currency: 'USD', debit: 100, credit: null },
-            { dfsp: 'dfsp2', currency: 'USD', debit: null, credit: 100 },
-            { dfsp: 'dfsp1', currency: 'THB', debit: 5000, credit: null },
-            { dfsp: 'dfsp2', currency: 'THB', debit: null, credit: 5000 },
-        ]
-    },
-    {
-        settlementId: 'SETT-20250804-002',
-        windowId: ['WIN-20250804-002'],
-        state: 'Pending',
-        settlementCreatedDate: '2025-08-04T11:00:00Z',
-        settlementFinalizeDate: '2025-08-04T13:30:00Z',
-        details: []
-    },
-    {
-        settlementId: 'SETT-20250804-003',
-        windowId: ['WIN-20250804-003'],
-        state: 'Failed',
-        settlementCreatedDate: '2025-08-04T09:00:00Z',
-        settlementFinalizeDate: '2025-08-04T10:15:00Z',
-        details: []
-    },
-    {
-        settlementId: 'SETT-20250804-004',
-        windowId: ['WIN-20250804-004'],
-        state: 'Completed',
-        settlementCreatedDate: '2025-08-04T08:45:00Z',
-        settlementFinalizeDate: '2025-08-04T09:45:00Z',
-        details: []
-    },
-];
-
 
 const FinalizeSettlement = () => {
 
@@ -126,7 +86,55 @@ const FinalizeSettlement = () => {
     const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure();
     const [selectedSettlement, setSelectedSettlement] = useState<any>(null);
 
+    const [finalizeSettlement, setFinalizeSettlement] = useState<IFinalizeSettlement[]>([]);
+
+
     const schema = finalizeSettlementHelper.schema;
+
+    const search = useCallback(() => {
+        start();
+
+        const startDate = getValues().startDate;
+        const endDate = getValues().endDate;
+        const currency = getValues().currency;
+
+        let utcStartDate = moment.utc(startDate).startOf('day').format();
+        const utcEndDate = moment.utc(endDate).endOf('day').format();
+
+        //Getting offset
+        let tzOffSet: string = selectedTimezone.offset === 0
+            ? "0000"
+            : moment().tz(selectedTimezone.value).format('ZZ').replace('+', '');
+
+        const data = {
+            fromDate: utcStartDate,
+            toDate: utcEndDate,
+            currency: currency
+        }
+        getFinalizeSettlementList(data)
+            .then((data: IFinalizeSettlement[]) => {
+                console.log("Settlement window list", data);
+                if (data.length === 0) {
+                    toast({
+                        position: 'top',
+                        description: 'No data found',
+                        status: 'warning',
+                        isClosable: true,
+                        duration: 3000
+                    });
+                }
+                setFinalizeSettlement(data);
+            })
+            .finally(() => {
+                complete();
+            });
+    }, [complete, start, toast, user]);
+
+    const onFindHandler = useCallback(() => {
+        search();
+    },
+        [search]
+    );
 
     const onTrClickHandler = useCallback(
         (row: any) => {
@@ -145,7 +153,7 @@ const FinalizeSettlement = () => {
     const columns = useMemo<Column<IFinalizeSettlement>[]>(() => [
         {
             Header: 'Settlement ID',
-            accessor: 'settlementId',
+            accessor: 'id',
             Cell: ({ row }: any) => (
                 <Box
                     color="blue.600"
@@ -159,7 +167,7 @@ const FinalizeSettlement = () => {
         },
         {
             Header: 'Window ID',
-            accessor: 'windowId',
+            accessor: 'id',
         },
         {
             Header: 'State',
@@ -167,14 +175,14 @@ const FinalizeSettlement = () => {
         },
         {
             Header: 'Settlement Created Date',
-            accessor: 'settlementCreatedDate',
+            accessor: 'createdDate',
             Cell: ({ value }) => (
                 <Text>{moment(value).format('YYYY-MM-DD HH:mm')}</Text>
             ),
         },
         {
             Header: 'Settlement Finalize Date',
-            accessor: 'settlementFinalizeDate',
+            accessor: 'changedDate',
             Cell: ({ value }) => (
                 <Text>{moment(value).format('YYYY-MM-DD HH:mm')}</Text>
             )
@@ -215,7 +223,7 @@ const FinalizeSettlement = () => {
     } = useTable(
         {
             columns,
-            data: sampleSettlementFinalizeData,
+            data: finalizeSettlement,
             initialState: {
                 pageIndex: 0,
                 pageSize: 10
@@ -270,9 +278,6 @@ const FinalizeSettlement = () => {
         setSelectedToFspOption(toFspOptions[0]); // Reset to "All"
     };
 
-    const onFindHandler = () => {
-
-    }
 
 
     const onChangeDateRange = useCallback((range: Ranges) => {

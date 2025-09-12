@@ -60,40 +60,12 @@ import { Ranges } from '@typescript/pages';
 import { usePagination, useSortBy, useTable, Row, Column } from 'react-table';
 import { ISettlementWindow } from '@typescript/services';
 
-
-const sampleSettlementWindow = [
-    {
-        settlementId: 'SETT-20250804-001',  // Settlement ID
-        windowId: 1,         // Window ID
-        state: 'Completed',             // State
-        openDate: '2025-08-04T10:30:00Z',   // Settlement Created Date
-        closeDate: '2025-08-04T12:00:00Z',
-    },
-    {
-        settlementId: 'SETT-20250804-001',
-        windowId: 2,
-        state: 'Completed',
-        openDate: '2025-08-04T10:30:00Z',
-        closeDate: '2025-08-04T12:00:00Z',
-    },
-    {
-        settlementId: 'SETT-20250804-001',
-        windowId: 3,
-        state: 'Completed',
-        openDate: '2025-08-04T10:30:00Z',
-        closeDate: '2025-08-04T12:00:00Z',
-    },
-    {
-        settlementId: 'SETT-20250804-001',
-        windowId: 4,
-        state: 'Completed',
-        openDate: '2025-08-04T10:30:00Z',
-        closeDate: '2025-08-04T12:00:00Z',
-    },
-];
+import { getSettlementWindowsList } from '@services/settlements';
+import { ISettlementWindows } from '@typescript/services';
+import { useLoadingContext } from '@contexts/hooks';
 
 const SettlementWindows = () => {
-
+    const { start, complete } = useLoadingContext();
     const toast = useToast();
     const user = useGetUserState();
 
@@ -114,8 +86,57 @@ const SettlementWindows = () => {
     const [selectedSettlement, setSelectedSettlement] = useState<any>(null);
 
     const settlementWindowHelper = new SettlementWindowHelper();
+    const [settlementWindows, setSettlementWindows] = useState<ISettlementWindow[]>([]);
+
 
     const schema = settlementWindowHelper.schema;
+
+
+    const search = useCallback(() => {
+        start();
+
+        const startDate = getValues().startDate;
+        const endDate = getValues().endDate;
+        const currency = getValues().currency;
+
+        let utcStartDate = moment.utc(startDate).startOf('day').format();
+        const utcEndDate = moment.utc(endDate).endOf('day').format();
+
+        //Getting offset
+        let tzOffSet: string = selectedTimezone.offset === 0
+            ? "0000"
+            : moment().tz(selectedTimezone.value).format('ZZ').replace('+', '');
+
+        const data = {
+            fromDate: utcStartDate,
+            toDate: utcEndDate,
+            currency: currency
+        }
+        getSettlementWindowsList(data)
+            .then((data: ISettlementWindow[]) => {
+                console.log("Settlement window list", data);
+                if (data.length === 0) {
+                    toast({
+                        position: 'top',
+                        description: 'No data found',
+                        status: 'warning',
+                        isClosable: true,
+                        duration: 3000
+                    });
+                }
+                setSettlementWindows(data);
+            })
+            .finally(() => {
+                complete();
+            });
+    }, [complete, start, toast, user]);
+
+    const onSearchClick = useCallback(() => {
+        search();
+    },
+        [search]
+    );
+
 
     const onTrClickHandler = useCallback(
         (row: any) => {
@@ -139,7 +160,7 @@ const SettlementWindows = () => {
     const columns = useMemo<Column<ISettlementWindow>[]>(() => [
         {
             Header: 'Settlement ID',
-            accessor: 'settlementId',
+            accessor: 'settlementWindowId',
             Cell: ({ row }: any) => (
                 <Box
                     color="blue.600"
@@ -153,7 +174,7 @@ const SettlementWindows = () => {
         },
         {
             Header: 'Window ID',
-            accessor: 'windowId',
+            accessor: 'settlementWindowId',
         },
         {
             Header: 'State',
@@ -161,14 +182,14 @@ const SettlementWindows = () => {
         },
         {
             Header: 'Open Date',
-            accessor: 'openDate',
+            accessor: 'createdDate',
             Cell: ({ value }) => (
                 <Text>{moment(value).format('YYYY-MM-DD HH:mm')}</Text>
             ),
         },
         {
             Header: 'Closed Date',
-            accessor: 'closeDate',
+            accessor: 'changedDate',
             Cell: ({ value }) => (
                 <Text>{moment(value).format('YYYY-MM-DD HH:mm')}</Text>
             ),
@@ -210,7 +231,7 @@ const SettlementWindows = () => {
     } = useTable(
         {
             columns,
-            data: sampleSettlementWindow,
+            data: settlementWindows,
             initialState: {
                 pageIndex: 0,
                 pageSize: 10
@@ -264,10 +285,6 @@ const SettlementWindows = () => {
         setDateRange('oneDay');
         setSelectedToFspOption(toFspOptions[0]); // Reset to "All"
     };
-
-    const onFindHandler = () => {
-
-    }
 
 
     const onChangeDateRange = useCallback((range: Ranges) => {
@@ -404,7 +421,7 @@ const SettlementWindows = () => {
                         <Button colorScheme='gray' variant='outline' onClick={onClearHandler}>
                             Clear Filters
                         </Button>
-                        <Button colorScheme='blue' isDisabled={!isValid} onClick={onFindHandler}>
+                        <Button colorScheme='blue' isDisabled={!isValid} onClick={onSearchClick}>
                             Find
                         </Button>
                     </HStack>

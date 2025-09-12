@@ -14,8 +14,15 @@ export interface IPendingApproval {
     action: string
 }
 
+export enum PositionActionType {
+    DEPOSIT = 'DEPOSIT',
+    WITHDRAW = 'wITHDRAW',
+    UPDATE_NDC_FIXED = 'UPDATE_NDC_FIXED',
+    UPDATE_NDC_PERCENTAGE = 'UPDATE_NDC_PERCENTAGE'
+}
+
 export interface IApprovalRequest {
-    requestedAction: string,
+    requestedAction: PositionActionType,
     dfsp: string,
     currency: string,
     amount: number,

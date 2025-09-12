@@ -3,21 +3,21 @@ export interface IGetAuditByParticipant {
 }
 
 export interface AuditInfo {
-  userName: string;
-  actionName: string;
-  actionDate: number;
+  date: string;
+  action: string;
+  madeBy: number;
 }
 
 export interface IMadeByList {
-  madeByList: IGetMadeBy;
+  userList: IGetMadeBy[];
 }
 export interface IGetMadeBy {
   userId: string,
-  name: string
+  email: string
 }
 
 export interface IGetActionList {
-  actionNames: IGetAction;
+  actionList: IGetAction[];
 }
 export interface IGetAction {
   actionId: string,

@@ -16,13 +16,23 @@ export const privateRoutes = {
   modify_participant: '/secured/modify_participant',
   get_all_other_participants: '/secured/getAllOtherParticipants',
 
+  getSettlementList: '/secured/getSettlementList',
+  getSettlementWindowsList: '/secured/getSettlementWindowsList',
+  closeSettlementWindow: '/secured/closeSettlementWindow',
+  createSettlement: '/secured/createSettlement',
+  finalizeSettlement: '/secured/finalizeSettlement',
+
   getSettlementId: '/secured/getSettlementId',
   generateDetailReport: '/secured/generateDetailReport',
   generateAuditReport: '/secured/generateAuditReport',
   generateSettlementAuditReport: '/secured/generateSettlementAuditReport',
   generateSettlementReport: '/secured/generateSettlementReport',
   generateSettlementStatementReport: '/secured/generateSettlementStatementReport',
-  get_all_participant_users: '/secured/get_all_participant_users',
+  getUserListByParticipant: '/secured/getUserListByParticipant',
+  getRoleListByParticipant: '/secured/getRoleListByParticipant',
+  getParticipantListByUserId: '/secured/getParticipantListByUserId',
+
+  modifyUserStatus: '/secured/modifyUserStatus',
   generate_fee_report: '/secured/generate_fee_report',
 
   create_new_participant_user: '/secured/create_new_participant_user',
