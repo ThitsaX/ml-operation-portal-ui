@@ -167,7 +167,7 @@ const FinalizeSettlement = () => {
         },
         {
             Header: 'Window ID',
-            accessor: 'id',
+            accessor: 'reason',
         },
         {
             Header: 'State',

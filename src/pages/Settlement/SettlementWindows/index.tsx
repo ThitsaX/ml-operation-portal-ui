@@ -174,7 +174,7 @@ const SettlementWindows = () => {
         },
         {
             Header: 'Window ID',
-            accessor: 'settlementWindowId',
+            accessor: 'reason',
         },
         {
             Header: 'State',

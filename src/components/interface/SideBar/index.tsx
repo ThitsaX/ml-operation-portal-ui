@@ -113,23 +113,23 @@ const SideBar = ({ onResizeHandler }: { onResizeHandler: ResizeCallback }) => {
             />
 
             <SideBarAccordion icon={<FaHandshake />} label="Settlement"
-              menuId="pending_approvals"
+              menuId="settlement"
               items={[
-                { id: 'settlementModels', label: 'Settlement Models', to: 'settlement/settlement-models', menuId: "pending_approvals" },
-                { id: 'settlementWindows', label: 'Settlement Windows', to: 'settlement/settlement-windows', menuId: "pending_approvals" },
-                { id: 'finalizeSettlement', label: 'Finalize Settlements', to: 'settlement/finalize-settlement', menuId: "pending_approvals" },
+                { id: 'settlementModels', label: 'Settlement Models', to: 'settlement/settlement-models', menuId: "settlement_models" },
+                { id: 'settlementWindows', label: 'Settlement Windows', to: 'settlement/settlement-windows', menuId: "settlement_windows" },
+                { id: 'finalizeSettlement', label: 'Finalize Settlements', to: 'settlement/finalize-settlement', menuId: "finalize_settlement" },
               ]}
             />
 
             <SideBarAccordion icon={<FiBarChart2 />} label="Reports"
-              menuId="pending_approvals"
+              menuId="reports"
               items={[
-                { id: 'settlementBankReport', label: 'Settlement Bank Report', to: 'reports/settlement-bank-report', menuId: "pending_approvals" },
-                { id: 'settlementDetailReport', label: 'Settlement Detail Report', to: 'reports/settlement-detail-report', menuId: "pending_approvals" },
-                { id: 'settlementSummary', label: 'Settlement Summary Report', to: 'reports/settlement-summary-report', menuId: "pending_approvals" },
-                { id: 'settlementStatementReport', label: 'Settlement Statement Report', to: 'reports/settlement-statement-report', menuId: "pending_approvals" },
-                { id: 'settlementAuditReport', label: 'Settlement Audit Report', to: 'reports/settlement-audit-report', menuId: "pending_approvals" },
-                { id: 'auditReport', label: 'Audit Report', to: 'reports/audit-report', menuId: "pending_approvals" },
+                { id: 'settlementBankReport', label: 'Settlement Bank Report', to: 'reports/settlement-bank-report', menuId: "settlement_bank_report" },
+                { id: 'settlementDetailReport', label: 'Settlement Detail Report', to: 'reports/settlement-detail-report', menuId: "settlement_detail_report" },
+                { id: 'settlementSummary', label: 'Settlement Summary Report', to: 'reports/settlement-summary-report', menuId: "settlement_summary_report" },
+                { id: 'settlementStatementReport', label: 'Settlement Statement Report', to: 'reports/settlement-statement-report', menuId: "settlement_statement_report" },
+                { id: 'settlementAuditReport', label: 'Settlement Audit Report', to: 'reports/settlement-audit-report', menuId: "settlement_audit_report" },
+                { id: 'auditReport', label: 'Audit Report', to: 'reports/audit-report', menuId: "audit_report" },
               ]}
             />
 
