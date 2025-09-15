@@ -21,7 +21,7 @@ import {
   Toast,
   useToast
 } from '@chakra-ui/react';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { usePagination, useSortBy, useTable, Row, Column } from 'react-table';
 import { FiEdit, FiToggleRight } from 'react-icons/fi';
 import Select from 'react-select';
@@ -42,7 +42,8 @@ import {
   type IParticipantUser,
 } from '@typescript/services';
 import { type UserStatus } from '@typescript/form';
-
+import { useGetRoleListByParticipant, useGetOrganizationListByParticipant } from '@hooks/services/participant';
+import { createUser } from '@services/participant';
 
 const User = () => {
   const [filterStatus, setFilterStatus] = useState('ACTIVE');
@@ -53,6 +54,8 @@ const User = () => {
   const [isEdit, setIsEdit] = useState(false);
   const toast = useToast();
 
+  const { data: roleList } = useGetRoleListByParticipant();
+  const { data: participantInfoList } = useGetOrganizationListByParticipant();
 
   const toggleStatus = async (userId: string, checked: boolean) => {
 
@@ -169,11 +172,49 @@ const User = () => {
   }, [filterStatus, data]); // ✅ add data to deps
 
 
-  const handleEditClick = (user: any) => {
+  const handleEditClick = (user: IParticipantUser) => {
     setSelectedUser(user);
     setIsOpen(true);
     setIsEdit(true);
   };
+
+  const handleNewClick = () => {
+    setSelectedUser(null);
+    setIsOpen(true);
+    setIsEdit(false);
+  };
+
+
+
+  const handleSave = useCallback((values: IParticipantUser) => {
+    const action = isEdit
+      ? Promise.reject("Edit not implemented")
+      : createUser(values);
+
+    action
+      .then(() => {
+        toast({
+          position: 'top',
+          description: isEdit ? 'User updated successfully' : 'User created successfully',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+        setIsEdit(false);
+        refetch();
+        setIsOpen(false);
+      })
+      .catch((error: any) => {
+        toast({
+          position: 'top',
+          description: error?.error_code || 'Something went wrong',
+          status: 'error', // <-- fixed
+          duration: 3000,
+          isClosable: true,
+        });
+      });
+  }, [isEdit, toast, refetch]);
+
 
   const handlePageValidation = (value: string) => {
     if (Number(value) > pageOptions.length) {
@@ -200,7 +241,7 @@ const User = () => {
           <option value="All">All</option>
         </ChakraSelect >
 
-        <Button colorScheme="blue" onClick={() => handleEditClick({})}>New User</Button>
+        <Button colorScheme="blue" onClick={() => handleNewClick()}>New User</Button>
       </HStack>
 
       <TableContainer
@@ -341,6 +382,9 @@ const User = () => {
         onClose={() => setIsOpen(false)}
         selectedUser={selectedUser}
         isEdit={isEdit}
+        roleList={roleList}
+        participantInfoList={participantInfoList}
+        onSave={handleSave}
       />
     </VStack>
   );

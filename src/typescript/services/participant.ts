@@ -6,7 +6,8 @@ export interface IParticipantUser {
   email: string;
   firstName: string;
   lastName: string;
-  roleList: [string];
+  roleList: string[];
+  participantId: string;
   status: UserStatus;
   createdDate: number;
 }

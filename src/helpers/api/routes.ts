@@ -30,8 +30,9 @@ export const privateRoutes = {
   generateSettlementStatementReport: '/secured/generateSettlementStatementReport',
   getUserListByParticipant: '/secured/getUserListByParticipant',
   getRoleListByParticipant: '/secured/getRoleListByParticipant',
-  getParticipantListByUserId: '/secured/getParticipantListByUserId',
+  getParticipantListByParticipant: '/secured/getParticipantListByParticipant',
 
+  createUser:'/secured/createUser',
   modifyUserStatus: '/secured/modifyUserStatus',
   generate_fee_report: '/secured/generate_fee_report',
 
