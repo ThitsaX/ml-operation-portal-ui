@@ -4,6 +4,7 @@ import { Configs } from '@configs'
 import { isEmpty, toUpper } from 'lodash-es'
 
 const configs = Configs.getInstance()
+const baseURL = import.meta.env.VITE_API_URL;
 
 export interface IGenerateAccessTokenProps {
   method: Uppercase<Method>
@@ -32,7 +33,6 @@ export const generateAccessToken = async ({
 }
 
 const AxiosRequest = (authToken?: string, authKey?: string | number) => {
-  const baseURL = `${configs.BASE_URL}`
   const abortController = new AbortController()
   const axios = Axios.create({
     baseURL,
