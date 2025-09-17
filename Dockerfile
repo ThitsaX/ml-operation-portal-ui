@@ -21,7 +21,10 @@ COPY . .
 # Install all deps (including dev, for build)
 RUN yarn install --immutable
 
-# Build the React app
+# Set placeholder environment variables for build
+ENV VITE_API_URL=__VITE_API_URL__
+
+# Build the React app with placeholders
 RUN yarn build
 
 
@@ -33,10 +36,17 @@ WORKDIR /app
 # Copy built React files
 COPY --from=builder /app/dist ./dist
 
+# Copy the environment injection script
+COPY scripts/inject-env.sh /app/inject-env.sh
+
+# Make the script executable
+RUN chmod +x /app/inject-env.sh
+
 # Install a lightweight static file server
 RUN yarn global add serve
 
 EXPOSE 3000
 
-# Use serve to host the build output
+# Use the injection script as entrypoint, then start the server
+ENTRYPOINT ["/app/inject-env.sh"]
 CMD ["serve", "dist", "-l", "3000"]
