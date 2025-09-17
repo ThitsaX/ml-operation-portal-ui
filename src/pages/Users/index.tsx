@@ -31,13 +31,10 @@ import {
 } from '@chakra-ui/react';
 import { useLoadingContext } from '@contexts/hooks';
 import { getRequestErrorMessage } from '@helpers/errors';
-import { useGetAllParticipants } from '@hooks/services';
+import { useGetUserListByParticipant } from '@hooks/services';
 import { removeParticipantUser } from '@services/participant';
 import { useGetUserState } from '@store/hooks';
-import {
-  type IApiErrorResponse,
-  type IParticipantUser
-} from '@typescript/services';
+import { type IApiErrorResponse, type IParticipantUser } from '@typescript/services';
 import { capitalize } from 'lodash-es';
 import { lazy, Suspense, useCallback, useRef, useState } from 'react';
 import { IoPencilOutline, IoReload, IoTrashOutline } from 'react-icons/io5';
@@ -52,7 +49,7 @@ const Users = () => {
   /* Redux */
   const { data: user } = useGetUserState();
   /* React Query */
-  const { data, refetch } = useGetAllParticipants();
+  const { data, refetch } = useGetUserListByParticipant();
 
   /* Disclosure */
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -110,7 +107,7 @@ const Users = () => {
   const onDelete = useCallback(() => {
     start();
     removeParticipantUser({
-      participant_user_id: currentUser?.participant_user_id as string,
+      participant_user_id: currentUser?.userId as string,
       participant_id: user?.participantId as string
     })
       .then(() => {
@@ -138,7 +135,7 @@ const Users = () => {
       });
   }, [
     complete,
-    currentUser?.participant_user_id,
+    currentUser?.userId,
     onClose,
     refetch,
     start,
@@ -236,7 +233,8 @@ const Users = () => {
                 <Tr key={data.email}>
                   <Td>{data.email}</Td>
                   <Td>{data.name}</Td>
-                  <Td>{capitalize(data.userRoleType)}</Td>
+                  <Td>{data.roleList?.map(r => capitalize(r)).join(", ")}</Td>
+
                   <Td>
                     <HStack align="center" spacing="2">
                       <Tooltip label='Reset Password' bg='white' color='black'>
@@ -245,7 +243,7 @@ const Users = () => {
                           variant="ghost"
                           aria-label="Reset Password"
                           icon={<IoReload />}
-                          isDisabled={data.participant_user_id === user?.userId}
+                          isDisabled={data.userId === user?.userId}
                           onClick={() => {
                             onClickReset(data);
                           }}
@@ -268,7 +266,7 @@ const Users = () => {
                           variant="ghost"
                           aria-label="Remove Account"
                           icon={<IoTrashOutline />}
-                          isDisabled={data.participant_user_id === user?.userId}
+                          isDisabled={data.userId === user?.userId}
                           onClick={() => {
                             onClickRemove(data);
                           }}

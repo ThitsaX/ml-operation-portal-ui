@@ -36,8 +36,8 @@ const SettlementStatementReport = () => {
 
     const fileType = e.target.value
 
-    const startDate = getValues().start_date
-    const endDate = getValues().end_date
+    const startDate = getValues().startDate
+    const endDate = getValues().endDate
 
     let utcStartDate = moment.utc(startDate).startOf('day').format();
     let utcEndDate = moment.utc(endDate).endOf('day').format();
@@ -51,7 +51,9 @@ const SettlementStatementReport = () => {
       startDate: utcStartDate,
       endDate: utcEndDate,
       timezoneoffset: tzOffSet,
-      fileType: fileType
+      fileType: getValues().fileType,
+      fspId: getValues().fspId,
+      currency: getValues().currency
     })
       .then((res: any) => {
         if (res?.detail_report_byte?.length > 0) {
@@ -75,8 +77,12 @@ const SettlementStatementReport = () => {
   const { control, trigger, getValues, formState: { errors, isValid } } = useForm<ISettlementStatementReport>({
     resolver: zodResolver(settlementStatementReportHelper.schema),
     defaultValues: {
-      start_date: moment().format('yyyy-MM-DD'),
-      end_date: moment().format('yyyy-MM-DD')
+      startDate: moment().format('yyyy-MM-DD'),
+      endDate: moment().format('yyyy-MM-DD'),
+      fspId: '',
+      currency: '',
+      settlementId: '',
+      fileType: ''
     },
     mode: 'onChange'
   })
@@ -89,11 +95,20 @@ const SettlementStatementReport = () => {
       </Heading>
       <Stack borderWidth="1px" borderRadius='lg' height="full" p="4">
         <HStack alignItems={'flex-start'} spacing={4}>
-          <FormControl pb="1">
-            <FormLabel>DFSP ID:</FormLabel>
-            <Input value={user.data?.participantName} placeholder="Enter DFSP ID:" />
+          <FormControl pb="1" isInvalid={!isEmpty(errors.fspId)}>
+            <FormLabel>DFSP Name</FormLabel>
+            <Controller
+              name="fspId"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                />
+              )}
+            />
+            <FormErrorMessage>{errors.fspId?.message}</FormErrorMessage>
           </FormControl>
-          <FormControl isInvalid={!isEmpty(errors.start_date)} pb="1">
+          <FormControl isInvalid={!isEmpty(errors.startDate)} pb="1">
             <FormLabel>Start Date</FormLabel>
             <Controller
               control={control}
@@ -103,18 +118,18 @@ const SettlementStatementReport = () => {
                     value={value}
                     onChange={(e) => {
                       onChange(e);
-                      trigger('end_date');
+                      trigger('endDate');
                     }}
                     onBlur={onBlur}
                     type="date"
                   />
                 );
               }}
-              name="start_date"
+              name="startDate"
             />
-            <FormErrorMessage>{errors.start_date?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.startDate?.message}</FormErrorMessage>
           </FormControl>
-          <FormControl isInvalid={!isEmpty(errors.end_date)} pb="1">
+          <FormControl isInvalid={!isEmpty(errors.endDate)} pb="1">
             <FormLabel>End Date</FormLabel>
             <Controller
               control={control}
@@ -127,16 +142,16 @@ const SettlementStatementReport = () => {
                     value={value}
                     onChange={(e) => {
                       onChange(e);
-                      trigger('start_date');
+                      trigger('startDate');
                     }}
                     onBlur={onBlur}
                     type="date"
                   />
                 );
               }}
-              name="end_date"
+              name="endDate"
             />
-            <FormErrorMessage>{errors.end_date?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.endDate?.message}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!isEmpty(errors.currency)}>
             <FormLabel>Currency</FormLabel>
@@ -158,15 +173,20 @@ const SettlementStatementReport = () => {
         </HStack>
 
         <HStack justifyContent='flex-end' p={2}>
-          <Select
-            placeholder="Choose Format"
-            value={settlementModel}
-            onChange={(e) => setSettlementModel(e.target.value)}
-            width="250px"
-          >
-            <option value="xlsx">XLSX</option>
-            <option value="csv">CSV</option>
-          </Select>
+
+          <FormControl width="250px">
+            <Controller
+              control={control}
+              name="fileType"
+              render={({ field }) => (
+                <Select {...field} placeholder="Choose Format" width="250px">
+                  <option value="xlsx">XLSX</option>
+                  <option value="csv">CSV</option>
+                </Select>
+              )}
+            />
+          </FormControl>
+
           <Button colorScheme='blue' isDisabled={!isValid || !runButtonState} onClick={onDownloadChangeHandler}>
             Download
           </Button>

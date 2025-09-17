@@ -34,7 +34,7 @@ export interface IGetUserDataList {
 export interface IGetUserData {
   email: string;
   name: string;
-  role: string;
+  role: string[];
   status: string;
 }
 

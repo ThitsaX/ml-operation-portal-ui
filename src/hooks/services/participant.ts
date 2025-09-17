@@ -1,24 +1,49 @@
 import {
-  getAllParticipantUsers, getContactList, getParticipantProfile,
+  getUserListByParticipant, getRoleListByParticipant, getOrganizationListByParticipant, getContactList, getParticipantProfile,
   getCurrencyList, getHubCurrency, getLiquidityProfileList, getParticipantList
 } from '@services/participant'
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
 import {
   type IApiErrorResponse, type IParticipantUser,
   type IBusinessContact, type ILiquidityProfile, type ICurrency,
-  type IParticipantProfile
+  type IParticipantProfile,
+  IParticipantUserRole,
+  IParticipantOrganization
 } from '@typescript/services'
 
-export const useGetAllParticipants = (
+export const useGetUserListByParticipant = (
   options?: UseQueryOptions<IParticipantUser[],
     IApiErrorResponse
   >
 ) =>
   useQuery<IParticipantUser[], IApiErrorResponse>({
     queryKey: ['getAllParticipantUsers'],
-    queryFn: getAllParticipantUsers,
+    queryFn: getUserListByParticipant,
     ...options
   })
+
+export const useGetRoleListByParticipant = (
+  options?: UseQueryOptions<IParticipantUserRole[],
+    IApiErrorResponse
+  >
+) =>
+  useQuery<IParticipantUserRole[], IApiErrorResponse>({
+    queryKey: ['getRoleListByParticipant'],
+    queryFn: getRoleListByParticipant,
+    ...options
+  })
+
+export const useGetOrganizationListByParticipant = (
+  options?: UseQueryOptions<IParticipantOrganization[],
+    IApiErrorResponse
+  >
+) =>
+  useQuery<IParticipantOrganization[], IApiErrorResponse>({
+    queryKey: ['getOrganizationListByParticipant'],
+    queryFn: getOrganizationListByParticipant,
+    ...options
+  })
+
 
 export const useGetCurrencyList = (
   options?: UseQueryOptions<ICurrency[],

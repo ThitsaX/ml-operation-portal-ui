@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -12,68 +12,135 @@ import {
   Input,
   Select as ChakraSelect,
   Button,
+  FormControl,
+  FormErrorMessage,
 } from '@chakra-ui/react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import MultiSelect, { OptionType } from './MultiSelect';
+import { IParticipantOrganization, IParticipantUser, IParticipantUserRole } from '@typescript/services';
+import { UserManagementHelper } from '@helpers/form';
+import { isEmpty } from 'lodash-es';
+
+const userSchema = new UserManagementHelper();
 
 interface EditUserModalProps {
   isOpen: boolean;
   onClose: () => void;
   isEdit: boolean;
-  selectedUser: { email?: string };
+  selectedUser?: Partial<IParticipantUser>;
+  roleList?: IParticipantUserRole[];
+  participantInfoList?: IParticipantOrganization[];
+  onSave: (data: IParticipantUser) => void;
 }
 
-const roleOptions: OptionType[] = [
-  { value: 'HUB - admin', label: 'HUB - admin' },
-  { value: 'HUB - manager', label: 'HUB - manager' },
-  { value: 'DFSP - admin', label: 'DFSP - admin' },
-];
+const EditUserModal: React.FC<EditUserModalProps> = ({
+  isOpen,
+  onClose,
+  isEdit,
+  selectedUser,
+  roleList,
+  participantInfoList,
+  onSave,
+}) => {
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isDirty, isValid, isSubmitting },
+  } = useForm<IParticipantUser>({
+    resolver: zodResolver(userSchema.schema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      participantId: '',
+      roleList: [],
+    },
+    mode: 'onChange',
+  });
 
-const EditUserModal: React.FC<EditUserModalProps> = ({ isOpen, onClose, isEdit, selectedUser }) => {
-  const [selectedRoles, setSelectedRoles] = useState<OptionType[]>([]);
+  // Reset form when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      reset({
+        firstName: selectedUser?.firstName ?? '',
+        lastName: selectedUser?.lastName ?? '',
+        email: selectedUser?.email ?? '',
+        participantId: selectedUser?.participantId ?? '',
+        roleList: selectedUser?.roleList ?? [],
+      });
+    }
+  }, [isOpen, selectedUser, reset]);
+
+  const handleFormSubmit = (values: IParticipantUser) => {
+    onSave(values); // Parent handles save/update
+    onClose();
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside" isCentered>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader textAlign="center">{isEdit ? `Edit User` : `Add New`}</ModalHeader>
+        <ModalHeader textAlign="center">{isEdit ? 'Edit User' : 'Add New User'}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <VStack spacing={4} align="stretch">
             <HStack spacing={4}>
-              <Input placeholder="First Name*" />
-              <Input placeholder="Last Name*" />
+              <FormControl isInvalid={!isEmpty(errors.firstName)} isRequired>
+                <Input placeholder="First Name*" {...register('firstName')} />
+                <FormErrorMessage>{errors.firstName?.message}</FormErrorMessage>
+              </FormControl>
+              <FormControl isInvalid={!isEmpty(errors.lastName)} isRequired>
+                <Input placeholder="Last Name*" {...register('lastName')} />
+                <FormErrorMessage>{errors.lastName?.message}</FormErrorMessage>
+              </FormControl>
             </HStack>
 
-            <Input placeholder="Email*" isDisabled value={selectedUser?.email || ''} />
+            <FormControl isInvalid={!isEmpty(errors.email)} isRequired>
+              <Input placeholder="Email*" {...register('email')} disabled={isEdit} />
+              <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
+            </FormControl>
 
-            {/* Role - using separate MultiSelect component */}
-            <MultiSelect
-              options={roleOptions}
-              value={selectedRoles}
-              onChange={setSelectedRoles}
-              placeholder="Select Role*"
-            />
+            <FormControl isInvalid={!isEmpty(errors.roleList)} isRequired>
+              <Controller
+                control={control}
+                name="roleList"
+                render={({ field }) => (
+                  <MultiSelect
+                    options={roleList?.map(role => ({ value: role.name, label: role.name })) ?? []}
+                    value={field.value.map(r => ({ value: r, label: r }))}
+                    onChange={(selected: OptionType[]) => field.onChange(selected.map(s => s.value))}
+                    placeholder="Select Role*"
+                  />
+                )}
+              />
+              <FormErrorMessage>{errors.roleList?.message}</FormErrorMessage>
+            </FormControl>
 
-            <ChakraSelect placeholder="Select Organization*">
-              <option value="HUB">HUB</option>
-              <option value="DFSP">DFSP</option>
-              <option value="Settlement Bank">Settlement Bank</option>
-            </ChakraSelect>
-
-            <Input placeholder="Job Title" />
-
-            <Button variant="link" colorScheme="blue" alignSelf="flex-start">
-              Reset Password
-            </Button>
-
-            <Input placeholder="Password*" type="password" />
-            <Input placeholder="Confirm Password*" type="password" />
+            <FormControl isInvalid={!isEmpty(errors.participantId)} isRequired>
+              <ChakraSelect placeholder="Select Organization*" {...register('participantId')}>
+                {participantInfoList?.map(org => (
+                  <option key={org.participantId} value={org.participantId}>
+                    {org.participantName}
+                  </option>
+                ))}
+              </ChakraSelect>
+              <FormErrorMessage>{errors.participantId?.message}</FormErrorMessage>
+            </FormControl>
           </VStack>
         </ModalBody>
 
-        <ModalFooter>
-          <Button colorScheme="blue" mr={3}>Submit</Button>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+        <ModalFooter display="flex" gap={3}>
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button
+            colorScheme="blue"
+            onClick={handleSubmit(handleFormSubmit)}
+            isLoading={isSubmitting}
+          >
+            {isEdit ? 'Update' : 'Save'}
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

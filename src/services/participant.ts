@@ -6,13 +6,12 @@ import {
   type IBusinessContact, type ILiquidityProfile,
   type ICurrency,
   type IParticipantProfile, type IGetParticipantList,
+  IParticipantUserRole,
+  IParticipantOrganization,
 } from '@typescript/services'
-import {
-  type ICreateUserValues,
-  type IModifyUserValues,
-  type IResetPasswordValues
-} from '@typescript/form'
+import { type ICreateUserValues, type IModifyUserValues, type IResetPasswordValues } from '@typescript/form'
 import { type AxiosError } from 'axios'
+import { IApprovalRequest } from '@typescript/services'
 
 export const getParticipantList = async (
 ) => {
@@ -198,11 +197,11 @@ export const resetPasswordUser = async (data: IResetPasswordValues) => {
     })
 }
 
-export const getAllParticipantUsers = async () => {
+export const getUserListByParticipant = async () => {
   const {
     user: { auth, data }
   } = store.getState()
-  const uri = routes.get_all_participant_users
+  const uri = routes.getUserListByParticipant
   const accessKey = auth?.accessKey as string
   const secretKey = auth?.secretKey as string
   const accessToken = await generateAccessToken({
@@ -212,12 +211,12 @@ export const getAllParticipantUsers = async () => {
   })
   const { axios } = AxiosRequest(accessToken, accessKey)
   return axios
-    .get<{ userinfo_list: IParticipantUser[] }>(uri, {
+    .get<{ userInfoList: IParticipantUser[] }>(uri, {
       params: {
         participantId: data?.participantId
       }
     })
-    .then((d) => d.data.userinfo_list)
+    .then((d) => d.data.userInfoList)
     .catch((error: AxiosError<IApiErrorResponse>) => {
       const { code, message, ...rest } = axiosErrorHandler(error)
       if (code && message) {
@@ -230,6 +229,162 @@ export const getAllParticipantUsers = async () => {
       throw rest
     })
 }
+
+export const getRoleListByParticipant = async () => {
+  const {
+    user: { auth, data }
+  } = store.getState()
+  const uri = routes.getRoleListByParticipant
+  const accessKey = auth?.accessKey as string
+  const secretKey = auth?.secretKey as string
+  const accessToken = await generateAccessToken({
+    method: 'GET',
+    uri,
+    secret: secretKey
+  })
+  const { axios } = AxiosRequest(accessToken, accessKey)
+  return axios
+    .get<{ roleList: IParticipantUserRole[] }>(uri, {
+    })
+    .then((d) => d.data.roleList)
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error)
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        }
+      }
+      throw rest
+    })
+}
+
+export const getOrganizationListByParticipant = async () => {
+  const {
+    user: { auth, data }
+  } = store.getState()
+  const uri = routes.getParticipantListByParticipant
+  const accessKey = auth?.accessKey as string
+  const secretKey = auth?.secretKey as string
+  const accessToken = await generateAccessToken({
+    method: 'GET',
+    uri,
+    secret: secretKey
+  })
+  const { axios } = AxiosRequest(accessToken, accessKey)
+  return axios
+    .get<{ participantInfoList: IParticipantOrganization[] }>(uri, {
+    })
+    .then((d) => d.data.participantInfoList)
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error)
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        }
+      }
+      throw rest
+    })
+}
+
+export const createApprovalRequest = async (data: IApprovalRequest) => {
+  const {
+    user: { auth }
+  } = store.getState()
+  const uri = routes.createApprovalRequest
+  const accessKey = auth?.accessKey as string
+  const secretKey = auth?.secretKey as string
+  const accessToken = await generateAccessToken({
+    method: 'POST',
+    uri,
+    secret: secretKey,
+    payload: data
+  })
+  const { axios } = AxiosRequest(accessToken, accessKey)
+  return axios
+    .post<{ is_created: true }>(uri, data)
+    .then((d) => d.data)
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error)
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        }
+      }
+      throw rest
+    })
+}
+
+export const createUser = async (user: IParticipantUser) => {
+  const {
+    user: { auth }
+  } = store.getState()
+  const uri = routes.createUser
+  
+  const accessKey = auth?.accessKey as string
+  const secretKey = auth?.secretKey as string
+  const accessToken = await generateAccessToken({
+    method: 'POST',
+    uri,
+    secret: secretKey,
+    payload: user
+  })
+  const { axios } = AxiosRequest(accessToken, accessKey)
+  return axios
+    .post<{ isModified: true }>(uri, user)
+    .then((d) => d.data)
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error)
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        }
+      }
+      throw rest
+    })
+}
+
+export const modifyUserStatus = async (userId: string, status: string) => {
+  const {
+    user: { auth }
+  } = store.getState()
+  const uri = routes.modifyUserStatus
+  const data = {
+    userId: userId,
+    userStatus: status
+  }
+  const accessKey = auth?.accessKey as string
+  const secretKey = auth?.secretKey as string
+  const accessToken = await generateAccessToken({
+    method: 'POST',
+    uri,
+    secret: secretKey,
+    payload: data
+  })
+  const { axios } = AxiosRequest(accessToken, accessKey)
+  return axios
+    .post<{ isModified: true }>(uri, data)
+    .then((d) => d.data)
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error)
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        }
+      }
+      throw rest
+    })
+}
+
 
 export const getContactList = async (participantId: string) => {
   const {

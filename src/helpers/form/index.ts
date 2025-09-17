@@ -111,6 +111,18 @@ export class CompanyInfoHelper extends FormHelper {
   }
 }
 
+export class UserManagementHelper extends FormHelper {
+  get schema() {
+    return z.object({
+      firstName: z.string().min(1, 'First Name is required'),
+      lastName: z.string().min(1, 'Last Name is required'),
+      email: z.string().email('Invalid email').min(1, 'Email is required'),
+      participantId: z.string().min(1, 'Organization is required'),
+      roleList: z.array(z.string()).min(1, 'Select at least one role'),
+    })
+  }
+}
+
 export class SettlementReportHelper extends FormHelper {
   get schema() {
     return z

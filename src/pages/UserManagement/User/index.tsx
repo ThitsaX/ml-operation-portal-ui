@@ -17,9 +17,11 @@ import {
   Select as ChakraSelect,
   Icon,
   Divider,
-  Switch
+  Switch,
+  Toast,
+  useToast
 } from '@chakra-ui/react';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { usePagination, useSortBy, useTable, Row, Column } from 'react-table';
 import { FiEdit, FiToggleRight } from 'react-icons/fi';
 import Select from 'react-select';
@@ -33,132 +35,55 @@ import {
   TfiAngleRight
 } from 'react-icons/tfi';
 import { FaRegEdit } from "react-icons/fa";
-
-// Sample data
-const usersData: IGetUserData[] = [
-
-  {
-    "email": 'testuser1@gmail.com',
-    "name": 'Test User One',
-    "role": 'DFSP - Admin',
-    "status": 'Active'
-  },
-  {
-    "email": 'testuser2@gmail.com',
-    "name": 'Test User Two',
-    "role": 'DFSP - Operation',
-    "status": 'Active'
-  },
-  {
-    "email": 'testuser3@gmail.com',
-    "name": 'Test User Three',
-    "role": 'HUB - Admin',
-    "status": 'Active'
-  },
-  {
-    "email": 'testuser4@gmail.com',
-    "name": 'Test User Four',
-    "role": 'HUB - Manager',
-    "status": 'Active'
-  },
-  {
-    "email": 'testuser5@gmail.com',
-    "name": 'Test User Five',
-    "role": 'HUB - User',
-    "status": 'Inactive'
-  },
-  {
-    "email": 'testuser1@gmail.com',
-    "name": 'Test User One',
-    "role": 'DFSP - Admin',
-    "status": 'Active'
-  },
-  {
-    "email": 'testuser2@gmail.com',
-    "name": 'Test User Two',
-    "role": 'DFSP - Operation',
-    "status": 'Active'
-  },
-  {
-    "email": 'testuser3@gmail.com',
-    "name": 'Test User Three',
-    "role": 'HUB - Admin',
-    "status": 'Active'
-  },
-  {
-    "email": 'testuser4@gmail.com',
-    "name": 'Test User Four',
-    "role": 'HUB - Manager',
-    "status": 'Active'
-  },
-  {
-    "email": 'testuser5@gmail.com',
-    "name": 'Test User Five',
-    "role": 'HUB - User',
-    "status": 'Inactive'
-  },
-  {
-    "email": 'testuser1@gmail.com',
-    "name": 'Test User One',
-    "role": 'DFSP - Admin',
-    "status": 'Active'
-  },
-  {
-    "email": 'testuser2@gmail.com',
-    "name": 'Test User Two',
-    "role": 'DFSP - Operation',
-    "status": 'Active'
-  },
-  {
-    "email": 'testuser3@gmail.com',
-    "name": 'Test User Three',
-    "role": 'HUB - Admin',
-    "status": 'Active'
-  },
-  {
-    "email": 'testuser4@gmail.com',
-    "name": 'Test User Four',
-    "role": 'HUB - Manager',
-    "status": 'Active'
-  },
-  {
-    "email": 'testuser5@gmail.com',
-    "name": 'Test User Five',
-    "role": 'HUB - User',
-    "status": 'Inactive'
-  }
-];
-
-type OptionType = {
-  value: string;
-  label: string;
-};
-
-const roleOptions: OptionType[] = [
-  { value: 'HUB - admin', label: 'HUB - admin' },
-  { value: 'HUB - manager', label: 'HUB - manager' },
-  { value: 'DFSP - admin', label: 'DFSP - admin' },
-];
+import { useGetUserListByParticipant } from '@hooks/services';
+import { modifyUserStatus } from '@services/participant';
+import {
+  type IApiErrorResponse,
+  type IParticipantUser,
+} from '@typescript/services';
+import { type UserStatus } from '@typescript/form';
+import { useGetRoleListByParticipant, useGetOrganizationListByParticipant } from '@hooks/services/participant';
+import { createUser } from '@services/participant';
 
 const User = () => {
-  const [filterStatus, setFilterStatus] = useState('Active');
-  const [filteredUsers, setFilteredUsers] = useState(usersData);
+  const [filterStatus, setFilterStatus] = useState('ACTIVE');
+  const [filteredUsers, setFilteredUsers] = useState([] as IParticipantUser[]);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [pageNumber, setPageNumber] = useState<String>('1');
   const [isEdit, setIsEdit] = useState(false);
+  const toast = useToast();
 
-  const toggleStatus = (email: string, newValue: boolean) => {
-    setFilteredUsers(prev =>
-      prev.map(user =>
-        user.email === email
-          ? { ...user, status: newValue ? 'Active' : 'Inactive' }
-          : user
-      )
-    );
+  const { data: roleList } = useGetRoleListByParticipant();
+  const { data: participantInfoList } = useGetOrganizationListByParticipant();
+
+  const toggleStatus = async (userId: string, checked: boolean) => {
+
+    const newStatus: UserStatus = checked ? 'ACTIVE' : 'INACTIVE';
+    try {
+      await modifyUserStatus(userId, newStatus);
+
+      setFilteredUsers(prev =>
+        prev.map(user =>
+          user.userId === userId ? { ...user, status: newStatus } : user
+        )
+      );
+    } catch (error: any) {
+
+      toast({
+        position: 'top',
+        description: error.message || 'Failed to update user status',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
-  const columns: Column<IGetUserData>[] = useMemo(
+
+  const { data, refetch } = useGetUserListByParticipant();
+
+  const columns: Column<IParticipantUser>[] = useMemo(
     () => [
       {
         Header: 'Email',
@@ -170,7 +95,7 @@ const User = () => {
       },
       {
         Header: 'Role',
-        accessor: 'role',
+        accessor: 'roleList',
       },
       {
         Header: 'Status',
@@ -180,7 +105,7 @@ const User = () => {
       {
         Header: 'Action',
         disableSortBy: true,
-        Cell: ({ row }: { row: Row<IGetUserData> }) => (
+        Cell: ({ row }: { row: Row<IParticipantUser> }) => (
 
           <HStack spacing={3}>
             <IconButton
@@ -200,8 +125,8 @@ const User = () => {
 
             <Switch
               colorScheme="green"
-              isChecked={row.original.status === 'Active'}
-              onChange={(e) => toggleStatus(row.original.email, e.target.checked)}
+              isChecked={row.original.status === 'ACTIVE'}
+              onChange={(e) => toggleStatus(row.original.userId, e.target.checked)}
             />
           </HStack>
         )
@@ -240,17 +165,56 @@ const User = () => {
 
 
   useEffect(() => {
-    const filtered = usersData.filter(user =>
+    const filtered = data?.filter(user =>
       filterStatus === 'All' ? true : user.status === filterStatus
-    );
+    ) ?? [];  // ✅ fallback
     setFilteredUsers(filtered);
-  }, [filterStatus]);
+  }, [filterStatus, data]); // ✅ add data to deps
 
-  const handleEditClick = (user: any) => {
+
+  const handleEditClick = (user: IParticipantUser) => {
     setSelectedUser(user);
     setIsOpen(true);
     setIsEdit(true);
   };
+
+  const handleNewClick = () => {
+    setSelectedUser(null);
+    setIsOpen(true);
+    setIsEdit(false);
+  };
+
+
+
+  const handleSave = useCallback((values: IParticipantUser) => {
+    const action = isEdit
+      ? Promise.reject("Edit not implemented")
+      : createUser(values);
+
+    action
+      .then(() => {
+        toast({
+          position: 'top',
+          description: isEdit ? 'User updated successfully' : 'User created successfully',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+        setIsEdit(false);
+        refetch();
+        setIsOpen(false);
+      })
+      .catch((error: any) => {
+        toast({
+          position: 'top',
+          description: error?.error_code || 'Something went wrong',
+          status: 'error', // <-- fixed
+          duration: 3000,
+          isClosable: true,
+        });
+      });
+  }, [isEdit, toast, refetch]);
+
 
   const handlePageValidation = (value: string) => {
     if (Number(value) > pageOptions.length) {
@@ -272,12 +236,12 @@ const User = () => {
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
         >
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
+          <option value="ACTIVE">Active</option>
+          <option value="INACTIVE">Inactive</option>
           <option value="All">All</option>
         </ChakraSelect >
 
-        <Button colorScheme="blue" onClick={() => handleEditClick({})}>New User</Button>
+        <Button colorScheme="blue" onClick={() => handleNewClick()}>New User</Button>
       </HStack>
 
       <TableContainer
@@ -418,6 +382,9 @@ const User = () => {
         onClose={() => setIsOpen(false)}
         selectedUser={selectedUser}
         isEdit={isEdit}
+        roleList={roleList}
+        participantInfoList={participantInfoList}
+        onSave={handleSave}
       />
     </VStack>
   );

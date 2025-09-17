@@ -3,26 +3,54 @@ export interface ISettlementModel {
     modelType: string;
     currency: string;
 }
+
+export interface ISettlementWindows {
+    settlementWindowList: ISettlementWindow[];
+}
 export interface ISettlementWindow {
-    settlementId: string;
-    windowId: number;
+    settlementWindowId: string;
     state: string;
-    openDate: string;
-    closeDate: string;
+    reason: string;
+    createdDate: string;
+    changedDate: string;
+    contentList: ISettlementWindowContent[];
+}
+export interface ISettlementWindowContent {
+    contentId: number,
+    state: string,
+    ledgerAccountType: string,
+    currencyId: string,
+    createdDate: string,
+    changedDate: string
+}
+
+export interface IFinalizeSettlements {
+    settlementList: IFinalizeSettlement[];
 }
 
 export interface IFinalizeSettlement {
-    settlementId: string
-    windowId: string[]
+    id: string
     state: string
-    settlementCreatedDate: string
-    settlementFinalizeDate: string
-    details: {
-        dfsp: string
-        currency: string
-        debit: number | null
-        credit: number | null
-    }[]
+    reason: string
+    createdDate: string
+    changedDate: string
+    settlementWindowList: ISettlementWindow[];
+    participantList: ISettlementParticipant[];
 }
 
+export interface ISettlementParticipant {
+    participantId: number,
+    accountList: ISettlementAccount[];
+}
+export interface ISettlementAccount {
+    accountId: number,
+    state: string,
+    reason: string,
+    externalReference: string | null,
+    createdDate: string | null,
+    netSettlementAmount: {
+        amount: number,
+        currency: string
+    }
+}
 
