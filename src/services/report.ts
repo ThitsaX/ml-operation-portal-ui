@@ -140,15 +140,9 @@ export const generateSettlementReport = async (params: any) => {
 
 export const generateSettlementStatementReport = async (
   user: IUserState,
-  paramsValues: any
+  params: any
 ) => {
-  const params = {
-    start_date: paramsValues.startDate,
-    end_date: paramsValues.endDate,
-    fsp_id: user.data?.participantName,
-    timezoneoffset: paramsValues.timezoneoffset,
-    file_type: paramsValues.fileType
-  };
+
 
   const accessToken = await generateAccessToken({
     method: 'POST',

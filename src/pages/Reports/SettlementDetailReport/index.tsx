@@ -59,8 +59,11 @@ const SettlementDetailReport = () => {
   } = useForm<ISettlementDetailReport>({
     resolver: zodResolver(settlementDetailReportHelper.schema),
     defaultValues: {
-      start_date: moment().format('yyyy-MM-DD'),
-      end_date: moment().format('yyyy-MM-DD'),
+      fspId: '',
+      settlementId: '',
+      fileType: '',
+      startDate: moment().format('yyyy-MM-DD'),
+      endDate: moment().format('yyyy-MM-DD'),
     },
     mode: 'onChange'
   });
@@ -70,7 +73,7 @@ const SettlementDetailReport = () => {
     setRunButtonState(false);
 
     const formData = getValues();
-    const fileType = formData.file_type;
+    const fileType = formData.fileType;
 
     const selectedTZString = selectedTimezone.value;
     let tzOffSet: string = selectedTimezone.offset === 0
@@ -78,9 +81,9 @@ const SettlementDetailReport = () => {
       : moment().tz(selectedTZString).format('ZZ').replace('+', '');
     console.log("Values for the selected", getValues());
     generateSettlementDetailReport({
-      settlementId: selectedSettlementId?.value,
-      fspid: getValues().fspid,
-      fileType: fileType,
+      settlementId: getValues().settlementId,
+      fspId: getValues().fspId,
+      fileType: getValues().fileType,
       timezoneOffset: tzOffSet
     })
       .then((res: any) => {
@@ -108,8 +111,8 @@ const SettlementDetailReport = () => {
     start();
     setRunButtonState(false);
 
-    const startDate = getValues().start_date;
-    const endDate = getValues().end_date;
+    const startDate = getValues().startDate;
+    const endDate = getValues().endDate;
 
     let utcStartDate = moment.utc(startDate).startOf('day').format();
     const utcEndDate = moment.utc(endDate).endOf('day').format();
@@ -161,10 +164,10 @@ const SettlementDetailReport = () => {
       <Stack borderWidth="1px" borderRadius="lg" height="full" p="2" mb={4}>
         <HStack alignItems={'flex-start'} p={2} spacing={8}>
 
-          <FormControl pb="1" isInvalid={!isEmpty(errors.fspid)}>
+          <FormControl pb="1" isInvalid={!isEmpty(errors.fspId)}>
             <FormLabel>DFSP Name</FormLabel>
             <Controller
-              name="fspid"
+              name="fspId"
               control={control}
               render={({ field }) => (
                 <Input
@@ -172,11 +175,11 @@ const SettlementDetailReport = () => {
                 />
               )}
             />
-            <FormErrorMessage>{errors.fspid?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.fspId?.message}</FormErrorMessage>
           </FormControl>
 
           <FormControl
-            isInvalid={!isEmpty(errors.start_date)}
+            isInvalid={!isEmpty(errors.startDate)}
             pb="1">
             <FormLabel>Start Date</FormLabel>
             <Controller
@@ -187,19 +190,19 @@ const SettlementDetailReport = () => {
                     value={value}
                     onChange={(e) => {
                       onChange(e);
-                      trigger('end_date');
+                      trigger('endDate');
                     }}
                     onBlur={onBlur}
                     type="date"
                   />
                 );
               }}
-              name="start_date"
+              name="startDate"
             />
-            <FormErrorMessage>{errors.start_date?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.startDate?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.end_date)} pb="1">
+          <FormControl isInvalid={!isEmpty(errors.endDate)} pb="1">
             <FormLabel>End Date</FormLabel>
             <Controller
               control={control}
@@ -212,19 +215,19 @@ const SettlementDetailReport = () => {
                     value={value}
                     onChange={(e) => {
                       onChange(e);
-                      trigger('start_date');
+                      trigger('startDate');
                     }}
                     onBlur={onBlur}
                     type="date"
                   />
                 );
               }}
-              name="end_date"
+              name="endDate"
             />
-            <FormErrorMessage>{errors.end_date?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.endDate?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.fspid)} textAlign="right">
+          <FormControl isInvalid={!isEmpty(errors.fspId)} textAlign="right">
             <Button onClick={handleSubmit(onSearchClick)} isDisabled={!isValid}
               colorScheme='blue' gap="2"
               size='md'
@@ -240,7 +243,7 @@ const SettlementDetailReport = () => {
 
           <FormControl
             width={{ base: '200px', md: '250px' }}
-            isInvalid={!isEmpty(errors.fspid)}>
+            isInvalid={!isEmpty(errors.fspId)}>
             <FormLabel>Settlement ID</FormLabel>
             <Controller
               name="settlementId"
@@ -261,7 +264,7 @@ const SettlementDetailReport = () => {
 
         </HStack>
         <HStack justifyContent='flex-end' p={2}>
-          <Select
+          {/* <Select
             placeholder="Choose Format"
             value={settlementModel}
             onChange={(e) => setSettlementModel(e.target.value)}
@@ -269,7 +272,21 @@ const SettlementDetailReport = () => {
           >
             <option value="xlsx">XLSX</option>
             <option value="csv">CSV</option>
-          </Select>
+          </Select> */}
+
+          <FormControl width="250px">
+            <Controller
+              control={control}
+              name="fileType"
+              render={({ field }) => (
+                <Select {...field} placeholder="Choose Format" width="250px">
+                  <option value="xlsx">XLSX</option>
+                  <option value="csv">CSV</option>
+                </Select>
+              )}
+            />
+          </FormControl>
+
           <Button colorScheme='blue' isDisabled={!isValid || !runButtonState} onClick={onDownloadChangeHandler}>
             Download
           </Button>
