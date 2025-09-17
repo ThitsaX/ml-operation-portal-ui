@@ -29,24 +29,20 @@ RUN yarn build
 
 
 # ---------- 2. Production Stage ----------
-FROM node:20-alpine AS runner
+FROM nginx:alpine AS runner
 
-WORKDIR /app
+# Copy built React files to nginx html directory
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy built React files
-COPY --from=builder /app/dist ./dist
+# Copy custom nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy the environment injection script
-COPY scripts/inject-env.sh /app/inject-env.sh
+COPY scripts/inject-env.sh /docker-entrypoint.d/10-inject-env.sh
 
 # Make the script executable
-RUN chmod +x /app/inject-env.sh
-
-# Install a lightweight static file server
-RUN yarn global add serve
+RUN chmod +x /docker-entrypoint.d/10-inject-env.sh
 
 EXPOSE 3000
 
-# Use the injection script as entrypoint, then start the server
-ENTRYPOINT ["/app/inject-env.sh"]
-CMD ["serve", "dist", "-l", "3000"]
+# nginx will automatically run scripts in /docker-entrypoint.d/ before starting
