@@ -32,7 +32,7 @@ export const privateRoutes = {
   getRoleListByParticipant: '/secured/getRoleListByParticipant',
   getParticipantListByParticipant: '/secured/getParticipantListByParticipant',
 
-  createUser:'/secured/createUser',
+  createUser: '/secured/createUser',
   modifyUserStatus: '/secured/modifyUserStatus',
   generate_fee_report: '/secured/generate_fee_report',
 
@@ -73,7 +73,7 @@ export const privateRoutes = {
   getParticipantList: '/secured/getParticipantList',
   getParticipantContactList: '/secured/getParticipantContactList',
 
-
+  syncHubParticipantsToPortal: '/secured/syncHubParticipantsToPortal',
 };
 
 const routes = {
