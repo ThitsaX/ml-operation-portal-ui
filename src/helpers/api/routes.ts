@@ -7,7 +7,7 @@ export const publicRoutes = {
 };
 
 export const privateRoutes = {
-  get_participant_positions_data: '/secured/getParticipantPositionsData',
+  getParticipantPositionList: '/secured/getParticipantPositionList',
   get_all_participants: '/secured/get_all_participants',
   get_user_profile: '/secured/getUserProfile',
   change_password: '/secured/changePassword',

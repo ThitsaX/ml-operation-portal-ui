@@ -8,7 +8,7 @@ export const getDashboardData = async () => {
   const {
     user: { auth }
   } = store.getState()
-  const uri = routes.get_participant_positions_data
+  const uri = routes.getParticipantPositionList
   const accessKey = auth?.accessKey as string
   const secretKey = auth?.secretKey as string
   const accessToken = await generateAccessToken({
