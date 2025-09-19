@@ -21,6 +21,8 @@ import MultiSelect, { OptionType } from './MultiSelect';
 import { IParticipantOrganization, IParticipantUser, IParticipantUserRole } from '@typescript/services';
 import { UserManagementHelper } from '@helpers/form';
 import { isEmpty } from 'lodash-es';
+import { IoReload } from 'react-icons/io5';
+import { syncHubParticipantsToPortal } from '@services/dashboard'; 
 
 const userSchema = new UserManagementHelper();
 
@@ -120,15 +122,27 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             </FormControl>
 
             <FormControl isInvalid={!isEmpty(errors.participantId)} isRequired>
-              <ChakraSelect placeholder="Select Organization*" {...register('participantId')}>
-                {participantInfoList?.map(org => (
-                  <option key={org.participantId} value={org.participantId}>
-                    {org.participantName}
-                  </option>
-                ))}
-              </ChakraSelect>
+              <HStack>
+                <ChakraSelect placeholder="Select Organization*" {...register('participantId')}>
+                  {participantInfoList?.map(org => (
+                    <option key={org.participantId} value={org.participantId}>
+                      {org.participantName}
+                    </option>
+                  ))}
+                </ChakraSelect>
+                <Button
+                  leftIcon={<IoReload />}
+                  colorScheme="teal"
+                  variant="outline"
+                  onClick={() => syncHubParticipantsToPortal()}
+                  minW="40px"
+                  px={2}
+                  aria-label="Sync Organizations"
+                />
+              </HStack>
               <FormErrorMessage>{errors.participantId?.message}</FormErrorMessage>
             </FormControl>
+
           </VStack>
         </ModalBody>
 

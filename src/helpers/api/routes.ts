@@ -7,7 +7,7 @@ export const publicRoutes = {
 };
 
 export const privateRoutes = {
-  get_participant_positions_data: '/secured/getParticipantPositionsData',
+  getParticipantPositionList: '/secured/getParticipantPositionList',
   get_all_participants: '/secured/get_all_participants',
   get_user_profile: '/secured/getUserProfile',
   change_password: '/secured/changePassword',
@@ -32,7 +32,7 @@ export const privateRoutes = {
   getRoleListByParticipant: '/secured/getRoleListByParticipant',
   getParticipantListByParticipant: '/secured/getParticipantListByParticipant',
 
-  createUser:'/secured/createUser',
+  createUser: '/secured/createUser',
   modifyUserStatus: '/secured/modifyUserStatus',
   generate_fee_report: '/secured/generate_fee_report',
 
@@ -73,7 +73,7 @@ export const privateRoutes = {
   getParticipantList: '/secured/getParticipantList',
   getParticipantContactList: '/secured/getParticipantContactList',
 
-
+  syncHubParticipantsToPortal: '/secured/syncHubParticipantsToPortal',
 };
 
 const routes = {

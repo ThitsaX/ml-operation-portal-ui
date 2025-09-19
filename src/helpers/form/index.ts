@@ -272,15 +272,15 @@ export class SettlementWindowHelper extends FormHelper {
   get schema() {
     return z
       .object({
-        startDate: z.coerce.date({ required_error: 'Required' }),
-        endDate: z.coerce.date({ required_error: 'Required' }),
+        fromDate: z.coerce.date({ required_error: 'Required' }),
+        toDate: z.coerce.date({ required_error: 'Required' }),
         state: z.string().optional(),
         currency: z.string().optional(),
         timeZoneOffset: z.string().optional()
       })
-      .refine((data) => data.startDate < data.endDate, {
-        message: 'End Date must not earlier than Start Date',
-        path: ['endDate']
+      .refine((data) => data.fromDate < data.toDate, {
+        message: 'To Date must not earlier than From Date',
+        path: ['toDate']
       });
   }
 }
@@ -289,15 +289,15 @@ export class FinalizeSettlementHelper extends FormHelper {
   get schema() {
     return z
       .object({
-        startDate: z.coerce.date({ required_error: 'Required' }),
-        endDate: z.coerce.date({ required_error: 'Required' }),
+        fromDate: z.coerce.date({ required_error: 'Required' }),
+        toDate: z.coerce.date({ required_error: 'Required' }),
         state: z.string().optional(),
         currency: z.string().optional(),
         timeZoneOffset: z.string().optional()
       })
-      .refine((data) => data.startDate < data.endDate, {
-        message: 'End Date must not earlier than Start Date',
-        path: ['endDate']
+      .refine((data) => data.fromDate < data.toDate, {
+        message: 'To Date must not earlier than From Date',
+        path: ['toDate']
       });
   }
 }

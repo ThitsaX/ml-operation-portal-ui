@@ -5,7 +5,7 @@ import { type IApiErrorResponse, IFinalizeSettlement } from '@typescript/service
 import { type AxiosError } from 'axios'
 import { ISettlementWindow } from '@typescript/services'
 
-export const getFinalizeSettlementList = async (value: any) => {
+export const getFinalizeSettlementList = async (values: any) => {
     const {
         user: { auth, data }
     } = store.getState()
@@ -20,11 +20,7 @@ export const getFinalizeSettlementList = async (value: any) => {
     const { axios } = AxiosRequest(accessToken, accessKey)
     return axios
         .get<{ settlementList: IFinalizeSettlement[] }>(uri, {
-            params: {
-                fromDateTime: value?.fromDate,
-                toDateTime: value?.toDate,
-                currency: value?.currency
-            }
+            params: values
         })
         .then((d) => d.data.settlementList)
         .catch((error: AxiosError<IApiErrorResponse>) => {

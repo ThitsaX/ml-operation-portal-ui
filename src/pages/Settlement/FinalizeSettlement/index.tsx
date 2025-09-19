@@ -77,8 +77,6 @@ const FinalizeSettlement = () => {
     const [toFspOptions, setToFspOptions] = useState<any[]>([]);
     const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string }>();
 
-    const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
-
     const [pageNumber, setPageNumber] = useState<String>('1');
     const { isOpen: isFinalizeOpen, onOpen: onFinalizeOpen, onClose: onFinalizeClose } = useDisclosure();
     const [selectedRow, setSelectedRow] = useState<any>(null);
@@ -91,29 +89,40 @@ const FinalizeSettlement = () => {
 
     const schema = finalizeSettlementHelper.schema;
 
-    const search = useCallback(() => {
+    // Redux
+    const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
+
+    //Selected timezone offset
+    const selectedTZString = selectedTimezone.value;
+    const timezone = selectedTimezone.offset === 0
+        ? "0000"
+        : moment().tz(selectedTZString).format('ZZ').replace('+', '');
+
+    const initialValues = {
+        fromDate: moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'),
+        toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
+        currency: 'USD',
+        state: 'pending'
+    }
+
+    const onSearchHandler = useCallback((values: any) => {
+        const currentTimeZone = moment.tz.guess();
+
+        values.fromDate = moment
+            .utc(values.fromDate)
+            .tz(selectedTZString ? selectedTZString : currentTimeZone)
+            .utc()
+            .format();
+        values.toDate = moment
+            .utc(values.toDate)
+            .tz(selectedTZString ? selectedTZString : currentTimeZone)
+            .utc()
+            .format();
+        values.timezone = timezone;
         start();
 
-        const startDate = getValues().startDate;
-        const endDate = getValues().endDate;
-        const currency = getValues().currency;
-
-        let utcStartDate = moment.utc(startDate).startOf('day').format();
-        const utcEndDate = moment.utc(endDate).endOf('day').format();
-
-        //Getting offset
-        let tzOffSet: string = selectedTimezone.offset === 0
-            ? "0000"
-            : moment().tz(selectedTimezone.value).format('ZZ').replace('+', '');
-
-        const data = {
-            fromDate: utcStartDate,
-            toDate: utcEndDate,
-            currency: currency
-        }
-        getFinalizeSettlementList(data)
+        getFinalizeSettlementList(values)
             .then((data: IFinalizeSettlement[]) => {
-                console.log("Settlement window list", data);
                 if (data.length === 0) {
                     toast({
                         position: 'top',
@@ -130,15 +139,9 @@ const FinalizeSettlement = () => {
             });
     }, [complete, start, toast, user]);
 
-    const onFindHandler = useCallback(() => {
-        search();
-    },
-        [search]
-    );
 
     const onTrClickHandler = useCallback(
         (row: any) => {
-            console.log("selected rows", row);
             setSelectedSettlement(row);
             onDetailOpen();
         },
@@ -238,15 +241,12 @@ const FinalizeSettlement = () => {
         getValues,
         setValue,
         trigger,
+        reset,
+        handleSubmit,
         formState: { errors, isValid }
     } = useForm<IFinalizeSettlementForm>({
         resolver: zodResolver(schema),
-        defaultValues: {
-            startDate: moment().format('yyyy-MM-DD'),
-            endDate: moment().format('yyyy-MM-DD'),
-            currency: 'USD',
-            state: 'pending'
-        },
+        defaultValues: initialValues,
         mode: 'onChange'
     });
 
@@ -267,57 +267,73 @@ const FinalizeSettlement = () => {
         setSelectedToFspOption(options[0]);
     };
 
-    const onClearHandler = () => {
-        // reset({
-        //     startDate: moment().format('yyyy-MM-DD'),
-        //     endDate: moment().format('yyyy-MM-DD'),
-        //     currency: 'USD',
-        //     state: 'pending'
-        // });
-        setDateRange('oneDay');
-        setSelectedToFspOption(toFspOptions[0]); // Reset to "All"
-    };
+    const onChangeDateRange = useCallback(
+        (range: Ranges) => {
+            let from: string;
+            let to: string;
+
+            switch (range) {
+                case 'oneDay':
+                    from = moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm');
+                    to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
+                    break;
+                case 'today':
+                    from = moment().tz(selectedTZString).startOf('d').format('YYYY-MM-DDTHH:mm');
+                    to = moment().tz(selectedTZString).endOf('d').format('YYYY-MM-DDTHH:mm');
+                    break;
+                case 'twoDay':
+                    from = moment().tz(selectedTZString).subtract(2, 'd').format('YYYY-MM-DDTHH:mm');
+                    to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
+                    break;
+                case 'oneWeek':
+                    from = moment().tz(selectedTZString).subtract(1, 'w').format('YYYY-MM-DDTHH:mm');
+                    to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
+                    break;
+                case 'oneMonth':
+                    from = moment().tz(selectedTZString).subtract(1, 'month').format('YYYY-MM-DDTHH:mm');
+                    to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
+                    break;
+                case 'oneYear':
+                    from = moment().tz(selectedTZString).subtract(1, 'y').format('YYYY-MM-DDTHH:mm');
+                    to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
+                    break;
+                case 'custom':
+                    setDateRange(range);
+                    return;
+                    break;
+            }
+
+            setDateRange(range);
+
+            setValue('fromDate', from);
+            setValue('toDate', to);
+        },
+        [setValue, selectedTimezone]
+    );
+
+    const onSelectedTimezoneChange = useCallback(() => {
+        reset()
+        const options = { shouldValidate: true, shouldDirty: true }
+        setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'), options)
+        setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'), options)
+        setValue('timezoneOffset', timezone, options)
+    }, [selectedTimezone]);
+
+    // Reseting values as soon as timezone change
+    useEffect(() => {
+        reset(initialValues)
+        onChangeDateRange('oneDay');
+        setFinalizeSettlement([]);
+    }, [selectedTimezone])
 
 
+    const onCancelHandler = useCallback(() => {
+        reset()
+        onChangeDateRange('oneDay');
+        onSelectedTimezoneChange();
 
-    const onChangeDateRange = useCallback((range: Ranges) => {
-        let from: string, to: string;
-        const selectedTZString = selectedTimezone.value;
-
-        switch (range) {
-            case 'oneDay':
-                from = moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm');
-                to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
-                break;
-            case 'today':
-                from = moment().tz(selectedTZString).startOf('d').format('YYYY-MM-DDTHH:mm');
-                to = moment().tz(selectedTZString).endOf('d').format('YYYY-MM-DDTHH:mm');
-                break;
-            case 'twoDay':
-                from = moment().tz(selectedTZString).subtract(2, 'd').format('YYYY-MM-DDTHH:mm');
-                to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
-                break;
-            case 'oneWeek':
-                from = moment().tz(selectedTZString).subtract(1, 'w').format('YYYY-MM-DDTHH:mm');
-                to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
-                break;
-            case 'oneMonth':
-                from = moment().tz(selectedTZString).subtract(1, 'month').format('YYYY-MM-DDTHH:mm');
-                to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
-                break;
-            case 'oneYear':
-                from = moment().tz(selectedTZString).subtract(1, 'y').format('YYYY-MM-DDTHH:mm');
-                to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
-                break;
-            case 'custom':
-                setDateRange(range);
-                return;
-        }
-
-        setDateRange(range);
-        setValue('startDate', from);
-        setValue('endDate', to);
-    }, [setValue, selectedTimezone]);
+        setFinalizeSettlement([]);
+    }, [onChangeDateRange, reset, selectedTimezone]);
 
     const handlePageValidation = (value: string) => {
         if (Number(value) > pageOptions.length) {
@@ -347,30 +363,53 @@ const FinalizeSettlement = () => {
                             <option value="custom">Custom Range</option>
                         </Select>
 
-                        <FormControl isInvalid={!isEmpty(errors.startDate)} isRequired>
-                            {/* <FormLabel>Start Date</FormLabel> */}
-                            <Controller
-                                control={control}
-                                name="startDate"
-                                render={({ field }) => (
-                                    <Input {...field} type="date" onChange={(e) => { field.onChange(e); trigger('endDate'); }} />
-                                )}
-                            />
-                            <FormErrorMessage>{errors.startDate?.message}</FormErrorMessage>
+                        <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
+                            {/* <FormLabel fontSize="sm">Start Date</FormLabel> */}
+                            {selectedTZString ?
+                                <Controller
+                                    control={control}
+                                    render={({ field: { value, onChange } }) => {
+                                        return (
+                                            <Input
+                                                disabled={dateRange !== 'custom' ? true : false}
+                                                type="datetime-local"
+                                                value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
+                                                onChange={(event) => {
+                                                    const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
+                                                    trigger('fromDate')
+                                                    onChange(date);
+                                                }}
+                                            />
+                                        );
+                                    }}
+                                    name="fromDate"
+                                /> : <p>Loading</p>}
+                            <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
                         </FormControl>
-
-                        <FormControl isInvalid={!isEmpty(errors.endDate)} isRequired>
-                            {/* <FormLabel>End Date</FormLabel> */}
-                            <Controller
-                                control={control}
-                                name="endDate"
-                                render={({ field }) => (
-                                    <Input {...field} type="date" onChange={(e) => { field.onChange(e); trigger('startDate'); }} />
-                                )}
-                            />
-                            <FormErrorMessage>{errors.endDate?.message}</FormErrorMessage>
+                        <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
+                            {/* <FormLabel fontSize="sm">End Date</FormLabel> */}
+                            {selectedTZString ?
+                                <Controller
+                                    control={control}
+                                    render={({ field: { value, onChange } }) => {
+                                        return (
+                                            <Input
+                                                disabled={dateRange !== 'custom' ? true : false}
+                                                type="datetime-local"
+                                                value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
+                                                onChange={(event) => {
+                                                    const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
+                                                    trigger('toDate')
+                                                    onChange(date);
+                                                }}
+                                            />
+                                        );
+                                    }}
+                                    name="toDate"
+                                />
+                                : <p>Loading</p>}
+                            <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
                         </FormControl>
-
                     </HStack>
                     <HStack alignItems={'flex-start'} spacing={4}>
                         <FormControl width="400px">
@@ -409,10 +448,16 @@ const FinalizeSettlement = () => {
                         </FormControl>
                     </HStack>
                     <HStack justifyContent='flex-end'>
-                        <Button colorScheme='gray' variant='outline' onClick={onClearHandler}>
+                        <Button colorScheme='gray' variant='outline' onClick={onCancelHandler}>
                             Clear Filters
                         </Button>
-                        <Button colorScheme='blue' isDisabled={!isValid} onClick={onFindHandler}>
+                        <Button color="white"
+                            bg="primary"
+                            _hover={{
+                                bg: 'primary',
+                                opacity: 0.4
+                            }}
+                            onClick={handleSubmit(onSearchHandler)}>
                             Find
                         </Button>
                     </HStack>
@@ -569,7 +614,6 @@ const FinalizeSettlement = () => {
                                 colorScheme="green"
                                 borderRadius="full"
                                 onClick={async () => {
-                                    console.log('Finalizing Settlement ID:', selectedRow.transferId);
                                     // await finalizeSettlementAPI(selectedRow.transferId);
                                     onFinalizeClose();
                                 }}

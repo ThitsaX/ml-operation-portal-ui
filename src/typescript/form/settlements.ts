@@ -1,14 +1,14 @@
 export interface ISettlementWindowForm {
-    startDate: string
-    endDate: string
+    fromDate: string
+    toDate: string
     currency: string
     state: string
     timezoneOffset: string
 }
 
 export interface IFinalizeSettlementForm {
-    startDate: string
-    endDate: string
+    fromDate: string
+    toDate: string
     currency: string
     state: string
     timezoneOffset: string

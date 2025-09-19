@@ -41,6 +41,7 @@ import type { ITimezoneOption } from 'react-timezone-select';
 import DepositModal from '@components/interface/Participant';
 import WithdrawModal from '@components/interface/Participant/WidthdrawModal';
 import NetDebitCapModal from '@components/interface/Participant/NetDebitCardModal';
+import { syncHubParticipantsToPortal} from '@services/dashboard';
 
 const ParticipantPositions = () => {
 
@@ -48,6 +49,13 @@ const ParticipantPositions = () => {
     const [tableData, setTableData] = useState<IParticipantPositionData[]>([]);
 
     // Redux
+
+
+    useEffect(() => {
+        syncHubParticipantsToPortal();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const selectedTimezone = useSelector<RootState, ITimezoneOption>(
         (s) => s.app.selectedTimezone
     );
@@ -284,6 +292,7 @@ const ParticipantPositions = () => {
                         icon={<IoReload />}
                         onClick={() => {
                             setStringDateTime(() => handleTimeZone(stringTimezone))
+                            syncHubParticipantsToPortal();
                         }}
                     />
                 </Tooltip>
