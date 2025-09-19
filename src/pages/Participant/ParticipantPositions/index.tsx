@@ -41,7 +41,7 @@ import type { ITimezoneOption } from 'react-timezone-select';
 import DepositModal from '@components/interface/Participant';
 import WithdrawModal from '@components/interface/Participant/WidthdrawModal';
 import NetDebitCapModal from '@components/interface/Participant/NetDebitCardModal';
-import { syncHubParticipantsToPortal} from '@services/dashboard';
+import { syncHubParticipantsToPortal } from '@services/dashboard';
 
 const ParticipantPositions = () => {
 
@@ -95,9 +95,9 @@ const ParticipantPositions = () => {
                         fontWeight="bold"
                         cursor="pointer"
                         _hover={{ textDecoration: 'underline' }}
-                        onClick={() => handleClick(row.original.description)}
+                        onClick={() => handleClick(row.original.participantName)}
                     >
-                        {row.original.description}
+                        {row.original.participantName}
                     </Box>)
             },
             {
