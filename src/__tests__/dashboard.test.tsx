@@ -5,8 +5,8 @@ import * as dashboardService from '@services/dashboard';
 import { useGetDashboard } from '@hooks/services';
 
 const mockData = [{
-    "dfspId": "wallet2",
-    "dfspName": "wallet 2",
+    "participantName": "wallet2",
+    "description": "wallet 2",
     "currency": "LRD",
     "balance": -101646.59,
     "currentPosition": -22.00,

@@ -3,8 +3,8 @@ export interface IGetParticipantPositionData {
 }
 
 export interface IParticipantPositionData {
-  dfspId: string,
-  dfspName: string,
+  participantName: string,
+  description: string,
   currency: string,
   balance: number,
   currentPosition: number,
