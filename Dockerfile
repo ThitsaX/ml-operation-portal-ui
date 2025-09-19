@@ -21,22 +21,28 @@ COPY . .
 # Install all deps (including dev, for build)
 RUN yarn install --immutable
 
-# Build the React app
+# Set placeholder environment variables for build
+ENV VITE_API_URL=__VITE_API_URL__
+
+# Build the React app with placeholders
 RUN yarn build
 
 
 # ---------- 2. Production Stage ----------
-FROM node:20-alpine AS runner
+FROM nginx:alpine AS runner
 
-WORKDIR /app
+# Copy built React files to nginx html directory
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy built React files
-COPY --from=builder /app/dist ./dist
+# Copy custom nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Install a lightweight static file server
-RUN yarn global add serve
+# Copy the environment injection script
+COPY scripts/inject-env.sh /docker-entrypoint.d/10-inject-env.sh
+
+# Make the script executable
+RUN chmod +x /docker-entrypoint.d/10-inject-env.sh
 
 EXPOSE 3000
 
-# Use serve to host the build output
-CMD ["serve", "dist", "-l", "3000"]
+# nginx will automatically run scripts in /docker-entrypoint.d/ before starting

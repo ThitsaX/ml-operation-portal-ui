@@ -50,6 +50,8 @@ const Header = () => {
       dispatch(UserActions.updateUser(data));
     },
     onError(err) {
+      console.log(err);
+      console.log(JSON.stringify(err));
       toast({
         position: 'top',
         description: getRequestErrorMessage(err),
