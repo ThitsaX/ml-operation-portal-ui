@@ -88,21 +88,21 @@ const ParticipantPositions = () => {
         () => [
             {
                 Header: 'DFSP ID',
-                accessor: 'dfspId',
+                accessor: 'participantName',
                 Cell: ({ row }: any) => (
                     <Box
                         color="blue.600"
                         fontWeight="bold"
                         cursor="pointer"
                         _hover={{ textDecoration: 'underline' }}
-                        onClick={() => handleClick(row.original.dfspName)}
+                        onClick={() => handleClick(row.original.description)}
                     >
-                        {row.original.dfspName}
+                        {row.original.description}
                     </Box>)
             },
             {
                 Header: 'DFSP Name',
-                accessor: 'dfspName'
+                accessor: 'description'
             },
             {
                 Header: 'Currency',
@@ -144,7 +144,7 @@ const ParticipantPositions = () => {
                 disableSortBy: true,
                 Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
                     const isEnabled = row.original.ndc > 0;
-                    const id = row.original.dfspId; // change to your actual identifier
+                    const id = row.original.participantName; // change to your actual identifier
 
                     return (
                         <Switch
@@ -229,8 +229,8 @@ const ParticipantPositions = () => {
     }
 
 
-    const handleClick = (dfspId: string) => {
-        navigate(`/participant/position/${dfspId}`);
+    const handleClick = (participantName: string) => {
+        navigate(`/participant/position/${participantName}`);
     };
 
     const handleDeposit = (amount: number) => {
