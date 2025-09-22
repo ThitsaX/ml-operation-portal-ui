@@ -4,7 +4,10 @@ export interface ISignInValues {
 }
 
 export type RoleType = 'ADMIN' | 'OPERATION';
-export type UserStatus = 'INACTIVE' | 'ACTIVE';
+export enum UserStatus {
+  INACTIVE = 'INACTIVE',
+  ACTIVE = 'ACTIVE',
+}
 export interface ICreateUserValues extends ISignInValues {
   name: string;
   first_name: string;

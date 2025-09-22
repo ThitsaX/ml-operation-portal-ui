@@ -7,7 +7,6 @@ import Login from '@pages/Login';
 import CompanyInfo from '@pages/CompanyInfo';
 import ChangePassword from '@pages/ChangePassword';
 import { SettlementStatementReport, SettlementSummaryReport } from '@pages/Reports';
-import Users, { CreateUser } from '@pages/Users';
 import SettlementBankReport from '@pages/Reports/SettlementBankReport';
 import Transfer from '@pages/Transfer';
 import User from '@pages/UserManagement/User';
@@ -213,16 +212,6 @@ export const router = createBrowserRouter([
         path: 'change-password',
         caseSensitive: true,
         element: <ChangePassword />
-      },
-      {
-        path: 'users/all',
-        caseSensitive: true,
-        element: <Users />
-      },
-      {
-        path: 'users/create',
-        caseSensitive: true,
-        element: <CreateUser />
       },
       {
         path: 'transfer',

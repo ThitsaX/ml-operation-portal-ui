@@ -2,19 +2,25 @@ import { useState } from "react";
 import {
     Modal, ModalOverlay, ModalContent, ModalHeader,
     ModalCloseButton, ModalBody, ModalFooter,
-    Button, Box, Text, Input
+    Button, Box, Input, FormControl, FormLabel, FormErrorMessage
 } from "@chakra-ui/react";
 
-interface WithdrawModalProps {
+interface DepositModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (amount: number) => void;
 }
 
-const WithdrawModal: React.FC<WithdrawModalProps> = ({ isOpen, onClose, onSubmit }) => {
+const WidthdrawMoal: React.FC<DepositModalProps> = ({ isOpen, onClose, onSubmit }) => {
     const [amount, setAmount] = useState<number>(0);
+    const [error, setError] = useState<string>("");
 
     const handleSubmit = () => {
+        if (amount <= 0) {
+            setError("Amount must be greater than 0");
+            return;
+        }
+        setError("");
         onSubmit(amount);
         onClose();
     };
@@ -23,27 +29,35 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({ isOpen, onClose, onSubmit
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader textAlign="center">Withdraw Funds</ModalHeader>
+                <ModalHeader textAlign="center">Widthdraw Funds</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
                     <Box mb={4}>
-
-                        <Text mb={2}>Enter Amount...</Text>
-                        <Input
-                            placeholder="Enter Amount..."
-                            type="number"
-                            value={amount}
-                            onChange={(e) => setAmount(Number(e.target.value))}
-                        />
+                        <FormControl isInvalid={!!error} isRequired>
+                            <FormLabel>Amount</FormLabel>
+                            <Input
+                                placeholder="Enter Amount..."
+                                type="number"
+                                min={1}
+                                value={amount === 0 ? "" : amount}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setAmount(val === "" ? 0 : Number(val));
+                                }}
+                            />
+                            <FormErrorMessage>{error}</FormErrorMessage>
+                        </FormControl>
                     </Box>
                 </ModalBody>
                 <ModalFooter>
                     <Button variant="ghost" onClick={onClose} mr={3}>Cancel</Button>
-                    <Button colorScheme="blue" onClick={handleSubmit}>Submit</Button>
+                    <Button colorScheme="blue" onClick={handleSubmit}>
+                        Submit
+                    </Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
     );
 };
 
-export default WithdrawModal;
+export default WidthdrawMoal;

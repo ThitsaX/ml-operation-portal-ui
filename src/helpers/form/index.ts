@@ -118,8 +118,29 @@ export class UserManagementHelper extends FormHelper {
       lastName: z.string().min(1, 'Last Name is required'),
       email: z.string().email('Invalid email').min(1, 'Email is required'),
       participantId: z.string().min(1, 'Organization is required'),
-      roleList: z.array(z.string()).min(1, 'Select at least one role'),
-    })
+      roleIdList: z.array(z.string()).min(1, 'Select at least one role'),
+      jobTitle: z.string().optional(),
+      status: z.string().optional(),
+      userId: z.string().optional(),
+      password: z.string().min(3, 'Password must be at least 6 characters'),
+      confirmPassword: z.string(),
+    }).refine((data) => data.password === data.confirmPassword, {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    });
+  }
+
+  get editSchema() {
+    return z.object({
+      firstName: z.string().min(1, 'First Name is required'),
+      lastName: z.string().min(1, 'Last Name is required'),
+      email: z.string().email('Invalid email').min(1, 'Email is required'),
+      participantId: z.string().min(1, 'Organization is required'),
+      roleIdList: z.array(z.string()).min(1, 'Select at least one role'),
+      jobTitle: z.string().optional(),
+      status: z.string().optional(),
+      userId: z.string().optional(),
+    });
   }
 }
 
