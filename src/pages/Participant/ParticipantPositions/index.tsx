@@ -242,7 +242,7 @@ const ParticipantPositions = () => {
         // call your API here
     };
 
-    const handleNetDebitCard = (amount: number) => {
+    const handleNetDebitCard = (type: "fixed" | "percentage", amount: number) => {
         console.log("handleNetDebitCard:", amount);
         // call your API here
     };

@@ -115,9 +115,7 @@ const Header = () => {
         <Heading
           size="md"
           textAlign="center"
-          w="full"
-          cursor="pointer"
-          onClick={() => navigate('/company-informations')}>
+          w="full">
           {data?.participantName || 'Operation Portal'}
         </Heading>
       </Flex>

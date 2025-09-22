@@ -14,6 +14,7 @@ import {
   Button,
   FormControl,
   FormErrorMessage,
+  SimpleGrid,
 } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,7 +23,8 @@ import { IParticipantOrganization, IParticipantUser, IParticipantUserRole } from
 import { UserManagementHelper } from '@helpers/form';
 import { isEmpty } from 'lodash-es';
 import { IoReload } from 'react-icons/io5';
-import { syncHubParticipantsToPortal } from '@services/dashboard'; 
+import { syncHubParticipantsToPortal } from '@services/dashboard';
+import { UserStatus } from '@typescript/form';
 
 const userSchema = new UserManagementHelper();
 
@@ -52,18 +54,19 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     reset,
     formState: { errors, isDirty, isValid, isSubmitting },
   } = useForm<IParticipantUser>({
-    resolver: zodResolver(userSchema.schema),
+    resolver: zodResolver(isEdit ? userSchema.editSchema : userSchema.schema),
     defaultValues: {
       firstName: '',
       lastName: '',
       email: '',
       participantId: '',
-      roleList: [],
+      roleIdList: [],
+      jobTitle: '',
+      status: UserStatus.ACTIVE,
     },
     mode: 'onChange',
   });
 
-  // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
       reset({
@@ -71,13 +74,15 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         lastName: selectedUser?.lastName ?? '',
         email: selectedUser?.email ?? '',
         participantId: selectedUser?.participantId ?? '',
-        roleList: selectedUser?.roleList ?? [],
+        roleIdList: selectedUser?.roleIdList ?? [],
+        jobTitle: selectedUser?.jobTitle ?? '',
+        status: selectedUser?.status,
       });
     }
   }, [isOpen, selectedUser, reset]);
 
   const handleFormSubmit = (values: IParticipantUser) => {
-    onSave(values); // Parent handles save/update
+    onSave(values);
     onClose();
   };
 
@@ -89,15 +94,18 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         <ModalCloseButton />
         <ModalBody>
           <VStack spacing={4} align="stretch">
-            <HStack spacing={4}>
-              <FormControl isInvalid={!isEmpty(errors.firstName)} isRequired>
-                <Input placeholder="First Name*" {...register('firstName')} />
-                <FormErrorMessage>{errors.firstName?.message}</FormErrorMessage>
-              </FormControl>
-              <FormControl isInvalid={!isEmpty(errors.lastName)} isRequired>
-                <Input placeholder="Last Name*" {...register('lastName')} />
-                <FormErrorMessage>{errors.lastName?.message}</FormErrorMessage>
-              </FormControl>
+            <HStack spacing={5} align="start">
+              <SimpleGrid columns={2} spacing={6} width="100%">
+                <FormControl isInvalid={!isEmpty(errors.firstName)} isRequired>
+                  <Input placeholder="First Name*" {...register('firstName')} />
+                  <FormErrorMessage>{errors.firstName?.message}</FormErrorMessage>
+                </FormControl>
+
+                <FormControl isInvalid={!isEmpty(errors.lastName)} isRequired>
+                  <Input placeholder="Last Name*" {...register('lastName')} />
+                  <FormErrorMessage>{errors.lastName?.message}</FormErrorMessage>
+                </FormControl>
+              </SimpleGrid>
             </HStack>
 
             <FormControl isInvalid={!isEmpty(errors.email)} isRequired>
@@ -105,20 +113,24 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
             </FormControl>
 
-            <FormControl isInvalid={!isEmpty(errors.roleList)} isRequired>
+            <FormControl isInvalid={!isEmpty(errors.roleIdList)} isRequired>
               <Controller
                 control={control}
-                name="roleList"
+                name="roleIdList"
                 render={({ field }) => (
                   <MultiSelect
-                    options={roleList?.map(role => ({ value: role.name, label: role.name })) ?? []}
-                    value={field.value.map(r => ({ value: r, label: r }))}
+                    options={roleList?.map(role => ({ value: role.roleId, label: role.name })) ?? []}
+                    value={
+                      (roleList ?? [])
+                        .filter(role => field.value.includes(role.roleId))
+                        .map(role => ({ value: role.roleId, label: role.name }))
+                    }
                     onChange={(selected: OptionType[]) => field.onChange(selected.map(s => s.value))}
                     placeholder="Select Role*"
                   />
                 )}
               />
-              <FormErrorMessage>{errors.roleList?.message}</FormErrorMessage>
+              <FormErrorMessage>{errors.roleIdList?.message}</FormErrorMessage>
             </FormControl>
 
             <FormControl isInvalid={!isEmpty(errors.participantId)} isRequired>
@@ -143,6 +155,25 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               <FormErrorMessage>{errors.participantId?.message}</FormErrorMessage>
             </FormControl>
 
+            <FormControl isInvalid={!isEmpty(errors.jobTitle)}>
+              <Input placeholder="Job Title" {...register('jobTitle')} />
+              <FormErrorMessage>{errors.jobTitle?.message}</FormErrorMessage>
+            </FormControl>
+
+            {!isEdit && (
+              <>
+                <FormControl isInvalid={!isEmpty(errors.password)}>
+                  <Input placeholder="Password*" {...register('password')} />
+                  <FormErrorMessage>{errors.password?.message}</FormErrorMessage>
+                </FormControl>
+
+                <FormControl isInvalid={!isEmpty(errors.confirmPassword)}>
+                  <Input placeholder="Confirm Password" {...register('confirmPassword')} />
+                  <FormErrorMessage>{errors.confirmPassword?.message}</FormErrorMessage>
+                </FormControl>
+              </>
+            )}
+
           </VStack>
         </ModalBody>
 
@@ -152,7 +183,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             colorScheme="blue"
             onClick={handleSubmit(handleFormSubmit)}
             isLoading={isSubmitting}
-          >
+            isDisabled={!isValid}>
             {isEdit ? 'Update' : 'Save'}
           </Button>
         </ModalFooter>

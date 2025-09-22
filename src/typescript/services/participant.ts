@@ -6,10 +6,22 @@ export interface IParticipantUser {
   email: string;
   firstName: string;
   lastName: string;
-  roleList: string[];
+  roleIdList: string[];
   participantId: string;
+  jobTitle: string;
   status: UserStatus;
-  createdDate: number;
+  password: string;
+  confirmPassword?: string;
+}
+
+export interface IModifyUser {
+  userId: string;
+  name: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  jobTitle: string;
+  status: UserStatus;
 }
 
 export interface IUserRoleList {

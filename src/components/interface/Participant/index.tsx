@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
     Modal, ModalOverlay, ModalContent, ModalHeader,
     ModalCloseButton, ModalBody, ModalFooter,
-    Button, Box, Text, Input
+    Button, Box, Input, FormControl, FormLabel, FormErrorMessage
 } from "@chakra-ui/react";
 
 interface DepositModalProps {
@@ -13,8 +13,14 @@ interface DepositModalProps {
 
 const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, onSubmit }) => {
     const [amount, setAmount] = useState<number>(0);
+    const [error, setError] = useState<string>("");
 
     const handleSubmit = () => {
+        if (amount <= 0) {
+            setError("Amount must be greater than 0");
+            return;
+        }
+        setError("");
         onSubmit(amount);
         onClose();
     };
@@ -27,13 +33,20 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, onSubmit }
                 <ModalCloseButton />
                 <ModalBody>
                     <Box mb={4}>
-                        <Text mb={2}>Amount</Text>
-                        <Input
-                            placeholder="Enter Amount..."
-                            type="number"
-                            value={amount}
-                            onChange={(e) => setAmount(Number(e.target.value))}
-                        />
+                        <FormControl isInvalid={!!error} isRequired>
+                            <FormLabel>Amount</FormLabel>
+                            <Input
+                                placeholder="Enter Amount..."
+                                type="number"
+                                min={1}
+                                value={amount === 0 ? "" : amount}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setAmount(val === "" ? 0 : Number(val));
+                                }}
+                            />
+                            <FormErrorMessage>{error}</FormErrorMessage>
+                        </FormControl>
                     </Box>
                 </ModalBody>
                 <ModalFooter>

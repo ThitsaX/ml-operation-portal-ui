@@ -22,11 +22,8 @@ import {
   useToast
 } from '@chakra-ui/react';
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { usePagination, useSortBy, useTable, Row, Column } from 'react-table';
-import { FiEdit, FiToggleRight } from 'react-icons/fi';
-import Select from 'react-select';
+import { usePagination, useSortBy, useTable, Column, CellProps } from 'react-table';
 import EditUserModal from '@components/interface/EditUserModal';
-import { IGetUserDataList, IGetUserData } from '@typescript/form';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import {
   TfiAngleDoubleLeft,
@@ -36,12 +33,12 @@ import {
 } from 'react-icons/tfi';
 import { FaRegEdit } from "react-icons/fa";
 import { useGetUserListByParticipant } from '@hooks/services';
-import { modifyUserStatus } from '@services/participant';
+import { modifyUser, modifyUserStatus } from '@services/participant';
 import {
-  type IApiErrorResponse,
   type IParticipantUser,
+  type IModifyUser,
 } from '@typescript/services';
-import { type UserStatus } from '@typescript/form';
+import { UserStatus } from '@typescript/form';
 import { useGetRoleListByParticipant, useGetOrganizationListByParticipant } from '@hooks/services/participant';
 import { createUser } from '@services/participant';
 
@@ -56,57 +53,65 @@ const User = () => {
 
   const { data: roleList } = useGetRoleListByParticipant();
   const { data: participantInfoList } = useGetOrganizationListByParticipant();
+  const { data, refetch } = useGetUserListByParticipant();
 
   const toggleStatus = async (userId: string, checked: boolean) => {
-
-    const newStatus: UserStatus = checked ? 'ACTIVE' : 'INACTIVE';
+    const newStatus = checked ? UserStatus.ACTIVE : UserStatus.INACTIVE;
     try {
       await modifyUserStatus(userId, newStatus);
-
-      setFilteredUsers(prev =>
-        prev.map(user =>
-          user.userId === userId ? { ...user, status: newStatus } : user
-        )
-      );
-    } catch (error: any) {
+      await refetch();
 
       toast({
         position: 'top',
-        description: error.message || 'Failed to update user status',
+        description: 'User status updated successfully',
         status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error: any) {
+      toast({
+        position: 'top',
+        description: error.message || 'Failed to update user status',
+        status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
   };
 
+  const columns: Column<IParticipantUser>[] = useMemo(() => {
+    return [
+      {
+        Header: "Email",
+        accessor: "email",
+      },
+      {
+        Header: "Name",
+        accessor: "name",
+      },
+      {
+        Header: "Role",
+        accessor: "roleIdList",
+        Cell: ({ value }: CellProps<IParticipantUser, string[]>) => {
+          if (!value || !roleList) return <span>-</span>;
 
-  const { data, refetch } = useGetUserListByParticipant();
+          const roleNames = value
+            .map(roleId => roleList.find(role => role.roleId === roleId)?.name)
+            .filter(Boolean)
+            .join(", ");
 
-  const columns: Column<IParticipantUser>[] = useMemo(
-    () => [
-      {
-        Header: 'Email',
-        accessor: 'email',
+          return <span>{roleNames || "-"}</span>;
+        },
       },
       {
-        Header: 'Name',
-        accessor: 'name'
-      },
-      {
-        Header: 'Role',
-        accessor: 'roleList',
-      },
-      {
-        Header: 'Status',
-        accessor: 'status',
-        disableSortBy: true
-      },
-      {
-        Header: 'Action',
+        Header: "Status",
+        accessor: "status",
         disableSortBy: true,
-        Cell: ({ row }: { row: Row<IParticipantUser> }) => (
-
+      },
+      {
+        Header: "Action",
+        disableSortBy: true,
+        Cell: ({ row }: CellProps<IParticipantUser>) => (
           <HStack spacing={3}>
             <IconButton
               icon={<FaRegEdit />}
@@ -115,25 +120,19 @@ const User = () => {
               onClick={() => handleEditClick(row.original)}
               variant="ghost"
             />
-            {/* <IconButton
-              icon={<FiToggleRight />}
-              aria-label="Toggle"
-              size="sm"
-              variant="outline"
-              colorScheme="green"
-            /> */}
-
             <Switch
               colorScheme="green"
-              isChecked={row.original.status === 'ACTIVE'}
-              onChange={(e) => toggleStatus(row.original.userId, e.target.checked)}
+              isChecked={row.original.status === "ACTIVE"}
+              onChange={e =>
+                toggleStatus(row.original.userId, e.target.checked)
+              }
             />
           </HStack>
-        )
-      }
-    ],
-    []
-  );
+        ),
+      },
+    ];
+  }, [roleList]);
+
 
 
   const {
@@ -167,9 +166,9 @@ const User = () => {
   useEffect(() => {
     const filtered = data?.filter(user =>
       filterStatus === 'All' ? true : user.status === filterStatus
-    ) ?? [];  // ✅ fallback
+    ) ?? [];
     setFilteredUsers(filtered);
-  }, [filterStatus, data]); // ✅ add data to deps
+  }, [filterStatus, data]);
 
 
   const handleEditClick = (user: IParticipantUser) => {
@@ -184,12 +183,21 @@ const User = () => {
     setIsEdit(false);
   };
 
-
-
   const handleSave = useCallback((values: IParticipantUser) => {
+
+    const { firstName, lastName, confirmPassword, ...rest } = values;
+    const name = `${firstName} ${lastName}`;
+    const userData = { ...rest, name, firstName, lastName };
+
+    if (isEdit) {
+      userData.userId = selectedUser?.userId || userData.userId || '';
+    } else {
+      userData.status = UserStatus.ACTIVE;
+    }
+
     const action = isEdit
-      ? Promise.reject("Edit not implemented")
-      : createUser(values);
+      ? modifyUser(userData as IModifyUser)
+      : createUser(userData);
 
     action
       .then(() => {
@@ -208,13 +216,12 @@ const User = () => {
         toast({
           position: 'top',
           description: error?.error_code || 'Something went wrong',
-          status: 'error', // <-- fixed
+          status: 'error',
           duration: 3000,
           isClosable: true,
         });
       });
-  }, [isEdit, toast, refetch]);
-
+  }, [isEdit, toast, refetch, selectedUser]);
 
   const handlePageValidation = (value: string) => {
     if (Number(value) > pageOptions.length) {

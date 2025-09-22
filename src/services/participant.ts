@@ -12,6 +12,7 @@ import {
 import { type ICreateUserValues, type IModifyUserValues, type IResetPasswordValues } from '@typescript/form'
 import { type AxiosError } from 'axios'
 import { IApprovalRequest } from '@typescript/services'
+import { IModifyUser } from '@typescript/services'
 
 export const getParticipantList = async (
 ) => {
@@ -325,6 +326,37 @@ export const createUser = async (user: IParticipantUser) => {
     user: { auth }
   } = store.getState()
   const uri = routes.createUser
+
+  const accessKey = auth?.accessKey as string
+  const secretKey = auth?.secretKey as string
+  const accessToken = await generateAccessToken({
+    method: 'POST',
+    uri,
+    secret: secretKey,
+    payload: user
+  })
+  const { axios } = AxiosRequest(accessToken, accessKey)
+  return axios
+    .post<{ isModified: true }>(uri, user)
+    .then((d) => d.data)
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error)
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        }
+      }
+      throw rest
+    })
+}
+
+export const modifyUser = async (user: IModifyUser) => {
+  const {
+    user: { auth }
+  } = store.getState()
+  const uri = routes.modifyUser
   
   const accessKey = auth?.accessKey as string
   const secretKey = auth?.secretKey as string

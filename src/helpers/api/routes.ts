@@ -36,6 +36,7 @@ export const privateRoutes = {
   getParticipantListByParticipant: '/secured/getParticipantListByParticipant',
 
   createUser: '/secured/createUser',
+  modifyUser: '/secured/modifyUser',
   modifyUserStatus: '/secured/modifyUserStatus',
   generate_fee_report: '/secured/generate_fee_report',
 
