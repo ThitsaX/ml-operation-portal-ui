@@ -17,7 +17,7 @@ export const getAllOtherParticipants = async () => {
   const {
     user: { auth, data }
   } = store.getState();
-  const uri = routes.get_all_other_participants;
+  const uri = routes.getOtherParticipantList;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
 

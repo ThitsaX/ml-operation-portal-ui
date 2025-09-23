@@ -68,7 +68,7 @@ const finalizeSettlementHelper = new FinalizeSettlementHelper();
 const FinalizeSettlement = () => {
 
     const [dateRange, setDateRange] = useState<Ranges>('oneDay');
-    const [stateList] = useState([{ value: 'pending', label: 'Pending' }, { value: 'completed', label: 'Completed' }, { value: 'failed', label: 'Failed' }]);
+    const [stateList] = useState([{ value: 'SETTLED', label: 'SETTLED' }, { value: 'completed', label: 'Completed' }, { value: 'failed', label: 'Failed' }]);
     const { start, complete } = useLoadingContext();
     const toast = useToast();
 
@@ -102,7 +102,7 @@ const FinalizeSettlement = () => {
         fromDate: moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'),
         toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
         currency: 'USD',
-        state: 'pending'
+        state: 'SETTLED'
     }
 
     const onSearchHandler = useCallback((values: any) => {
@@ -170,7 +170,15 @@ const FinalizeSettlement = () => {
         },
         {
             Header: 'Window ID',
-            accessor: 'reason',
+            accessor: 'settlementWindowList',
+            Cell: ({ row }) => {
+                const windows = row.original.settlementWindowList || [];
+                return (
+                    <Text>
+                        {windows.map(w => w.settlementWindowId).join(', ')}
+                    </Text>
+                );
+            },
         },
         {
             Header: 'State',

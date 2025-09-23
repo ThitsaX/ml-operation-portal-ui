@@ -22,7 +22,8 @@ import {
     MenuItem,
     Divider,
     Input,
-    Icon
+    Icon,
+    useToast
 } from '@chakra-ui/react';
 import { FiChevronDown } from 'react-icons/fi';
 import { IoReload, IoChevronDown, IoChevronUp } from 'react-icons/io5';
@@ -35,18 +36,21 @@ import moment from 'moment';
 
 import { RootState } from '@store';
 import { useGetDashboard } from '@hooks/services';
-import { IParticipantPositionData } from '@typescript/services';
+import { IApprovalRequest, IParticipantPositionData, PositionActionType } from '@typescript/services';
 import type { ITimezoneOption } from 'react-timezone-select';
 
 import DepositModal from '@components/interface/Participant';
 import WithdrawModal from '@components/interface/Participant/WidthdrawModal';
 import NetDebitCapModal from '@components/interface/Participant/NetDebitCardModal';
 import { syncHubParticipantsToPortal } from '@services/dashboard';
+import { createApprovalRequest } from '@services/participant';
+import { current } from '@reduxjs/toolkit';
 
 const ParticipantPositions = () => {
 
     const [pageNumber, setPageNumber] = useState<String>('1');
     const [tableData, setTableData] = useState<IParticipantPositionData[]>([]);
+    const toast = useToast();
 
     // Redux
 
@@ -233,19 +237,71 @@ const ParticipantPositions = () => {
         navigate(`/participant/position/${participantName}`);
     };
 
+    const approvalRequest = async (
+        data: IApprovalRequest,
+        actionLabel: string,
+        onSuccess?: () => void
+    ) => {
+        try {
+            const res = await createApprovalRequest(data);
+            toast({
+                title: `${actionLabel} request created`,
+                description: `Amount: ${data.amount} ${data.currency}`,
+                status: 'success',
+                duration: 4000,
+                isClosable: true,
+            });
+            console.log('Approval Request Created:', res);
+
+            if (onSuccess) onSuccess(); // ✅ close modal on success
+        } catch (err: any) {
+            toast({
+                title: `Failed to ${actionLabel}`,
+                description: err?.message || 'Something went wrong',
+                status: 'error',
+                duration: 4000,
+                isClosable: true,
+            });
+            console.error('Error creating approval request:', err);
+        }
+    };
+
     const handleDeposit = (amount: number) => {
-        console.log("Deposited Amount:", amount);
+        const data: IApprovalRequest = {
+            requestedAction: PositionActionType.DEPOSIT,
+            participantName: 'test',
+            currency: 'USD',
+            currencyId: '1',
+            amount,
+        };
+        approvalRequest(data, 'Deposit', onDepositClose); // ✅ closes deposit modal
     };
 
     const handleWithdraw = (amount: number) => {
-        console.log("Withdraw Amount:", amount);
-        // call your API here
+        const data: IApprovalRequest = {
+            requestedAction: PositionActionType.WITHDRAW,
+            participantName: 'test',
+            currency: 'USD',
+            currencyId: '1',
+            amount,
+        };
+        approvalRequest(data, 'Withdraw', onWithdrawClose); // ✅ closes withdraw modal
     };
 
-    const handleNetDebitCard = (type: "fixed" | "percentage", amount: number) => {
-        console.log("handleNetDebitCard:", amount);
-        // call your API here
+    const handleNetDebitCard = (type: 'fixed' | 'percentage', amount: number) => {
+        const data: IApprovalRequest = {
+            requestedAction:
+                type === 'fixed'
+                    ? PositionActionType.UPDATE_NDC_FIXED
+                    : PositionActionType.UPDATE_NDC_PERCENTAGE,
+            participantName: 'test',
+            currency: 'USD',
+            currencyId: '1',
+            amount,
+        };
+        approvalRequest(data, 'Net Debit Cap Update', onNdcClose); // ✅ closes NDC modal
     };
+
 
     const toggleStatus = (id: string | number, newValue: boolean) => {
         // Example: Send update to API or update local state

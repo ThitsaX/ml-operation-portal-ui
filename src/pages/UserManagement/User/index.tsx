@@ -242,10 +242,19 @@ const User = () => {
           width="200px"
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
+          size="md"
+          rounded="md"
+          bg="white"
+          borderColor="gray.300"
+          focusBorderColor="blue.500"
+          _hover={{ borderColor: "blue.400" }}
+          _focus={{ boxShadow: "0 0 0 1px #3182CE" }}
+
         >
+          <option value="All">All</option>
           <option value="ACTIVE">Active</option>
           <option value="INACTIVE">Inactive</option>
-          <option value="All">All</option>
+
         </ChakraSelect >
 
         <Button colorScheme="blue" onClick={() => handleNewClick()}>New User</Button>

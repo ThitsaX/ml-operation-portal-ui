@@ -256,13 +256,13 @@ export const getAllOtherParticipants = async (
   /** Generate Access Token */
   const accessToken = await generateAccessToken({
     method: 'GET',
-    uri: routes.get_all_other_participants,
+    uri: routes.getOtherParticipantList,
     secret: user.auth?.secretKey as string
   });
 
   const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
   return axios
-    .get<IGetAllOtherParticipant>(routes.get_all_other_participants, {
+    .get<IGetAllOtherParticipant>(routes.getOtherParticipantList, {
       params: { participantId: participantId }
     })
     .then((d) => d.data)

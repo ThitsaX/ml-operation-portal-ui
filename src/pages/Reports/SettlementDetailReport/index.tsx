@@ -32,6 +32,7 @@ import { useLoadingContext } from "@contexts/hooks";
 import { ITimezoneOption } from "react-timezone-select";
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
+import { useGetParticipantList } from '@hooks/services/participant';
 
 
 const settlementDetailReportHelper = new SettlementDetailReportHelper();
@@ -41,7 +42,6 @@ const SettlementDetailReport = () => {
   const { start, complete } = useLoadingContext();
   const toast = useToast();
   const [runButtonState, setRunButtonState] = useState(true);
-  const [settlementModel, setSettlementModel] = useState<string>('');
   const [settlementIdOptions, setSettlementIdOptions] = useState<any[]>([]);
   const [selectedSettlementId, setSelectedSettlementId] = useState<any>();
 
@@ -49,6 +49,7 @@ const SettlementDetailReport = () => {
   // Redux
   const user = useGetUserState();
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
+  const { data: participantList } = useGetParticipantList();
 
   const {
     control,
@@ -79,7 +80,6 @@ const SettlementDetailReport = () => {
     let tzOffSet: string = selectedTimezone.offset === 0
       ? "0000"
       : moment().tz(selectedTZString).format('ZZ').replace('+', '');
-    console.log("Values for the selected", getValues());
     generateSettlementDetailReport({
       settlementId: getValues().settlementId,
       fspId: getValues().fspId,
@@ -164,15 +164,19 @@ const SettlementDetailReport = () => {
       <Stack borderWidth="1px" borderRadius="lg" height="full" p="2" mb={4}>
         <HStack alignItems={'flex-start'} p={2} spacing={8}>
 
-          <FormControl pb="1" isInvalid={!isEmpty(errors.fspId)}>
+          <FormControl isInvalid={!isEmpty(errors.fspId)}>
             <FormLabel>DFSP Name</FormLabel>
             <Controller
               name="fspId"
               control={control}
               render={({ field }) => (
-                <Input
-                  {...field}
-                />
+                <Select {...field} placeholder="Select DFSP">
+                  {participantList?.map((item, index) => (
+                    <option key={index} value={item.participantName}>
+                      {item.description}
+                    </option>
+                  ))}
+                </Select>
               )}
             />
             <FormErrorMessage>{errors.fspId?.message}</FormErrorMessage>
@@ -238,7 +242,7 @@ const SettlementDetailReport = () => {
 
         </HStack>
       </Stack>
-      <Stack borderWidth="1px" borderRadius="lg" p={4} height="full">
+      {settlementIdOptions.length > 0 && (<Stack borderWidth="1px" borderRadius="lg" p={4} height="full">
         <HStack alignItems={'flex-start'} p={2} spacing={4}>
 
           <FormControl
@@ -250,7 +254,7 @@ const SettlementDetailReport = () => {
               control={control}
               render={({ field }) => (
                 <Select {...field}
-                  onChange={(e) => field.onChange(e.target.value)}  // ✅ make sure only value goes into form
+                  onChange={(e) => field.onChange(e.target.value)}
                   value={field.value || ""} placeholder="Select Settlement ID">
                   {settlementIdOptions.map((opt, index) => (
                     <option key={index} value={opt.value}>
@@ -264,15 +268,6 @@ const SettlementDetailReport = () => {
 
         </HStack>
         <HStack justifyContent='flex-end' p={2}>
-          {/* <Select
-            placeholder="Choose Format"
-            value={settlementModel}
-            onChange={(e) => setSettlementModel(e.target.value)}
-            width="250px"
-          >
-            <option value="xlsx">XLSX</option>
-            <option value="csv">CSV</option>
-          </Select> */}
 
           <FormControl width="250px">
             <Controller
@@ -292,6 +287,7 @@ const SettlementDetailReport = () => {
           </Button>
         </HStack>
       </Stack>
+      )}
     </Box>
   );
 };
