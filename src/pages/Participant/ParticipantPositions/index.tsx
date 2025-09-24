@@ -282,7 +282,7 @@ const ParticipantPositions = () => {
             requestedAction: PositionActionType.DEPOSIT,
             participantName: selectedParticipant?.participantName || "",
             currency: selectedParticipant?.currency || "",
-            currencyId: selectedParticipant?.participantPositionCurrencyId || 0,
+            currencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
             amount,
         };
         approvalRequest(data, 'Deposit', onDepositClose);
@@ -293,7 +293,7 @@ const ParticipantPositions = () => {
             requestedAction: PositionActionType.WITHDRAW,
             participantName: selectedParticipant?.participantName || "",
             currency: selectedParticipant?.currency || "",
-            currencyId: selectedParticipant?.participantPositionCurrencyId || 0,
+            currencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
             amount,
         };
         approvalRequest(data, 'Withdraw', onWithdrawClose);
@@ -307,7 +307,7 @@ const ParticipantPositions = () => {
                     : PositionActionType.UPDATE_NDC_PERCENTAGE,
             participantName: selectedParticipant?.participantName || "",
             currency: selectedParticipant?.currency || "",
-            currencyId: selectedParticipant?.participantPositionCurrencyId || 0,
+            currencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
             amount,
         };
         approvalRequest(data, 'Net Debit Cap Update', onNdcClose);
