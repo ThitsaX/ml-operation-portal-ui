@@ -22,7 +22,7 @@ export interface IModifyUserValues
   extends Omit<ICreateUserValues, 'password'> { }
 export interface IResetPasswordValues {
   email: string;
-  new_password: string;
+  newPassword: string;
 }
 
 export interface IChangePwdValues {

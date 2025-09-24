@@ -172,7 +172,7 @@ export const resetPasswordUser = async (data: IResetPasswordValues) => {
   const {
     user: { auth }
   } = store.getState()
-  const uri = routes.reset_password
+  const uri = routes.resetPassword
   const accessKey = auth?.accessKey as string
   const secretKey = auth?.secretKey as string
   const accessToken = await generateAccessToken({

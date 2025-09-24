@@ -43,7 +43,7 @@ export const privateRoutes = {
   create_new_participant_user: '/secured/create_new_participant_user',
   modify_participant_user: '/secured/modify_participant_user',
   remove_participant_user: '/secured/remove_participant_user',
-  reset_password: '/secured/reset_password',
+  resetPassword: '/secured/resetPassword',
 
   get_all_id_type: '/secured/getAllIdType',
   get_all_transfer_state: '/secured/getAllTransferState',
