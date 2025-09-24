@@ -24,7 +24,7 @@ export enum PositionActionType {
 export interface IApprovalRequest {
     requestedAction: PositionActionType,
     participantName: string,
-    currencyId: string,
+    currencyId: number,
     currency: string,
     amount: number,
 }

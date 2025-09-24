@@ -50,6 +50,8 @@ const ParticipantPositions = () => {
     const [pageNumber, setPageNumber] = useState<String>('1');
     const [tableData, setTableData] = useState<IParticipantPositionData[]>([]);
     const toast = useToast();
+    const [selectedParticipant, setSelectedParticipant] = useState<IParticipantPositionData | null>(null);
+
 
     useEffect(() => {
         syncHubParticipantsToPortal();
@@ -186,21 +188,31 @@ const ParticipantPositions = () => {
                         >
                             <MenuItem
                                 _hover={{ bg: "blue.50", fontWeight: "semibold" }}
-                                onClick={onDepositOpen}
+
+                                onClick={() => {
+                                    setSelectedParticipant(row.original);
+                                    onDepositOpen();
+                                }}
                             >
                                 Deposit
                             </MenuItem>
                             <Divider my={1} />
                             <MenuItem
                                 _hover={{ bg: "blue.50", fontWeight: "semibold" }}
-                                onClick={onWithdrawOpen}
+                                onClick={() => {
+                                    setSelectedParticipant(row.original);
+                                    onWithdrawOpen();
+                                }}
                             >
                                 Withdraw
                             </MenuItem>
                             <Divider my={1} />
                             <MenuItem
                                 _hover={{ bg: "blue.50", fontWeight: "semibold" }}
-                                onClick={onNdcOpen}
+                                onClick={() => {
+                                    setSelectedParticipant(row.original);
+                                    onNdcOpen();
+                                }}
                             >
                                 Net Debit Cap
                             </MenuItem>
@@ -268,23 +280,23 @@ const ParticipantPositions = () => {
     const handleDeposit = (amount: number) => {
         const data: IApprovalRequest = {
             requestedAction: PositionActionType.DEPOSIT,
-            participantName: 'test',
-            currency: 'USD',
-            currencyId: '1',
+            participantName: selectedParticipant?.participantName || "",
+            currency: selectedParticipant?.currency || "",
+            currencyId: selectedParticipant?.participantPositionCurrencyId || 0,
             amount,
         };
-        approvalRequest(data, 'Deposit', onDepositClose); // ✅ closes deposit modal
+        approvalRequest(data, 'Deposit', onDepositClose);
     };
 
     const handleWithdraw = (amount: number) => {
         const data: IApprovalRequest = {
             requestedAction: PositionActionType.WITHDRAW,
-            participantName: 'test',
-            currency: 'USD',
-            currencyId: '1',
+            participantName: selectedParticipant?.participantName || "",
+            currency: selectedParticipant?.currency || "",
+            currencyId: selectedParticipant?.participantPositionCurrencyId || 0,
             amount,
         };
-        approvalRequest(data, 'Withdraw', onWithdrawClose); // ✅ closes withdraw modal
+        approvalRequest(data, 'Withdraw', onWithdrawClose);
     };
 
     const handleNetDebitCard = (type: 'fixed' | 'percentage', amount: number) => {
@@ -293,12 +305,12 @@ const ParticipantPositions = () => {
                 type === 'fixed'
                     ? PositionActionType.UPDATE_NDC_FIXED
                     : PositionActionType.UPDATE_NDC_PERCENTAGE,
-            participantName: 'test',
-            currency: 'USD',
-            currencyId: '1',
+            participantName: selectedParticipant?.participantName || "",
+            currency: selectedParticipant?.currency || "",
+            currencyId: selectedParticipant?.participantPositionCurrencyId || 0,
             amount,
         };
-        approvalRequest(data, 'Net Debit Cap Update', onNdcClose); // ✅ closes NDC modal
+        approvalRequest(data, 'Net Debit Cap Update', onNdcClose);
     };
 
 
