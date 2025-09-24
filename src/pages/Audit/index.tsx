@@ -104,8 +104,8 @@ const Audit = () => {
     formState: { isValid, errors },
   } = useForm<IGetAuditByParticipantValues>({
     defaultValues: {
-      fromDate: moment().format('yyyy-MM-DD'),
-      toDate: moment().format('yyyy-MM-DD'),
+      fromDate: moment().format('YYYY-MM-DDTHH:mm'),
+      toDate: moment().format('YYYY-MM-DDTHH:mm'),
     },
     resolver: zodResolver(auditHelper.schema),
     mode: 'onChange',
@@ -201,7 +201,7 @@ const Audit = () => {
             control={control}
             render={({ field: { value, onChange } }) => (
               <Input
-                type="date"
+                type="datetime-local"
                 value={value}
                 onChange={(e) => {
                   onChange(e);
@@ -220,7 +220,7 @@ const Audit = () => {
             control={control}
             render={({ field: { value, onChange } }) => (
               <Input
-                type="date"
+                type="datetime-local"
                 value={value}
                 onChange={(e) => {
                   onChange(e);
