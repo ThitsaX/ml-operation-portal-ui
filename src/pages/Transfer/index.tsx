@@ -38,7 +38,7 @@ import {
   useGetAllOtherParticipants,
   useGetAllIdTypes,
   useGetAllTransferStates,
-  useGetHubCurrency
+  useGetParticipantCurrencyList
 } from '@hooks/services';
 import { getAllTransfers } from '@services/transfer';
 import { IGetTransferData, IApiErrorResponse } from '@typescript/services';
@@ -74,7 +74,7 @@ const Transfer = () => {
   const participantRes = useGetAllOtherParticipants();
   const idTypeRes = useGetAllIdTypes();
   const tranStateRes = useGetAllTransferStates();
-  const { data: currencyList } = useGetHubCurrency();
+  const { data: currencyList } = useGetParticipantCurrencyList();
 
   // State
   const [transferType, setTransferType] = useState<TransferType>('inbound');
@@ -594,6 +594,8 @@ const Transfer = () => {
       </Flex>
 
       <Flex justify="flex-end" flex={1} gap={5}>
+        <Button onClick={onCancelHandler}>Clear Filter</Button>
+
         <Button
           color="white"
           bg="primary"
@@ -605,7 +607,6 @@ const Transfer = () => {
           Find Transfer
         </Button>
 
-        <Button onClick={onCancelHandler}>Clear Filter</Button>
       </Flex>
 
       <TableContainer

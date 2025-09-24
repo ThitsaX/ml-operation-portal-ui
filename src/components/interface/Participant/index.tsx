@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Modal, ModalOverlay, ModalContent, ModalHeader,
     ModalCloseButton, ModalBody, ModalFooter,
@@ -24,6 +24,13 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, onSubmit }
         onSubmit(amount);
         onClose();
     };
+
+    useEffect(() => {
+        if (isOpen) {
+            setAmount(0);
+            setError("");
+        }
+    }, [isOpen]);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose}>

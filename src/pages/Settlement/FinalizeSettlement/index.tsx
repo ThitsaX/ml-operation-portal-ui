@@ -60,8 +60,9 @@ import { RootState } from '@store';
 import { Ranges } from '@typescript/pages';
 import { IFinalizeSettlement } from '@typescript/services';
 import { usePagination, useSortBy, useTable, Row, Column } from 'react-table';
-import { useGetCurrencyList } from '@hooks/services/participant';
+import { useGetParticipantCurrencyList } from '@hooks/services/participant';
 import { getFinalizeSettlementList } from '@services/settlements';
+import { finalizeSettlementWindow } from '@services/settlements';
 
 const finalizeSettlementHelper = new FinalizeSettlementHelper();
 
@@ -72,7 +73,7 @@ const FinalizeSettlement = () => {
     const { start, complete } = useLoadingContext();
     const toast = useToast();
 
-    const { data } = useGetCurrencyList();
+    const { data } = useGetParticipantCurrencyList();
     const user = useGetUserState();
     const [toFspOptions, setToFspOptions] = useState<any[]>([]);
     const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string }>();
@@ -152,6 +153,36 @@ const FinalizeSettlement = () => {
         setSelectedRow(row);
         onFinalizeOpen();
     };
+
+    const handleFinalizeSettlementWindow = () => {
+        const data = { settlementId: selectedRow.settlementId };
+        console.log("Selected row settlement id", selectedRow);
+
+        finalizeSettlementWindow(data).then((resp) => {
+            if (resp?.finalized) {
+                toast({
+                    position: 'top',
+                    description: 'Settlement finalized successfully',
+                    status: 'success',
+                    isClosable: true,
+                })
+            }
+
+            onFinalizeClose();
+            onSearchHandler(getValues());
+        }).catch((e) => {
+            toast({
+
+                position: 'top',
+                description: e?.default_error_message || 'Something went wrong',
+                status: 'error',
+                isClosable: true,
+                duration: 3000
+            })
+            onFinalizeClose();
+            onSearchHandler(getValues());
+        })
+    }
 
     const columns = useMemo<Column<IFinalizeSettlement>[]>(() => [
         {
@@ -621,10 +652,7 @@ const FinalizeSettlement = () => {
                                 icon={<IoCheckmark size={24} />}
                                 colorScheme="green"
                                 borderRadius="full"
-                                onClick={async () => {
-                                    // await finalizeSettlementAPI(selectedRow.transferId);
-                                    onFinalizeClose();
-                                }}
+                                onClick={handleFinalizeSettlementWindow}
                             />
 
                             <IconButton

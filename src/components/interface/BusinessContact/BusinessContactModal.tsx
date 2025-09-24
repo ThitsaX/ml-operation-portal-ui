@@ -40,8 +40,6 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
   isEdit
 }) => {
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const contactHelper = new ContactHelper();
 
   const {
@@ -50,7 +48,6 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
     trigger,
     register,
     formState: { isValid, isDirty, errors },
-    setValue,
     reset,
   } = useForm<IBusinessContact>({
     defaultValues: form,
@@ -64,7 +61,6 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
     }
   }, [form, isOpen, reset]);
 
-
   const contactHandler = (values: IBusinessContact) => {
     setForm(values);
     onSave(values);
@@ -74,19 +70,21 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} size="lg">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader> {isEdit ? 'Edit Contact' : 'Add Contact'}</ModalHeader>
+        <ModalHeader>{isEdit ? 'Edit Contact' : 'Add Contact'}</ModalHeader>
         <ModalCloseButton />
+
         <ModalBody>
           <VStack spacing={4}>
-
             <FormControl isInvalid={!isEmpty(errors.contactType)}>
               <FormLabel>Contact Type</FormLabel>
               <Controller
                 name="contactType"
                 control={control}
                 render={({ field }) => (
-                  <Select {...field} placeholder="Select Contact Type">
-                    {Object.values(BusinessContactType).map(type => (
+                  <Select {...field}
+                    value={field.value || ""}
+                    placeholder="Select Contact Type">
+                    {Object.values(BusinessContactType).map((type) => (
                       <option key={type} value={type}>
                         {type}
                       </option>
@@ -144,23 +142,24 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
               />
               <FormErrorMessage>{errors.mobile?.message}</FormErrorMessage>
             </FormControl>
-
           </VStack>
         </ModalBody>
+
         <ModalFooter display="flex" gap={3}>
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
           <Button
-            isDisabled={isSubmitting || !isDirty || !isValid}
-            isLoading={isSubmitting} // shows a spinner
-            onClick={handleSubmit(contactHandler)}
-            colorScheme="blue" type="submit" mr={3}>
+            type="submit"
+            colorScheme="blue"
+            isDisabled={!isDirty || !isValid}
+            onClick={handleSubmit(contactHandler)} mr={3}>
             {isEdit ? 'Save' : 'Add'}
           </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>
+
   );
 };
 

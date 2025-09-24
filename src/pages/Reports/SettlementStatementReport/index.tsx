@@ -14,7 +14,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { ITimezoneOption } from "react-timezone-select";
 import { useSelector } from "react-redux";
 import { RootState } from "@store";
-import { useGetHubCurrency } from '@hooks/services';
+import { useGetParticipantCurrencyList } from '@hooks/services';
 import { useGetParticipantList } from '@hooks/services/participant';
 
 const settlementStatementReportHelper = new SettlementStatementReportHelper()
@@ -31,7 +31,7 @@ const SettlementStatementReport = () => {
   // Redux
   const user = useGetUserState()
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
-  const { data: currencyList } = useGetHubCurrency();
+  const { data: currencyList } = useGetParticipantCurrencyList();
 
   const onDownloadChangeHandler = (e: any) => {
     start()

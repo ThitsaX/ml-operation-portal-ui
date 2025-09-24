@@ -28,7 +28,7 @@ import { useLoadingContext } from "@contexts/hooks";
 import { ITimezoneOption } from "react-timezone-select";
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
-import { useGetCurrencyList } from '@hooks/services/participant';
+import { useGetParticipantCurrencyList } from '@hooks/services/participant';
 
 
 const settlementAuditReportHelper = new SettlementAuditReportHelper();
@@ -41,7 +41,7 @@ const SettlementAuditReport = () => {
   const [runButtonState, setRunButtonState] = useState(true);
 
   // custom hooks 
-  const { data } = useGetCurrencyList();
+  const { data } = useGetParticipantCurrencyList();
   const { data: participantList } = useGetParticipantList();
 
   // Redux

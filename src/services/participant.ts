@@ -357,7 +357,7 @@ export const modifyUser = async (user: IModifyUser) => {
     user: { auth }
   } = store.getState()
   const uri = routes.modifyUser
-  
+
   const accessKey = auth?.accessKey as string
   const secretKey = auth?.secretKey as string
   const accessToken = await generateAccessToken({
@@ -452,7 +452,7 @@ export const getContactList = async (participantId: string) => {
     })
 }
 
-export const getCurrencyList = async () => {
+export const getParticipantCurrencyList = async () => {
   const {
     user: { auth, data }
   } = store.getState()
@@ -517,7 +517,7 @@ export const getHubCurrency = async () => {
     })
 }
 
-export const getParticipantProfile = async () => {
+export const getParticipantProfile = async (participantId: string) => {
   const {
     user: { auth, data }
   } = store.getState()
@@ -533,7 +533,7 @@ export const getParticipantProfile = async () => {
   return axios
     .get<IParticipantProfile>(uri, {
       params: {
-        participantId: data?.participantId
+        participantId: participantId
       }
     })
     .then((d) => d.data)
@@ -609,7 +609,7 @@ export const createBusinessContact = async (data: IBusinessContact) => {
     })
 }
 
-export const getLiquidityProfileList = async () => {
+export const getLiquidityProfileList = async (participantId: string) => {
   const {
     user: { auth, data }
   } = store.getState()
@@ -625,7 +625,7 @@ export const getLiquidityProfileList = async () => {
   return axios
     .get<{ liquidityProfileInfoList: ILiquidityProfile[] }>(uri, {
       params: {
-        participantId: data?.participantId
+        participantId: participantId
       }
     })
     .then((d) => d.data.liquidityProfileInfoList)

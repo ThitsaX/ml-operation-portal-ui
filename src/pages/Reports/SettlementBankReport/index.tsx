@@ -34,7 +34,7 @@ import { RootState } from '@store';
 import { TransferType } from '@typescript/pages';
 import { FaSearch } from "react-icons/fa";
 import { IGetSettlementIds } from "@typescript/services/report";
-import { useGetHubCurrency } from '@hooks/services';
+import { useGetParticipantCurrencyList } from '@hooks/services';
 
 const settlementBankReport = new SettlementBankReportHelper();
 const initialFileName = 'Settlement-Bank-Report';
@@ -60,7 +60,7 @@ const SettlementBankReport = () => {
 
   const [toFspOptions, setToFspOptions] = useState<any[]>([]);
   const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string; }>();
-  const { data: currencyList } = useGetHubCurrency();
+  const { data: currencyList } = useGetParticipantCurrencyList();
   // Redux
   const user = useGetUserState();
   const toast = useToast();

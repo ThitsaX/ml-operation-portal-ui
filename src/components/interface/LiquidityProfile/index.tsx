@@ -30,7 +30,7 @@ import { ILiquidityProfile } from '@typescript/services/participant';
 import { createLiquidityProfile, modifyLiquidityProfile, removeLiquidityProfile } from '@services/participant';
 import { useGetUserState } from '@store/hooks';
 import { useRef } from 'react';
-
+import { Cell } from '../Table';
 
 const defaultForm: ILiquidityProfile = {
     participantId: '',
@@ -40,8 +40,12 @@ const defaultForm: ILiquidityProfile = {
     currency: '',
 
 };
+interface LiquidityProfileProps {
+    participantId: string;
+}
 
-const LiquidityProfile = () => {
+const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) => {
+
     const borderColor = useColorModeValue('gray', 'gray.600');
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [isEdit, setIsEdit] = useState(false);
@@ -50,27 +54,19 @@ const LiquidityProfile = () => {
 
     type FormState = ILiquidityProfile;
 
-
     const [form, setForm] = useState<FormState>(defaultForm);
 
-    const {
-        isOpen: isConfirmOpen,
-        onOpen: onConfirmOpen,
-        onClose: onConfirmClose
-    } = useDisclosure();
+    const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
     const cancelRef = useRef<HTMLButtonElement>(null);
     const [deleteItem, setDeleteItem] = useState<ILiquidityProfile | null>(null);
 
-
-
-
     const toast = useToast();
 
-    const { data, isLoading, isError, error, refetch } = useGetLiquidityProfileList();
+    const { data, isLoading, isError, error, refetch } = useGetLiquidityProfileList(participantId || "");
 
     useEffect(() => {
-        if (user && user.participantId) {
-            setForm((prev) => ({ ...prev, participantId: user?.participantId }));
+        if (participantId) {
+            setForm((prev) => ({ ...prev, participantId: participantId }));
         }
     }, [user]);
 
@@ -90,7 +86,7 @@ const LiquidityProfile = () => {
                 });
                 setForm({
                     ...defaultForm,
-                    participantId: user?.participantId || ''
+                    participantId: participantId
                 });
                 setIsEdit(false); // reset edit mode
                 refetch();
@@ -110,11 +106,10 @@ const LiquidityProfile = () => {
 
     const confirmDelete = useCallback(() => {
         if (!deleteItem?.liquidityProfileId) return;
-        const participantId = user?.participantId || "";
 
         removeLiquidityProfile({
             liquidityProfileId: deleteItem.liquidityProfileId,
-            participantId
+            participantId: participantId
         })
             .then(() => {
                 toast({
@@ -146,33 +141,6 @@ const LiquidityProfile = () => {
         onConfirmOpen();
     };
 
-
-    const handleDelete = useCallback((item: any) => {
-
-        const { liquidityProfileId } = item;
-        const participantId = user?.participantId || "";
-        removeLiquidityProfile({ liquidityProfileId, participantId })
-            .then(() => {
-                toast({
-                    position: 'top',
-                    description: 'User deleted successfully',
-                    status: 'success',
-                    isClosable: true,
-                    duration: 3000
-                });
-                refetch();
-            })
-            .catch((err) => {
-                toast({
-                    position: 'top',
-                    description: err.message || 'Something went wrong',
-                    status: 'error',
-                    isClosable: true,
-                    duration: 3000
-                });
-            });
-    }, [toast, refetch]);
-
     const handleEdit = useCallback((item: ILiquidityProfile) => {
         setForm({
             liquidityProfileId: item.liquidityProfileId,
@@ -180,7 +148,7 @@ const LiquidityProfile = () => {
             accountName: item.accountName,
             accountNumber: item.accountNumber,
             currency: item.currency,
-            participantId: user?.participantId || "",
+            participantId: participantId,
         });
 
         setIsEdit(true);
@@ -197,7 +165,7 @@ const LiquidityProfile = () => {
                 <Button colorScheme="blue" size="md" onClick={() => {
                     setForm({
                         ...defaultForm,
-                        participantId: user?.participantId || ''
+                        participantId: participantId
                     });
                     setIsEdit(false);
                     onOpen()
@@ -210,7 +178,7 @@ const LiquidityProfile = () => {
                     onSave={handleSave}
                     form={form}
                     setForm={setForm}
-                    isEdit={isEdit} // or "edit"
+                    isEdit={isEdit}
                 />
             </HStack>
 
@@ -236,6 +204,11 @@ const LiquidityProfile = () => {
                         </Tr>
                     </Thead>
                     <Tbody>
+                        {data?.length === 0 && !isLoading && (
+                            <Tr>
+                                <Cell colSpan={6}>No Liquidity found</Cell>
+                            </Tr>
+                        )}
                         {data?.map((item, idx) => (
                             <Tr key={idx}>
                                 <Td border={`1px solid ${borderColor}`} px={4} py={2} textAlign="center">

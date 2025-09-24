@@ -4,6 +4,7 @@ import {
     ModalCloseButton, ModalBody, ModalFooter,
     Button, Box, Input, FormControl, FormLabel, FormErrorMessage
 } from "@chakra-ui/react";
+import { useEffect } from "react";
 
 interface DepositModalProps {
     isOpen: boolean;
@@ -24,6 +25,13 @@ const WidthdrawMoal: React.FC<DepositModalProps> = ({ isOpen, onClose, onSubmit 
         onSubmit(amount);
         onClose();
     };
+
+    useEffect(() => {
+        if (isOpen) {
+            setAmount(0);
+            setError("");
+        }
+    }, [isOpen]);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose}>

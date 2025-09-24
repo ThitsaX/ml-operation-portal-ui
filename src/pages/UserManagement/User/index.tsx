@@ -325,7 +325,11 @@ const User = () => {
                   {...row.getRowProps()}
                 >
                   {row.cells.map((cell) => (
-                    <Td {...cell.getCellProps()}>{cell.render('Cell')}</Td>
+                    <Td {...cell.getCellProps()}
+                      {...cell.getCellProps()}
+                      py={1}   // ✅ reduce row height
+                      px={3}
+                      fontSize="sm">{cell.render('Cell')}</Td>
                   ))}
                 </Tr>
               );

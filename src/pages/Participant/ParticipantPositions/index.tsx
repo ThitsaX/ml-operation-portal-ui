@@ -44,16 +44,12 @@ import WithdrawModal from '@components/interface/Participant/WidthdrawModal';
 import NetDebitCapModal from '@components/interface/Participant/NetDebitCardModal';
 import { syncHubParticipantsToPortal } from '@services/dashboard';
 import { createApprovalRequest } from '@services/participant';
-import { current } from '@reduxjs/toolkit';
 
 const ParticipantPositions = () => {
 
     const [pageNumber, setPageNumber] = useState<String>('1');
     const [tableData, setTableData] = useState<IParticipantPositionData[]>([]);
     const toast = useToast();
-
-    // Redux
-
 
     useEffect(() => {
         syncHubParticipantsToPortal();
@@ -99,7 +95,7 @@ const ParticipantPositions = () => {
                         fontWeight="bold"
                         cursor="pointer"
                         _hover={{ textDecoration: 'underline' }}
-                        onClick={() => handleClick(row.original.participantName)}
+                        onClick={() => handleClick(row.original.participantName, row.original.participantId)}
                     >
                         {row.original.participantName}
                     </Box>)
@@ -162,7 +158,7 @@ const ParticipantPositions = () => {
             {
                 Header: 'Action',
                 disableSortBy: true,
-                width: 180, // You can adjust this value
+                width: 180,
                 minWidth: 200,
                 Cell: ({ row }: any) => (
                     <Menu>
@@ -233,9 +229,12 @@ const ParticipantPositions = () => {
     }
 
 
-    const handleClick = (participantName: string) => {
-        navigate(`/participant/position/${participantName}`);
+    const handleClick = (participantName: string, participantId: string) => {
+        navigate(`/participant/position/${participantName}`, {
+            state: { participantId },
+        });
     };
+
 
     const approvalRequest = async (
         data: IApprovalRequest,

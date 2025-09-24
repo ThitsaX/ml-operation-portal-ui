@@ -1,6 +1,6 @@
 import {
     getUserListByParticipant, getRoleListByParticipant, getOrganizationListByParticipant, getContactList, getParticipantProfile,
-    getCurrencyList, getHubCurrency, getLiquidityProfileList, getParticipantList
+    getParticipantCurrencyList, getHubCurrency, getLiquidityProfileList, getParticipantList
 } from '@services/participant'
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
 import {

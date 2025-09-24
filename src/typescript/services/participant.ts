@@ -90,7 +90,7 @@ export interface ILiquidityProfile {
   accountName: string;
   accountNumber: string;
   currency: string;
-  participantId?: string;
+  participantId: string;
   liquidityProfileId?: string;
   isActive?: boolean;
 }

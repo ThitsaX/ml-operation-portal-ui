@@ -92,7 +92,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       <ModalContent>
         <ModalHeader textAlign="center">{isEdit ? 'Edit User' : 'Add New User'}</ModalHeader>
         <ModalCloseButton />
-        <ModalBody>
+        <ModalBody pb={10}>
           <VStack spacing={4} align="stretch">
             <HStack spacing={5} align="start">
               <SimpleGrid columns={2} spacing={6} width="100%">
@@ -135,7 +135,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
             <FormControl isInvalid={!isEmpty(errors.participantId)} isRequired>
               <HStack>
-                <ChakraSelect placeholder="Select Organization*" {...register('participantId')}>
+                <ChakraSelect placeholder="Select Organization*" {...register('participantId')}
+                  size="md"
+                  width="100%">
                   {participantInfoList?.map(org => (
                     <option key={org.participantId} value={org.participantId}>
                       {org.participantName}
