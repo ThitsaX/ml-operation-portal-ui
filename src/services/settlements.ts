@@ -147,7 +147,7 @@ export const finalizeSettlementWindow = async (data: any) => {
     })
     const { axios } = AxiosRequest(accessToken, accessKey)
     return axios
-        .post<{ is_created: true }>(uri, data)
+        .post<{ finalized: true }>(uri, data)
         .then((d) => d.data)
         .catch((error: AxiosError<IApiErrorResponse>) => {
             const { code, message, ...rest } = axiosErrorHandler(error)

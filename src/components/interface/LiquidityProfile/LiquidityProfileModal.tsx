@@ -16,9 +16,9 @@ import {
     FormErrorMessage
 } from '@chakra-ui/react';
 import { ILiquidityProfile } from '@typescript/services/participant';
-import { useGetCurrencyList } from '@hooks/services/participant';
+import { useGetParticipantCurrencyList } from '@hooks/services/participant';
 import { LiquidityHelper } from '@helpers/form';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isEmpty } from 'lodash-es';
@@ -29,7 +29,7 @@ interface Props {
     onSave: (data: ILiquidityProfile) => void;
     form: ILiquidityProfile;
     setForm: React.Dispatch<React.SetStateAction<ILiquidityProfile>>;
-    isEdit: boolean; // <-- added
+    isEdit: boolean;
 }
 
 const LiquidityProfileModal: React.FC<Props> = ({
@@ -40,9 +40,7 @@ const LiquidityProfileModal: React.FC<Props> = ({
     setForm,
     isEdit }) => {
 
-    const { data } = useGetCurrencyList();
-
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { data } = useGetParticipantCurrencyList();
 
     const liquidityHelper = new LiquidityHelper();
 
@@ -71,12 +69,10 @@ const LiquidityProfileModal: React.FC<Props> = ({
         }
     }, [form, isOpen, isEdit, reset, setValue]);
 
-
     const liquidityHandler = (values: ILiquidityProfile) => {
         setForm(values);
         onSave(values);
     };
-
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="lg">
@@ -139,7 +135,9 @@ const LiquidityProfileModal: React.FC<Props> = ({
                                 name="currency"
                                 control={control}
                                 render={({ field }) => (
-                                    <Select {...field} placeholder="Select Currency">
+                                    <Select {...field}
+                                        onChange={(e) => field.onChange(e.target.value)}
+                                        placeholder="Select Currency">
                                         {data?.map((item, index) => (
                                             <option key={index} value={item.currency}>
                                                 {item.currency}
@@ -157,10 +155,9 @@ const LiquidityProfileModal: React.FC<Props> = ({
                         Cancel
                     </Button>
                     <Button
-                        isDisabled={isSubmitting || !isDirty || !isValid}
-                        isLoading={isSubmitting} // shows a spinner
+                        isDisabled={!isDirty || !isValid}
                         onClick={handleSubmit(liquidityHandler)}
-                        colorScheme="blue" type="submit" mr={3}>
+                        colorScheme="blue" mr={3}>
                         {isEdit ? 'Save' : 'Add'}
                     </Button>
                 </ModalFooter>

@@ -28,6 +28,7 @@ import { useLoadingContext } from "@contexts/hooks";
 import { ITimezoneOption } from "react-timezone-select";
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
+import { useGetParticipantList } from '@hooks/services/participant';
 
 
 const settlementSummaryReportHelper = new SettlementSummaryReportHelper();
@@ -44,6 +45,7 @@ const SettlementSummaryReport = () => {
   // Redux
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
   const user = useGetUserState();
+  const { data: participantList } = useGetParticipantList();
 
   const {
     control,
@@ -54,8 +56,8 @@ const SettlementSummaryReport = () => {
   } = useForm<ISettlementSummaryReport>({
     resolver: zodResolver(settlementSummaryReportHelper.schema),
     defaultValues: {
-      start_date: moment().format('yyyy-MM-DD'),
-      end_date: moment().format('yyyy-MM-DD')
+      startDate: moment().format('yyyy-MM-DD'),
+      endDate: moment().format('yyyy-MM-DD')
     },
     mode: 'onChange'
   });
@@ -73,9 +75,9 @@ const SettlementSummaryReport = () => {
       : moment().tz(selectedTZString).format('ZZ').replace('+', '');
 
     generateSettlementDetailReport({
-      settlement_id: selectedSettlementId?.value,
-      fspid: getValues().fspid,
-      file_type: fileType,
+      settlementId: selectedSettlementId?.value,
+      fspId: getValues().fspId,
+      fileType: fileType,
       timezoneOffset: tzOffSet
     })
       .then((res: any) => {
@@ -103,8 +105,8 @@ const SettlementSummaryReport = () => {
     start();
     setRunButtonState(false);
 
-    const startDate = getValues().start_date;
-    const endDate = getValues().end_date;
+    const startDate = getValues().startDate;
+    const endDate = getValues().endDate;
 
     let utcStartDate = moment.utc(startDate).startOf('day').format();
 
@@ -156,22 +158,26 @@ const SettlementSummaryReport = () => {
       </Heading>
       <Stack borderWidth="1px" borderRadius="lg" height="full" p="2" mb={4}>
         <HStack alignItems={'flex-end'} p={2} spacing={4}>
-          <FormControl pb="1" isInvalid={!isEmpty(errors.fspid)}>
+          <FormControl isInvalid={!isEmpty(errors.fspId)}>
             <FormLabel>DFSP Name</FormLabel>
             <Controller
-              name="fspid"
+              name="fspId"
               control={control}
               render={({ field }) => (
-                <Input
-                  {...field}
-                />
+                <Select {...field} placeholder="Select DFSP">
+                  {participantList?.map((item, index) => (
+                    <option key={index} value={item.participantName}>
+                      {item.description}
+                    </option>
+                  ))}
+                </Select>
               )}
             />
-            <FormErrorMessage>{errors.fspid?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.fspId?.message}</FormErrorMessage>
           </FormControl>
 
           <FormControl
-            isInvalid={!isEmpty(errors.start_date)}
+            isInvalid={!isEmpty(errors.startDate)}
             pb="1">
             <FormLabel>Start Date</FormLabel>
             <Controller
@@ -182,18 +188,18 @@ const SettlementSummaryReport = () => {
                     value={value}
                     onChange={(e) => {
                       onChange(e);
-                      trigger('end_date');
+                      trigger('endDate');
                     }}
                     onBlur={onBlur}
                     type="date"
                   />
                 );
               }}
-              name="start_date"
+              name="startDate"
             />
-            <FormErrorMessage>{errors.start_date?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.startDate?.message}</FormErrorMessage>
           </FormControl>
-          <FormControl isInvalid={!isEmpty(errors.end_date)} pb="1">
+          <FormControl isInvalid={!isEmpty(errors.endDate)} pb="1">
             <FormLabel>End Date</FormLabel>
             <Controller
               control={control}
@@ -206,19 +212,19 @@ const SettlementSummaryReport = () => {
                     value={value}
                     onChange={(e) => {
                       onChange(e);
-                      trigger('start_date');
+                      trigger('startDate');
                     }}
                     onBlur={onBlur}
                     type="date"
                   />
                 );
               }}
-              name="end_date"
+              name="endDate"
             />
-            <FormErrorMessage>{errors.end_date?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.endDate?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.fspid)} textAlign="right">
+          <FormControl isInvalid={!isEmpty(errors.fspId)} textAlign="right">
             <Button onClick={handleSubmit(onSearchClick)} isDisabled={!isValid}
               colorScheme='blue' gap="2"
               size='md'>
@@ -228,15 +234,15 @@ const SettlementSummaryReport = () => {
 
         </HStack>
       </Stack>
-      <Stack borderWidth="1px" borderRadius="lg" p={4} height="full">
+      {settlementIdOptions.length > 0 && (<Stack borderWidth="1px" borderRadius="lg" p={4} height="full">
         <HStack alignItems={'flex-start'} p={2} spacing={4}>
 
           <FormControl
             width={{ base: '200px', md: '250px' }}
-            isInvalid={!isEmpty(errors.settlement_id)}>
+            isInvalid={!isEmpty(errors.settlementId)}>
             <FormLabel>Settlement ID:</FormLabel>
             <Controller
-              name="settlement_id"
+              name="settlementId"
               control={control}
               render={({ field }) => (
                 <Select {...field} placeholder="Select Settlement ID"
@@ -267,6 +273,7 @@ const SettlementSummaryReport = () => {
         </HStack>
 
       </Stack>
+      )}
     </Box>
   );
 };

@@ -60,19 +60,20 @@ import { RootState } from '@store';
 import { Ranges } from '@typescript/pages';
 import { IFinalizeSettlement } from '@typescript/services';
 import { usePagination, useSortBy, useTable, Row, Column } from 'react-table';
-import { useGetCurrencyList } from '@hooks/services/participant';
+import { useGetParticipantCurrencyList } from '@hooks/services/participant';
 import { getFinalizeSettlementList } from '@services/settlements';
+import { finalizeSettlementWindow } from '@services/settlements';
 
 const finalizeSettlementHelper = new FinalizeSettlementHelper();
 
 const FinalizeSettlement = () => {
 
     const [dateRange, setDateRange] = useState<Ranges>('oneDay');
-    const [stateList] = useState([{ value: 'pending', label: 'Pending' }, { value: 'completed', label: 'Completed' }, { value: 'failed', label: 'Failed' }]);
+    const [stateList] = useState([{ value: 'SETTLED', label: 'SETTLED' }, { value: 'completed', label: 'Completed' }, { value: 'failed', label: 'Failed' }]);
     const { start, complete } = useLoadingContext();
     const toast = useToast();
 
-    const { data } = useGetCurrencyList();
+    const { data } = useGetParticipantCurrencyList();
     const user = useGetUserState();
     const [toFspOptions, setToFspOptions] = useState<any[]>([]);
     const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string }>();
@@ -102,7 +103,7 @@ const FinalizeSettlement = () => {
         fromDate: moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'),
         toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
         currency: 'USD',
-        state: 'pending'
+        state: 'SETTLED'
     }
 
     const onSearchHandler = useCallback((values: any) => {
@@ -153,6 +154,36 @@ const FinalizeSettlement = () => {
         onFinalizeOpen();
     };
 
+    const handleFinalizeSettlementWindow = () => {
+        const data = { settlementId: selectedRow.settlementId };
+        console.log("Selected row settlement id", selectedRow);
+
+        finalizeSettlementWindow(data).then((resp) => {
+            if (resp?.finalized) {
+                toast({
+                    position: 'top',
+                    description: 'Settlement finalized successfully',
+                    status: 'success',
+                    isClosable: true,
+                })
+            }
+
+            onFinalizeClose();
+            onSearchHandler(getValues());
+        }).catch((e) => {
+            toast({
+
+                position: 'top',
+                description: e?.default_error_message || 'Something went wrong',
+                status: 'error',
+                isClosable: true,
+                duration: 3000
+            })
+            onFinalizeClose();
+            onSearchHandler(getValues());
+        })
+    }
+
     const columns = useMemo<Column<IFinalizeSettlement>[]>(() => [
         {
             Header: 'Settlement ID',
@@ -170,7 +201,15 @@ const FinalizeSettlement = () => {
         },
         {
             Header: 'Window ID',
-            accessor: 'reason',
+            accessor: 'settlementWindowList',
+            Cell: ({ row }) => {
+                const windows = row.original.settlementWindowList || [];
+                return (
+                    <Text>
+                        {windows.map(w => w.settlementWindowId).join(', ')}
+                    </Text>
+                );
+            },
         },
         {
             Header: 'State',
@@ -613,10 +652,7 @@ const FinalizeSettlement = () => {
                                 icon={<IoCheckmark size={24} />}
                                 colorScheme="green"
                                 borderRadius="full"
-                                onClick={async () => {
-                                    // await finalizeSettlementAPI(selectedRow.transferId);
-                                    onFinalizeClose();
-                                }}
+                                onClick={handleFinalizeSettlementWindow}
                             />
 
                             <IconButton

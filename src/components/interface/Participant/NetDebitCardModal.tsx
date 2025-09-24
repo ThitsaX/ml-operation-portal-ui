@@ -13,7 +13,7 @@ import {
     FormControl,
     FormLabel,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface NetDebitCapModalProps {
     isOpen: boolean;
@@ -40,6 +40,13 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
         }
         onClose();
     };
+
+    useEffect(() => {
+        if (isOpen) {
+            setFixedAmount("");
+            setPercentage("");
+        }
+    }, [isOpen]);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose}>

@@ -14,7 +14,8 @@ import { Controller, useForm } from 'react-hook-form'
 import { ITimezoneOption } from "react-timezone-select";
 import { useSelector } from "react-redux";
 import { RootState } from "@store";
-import { useGetHubCurrency } from '@hooks/services';
+import { useGetParticipantCurrencyList } from '@hooks/services';
+import { useGetParticipantList } from '@hooks/services/participant';
 
 const settlementStatementReportHelper = new SettlementStatementReportHelper()
 const initialFileName = 'Settlement-Statement-Report'
@@ -24,12 +25,13 @@ const SettlementStatementReport = () => {
   const toast = useToast();
   const [settlementModel, setSettlementModel] = useState<string>('');
   const [runButtonState, setRunButtonState] = useState(true);
+  const { data: participantList } = useGetParticipantList();
 
 
   // Redux
   const user = useGetUserState()
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
-  const { data: currencyList } = useGetHubCurrency();
+  const { data: currencyList } = useGetParticipantCurrencyList();
 
   const onDownloadChangeHandler = (e: any) => {
     start()
@@ -95,15 +97,19 @@ const SettlementStatementReport = () => {
       </Heading>
       <Stack borderWidth="1px" borderRadius='lg' height="full" p="4">
         <HStack alignItems={'flex-start'} spacing={4}>
-          <FormControl pb="1" isInvalid={!isEmpty(errors.fspId)}>
+          <FormControl isInvalid={!isEmpty(errors.fspId)}>
             <FormLabel>DFSP Name</FormLabel>
             <Controller
               name="fspId"
               control={control}
               render={({ field }) => (
-                <Input
-                  {...field}
-                />
+                <Select {...field} placeholder="Select DFSP">
+                  {participantList?.map((item, index) => (
+                    <option key={index} value={item.participantName}>
+                      {item.description}
+                    </option>
+                  ))}
+                </Select>
               )}
             />
             <FormErrorMessage>{errors.fspId?.message}</FormErrorMessage>

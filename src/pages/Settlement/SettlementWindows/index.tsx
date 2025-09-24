@@ -63,11 +63,15 @@ import { ISettlementWindow } from '@typescript/services';
 import { getSettlementWindowsList } from '@services/settlements';
 import { ISettlementWindows } from '@typescript/services';
 import { useLoadingContext } from '@contexts/hooks';
+import { Checkbox } from "@chakra-ui/react";
+import { closeSettlementWindow } from "@services/settlements";
 
 const SettlementWindows = () => {
     const { start, complete } = useLoadingContext();
     const toast = useToast();
     const user = useGetUserState();
+    const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
+
 
     const [dateRange, setDateRange] = useState<Ranges>('oneDay');
     const [currencyList] = useState([{ value: 'USD', label: 'USD' }, { value: 'MMK', label: 'MMK' }, { value: 'EUR', label: 'EUR' }]);
@@ -152,9 +156,44 @@ const SettlementWindows = () => {
         [onDetailOpen]
     );
 
-    const handleFinalize = (row: any) => {
+    const handleClose = (row: any) => {
         setSelectedRow(row);
         onFinalizeOpen();
+    }
+
+
+    const closeSettlement = (row: any) => {
+        const data = {
+            settlementWindowId: selectedRow.settlementWindowId,
+            state: 'CLOSED',
+            reason: selectedRow.reason
+        }
+        closeSettlementWindow(data).then(() => {
+            toast({
+                position: 'top',
+
+                description: 'Settlement Window Closed Successfully',
+                status: 'success',
+                isClosable: true,
+                duration: 3000
+            });
+            onFinalizeClose();
+            // Refresh the list after closing
+            onSearchHandler(getValues());
+        }
+        ).catch(() => {
+
+            toast({
+                position: 'top',
+                description: 'Failed to close Settlement Window',
+
+                status: 'error',
+                isClosable: true,
+                duration: 3000
+            });
+            onFinalizeClose();
+        });
+
     };
 
     const createSettlement = (model: string) => {
@@ -165,7 +204,48 @@ const SettlementWindows = () => {
 
     const columns = useMemo<Column<ISettlementWindow>[]>(() => [
         {
-            Header: 'Settlement ID',
+            id: "selection",
+            Header: () => (
+                <Checkbox
+                    isChecked={
+                        settlementWindows.length > 0 &&
+                        selectedRowIds.length === settlementWindows.length
+                    }
+                    isIndeterminate={
+                        selectedRowIds.length > 0 &&
+                        selectedRowIds.length < settlementWindows.length
+                    }
+                    onChange={(e) => {
+                        if (e.target.checked) {
+                            setSelectedRowIds(settlementWindows.map((row) => row.settlementWindowId));
+                        } else {
+                            setSelectedRowIds([]);
+                        }
+                    }}
+                />
+            ),
+            Cell: ({ row }: any) => {
+                const rowId = row.original.settlementWindowId;
+                const isChecked = selectedRowIds.includes(rowId);
+
+                return (
+                    <Checkbox
+                        isChecked={isChecked}
+                        onClick={(e) => e.stopPropagation()} // ✅ prevent row click
+                        onChange={(e) => {
+                            if (e.target.checked) {
+                                setSelectedRowIds((prev) => [...prev, rowId]);
+                            } else {
+                                setSelectedRowIds((prev) => prev.filter((id) => id !== rowId));
+                            }
+                        }}
+                    />
+                );
+            },
+        },
+
+        {
+            Header: 'Window ID',
             accessor: 'settlementWindowId',
             Cell: ({ row }: any) => (
                 <Box
@@ -175,12 +255,8 @@ const SettlementWindows = () => {
                     _hover={{ textDecoration: 'underline' }}
                     onClick={() => onTrClickHandler(row.original)}
                 >
-                    {row.original.settlementId}
+                    {row.original.settlementWindowId}
                 </Box>)
-        },
-        {
-            Header: 'Window ID',
-            accessor: 'reason',
         },
         {
             Header: 'State',
@@ -209,7 +285,7 @@ const SettlementWindows = () => {
                         size="sm"
                         colorScheme="green"
                         variant="solid"
-                        onClick={() => handleFinalize(row.original)}>
+                        onClick={() => handleClose(row.original)}>
                         Close Window
                     </Button>
                 </HStack>
@@ -217,7 +293,7 @@ const SettlementWindows = () => {
 
         },
     ],
-        []
+        [settlementWindows, selectedRowIds]
     );
 
     const {
@@ -655,11 +731,8 @@ const SettlementWindows = () => {
                         <Button variant="ghost" mr={3} onClick={onFinalizeClose}>
                             Cancel
                         </Button>
-                        <Button colorScheme="green" onClick={async () => {
-                            // Call your API here
-                            // await finalizeSettlementAPI(selectedRow.transferId);
-                            onFinalizeClose();
-                        }}>
+                        <Button colorScheme="green" onClick={closeSettlement}
+                        >
                             Yes, Finalize
                         </Button>
                     </ModalFooter>

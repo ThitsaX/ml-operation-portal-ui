@@ -12,7 +12,6 @@ import Transfer from '@pages/Transfer';
 import User from '@pages/UserManagement/User';
 import Home from '@pages/Home';
 import Audit from '@pages/Audit';
-import ParticipantList from '@pages/Participant/ParticipantList';
 import ParticipantPositions from '@pages/Participant/ParticipantPositions';
 import PendingApprovals from '@pages/PendingApprovals';
 import SupportCenter from '@pages/SupportCenter';
@@ -63,15 +62,6 @@ export const router = createBrowserRouter([
             element: (
               <ProtectedRoute allowedMenuId="participant_positions">
                 <ParticipantPositionDetails />
-              </ProtectedRoute>
-            ),
-          },
-
-          {
-            path: "list",
-            element: (
-              <ProtectedRoute allowedMenuId="participant_positions">
-                <ParticipantList />
               </ProtectedRoute>
             ),
           },

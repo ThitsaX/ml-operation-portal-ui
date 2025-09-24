@@ -97,7 +97,6 @@ const SideBar = ({ onResizeHandler }: { onResizeHandler: ResizeCallback }) => {
               menuId="participant_positions"
               items={[
                 { id: 'position', label: 'Participant Positions', to: '/participant/position', menuId: "participant_positions" },
-                { id: 'list', label: 'Participant List', to: '/participant/list', menuId: "participant_positions" },
               ]}
             />
 

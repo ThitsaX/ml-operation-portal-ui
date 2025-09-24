@@ -8,12 +8,12 @@ export interface ISettlementDetailReport {
 }
 
 export interface ISettlementSummaryReport {
-  fspid: string
-  start_date: string
-  end_date: string
-  settlement_id: string
-  time_zone_offset: string
-  file_type: string
+  fspId: string
+  startDate: string
+  endDate: string
+  settlementId: string
+  timezoneOffset: string
+  fileType: string
 }
 
 export interface ISettlementStatementReport {

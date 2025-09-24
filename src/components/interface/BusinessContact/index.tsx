@@ -5,7 +5,6 @@ import {
     TableContainer,
     Tbody,
     Td,
-    Th,
     Thead,
     Tr,
     VStack,
@@ -25,28 +24,23 @@ import { useGetUserState } from '@store/hooks';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { removeContact } from '@services/participant';
 import { HeaderCell, Cell } from '../Table';
-import {
-    AlertDialog,
-    AlertDialogBody,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogContent,
-    AlertDialogOverlay
-} from '@chakra-ui/react';
-import { useRef } from 'react';
 import { ConfirmDialog } from '../ConfirmationDialog';
 
 
-const defaultForm: IBusinessContact = {
-    participantId: '',
-    name: '',
-    position: '',
-    email: '',
-    mobile: '',
-    contactType: BusinessContactType.TECHNICAL
-};
+interface BusinessContactProps {
+    participantId: string;
+}
 
-const BusinessContact = () => {
+const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
+    const defaultForm: IBusinessContact = {
+        participantId: participantId,
+        name: '',
+        position: '',
+        email: '',
+        mobile: '',
+        contactType: BusinessContactType.TECHNICAL
+    };
+
     const borderColor = useColorModeValue('gray', 'gray.600');
     const headerBg = useColorModeValue('gray.200', 'gray.500');
 
@@ -54,15 +48,16 @@ const BusinessContact = () => {
     const [form, setForm] = useState<IBusinessContact>(defaultForm);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [contactToDelete, setContactToDelete] = useState<IBusinessContact | null>(null);
+    const { data, isLoading, refetch } = useGetContactList(participantId);
+
 
     const toast = useToast();
     const { data: user } = useGetUserState();
-    const { data, isLoading, isError, error, refetch } = useGetContactList();
     const { isOpen, onOpen, onClose } = useDisclosure();
 
     useEffect(() => {
-        if (user && user.participantId) {
-            setForm((prev) => ({ ...prev, participantId: user.participantId }));
+        if (participantId) {
+            setForm((prev) => ({ ...prev, participantId: participantId }));
         }
     }, [user]);
 
@@ -83,9 +78,9 @@ const BusinessContact = () => {
                 });
                 setForm({
                     ...defaultForm,
-                    participantId: user?.participantId || ''
+                    participantId: participantId
                 });
-                setIsEdit(false); // reset edit mode
+                setIsEdit(false);
                 onClose();
                 refetch();
             })
@@ -108,7 +103,7 @@ const BusinessContact = () => {
             mobile: item.mobile,
             contactType: item.contactType,
             contactId: item.contactId,
-            participantId: user?.participantId || ""
+            participantId: participantId
         });
         setIsEdit(true);
         onOpen();
@@ -124,7 +119,7 @@ const BusinessContact = () => {
 
         removeContact({
             contactId: contactToDelete.contactId,
-            participantId: user?.participantId || ""
+            participantId: participantId
         })
             .then(() => {
                 toast({
@@ -160,7 +155,7 @@ const BusinessContact = () => {
                 <Button colorScheme="blue" size="md" onClick={() => {
                     setForm({
                         ...defaultForm,
-                        participantId: user?.participantId || ''
+                        participantId: participantId
                     });
                     setIsEdit(false);
                     onOpen();

@@ -15,15 +15,18 @@ import {
 
 } from '@chakra-ui/react';
 import { Controller, useForm } from 'react-hook-form';
-import { useGetParticipantProfile } from '@hooks/services/participant';
 import { IParticipantProfile } from '@typescript/services';
 import { modifyParticipant } from '@services/participant';
 import { OrganizationHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isEmpty } from 'lodash-es'
+import { getParticipantProfile } from '@services/participant';
+interface OrganizationProfileProps {
+  participantId: string;
+}
 
-const OrganizationProfile = () => {
-  const { data } = useGetParticipantProfile();
+const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId }) => {
+
   const toast = useToast();
   const [preview, setPreview] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string | null>(null);
@@ -46,14 +49,28 @@ const OrganizationProfile = () => {
     mode: 'onChange',
   });
 
-
   useEffect(() => {
-    if (data) {
-      reset(data);
-      setFileType(data.logoFileType);
-      setPreview(data.logo);
+    if (participantId) {
+      getParticipantProfile(participantId)
+        .then(profileData => {
+          if (profileData) {
+            reset(profileData);
+            setFileType(profileData.logoFileType);
+            setPreview(profileData.logo);
+          }
+        })
+        .catch(error => {
+          toast({
+            title: 'Error',
+            description: error.message || 'Failed to load organization profile.',
+            status: 'error',
+            duration: 3000,
+            isClosable: true,
+          });
+        });
     }
-  }, [data, reset]);
+  }, [participantId, reset, toast]);
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
