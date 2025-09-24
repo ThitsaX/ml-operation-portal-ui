@@ -352,7 +352,7 @@ const Transfer = () => {
   }
 
   return (
-    <Flex justify="center" flexDirection="column" flex={1} p="5">
+    <Flex justify="center" flexDirection="column" flex={1} p="2">
       {transferId && (
         <Suspense fallback={null}>
           <TransferDetails
@@ -370,11 +370,12 @@ const Transfer = () => {
       </Box>
 
       <Flex justify="center" flexDirection="row" flex={1} my="4">
-        <Flex flexDirection="column" flex={1} p="5" gap="7">
+        <Flex flexDirection="column" flex={1} p="3" gap="2">
           <FormControl isInvalid={!isEmpty(errors.transferId)}>
             <Input
               type="input"
               placeholder="Transfer ID"
+              borderColor="gray.300"
               {...register('transferId')}
             />
             <FormErrorMessage>{errors.transferId?.message}</FormErrorMessage>
@@ -391,56 +392,49 @@ const Transfer = () => {
             <option value="oneYear">Past Year</option>
             <option value="custom">Custom Range</option>
           </Select>
-          <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
-            {/* <FormLabel fontSize="sm">Start Date</FormLabel> */}
-            {selectedTZString ?
-              <Controller
-                control={control}
-                render={({ field: { value, onChange } }) => {
+          <Select
+            value={transferType}
+            onChange={(e) =>
+              onChangeTransferType(e.target.value as TransferType)
+            }>
+            <option value="inbound">Inbound</option>
+            <option value="outbound">Outbound</option>
+          </Select>
+          <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
+
+            <Select placeholder="Payer FSP ID"  {...register('payerFspId')}>
+              {participantRes?.data?.participantInfoList?.map(
+                (item, index) => {
                   return (
-                    <Input
-                      disabled={dateRange !== 'custom' ? true : false}
-                      type="datetime-local"
-                      value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
-                      onChange={(event) => {
-                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
-                        trigger('fromDate')
-                        onChange(date);
-                      }}
-                    />
+                    <option key={index} value={item.dfsp_code}>
+                      {item.dfsp_code}
+                    </option>
                   );
-                }}
-                name="fromDate"
-              /> : <p>Loading</p>}
-            <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
+                }
+              )}
+            </Select>
+            <FormErrorMessage>{errors.payerFspId?.message}</FormErrorMessage>
           </FormControl>
-          <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
-            {/* <FormLabel fontSize="sm">End Date</FormLabel> */}
-            {selectedTZString ?
-              <Controller
-                control={control}
-                render={({ field: { value, onChange } }) => {
+
+          <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
+
+            <Select placeholder="Payee FSP ID"  {...register('payeeFspId')}>
+              {participantRes?.data?.participantInfoList?.map(
+                (item, index) => {
                   return (
-                    <Input
-                      disabled={dateRange !== 'custom' ? true : false}
-                      type="datetime-local"
-                      value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
-                      onChange={(event) => {
-                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
-                        trigger('toDate')
-                        onChange(date);
-                      }}
-                    />
+                    <option key={index} value={item.dfsp_code}>
+                      {item.dfsp_code}
+                    </option>
                   );
-                }}
-                name="toDate"
-              />
-              : <p>Loading</p>}
-            <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
+                }
+              )}
+            </Select>
+
+            <FormErrorMessage>{errors.payeeFspId?.message}</FormErrorMessage>
           </FormControl>
         </Flex>
 
-        <Flex flexDirection="column" flex={1} p="5" gap="7">
+        <Flex flexDirection="column" flex={1} p="3" gap="2">
           <FormControl isInvalid={!isEmpty(errors.transferStateId)}>
             <Select
               placeholder="Transfer State"
@@ -458,6 +452,35 @@ const Transfer = () => {
             </FormErrorMessage>
           </FormControl>
 
+
+          <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
+            {selectedTZString ?
+              <Controller
+                control={control}
+                render={({ field: { value, onChange } }) => {
+                  return (
+                    <Input
+                      disabled={dateRange !== 'custom' ? true : false}
+                      type="datetime-local"
+                      value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
+                      onChange={(event) => {
+                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
+                        trigger('fromDate')
+                        onChange(date);
+                      }}
+                      borderWidth="1px"
+                      _disabled={{
+                        cursor: 'not-allowed',
+                        opacity: 1
+                      }}
+                    />
+                  );
+                }}
+                name="fromDate"
+              /> : <p>Loading</p>}
+            <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
+          </FormControl>
+
           <FormControl isInvalid={!isEmpty(errors.currencyId)}>
             <Select placeholder="Select Currency" {...register('currencyId')}>
               {currencyList?.map((item, index) => (
@@ -469,75 +492,6 @@ const Transfer = () => {
             <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
           </FormControl>
 
-
-          {/* <FormControl isInvalid={!isEmpty(errors.currencyId)}>
-            <Input
-              type="input"
-              placeholder="Currency"
-              {...register('currencyId')}
-            />
-            <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
-          </FormControl> */}
-
-          {/* Bottom payeeFspID field */}
-          <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
-            {transferType === 'inbound' ? (
-              <Input
-                type="input"
-                {...register('payeeFspId')}
-                value={user.data?.participantName}
-                readOnly
-              />
-            ) : (
-              <Select placeholder="Payer FSP ID"  {...register('payeeFspId')}>
-                {participantRes?.data?.participantInfoList?.map(
-                  (item, index) => {
-                    return (
-                      <option key={index} value={item.dfsp_code}>
-                        {item.dfsp_code}
-                      </option>
-                    );
-                  }
-                )}
-              </Select>
-            )}
-            <FormErrorMessage>{errors.payeeFspId?.message}</FormErrorMessage>
-          </FormControl>
-        </Flex>
-
-        <Flex flexDirection="column" flex={1} p="5" gap="7">
-          <Select
-            value={transferType}
-            onChange={(e) =>
-              onChangeTransferType(e.target.value as TransferType)
-            }>
-            <option value="inbound">Inbound</option>
-            <option value="outbound">Outbound</option>
-          </Select>
-          {/* Top payerFspID field */}
-          <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
-            {transferType === 'inbound' ? (
-              <Select placeholder="Payer FSP ID"  {...register('payerFspId')}>
-                {participantRes?.data?.participantInfoList?.map(
-                  (item, index) => {
-                    return (
-                      <option key={index} value={item.dfsp_code}>
-                        {item.dfsp_code}
-                      </option>
-                    );
-                  }
-                )}
-              </Select>
-            ) : (
-              <Input
-                type="input"
-                {...register('payerFspId')}
-                value={user.data?.participantName}
-                readOnly
-              />
-            )}
-            <FormErrorMessage>{errors.payerFspId?.message}</FormErrorMessage>
-          </FormControl>
           <FormControl isInvalid={!isEmpty(errors.payerIdentifierTypeId)}>
             <Select
               placeholder="Payer ID Type"
@@ -554,6 +508,7 @@ const Transfer = () => {
               {errors.payerIdentifierTypeId?.message}
             </FormErrorMessage>
           </FormControl>
+
           <FormControl isInvalid={!isEmpty(errors.payeeIdentifierTypeId)}>
             <Select
               placeholder="Payee ID Type"
@@ -570,6 +525,40 @@ const Transfer = () => {
               {errors.payeeIdentifierTypeId?.message}
             </FormErrorMessage>
           </FormControl>
+        </Flex>
+
+        <Flex flexDirection="column" flex={1} p="3" gap="2">
+          <Box h="40px"></Box>
+          <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
+            {selectedTZString ?
+              <Controller
+                control={control}
+                render={({ field: { value, onChange } }) => {
+                  return (
+                    <Input
+                      disabled={dateRange !== 'custom' ? true : false}
+                      type="datetime-local"
+                      value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
+                      onChange={(event) => {
+                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
+                        trigger('toDate')
+                        onChange(date);
+                      }}
+                      borderWidth="1px"
+                      borderRadius="md"
+                      _disabled={{
+                        cursor: 'not-allowed',
+                        opacity: 1
+                      }}
+                    />
+                  );
+                }}
+                name="toDate"
+              />
+              : <p>Loading</p>}
+            <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
+          </FormControl>
+          <Box h="40px"></Box>
           <FormControl isInvalid={!isEmpty(errors.payerIdentifierValue)}>
             <Input
               type="input"

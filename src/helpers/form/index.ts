@@ -68,12 +68,12 @@ export class ParticipantHelper extends FormHelper {
     return z
       .object({
         email: z.string({ required_error: 'Required' }).email('invalid-email'),
-        new_password: z.string({ required_error: 'Required' }),
-        confirm_password: z.string({ required_error: 'Required' })
+        newPassword: z.string({ required_error: 'Required' }),
+        confirmPassword: z.string({ required_error: 'Required' })
       })
-      .refine((data) => data.new_password === data.confirm_password, {
+      .refine((data) => data.newPassword === data.confirmPassword, {
         message: 'password-not-match',
-        path: ['confirm_password']
+        path: ['confirmPassword']
       });
   }
 }

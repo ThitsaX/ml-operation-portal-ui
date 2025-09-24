@@ -41,6 +41,8 @@ import {
 import { UserStatus } from '@typescript/form';
 import { useGetRoleListByParticipant, useGetOrganizationListByParticipant } from '@hooks/services/participant';
 import { createUser } from '@services/participant';
+import { GrPowerReset } from "react-icons/gr";
+import ResetPasswordModal from '@components/interface/ResetPassword';
 
 const User = () => {
   const [filterStatus, setFilterStatus] = useState('ACTIVE');
@@ -54,6 +56,14 @@ const User = () => {
   const { data: roleList } = useGetRoleListByParticipant();
   const { data: participantInfoList } = useGetOrganizationListByParticipant();
   const { data, refetch } = useGetUserListByParticipant();
+
+  const [resetUser, setResetUser] = useState<{ userId: string; email: string } | null>(null);
+  const [isResetOpen, setIsResetOpen] = useState(false);
+
+  const handleResetClick = (user: IParticipantUser) => {
+    setResetUser({ userId: user.userId, email: user.email });
+    setIsResetOpen(true);
+  };
 
   const toggleStatus = async (userId: string, checked: boolean) => {
     const newStatus = checked ? UserStatus.ACTIVE : UserStatus.INACTIVE;
@@ -78,6 +88,7 @@ const User = () => {
       });
     }
   };
+
 
   const columns: Column<IParticipantUser>[] = useMemo(() => {
     return [
@@ -113,6 +124,13 @@ const User = () => {
         disableSortBy: true,
         Cell: ({ row }: CellProps<IParticipantUser>) => (
           <HStack spacing={3}>
+            <IconButton
+              icon={<GrPowerReset />}
+              aria-label="Edit"
+              size="lg"
+              onClick={() => handleResetClick(row.original)}
+              variant="ghost"
+            />
             <IconButton
               icon={<FaRegEdit />}
               aria-label="Edit"
@@ -406,6 +424,14 @@ const User = () => {
         participantInfoList={participantInfoList}
         onSave={handleSave}
       />
+
+      <ResetPasswordModal
+        isOpen={isResetOpen}
+        onClose={() => setIsResetOpen(false)}
+        user={resetUser}
+        onSuccess={refetch}
+      />
+
     </VStack>
   );
 };
