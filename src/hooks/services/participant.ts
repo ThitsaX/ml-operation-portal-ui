@@ -22,16 +22,16 @@ export const useGetUserListByParticipant = (
     ...options
   })
 
-export const useGetRoleListByParticipant = (
-  options?: UseQueryOptions<IParticipantUserRole[],
-    IApiErrorResponse
-  >
-) =>
-  useQuery<IParticipantUserRole[], IApiErrorResponse>({
-    queryKey: ['getRoleListByParticipant'],
-    queryFn: getRoleListByParticipant,
-    ...options
-  })
+// export const useGetRoleListByParticipant = (
+//   options?: UseQueryOptions<IParticipantUserRole[],
+//     IApiErrorResponse
+//   >
+// ) =>
+//   useQuery<IParticipantUserRole[], IApiErrorResponse>({
+//     queryKey: ['getRoleListByParticipant'],
+//     queryFn: getRoleListByParticipant,
+//     ...options
+//   })
 
 export const useGetOrganizationListByParticipant = (
   options?: UseQueryOptions<IParticipantOrganization[],

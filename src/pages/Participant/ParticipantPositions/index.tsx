@@ -52,10 +52,8 @@ const ParticipantPositions = () => {
     const toast = useToast();
     const [selectedParticipant, setSelectedParticipant] = useState<IParticipantPositionData | null>(null);
 
-
     useEffect(() => {
         syncHubParticipantsToPortal();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const selectedTimezone = useSelector<RootState, ITimezoneOption>(
@@ -151,6 +149,7 @@ const ParticipantPositions = () => {
                     return (
                         <Switch
                             colorScheme="green"
+                            size="sm"
                             isChecked={isEnabled}
                             onChange={(e) => toggleStatus(id, e.target.checked)}
                         />
@@ -240,13 +239,11 @@ const ParticipantPositions = () => {
         }
     }
 
-
     const handleClick = (participantName: string, participantId: string) => {
         navigate(`/participant/position/${participantName}`, {
             state: { participantId },
         });
     };
-
 
     const approvalRequest = async (
         data: IApprovalRequest,
@@ -348,8 +345,9 @@ const ParticipantPositions = () => {
     );
 
     return (
-        <VStack align="flex-start" w="full" p={8} spacing={8}>
+        <VStack w="full" align="flex-start" spacing={6} p={4}>
             <Heading size="md">Participant Positions</Heading>
+            
             <HStack align="center">
                 <Tooltip label='Refresh' bg='white' color='black'>
                     <IconButton
@@ -373,8 +371,7 @@ const ParticipantPositions = () => {
                 w="full"
                 borderWidth={1}
                 borderColor="gray.100"
-                rounded="lg"
-                mt="4">
+                rounded="lg">
                 <Table variant="simple" {...getTableProps()}>
                     <Thead bg="gray.100">
                         {headerGroups.map((headerGroup) => (
@@ -434,7 +431,9 @@ const ParticipantPositions = () => {
                                     {...row.getRowProps()}
                                 >
                                     {row.cells.map((cell) => (
-                                        <Td {...cell.getCellProps()}>{cell.render('Cell')}</Td>
+                                        <Td {...cell.getCellProps()}
+                                            py={2}   // ✅ reduce row height
+                                            px={3}>{cell.render('Cell')}</Td>
                                     ))}
                                 </Tr>
                             );

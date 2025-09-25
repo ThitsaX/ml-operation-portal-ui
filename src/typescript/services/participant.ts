@@ -6,7 +6,7 @@ export interface IParticipantUser {
   email: string;
   firstName: string;
   lastName: string;
-  roleIdList: string[];
+  roleList: string[];
   participantId: string;
   jobTitle: string;
   status: UserStatus;
@@ -14,6 +14,9 @@ export interface IParticipantUser {
   confirmPassword?: string;
 }
 
+export type IParticipantUserForm = Omit<IParticipantUser, 'roleList'> & {
+  roleIdList: string[];
+};
 export interface IModifyUser {
   userId: string;
   name: string;

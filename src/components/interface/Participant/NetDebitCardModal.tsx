@@ -45,6 +45,7 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
         if (isOpen) {
             setFixedAmount("");
             setPercentage("");
+            setSelectedType("");
         }
     }, [isOpen]);
 
@@ -61,10 +62,9 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
                                 <FormLabel>Type</FormLabel>
                                 <Select
                                     name="currency"
-                                    placeholder="Choose Fixed/Percentage"
                                     value={selectedType}
                                     onChange={(e) => setSelectedType(e.target.value as "fixed" | "percentage")}>
-                                    <option value="" disabled hidden>
+                                    <option value="" disabled>
                                         Choose Fixed/Percentage
                                     </option>
                                     {netDebitCardList.map((item) => (
