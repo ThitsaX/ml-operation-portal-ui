@@ -37,9 +37,10 @@ import { modifyUser, modifyUserStatus } from '@services/participant';
 import {
   type IParticipantUser,
   type IModifyUser,
+  type IParticipantUserForm
 } from '@typescript/services';
 import { UserStatus } from '@typescript/form';
-import { useGetRoleListByParticipant, useGetOrganizationListByParticipant } from '@hooks/services/participant';
+import { useGetOrganizationListByParticipant } from '@hooks/services/participant';
 import { createUser } from '@services/participant';
 import { GrPowerReset } from "react-icons/gr";
 import ResetPasswordModal from '@components/interface/ResetPassword';
@@ -53,7 +54,6 @@ const User = () => {
   const [isEdit, setIsEdit] = useState(false);
   const toast = useToast();
 
-  const { data: roleList } = useGetRoleListByParticipant();
   const { data: participantInfoList } = useGetOrganizationListByParticipant();
   const { data, refetch } = useGetUserListByParticipant();
 
@@ -102,16 +102,10 @@ const User = () => {
       },
       {
         Header: "Role",
-        accessor: "roleIdList",
+        accessor: "roleList",
         Cell: ({ value }: CellProps<IParticipantUser, string[]>) => {
-          if (!value || !roleList) return <span>-</span>;
-
-          const roleNames = value
-            .map(roleId => roleList.find(role => role.roleId === roleId)?.name)
-            .filter(Boolean)
-            .join(", ");
-
-          return <span>{roleNames || "-"}</span>;
+          if (!value || value.length === 0) return <span>-</span>;
+          return <span>{value.join(", ")}</span>;
         },
       },
       {
@@ -149,7 +143,7 @@ const User = () => {
         ),
       },
     ];
-  }, [roleList]);
+  }, []);
 
 
 
@@ -186,14 +180,13 @@ const User = () => {
       filterStatus === 'All' ? true : user.status === filterStatus
     ) ?? [];
     setFilteredUsers(filtered);
-  }, [filterStatus, data]);
-
+  }, [filterStatus, data])
 
   const handleEditClick = (user: IParticipantUser) => {
     setSelectedUser(user);
     setIsOpen(true);
     setIsEdit(true);
-  };
+  }
 
   const handleNewClick = () => {
     setSelectedUser(null);
@@ -201,7 +194,7 @@ const User = () => {
     setIsEdit(false);
   };
 
-  const handleSave = useCallback((values: IParticipantUser) => {
+  const handleSave = useCallback((values: IParticipantUserForm) => {
 
     const { firstName, lastName, confirmPassword, ...rest } = values;
     const name = `${firstName} ${lastName}`;
@@ -420,7 +413,6 @@ const User = () => {
         onClose={() => setIsOpen(false)}
         selectedUser={selectedUser}
         isEdit={isEdit}
-        roleList={roleList}
         participantInfoList={participantInfoList}
         onSave={handleSave}
       />

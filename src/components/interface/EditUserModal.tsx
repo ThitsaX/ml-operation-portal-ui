@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -19,23 +19,24 @@ import {
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import MultiSelect, { OptionType } from './MultiSelect';
-import { IParticipantOrganization, IParticipantUser, IParticipantUserRole } from '@typescript/services';
+import { IParticipantOrganization, IParticipantUser,IParticipantUserForm ,IParticipantUserRole } from '@typescript/services';
 import { UserManagementHelper } from '@helpers/form';
 import { isEmpty } from 'lodash-es';
 import { IoReload } from 'react-icons/io5';
 import { syncHubParticipantsToPortal } from '@services/dashboard';
 import { UserStatus } from '@typescript/form';
+import { getRoleListByParticipant } from '@services/participant';
 
 const userSchema = new UserManagementHelper();
+
 
 interface EditUserModalProps {
   isOpen: boolean;
   onClose: () => void;
   isEdit: boolean;
   selectedUser?: Partial<IParticipantUser>;
-  roleList?: IParticipantUserRole[];
   participantInfoList?: IParticipantOrganization[];
-  onSave: (data: IParticipantUser) => void;
+  onSave: (data: IParticipantUserForm) => void;
 }
 
 const EditUserModal: React.FC<EditUserModalProps> = ({
@@ -43,17 +44,19 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   onClose,
   isEdit,
   selectedUser,
-  roleList,
   participantInfoList,
   onSave,
 }) => {
+  const [roleList, setRoleList] = useState<IParticipantUserRole[]>([]);
+
   const {
     control,
     register,
     handleSubmit,
     reset,
-    formState: { errors, isDirty, isValid, isSubmitting },
-  } = useForm<IParticipantUser>({
+    getValues,
+    formState: { errors, isValid, isSubmitting },
+  } = useForm<IParticipantUserForm>({
     resolver: zodResolver(isEdit ? userSchema.editSchema : userSchema.schema),
     defaultValues: {
       firstName: '',
@@ -63,25 +66,77 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       roleIdList: [],
       jobTitle: '',
       status: UserStatus.ACTIVE,
+      password: '',
+      confirmPassword: '',
     },
     mode: 'onChange',
   });
 
-  useEffect(() => {
-    if (isOpen) {
-      reset({
-        firstName: selectedUser?.firstName ?? '',
-        lastName: selectedUser?.lastName ?? '',
-        email: selectedUser?.email ?? '',
-        participantId: selectedUser?.participantId ?? '',
-        roleIdList: selectedUser?.roleIdList ?? [],
-        jobTitle: selectedUser?.jobTitle ?? '',
-        status: selectedUser?.status,
-      });
+  // Fetch roles by participantName
+  const getRoleList = async (participantName: string) => {
+    try {
+      const roles = await getRoleListByParticipant(participantName);
+      setRoleList(roles || []);
+      return roles || [];
+    } catch (error) {
+      setRoleList([]);
+      return [];
     }
-  }, [isOpen, selectedUser, reset]);
+  };
 
-  const handleFormSubmit = (values: IParticipantUser) => {
+  // Initialize form on open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const initializeForm = async () => {
+      if (isEdit && selectedUser?.participantId && participantInfoList) {
+        const org = participantInfoList.find(p => p.participantId === selectedUser.participantId);
+        if (org) {
+          const roles = await getRoleList(org.participantName);
+          const selectedIds =
+            selectedUser.roleList?.map(label => roles.find(r => r.name === label)?.roleId).filter(Boolean) ?? [];
+
+          reset({
+            firstName: selectedUser.firstName ?? '',
+            lastName: selectedUser.lastName ?? '',
+            email: selectedUser.email ?? '',
+            participantId: selectedUser.participantId ?? '',
+            roleIdList: selectedIds,
+            jobTitle: selectedUser.jobTitle ?? '',
+            status: selectedUser.status ?? UserStatus.ACTIVE,
+            password: '',
+            confirmPassword: '',
+          });
+        }
+      } else {
+        // Not editing → reset empty form
+        setRoleList([]);
+        reset({
+          firstName: '',
+          lastName: '',
+          email: '',
+          participantId: '',
+          roleIdList: [],
+          jobTitle: '',
+          status: UserStatus.ACTIVE,
+          password: '',
+          confirmPassword: '',
+        });
+      }
+    };
+
+    initializeForm();
+  }, [isOpen, isEdit, selectedUser, participantInfoList, reset]);
+
+  // Organization change
+  const handleOrgChange = async (participantId: string) => {
+    const org = participantInfoList?.find(p => p.participantId === participantId);
+    const roles = org ? await getRoleList(org.participantName) : [];
+    reset({ ...getValues(), participantId, roleIdList: [] });
+  };
+
+  // Submit handler
+  const handleFormSubmit = (values: IParticipantUserForm) => {
     onSave(values);
     onClose();
   };
@@ -113,6 +168,34 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
             </FormControl>
 
+            <FormControl isInvalid={!isEmpty(errors.participantId)} isRequired>
+              <HStack>
+                <ChakraSelect
+                  placeholder="Select Organization*"
+                  {...register('participantId')}
+                  onChange={e => handleOrgChange(e.target.value)}
+                  size="md"
+                  width="100%"
+                >
+                  {participantInfoList?.map(org => (
+                    <option key={org.participantId} value={org.participantId}>
+                      {org.participantName}
+                    </option>
+                  ))}
+                </ChakraSelect>
+                <Button
+                  leftIcon={<IoReload />}
+                  colorScheme="teal"
+                  variant="outline"
+                  onClick={() => syncHubParticipantsToPortal()}
+                  minW="40px"
+                  px={2}
+                  aria-label="Sync Organizations"
+                />
+              </HStack>
+              <FormErrorMessage>{errors.participantId?.message}</FormErrorMessage>
+            </FormControl>
+
             <FormControl isInvalid={!isEmpty(errors.roleIdList)} isRequired>
               <Controller
                 control={control}
@@ -133,30 +216,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               <FormErrorMessage>{errors.roleIdList?.message}</FormErrorMessage>
             </FormControl>
 
-            <FormControl isInvalid={!isEmpty(errors.participantId)} isRequired>
-              <HStack>
-                <ChakraSelect placeholder="Select Organization*" {...register('participantId')}
-                  size="md"
-                  width="100%">
-                  {participantInfoList?.map(org => (
-                    <option key={org.participantId} value={org.participantId}>
-                      {org.participantName}
-                    </option>
-                  ))}
-                </ChakraSelect>
-                <Button
-                  leftIcon={<IoReload />}
-                  colorScheme="teal"
-                  variant="outline"
-                  onClick={() => syncHubParticipantsToPortal()}
-                  minW="40px"
-                  px={2}
-                  aria-label="Sync Organizations"
-                />
-              </HStack>
-              <FormErrorMessage>{errors.participantId?.message}</FormErrorMessage>
-            </FormControl>
-
             <FormControl isInvalid={!isEmpty(errors.jobTitle)}>
               <Input placeholder="Job Title" {...register('jobTitle')} />
               <FormErrorMessage>{errors.jobTitle?.message}</FormErrorMessage>
@@ -175,17 +234,14 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                 </FormControl>
               </>
             )}
-
           </VStack>
         </ModalBody>
 
         <ModalFooter display="flex" gap={3}>
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button
-            colorScheme="blue"
-            onClick={handleSubmit(handleFormSubmit)}
-            isLoading={isSubmitting}
-            isDisabled={!isValid}>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button colorScheme="blue" onClick={handleSubmit(handleFormSubmit)} isLoading={isSubmitting} isDisabled={!isValid}>
             {isEdit ? 'Update' : 'Save'}
           </Button>
         </ModalFooter>

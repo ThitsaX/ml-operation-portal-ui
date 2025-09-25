@@ -2,7 +2,7 @@ import AxiosRequest, { generateAccessToken, routes } from '@helpers/api'
 import { axiosErrorHandler, getErrorMessageByCode } from '@helpers/errors'
 import { type RootState, store } from '@store'
 import {
-  type IApiErrorResponse, type IParticipantUser,
+  type IApiErrorResponse, type IParticipantUser, type IParticipantUserForm,
   type IBusinessContact, type ILiquidityProfile,
   type ICurrency,
   type IParticipantProfile, type IGetParticipantList,
@@ -231,7 +231,7 @@ export const getUserListByParticipant = async () => {
     })
 }
 
-export const getRoleListByParticipant = async () => {
+export const getRoleListByParticipant = async (participantName: string) => {
   const {
     user: { auth, data }
   } = store.getState()
@@ -246,6 +246,9 @@ export const getRoleListByParticipant = async () => {
   const { axios } = AxiosRequest(accessToken, accessKey)
   return axios
     .get<{ roleList: IParticipantUserRole[] }>(uri, {
+      params: {
+        participantName: participantName
+      }
     })
     .then((d) => d.data.roleList)
     .catch((error: AxiosError<IApiErrorResponse>) => {
@@ -321,7 +324,7 @@ export const createApprovalRequest = async (data: IApprovalRequest) => {
     })
 }
 
-export const createUser = async (user: IParticipantUser) => {
+export const createUser = async (user: IParticipantUserForm) => {
   const {
     user: { auth }
   } = store.getState()

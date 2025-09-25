@@ -390,8 +390,8 @@ const FinalizeSettlement = () => {
                 <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" p="3">
                     Finalize Settlement
                 </Heading>
-                <Stack borderWidth="1px" borderRadius="lg" height="full" p="4" spacing={4}>
-                    <HStack alignItems={'flex-start'} spacing={4}>
+                <Flex justify="center" flexDirection="row" flex={1} my="4">
+                    <Flex flexDirection="column" flex={1} p="3" gap="2">
                         <Select value={dateRange} onChange={(e) => onChangeDateRange(e.target.value as Ranges)}>
                             <option value="oneDay">Past 24 Hours</option>
                             <option value="today">Today</option>
@@ -401,6 +401,27 @@ const FinalizeSettlement = () => {
                             <option value="oneYear">Past Year</option>
                             <option value="custom">Custom Range</option>
                         </Select>
+                        <FormControl width="400px">
+                            {/* <FormLabel>State</FormLabel> */}
+                            <Controller
+                                control={control}
+                                name="state"
+                                render={({ field }) => (
+                                    <Select {...field}>
+                                        <option value="" disabled>
+                                            Select State
+                                        </option>
+                                        {stateList.map((stateItem) => (
+                                            <option key={stateItem.value} value={stateItem.value}>
+                                                {stateItem.label}
+                                            </option>
+                                        ))}
+                                    </Select>
+                                )}
+                            />
+                        </FormControl>
+                    </Flex>
+                    <Flex flexDirection="column" flex={1} p="3" gap="2">
 
                         <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
                             {/* <FormLabel fontSize="sm">Start Date</FormLabel> */}
@@ -425,6 +446,30 @@ const FinalizeSettlement = () => {
                                 /> : <p>Loading</p>}
                             <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
                         </FormControl>
+                        <FormControl width="400px" isInvalid={!isEmpty(errors.currency)}>
+                            {/* <FormLabel>Currency</FormLabel> */}
+                            <Controller
+                                name="currency"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select {...field}>
+                                        <option value="" disabled>
+                                            Select Currency
+                                        </option>
+                                        {data?.map((item, index) => (
+                                            <option key={index} value={item.currency}>
+                                                {item.currency}
+                                            </option>
+                                        ))}
+                                    </Select>
+                                )}
+                            />
+                            <FormErrorMessage>{errors.currency?.message}</FormErrorMessage>
+                        </FormControl>
+
+                    </Flex>
+
+                    <Flex flexDirection="column" flex={1} p="3" gap="2">
                         <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
                             {/* <FormLabel fontSize="sm">End Date</FormLabel> */}
                             {selectedTZString ?
@@ -449,58 +494,23 @@ const FinalizeSettlement = () => {
                                 : <p>Loading</p>}
                             <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
                         </FormControl>
-                    </HStack>
-                    <HStack alignItems={'flex-start'} spacing={4}>
-                        <FormControl width="400px">
-                            <FormLabel>State</FormLabel>
-                            <Controller
-                                control={control}
-                                name="state"
-                                render={({ field }) => (
-                                    <Select {...field}>
-                                        {stateList.map((stateItem) => (
-                                            <option key={stateItem.value} value={stateItem.value}>
-                                                {stateItem.label}
-                                            </option>
-                                        ))}
-                                    </Select>
-                                )}
-                            />
-                        </FormControl>
 
-                        <FormControl width="400px" isInvalid={!isEmpty(errors.currency)}>
-                            <FormLabel>Currency</FormLabel>
-                            <Controller
-                                name="currency"
-                                control={control}
-                                render={({ field }) => (
-                                    <Select {...field} placeholder="Select Currency">
-                                        {data?.map((item, index) => (
-                                            <option key={index} value={item.currency}>
-                                                {item.currency}
-                                            </option>
-                                        ))}
-                                    </Select>
-                                )}
-                            />
-                            <FormErrorMessage>{errors.currency?.message}</FormErrorMessage>
-                        </FormControl>
-                    </HStack>
-                    <HStack justifyContent='flex-end'>
-                        <Button colorScheme='gray' variant='outline' onClick={onCancelHandler}>
-                            Clear Filters
-                        </Button>
-                        <Button color="white"
-                            bg="primary"
-                            _hover={{
-                                bg: 'primary',
-                                opacity: 0.4
-                            }}
-                            onClick={handleSubmit(onSearchHandler)}>
-                            Find
-                        </Button>
-                    </HStack>
-                </Stack>
+                    </Flex>
+                </Flex>
+                <HStack justifyContent='flex-end'>
+                    <Button colorScheme='gray' variant='outline' onClick={onCancelHandler}>
+                        Clear Filters
+                    </Button>
+                    <Button color="white"
+                        bg="primary"
+                        _hover={{
+                            bg: 'primary',
+                            opacity: 0.4
+                        }}
+                        onClick={handleSubmit(onSearchHandler)}>
+                        Find
+                    </Button>
+                </HStack>
 
                 <TableContainer
                     w="full"

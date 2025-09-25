@@ -6,7 +6,7 @@ export interface IGetPendingApprovals {
 export interface IPendingApproval {
     approvalRequestId: string,
     requestedAction: string,
-    dfsp: string,
+    participantName: string,
     currency: string,
     amount: number,
     requestedBy: string,
@@ -16,7 +16,7 @@ export interface IPendingApproval {
 
 export enum PositionActionType {
     DEPOSIT = 'DEPOSIT',
-    WITHDRAW = 'wITHDRAW',
+    WITHDRAW = 'WITHDRAW',
     UPDATE_NDC_FIXED = 'UPDATE_NDC_FIXED',
     UPDATE_NDC_PERCENTAGE = 'UPDATE_NDC_PERCENTAGE'
 }

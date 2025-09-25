@@ -52,10 +52,8 @@ const ParticipantPositions = () => {
     const toast = useToast();
     const [selectedParticipant, setSelectedParticipant] = useState<IParticipantPositionData | null>(null);
 
-
     useEffect(() => {
         syncHubParticipantsToPortal();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const selectedTimezone = useSelector<RootState, ITimezoneOption>(
@@ -240,13 +238,11 @@ const ParticipantPositions = () => {
         }
     }
 
-
     const handleClick = (participantName: string, participantId: string) => {
         navigate(`/participant/position/${participantName}`, {
             state: { participantId },
         });
     };
-
 
     const approvalRequest = async (
         data: IApprovalRequest,

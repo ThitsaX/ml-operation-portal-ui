@@ -505,12 +505,14 @@ const SettlementWindows = () => {
                     <HStack alignItems={'flex-start'} spacing={4}>
 
                         <FormControl isRequired>
-                            <FormLabel>State</FormLabel>
                             <Controller
                                 control={control}
                                 name="state"
                                 render={({ field }) => (
                                     <Select {...field}>
+                                        <option value="" disabled>
+                                            Select State
+                                        </option>
                                         {stateList.map((stateItem) => (
                                             <option key={stateItem.value} value={stateItem.value}>
                                                 {stateItem.label}
@@ -521,12 +523,14 @@ const SettlementWindows = () => {
                             />
                         </FormControl>
                         <FormControl isRequired>
-                            <FormLabel>Currency</FormLabel>
                             <Controller
                                 control={control}
                                 name="currency"
                                 render={({ field }) => (
                                     <Select {...field}>
+                                        <option value="" disabled>
+                                            Select Currency
+                                        </option>
                                         {currencyList.map((currency) => (
                                             <option key={currency.value} value={currency.value}>
                                                 {currency.label}

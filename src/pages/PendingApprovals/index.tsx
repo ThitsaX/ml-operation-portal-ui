@@ -18,7 +18,6 @@ import {
   Icon
 } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
-import moment from 'moment';
 import { FiCheckCircle, FiXCircle } from 'react-icons/fi';
 import { TfiAngleDoubleLeft, TfiAngleDoubleRight, TfiAngleLeft, TfiAngleRight } from 'react-icons/tfi';
 import { useGetPendingApprovalList } from '@hooks/services';
@@ -28,11 +27,24 @@ import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 
 import { usePagination, useSortBy, useTable, Column } from 'react-table';
 import { ConfirmDialog } from '../../components/interface/ConfirmationDialog';
-
+import { formatEpochToTZ } from '@helpers/dateHelper';
+import { useSelector } from 'react-redux';
+import { RootState } from '@store';
+import { ITimezoneOption } from 'react-timezone-select';
 
 const PendingApprovals = () => {
+  const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
+
+  //Selected timezone offset
+  const selectedTZString = selectedTimezone.value;
+
   const toast = useToast();
-  const { data, isError, error, refetch } = useGetPendingApprovalList();
+  const { data, isError, error, refetch } = useGetPendingApprovalList({
+    staleTime: 0,               
+    cacheTime: 0,               
+    refetchOnMount: true,       
+    refetchOnWindowFocus: false
+  });
 
   // State
   const [tableData, setTableData] = useState<IPendingApproval[]>([]);
@@ -73,8 +85,8 @@ const PendingApprovals = () => {
     modifyApprovalAction(row.approvalRequestId, actionType)
       .then(() => {
         toast({
-          title: 'Approved',
-          description: `${row.requestedBy}'s request ${actionType}.`,
+          title: `${actionType}`,
+          description: `${row.requestedBy}'s request ${actionType?.toLowerCase()}.`,
           status: 'success',
           duration: 3000,
           isClosable: true,
@@ -84,7 +96,7 @@ const PendingApprovals = () => {
       .catch((error) => {
         toast({
           title: 'Error',
-          description: error?.message || `Failed to ${actionType} request.`,
+          description: error?.message || `Failed to ${actionType?.toLowerCase()} request.`,
           status: 'error',
           duration: 3000,
           isClosable: true,
@@ -101,7 +113,7 @@ const PendingApprovals = () => {
       },
       {
         Header: 'DFSP',
-        accessor: 'dfsp'
+        accessor: 'participantName'
       },
       {
         Header: 'Currency',
@@ -118,7 +130,7 @@ const PendingApprovals = () => {
       {
         Header: 'Requested Date Time',
         accessor: 'requestedDateTime',
-        Cell: ({ value }: any) => moment(value).format('YYYY-MM-DD HH:mm'),
+        Cell: ({ value }: any) => formatEpochToTZ(value, selectedTZString, "YYYY-MM-DDTHH:mm:ssZ"),
       },
       {
         Header: 'Action',
@@ -334,7 +346,7 @@ const PendingApprovals = () => {
         title={actionType === PendingApprovalStatus.APPROVED ? "Approve Request" : "Reject Request"}
         message={
           selectedRow
-            ? `Are you sure you want to ${actionType} the request from ${selectedRow.requestedBy}?`
+            ? `Are you sure you want to ${actionType?.toLowerCase()} the request from ${selectedRow.requestedBy}?`
             : ""
         }
         onConfirm={handleConfirmAction}
