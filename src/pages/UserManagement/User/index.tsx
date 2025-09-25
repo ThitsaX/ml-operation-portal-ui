@@ -121,19 +121,20 @@ const User = () => {
             <IconButton
               icon={<GrPowerReset />}
               aria-label="Edit"
-              size="lg"
+              size="md"
               onClick={() => handleResetClick(row.original)}
               variant="ghost"
             />
             <IconButton
               icon={<FaRegEdit />}
               aria-label="Edit"
-              size="lg"
+              size="md"
               onClick={() => handleEditClick(row.original)}
               variant="ghost"
             />
             <Switch
               colorScheme="green"
+              size="sm"
               isChecked={row.original.status === "ACTIVE"}
               onChange={e =>
                 toggleStatus(row.original.userId, e.target.checked)
@@ -246,7 +247,7 @@ const User = () => {
 
   return (
     <VStack w="full" align="flex-start" spacing={6} p={4}>
-      <Heading size="lg">User Management</Heading>
+      <Heading size="md">User Management</Heading>
 
       <HStack w="full" justifyContent="space-between">
         <ChakraSelect
