@@ -1,7 +1,7 @@
 export interface IGetOtherParticipants {
-  participant_id: string;
-  dfsp_code: string;
-  dfsp_name: string;
+  participantId: string;
+  participantName: string;
+  description: string;
 }
 
 export interface IGetOtherParticipantsArr {

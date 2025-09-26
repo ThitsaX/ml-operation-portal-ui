@@ -85,7 +85,6 @@ const Transfer = () => {
 
   // Redux
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
-
   //Selected timezone offset
   const selectedTZString = selectedTimezone.value;
   const timezone = selectedTimezone.offset === 0
@@ -107,6 +106,10 @@ const Transfer = () => {
     payeeIdentifierValue: '',
     timezone: timezone,
   }
+
+  const isHubUser =
+    typeof user.data?.participantName === 'string' &&
+    user.data.participantName.toLowerCase() === 'hub';
 
   // Form
   const {
@@ -194,7 +197,9 @@ const Transfer = () => {
   // Reseting values as soon as timezone change
   useEffect(() => {
     reset(initialValues)
-    onChangeTransferType('inbound');
+    if (!isHubUser) {
+      onChangeTransferType('inbound');
+    }
     onChangeDateRange('oneDay');
     setTransferData([]);
   }, [selectedTimezone])
@@ -337,7 +342,9 @@ const Transfer = () => {
   useEffect(() => {
     setFocus('transferId');
 
-    onChangeTransferType('inbound');
+    if (!isHubUser) {
+      onChangeTransferType('inbound');
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -393,6 +400,7 @@ const Transfer = () => {
             <option value="custom">Custom Range</option>
           </Select>
           <Select
+            disabled={isHubUser}
             value={transferType}
             onChange={(e) =>
               onChangeTransferType(e.target.value as TransferType)
@@ -401,34 +409,63 @@ const Transfer = () => {
             <option value="outbound">Outbound</option>
           </Select>
           <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
+            {(isHubUser || transferType === 'inbound') ? (
+              <Select placeholder="Payer FSP ID"  {...register('payerFspId')}>
+                {participantRes?.data?.participantInfoList.map(
+                  (item, index) => {
+                    return (
+                      <option key={index} value={item.participantName}>
+                        {item.participantName}
+                      </option>
+                    );
+                  }
+                )}
+              </Select>
+            ) : (
+              <Input
+                type="input"
+                {...register('payerFspId')}
+                value={user.data?.participantName}
+                readOnly
+              />
+            )}
 
-            <Select placeholder="Payer FSP ID"  {...register('payerFspId')}>
-              {participantRes?.data?.participantInfoList?.map(
-                (item, index) => {
-                  return (
-                    <option key={index} value={item.dfsp_code}>
-                      {item.dfsp_code}
-                    </option>
-                  );
-                }
-              )}
-            </Select>
             <FormErrorMessage>{errors.payerFspId?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
-
-            <Select placeholder="Payee FSP ID"  {...register('payeeFspId')}>
-              {participantRes?.data?.participantInfoList?.map(
+          <FormControl isInvalid={!isEmpty(errors.payeeFspId)}>
+            {isHubUser ? (<Select placeholder="Payee FSP ID"  {...register('payeeFspId')}>
+              {participantRes?.data?.participantInfoList.map(
                 (item, index) => {
                   return (
-                    <option key={index} value={item.dfsp_code}>
-                      {item.dfsp_code}
+                    <option key={index} value={item.participantName}>
+                      {item.participantName}
                     </option>
                   );
                 }
               )}
             </Select>
+            ) :
+              transferType === 'inbound' ? (
+                <Input
+                  type="input"
+                  {...register('payeeFspId')}
+                  value={user.data?.participantName}
+                  readOnly
+                />
+              ) : (
+                <Select placeholder="Payee FSP ID"  {...register('payeeFspId')}>
+                  {participantRes?.data?.participantInfoList.map(
+                    (item, index) => {
+                      return (
+                        <option key={index} value={item.participantName}>
+                          {item.participantName}
+                        </option>
+                      );
+                    }
+                  )}
+                </Select>
+              )}
 
             <FormErrorMessage>{errors.payeeFspId?.message}</FormErrorMessage>
           </FormControl>
