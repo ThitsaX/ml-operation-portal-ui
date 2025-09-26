@@ -17,7 +17,7 @@ export const useGetUserListByParticipant = (
   >
 ) =>
   useQuery<IParticipantUser[], IApiErrorResponse>({
-    queryKey: ['getAllParticipantUsers'],
+    queryKey: ['getUserListByParticipant'],
     queryFn: getUserListByParticipant,
     ...options
   })

@@ -49,24 +49,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { ITimezoneOption } from 'react-timezone-select';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
-import { InputGroup, InputLeftElement } from '@chakra-ui/react';
-import { TbSearch } from "react-icons/tb";
 import { FaSearch } from "react-icons/fa";
-
-const GlobalFilter = ({ globalFilter, setGlobalFilter }: any) => (
-  <InputGroup w="250px">
-    <InputLeftElement pointerEvents="none">
-      <TbSearch color="gray.400" />
-    </InputLeftElement>
-    <Input
-      placeholder="Search..."
-      value={globalFilter || ''}
-      onChange={(e) => setGlobalFilter(e.target.value || undefined)}
-      variant="flushed"
-      focusBorderColor='blue.400'
-    />
-  </InputGroup>
-);
+import GlobalFilter from '@components/interface/GlobalFilter';
 
 const auditHelper = new AuditHelper();
 
