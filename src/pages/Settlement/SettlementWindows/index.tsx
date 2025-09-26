@@ -65,6 +65,7 @@ import { ISettlementWindows } from '@typescript/services';
 import { useLoadingContext } from '@contexts/hooks';
 import { Checkbox } from "@chakra-ui/react";
 import { closeSettlementWindow } from "@services/settlements";
+import { WINDOW_STATE_OPTIONS as windowStateOptions } from '@utils/constants';
 
 const SettlementWindows = () => {
     const { start, complete } = useLoadingContext();
@@ -75,7 +76,6 @@ const SettlementWindows = () => {
 
     const [dateRange, setDateRange] = useState<Ranges>('oneDay');
     const [currencyList] = useState([{ value: 'USD', label: 'USD' }, { value: 'MMK', label: 'MMK' }, { value: 'EUR', label: 'EUR' }]);
-    const [stateList] = useState([{ value: 'pending', label: 'Pending' }, { value: 'completed', label: 'Completed' }, { value: 'failed', label: 'Failed' }]);
 
     const [toFspOptions, setToFspOptions] = useState<any[]>([]);
     const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string }>();
@@ -513,7 +513,7 @@ const SettlementWindows = () => {
                                         <option value="" disabled>
                                             Select State
                                         </option>
-                                        {stateList.map((stateItem) => (
+                                        {windowStateOptions.map((stateItem) => (
                                             <option key={stateItem.value} value={stateItem.value}>
                                                 {stateItem.label}
                                             </option>

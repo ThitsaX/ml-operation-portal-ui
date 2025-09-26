@@ -22,7 +22,7 @@ import {
   useToast
 } from '@chakra-ui/react';
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { usePagination, useSortBy, useTable, Column, CellProps } from 'react-table';
+import { usePagination, useSortBy, useTable, Column, CellProps, useGlobalFilter } from 'react-table';
 import EditUserModal from '@components/interface/EditUserModal';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import {
@@ -44,7 +44,7 @@ import { useGetOrganizationListByParticipant } from '@hooks/services/participant
 import { createUser } from '@services/participant';
 import { GrPowerReset } from "react-icons/gr";
 import ResetPasswordModal from '@components/interface/ResetPassword';
-
+import GlobalFilter from '@components/interface/GlobalFilter';
 const User = () => {
   const [filterStatus, setFilterStatus] = useState('ACTIVE');
   const [filteredUsers, setFilteredUsers] = useState([] as IParticipantUser[]);
@@ -52,8 +52,8 @@ const User = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [pageNumber, setPageNumber] = useState<String>('1');
   const [isEdit, setIsEdit] = useState(false);
-  const toast = useToast();
 
+  const toast = useToast();
   const { data: participantInfoList } = useGetOrganizationListByParticipant();
   const { data, refetch } = useGetUserListByParticipant();
 
@@ -69,7 +69,7 @@ const User = () => {
     const newStatus = checked ? UserStatus.ACTIVE : UserStatus.INACTIVE;
     try {
       await modifyUserStatus(userId, newStatus);
-      await refetch();
+
 
       toast({
         position: 'top',
@@ -78,6 +78,7 @@ const User = () => {
         duration: 3000,
         isClosable: true,
       });
+      await refetch();
     } catch (error: any) {
       toast({
         position: 'top',
@@ -161,7 +162,8 @@ const User = () => {
     gotoPage,
     nextPage,
     previousPage,
-    state: { pageIndex }
+    state: { pageIndex, globalFilter },
+    setGlobalFilter,
   } = useTable(
     {
       columns,
@@ -171,8 +173,10 @@ const User = () => {
         pageSize: 10
       }
     },
+    useGlobalFilter,
     useSortBy,
-    usePagination
+    usePagination,
+
   );
 
 
@@ -272,142 +276,147 @@ const User = () => {
         <Button colorScheme="blue" onClick={() => handleNewClick()}>New User</Button>
       </HStack>
 
-      <TableContainer
-        w="full"
-        borderWidth={1}
-        borderColor="gray.100"
-        rounded="lg"
-        mt="4">
-        <Table variant="simple" {...getTableProps()}>
-          <Thead bg="gray.100">
-            {headerGroups.map((headerGroup) => (
-              <Tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => (
-                  <Th
-                    {...column.getHeaderProps(
-                      column.disableSortBy
-                        ? undefined
-                        : column.getSortByToggleProps()
-                    )}>
-                    <HStack align="center" spacing="2" flex={1}>
-                      <Text flex={1}>{column.render('Header')}</Text>
-                      {column.disableSortBy ? null : (
-                        <VStack
-                          display="inline-flex"
-                          align="center"
-                          spacing={0}>
-                          <Icon
-                            as={IoChevronUp}
-                            size={12}
-                            color={
-                              !column.isSorted
-                                ? 'gray.400'
-                                : !column.isSortedDesc
-                                  ? 'gray.700'
-                                  : 'gray.400'
-                            }
-                          />
-                          <Icon
-                            as={IoChevronDown}
-                            size={12}
-                            color={
-                              !column.isSorted
-                                ? 'gray.400'
-                                : column.isSortedDesc
-                                  ? 'gray.700'
-                                  : 'gray.400'
-                            }
-                          />
-                        </VStack>
-                      )}
-                    </HStack>
-                  </Th>
-                ))}
-              </Tr>
-            ))}
-          </Thead>
-          <Tbody maxH={300} overflowY="auto" {...getTableBodyProps()}>
-            {page.map((row) => {
-              prepareRow(row);
-              return (
-                <Tr
-                  fontSize="sm"
-                  cursor="pointer"
-                  _hover={{ bg: 'muted.50' }}
-                  {...row.getRowProps()}
-                >
-                  {row.cells.map((cell) => (
-                    <Td {...cell.getCellProps()}
-                      {...cell.getCellProps()}
-                      py={1}   // ✅ reduce row height
-                      px={3}
-                      fontSize="sm">{cell.render('Cell')}</Td>
+      <VStack w="full" align="flex-start" spacing={2}>
+        <GlobalFilter globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+
+        <TableContainer
+          w="full"
+          borderWidth={1}
+          borderColor="gray.100"
+          rounded="lg"
+          my={10}>
+          <Table variant="simple" {...getTableProps()}>
+            <Thead bg="gray.100">
+              {headerGroups.map((headerGroup) => (
+                <Tr {...headerGroup.getHeaderGroupProps()}>
+                  {headerGroup.headers.map((column) => (
+                    <Th
+                      {...column.getHeaderProps(
+                        column.disableSortBy
+                          ? undefined
+                          : column.getSortByToggleProps()
+                      )}>
+                      <HStack align="center" spacing="2" flex={1}>
+                        <Text flex={1}>{column.render('Header')}</Text>
+                        {column.disableSortBy ? null : (
+                          <VStack
+                            display="inline-flex"
+                            align="center"
+                            spacing={0}>
+                            <Icon
+                              as={IoChevronUp}
+                              size={12}
+                              color={
+                                !column.isSorted
+                                  ? 'gray.400'
+                                  : !column.isSortedDesc
+                                    ? 'gray.700'
+                                    : 'gray.400'
+                              }
+                            />
+                            <Icon
+                              as={IoChevronDown}
+                              size={12}
+                              color={
+                                !column.isSorted
+                                  ? 'gray.400'
+                                  : column.isSortedDesc
+                                    ? 'gray.700'
+                                    : 'gray.400'
+                              }
+                            />
+                          </VStack>
+                        )}
+                      </HStack>
+                    </Th>
                   ))}
                 </Tr>
-              );
-            })}
-          </Tbody>
-        </Table>
-        <HStack px="6" py="2">
-          <HStack flex={2}>
-            <IconButton
-              aria-label="Skip to start"
-              variant="ghost"
-              icon={<TfiAngleDoubleLeft />}
-              isDisabled={!canPreviousPage}
-              onClick={() => gotoPage(0)}
-            />
-            <IconButton
-              aria-label="Go Previous"
-              variant="ghost"
-              icon={<TfiAngleLeft />}
-              isDisabled={!canPreviousPage}
-              onClick={previousPage}
-            />
-            <IconButton
-              aria-label="Go Next"
-              variant="ghost"
-              icon={<TfiAngleRight />}
-              isDisabled={!canNextPage}
-              onClick={nextPage}
-            />
-            <IconButton
-              aria-label="Skip to end"
-              variant="ghost"
-              icon={<TfiAngleDoubleRight />}
-              isDisabled={!canNextPage}
-              onClick={() => gotoPage(pageCount - 1)}
-            />
+              ))}
+            </Thead>
+            <Tbody maxH={300} overflowY="auto" {...getTableBodyProps()}>
+              {page.map((row) => {
+                prepareRow(row);
+                return (
+                  <Tr
+                    fontSize="sm"
+                    cursor="pointer"
+                    _hover={{ bg: 'muted.50' }}
+                    {...row.getRowProps()}
+                  >
+                    {row.cells.map((cell) => (
+                      <Td {...cell.getCellProps()}
+                        {...cell.getCellProps()}
+                        py={1}   // ✅ reduce row height
+                        px={3}
+                        fontSize="sm">{cell.render('Cell')}</Td>
+                    ))}
+                  </Tr>
+                );
+              })}
+            </Tbody>
+          </Table>
+          <HStack px="6" py="2">
+            <HStack flex={2}>
+              <IconButton
+                aria-label="Skip to start"
+                variant="ghost"
+                icon={<TfiAngleDoubleLeft />}
+                isDisabled={!canPreviousPage}
+                onClick={() => gotoPage(0)}
+              />
+              <IconButton
+                aria-label="Go Previous"
+                variant="ghost"
+                icon={<TfiAngleLeft />}
+                isDisabled={!canPreviousPage}
+                onClick={previousPage}
+              />
+              <IconButton
+                aria-label="Go Next"
+                variant="ghost"
+                icon={<TfiAngleRight />}
+                isDisabled={!canNextPage}
+                onClick={nextPage}
+              />
+              <IconButton
+                aria-label="Skip to end"
+                variant="ghost"
+                icon={<TfiAngleDoubleRight />}
+                isDisabled={!canNextPage}
+                onClick={() => gotoPage(pageCount - 1)}
+              />
+            </HStack>
+            <Text>
+              Page{' '}
+              <strong>
+                {pageIndex + 1} of {pageOptions.length || 1}
+              </strong>
+            </Text>
+            <Box h="6">
+              <Divider orientation="vertical" />
+            </Box>
+            <HStack>
+              <Text> Go to page : </Text>
+              <Input
+                value={pageNumber ? Number(pageNumber) : ''}
+                textAlign="center"
+                w="14"
+                type="number"
+                min={pageIndex + 1}
+                max={pageOptions.length}
+                onChange={(e) => {
+                  handlePageValidation(e.target.value)
+                  const pageNumber = e.target.value
+                    ? Number(e.target.value) - 1
+                    : 0;
+                  gotoPage(pageNumber);
+                }}
+              />
+            </HStack>
           </HStack>
-          <Text>
-            Page{' '}
-            <strong>
-              {pageIndex + 1} of {pageOptions.length || 1}
-            </strong>
-          </Text>
-          <Box h="6">
-            <Divider orientation="vertical" />
-          </Box>
-          <HStack>
-            <Text> Go to page : </Text>
-            <Input
-              value={pageNumber ? Number(pageNumber) : ''}
-              textAlign="center"
-              w="14"
-              type="number"
-              min={pageIndex + 1}
-              max={pageOptions.length}
-              onChange={(e) => {
-                handlePageValidation(e.target.value)
-                const pageNumber = e.target.value
-                  ? Number(e.target.value) - 1
-                  : 0;
-                gotoPage(pageNumber);
-              }}
-            />
-          </HStack>
-        </HStack>
-      </TableContainer>
+        </TableContainer>
+
+      </VStack>
 
       <EditUserModal
         isOpen={isOpen}

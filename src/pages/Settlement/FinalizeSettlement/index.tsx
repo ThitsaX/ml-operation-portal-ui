@@ -63,13 +63,13 @@ import { usePagination, useSortBy, useTable, Row, Column } from 'react-table';
 import { useGetParticipantCurrencyList } from '@hooks/services/participant';
 import { getFinalizeSettlementList } from '@services/settlements';
 import { finalizeSettlementWindow } from '@services/settlements';
+import { WINDOW_STATE_OPTIONS as windowStateOptions } from '@utils/constants';
 
 const finalizeSettlementHelper = new FinalizeSettlementHelper();
 
 const FinalizeSettlement = () => {
 
     const [dateRange, setDateRange] = useState<Ranges>('oneDay');
-    const [stateList] = useState([{ value: 'SETTLED', label: 'SETTLED' }, { value: 'completed', label: 'Completed' }, { value: 'failed', label: 'Failed' }]);
     const { start, complete } = useLoadingContext();
     const toast = useToast();
 
@@ -411,7 +411,7 @@ const FinalizeSettlement = () => {
                                         <option value="" disabled>
                                             Select State
                                         </option>
-                                        {stateList.map((stateItem) => (
+                                        {windowStateOptions .map((stateItem) => (
                                             <option key={stateItem.value} value={stateItem.value}>
                                                 {stateItem.label}
                                             </option>
