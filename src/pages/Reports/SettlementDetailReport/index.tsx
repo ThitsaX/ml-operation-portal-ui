@@ -63,8 +63,8 @@ const SettlementDetailReport = () => {
       fspId: '',
       settlementId: '',
       fileType: '',
-      startDate: moment().format('yyyy-MM-DD'),
-      endDate: moment().format('yyyy-MM-DD'),
+      startDate: moment().format('YYYY-MM-DDTHH:mm'),
+      endDate: moment().format('YYYY-MM-DDTHH:mm'),
     },
     mode: 'onChange'
   });
@@ -81,7 +81,7 @@ const SettlementDetailReport = () => {
       ? "0000"
       : moment().tz(selectedTZString).format('ZZ').replace('+', '');
     generateSettlementDetailReport({
-      settlementId: getValues().settlementId,
+        settlementId: getValues().settlementId,
       fspId: getValues().fspId,
       fileType: getValues().fileType,
       timezoneOffset: tzOffSet
@@ -111,16 +111,23 @@ const SettlementDetailReport = () => {
     start();
     setRunButtonState(false);
 
-    const startDate = getValues().startDate;
-    const endDate = getValues().endDate;
+    const formData = getValues();
+    const currentTimeZone = moment.tz.guess();
 
-    let utcStartDate = moment.utc(startDate).startOf('day').format();
-    const utcEndDate = moment.utc(endDate).endOf('day').format();
+    // Convert to UTC
+    const utcStartDate = moment(formData.startDate)
+      .tz(selectedTimezone?.value || currentTimeZone)
+      .utc()
+      .format();
 
-    //Getting offset
-    let tzOffSet: string = selectedTimezone.offset === 0
-      ? "0000"
-      : moment().tz(selectedTimezone.value).format('ZZ').replace('+', '');
+    const utcEndDate = moment(formData.endDate)
+      .tz(selectedTimezone?.value || currentTimeZone)
+      .utc()
+      .format();
+
+    const tzOffSet = selectedTimezone?.offset === 0
+      ? '0000'
+      : moment().tz(selectedTimezone?.value || currentTimeZone).format('ZZ').replace('+', '');
 
     getSettlementIds(user, utcStartDate, utcEndDate, tzOffSet)
       .then((data: IGetSettlementIds) => {
@@ -197,7 +204,7 @@ const SettlementDetailReport = () => {
                       trigger('endDate');
                     }}
                     onBlur={onBlur}
-                    type="date"
+                    type="datetime-local"
                   />
                 );
               }}
@@ -222,7 +229,7 @@ const SettlementDetailReport = () => {
                       trigger('startDate');
                     }}
                     onBlur={onBlur}
-                    type="date"
+                    type="datetime-local"
                   />
                 );
               }}

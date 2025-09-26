@@ -78,8 +78,8 @@ const SettlementBankReport = () => {
   } = useForm<ISettlementBankReport>({
     resolver: zodResolver(schema),
     defaultValues: {
-      start_date: moment().format('yyyy-MM-DD'),
-      end_date: moment().format('yyyy-MM-DD')
+      start_date: moment().format('YYYY-MM-DDTHH:mm'),
+      end_date: moment().format('YYYY-MM-DDTHH:mm')
     },
     mode: 'onChange'
   });
@@ -88,16 +88,23 @@ const SettlementBankReport = () => {
     start();
     setRunButtonState(false);
 
-    const startDate = getValues().start_date;
-    const endDate = getValues().end_date;
+    const values = getValues();
+    const currentTimeZone = moment.tz.guess();
 
-    let utcStartDate = moment.utc(startDate).startOf('day').format();
-    const utcEndDate = moment.utc(endDate).endOf('day').format();
+    // Convert to UTC
+    const utcStartDate = moment(values.start_date)
+      .tz(selectedTimezone?.value || currentTimeZone)
+      .utc()
+      .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
-    //Getting offset
-    let tzOffSet: string = selectedTimezone.offset === 0
-      ? "0000"
-      : moment().tz(selectedTimezone.value).format('ZZ').replace('+', '');
+    const utcEndDate = moment(values.end_date)
+      .tz(selectedTimezone?.value || currentTimeZone)
+      .utc()
+      .format('YYYY-MM-DDTHH:mm:ss[Z]');
+
+    const tzOffSet = selectedTimezone?.offset === 0
+      ? '0000'
+      : moment().tz(selectedTimezone?.value || currentTimeZone).format('ZZ').replace('+', '');
 
     getSettlementIds(user, utcStartDate, utcEndDate, tzOffSet)
       .then((data: IGetSettlementIds) => {
@@ -127,11 +134,12 @@ const SettlementBankReport = () => {
       });
   }, [complete, getValues, start, toast, user]);
 
-  const onSearchClick = useCallback(() => {
-    search();
-  },
-    [search]
-  );
+  const onSearchClick = useCallback(async () => {
+    const isValid = await trigger();
+    if (isValid) {
+      search();
+    }
+  }, [search, trigger]);
 
   useEffect(() => {
     getAllOtherParticipants(user, {
@@ -221,7 +229,7 @@ const SettlementBankReport = () => {
                       trigger('end_date');
                     }}
                     onBlur={onBlur}
-                    type="date"
+                    type="datetime-local"
                   />
                 );
               }}
@@ -246,7 +254,7 @@ const SettlementBankReport = () => {
                       trigger('start_date');
                     }}
                     onBlur={onBlur}
-                    type="date"
+                    type="datetime-local"
                   />
                 );
               }}

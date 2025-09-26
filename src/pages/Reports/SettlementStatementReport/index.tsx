@@ -38,11 +38,19 @@ const SettlementStatementReport = () => {
 
     const fileType = e.target.value
 
-    const startDate = getValues().startDate
-    const endDate = getValues().endDate
+    const formData = getValues();
+    const currentTimeZone = moment.tz.guess();
 
-    let utcStartDate = moment.utc(startDate).startOf('day').format();
-    let utcEndDate = moment.utc(endDate).endOf('day').format();
+    // Convert to UTC
+    const utcStartDate = moment(formData.startDate)
+      .tz(selectedTimezone?.value || currentTimeZone)
+      .utc()
+      .format();
+
+    const utcEndDate = moment(formData.endDate)
+      .tz(selectedTimezone?.value || currentTimeZone)
+      .utc()
+      .format();
 
     const selectedTZString = selectedTimezone.value;
     let tzOffSet: string = selectedTimezone.offset === 0
@@ -79,8 +87,8 @@ const SettlementStatementReport = () => {
   const { control, trigger, getValues, formState: { errors, isValid } } = useForm<ISettlementStatementReport>({
     resolver: zodResolver(settlementStatementReportHelper.schema),
     defaultValues: {
-      startDate: moment().format('yyyy-MM-DD'),
-      endDate: moment().format('yyyy-MM-DD'),
+      startDate: moment().format('YYYY-MM-DDTHH:mm'),
+      endDate: moment().format('YYYY-MM-DDTHH:mm'),
       fspId: '',
       currency: '',
       settlementId: '',
@@ -127,7 +135,7 @@ const SettlementStatementReport = () => {
                       trigger('endDate');
                     }}
                     onBlur={onBlur}
-                    type="date"
+                    type="datetime-local"
                   />
                 );
               }}
@@ -151,7 +159,7 @@ const SettlementStatementReport = () => {
                       trigger('startDate');
                     }}
                     onBlur={onBlur}
-                    type="date"
+                    type="datetime-local"
                   />
                 );
               }}

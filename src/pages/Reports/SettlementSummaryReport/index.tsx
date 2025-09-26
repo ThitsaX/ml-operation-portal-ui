@@ -56,8 +56,8 @@ const SettlementSummaryReport = () => {
   } = useForm<ISettlementSummaryReport>({
     resolver: zodResolver(settlementSummaryReportHelper.schema),
     defaultValues: {
-      startDate: moment().format('yyyy-MM-DD'),
-      endDate: moment().format('yyyy-MM-DD')
+      startDate: moment().format('YYYY-MM-DDTHH:mm'),
+      endDate: moment().format('YYYY-MM-DDTHH:mm')
     },
     mode: 'onChange'
   });
@@ -67,16 +67,17 @@ const SettlementSummaryReport = () => {
     start();
     setRunButtonState(false);
 
+    const formData = getValues();
     const fileType = e.target.value;
+    const currentTimeZone = moment.tz.guess();
 
-    const selectedTZString = selectedTimezone.value;
-    let tzOffSet: string = selectedTimezone.offset === 0
-      ? "0000"
-      : moment().tz(selectedTZString).format('ZZ').replace('+', '');
+    const tzOffSet = selectedTimezone?.offset === 0
+      ? '0000'
+      : moment().tz(selectedTimezone?.value || currentTimeZone).format('ZZ').replace('+', '');
 
     generateSettlementDetailReport({
       settlementId: selectedSettlementId?.value,
-      fspId: getValues().fspId,
+      fspId: formData.fspId,
       fileType: fileType,
       timezoneOffset: tzOffSet
     })
@@ -105,17 +106,23 @@ const SettlementSummaryReport = () => {
     start();
     setRunButtonState(false);
 
-    const startDate = getValues().startDate;
-    const endDate = getValues().endDate;
+    const formData = getValues();
+    const currentTimeZone = moment.tz.guess();
 
-    let utcStartDate = moment.utc(startDate).startOf('day').format();
+    // Convert to UTC
+    const utcStartDate = moment(formData.startDate)
+      .tz(selectedTimezone?.value || currentTimeZone)
+      .utc()
+      .format();
 
-    const utcEndDate = moment.utc(endDate).endOf('day').format();
+    const utcEndDate = moment(formData.endDate)
+      .tz(selectedTimezone?.value || currentTimeZone)
+      .utc()
+      .format();
 
-    //Getting offset
-    let tzOffSet: string = selectedTimezone.offset === 0
-      ? "0000"
-      : moment().tz(selectedTimezone.value).format('ZZ').replace('+', '');
+    const tzOffSet = selectedTimezone?.offset === 0
+      ? '0000'
+      : moment().tz(selectedTimezone?.value || currentTimeZone).format('ZZ').replace('+', '');
 
     getSettlementIds(user, utcStartDate, utcEndDate, tzOffSet)
       .then((data: IGetSettlementIds) => {
@@ -191,7 +198,7 @@ const SettlementSummaryReport = () => {
                       trigger('endDate');
                     }}
                     onBlur={onBlur}
-                    type="date"
+                    type="datetime-local"
                   />
                 );
               }}
@@ -215,7 +222,7 @@ const SettlementSummaryReport = () => {
                       trigger('startDate');
                     }}
                     onBlur={onBlur}
-                    type="date"
+                    type="datetime-local"
                   />
                 );
               }}
