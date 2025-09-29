@@ -93,7 +93,7 @@ const Transfer = () => {
 
   //Form initial values
   const initialValues = {
-    payeeFspId: user.data?.participantName,
+    payeeFspId: '',
     payerFspId: '',
     fromDate: moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'),
     toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),

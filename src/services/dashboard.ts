@@ -4,7 +4,7 @@ import { store } from '@store'
 import { type IParticipant, type IApiErrorResponse, type IParticipantPositionData } from '@typescript/services'
 import { type AxiosError } from 'axios'
 
-export const getDashboardData = async () => {
+export const getParticipantPositionList = async () => {
   const {
     user: { auth }
   } = store.getState()

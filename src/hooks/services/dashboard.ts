@@ -1,12 +1,12 @@
-import { getDashboardData, getParticipantList } from '@services/dashboard'
+import { getParticipantPositionList } from '@services/dashboard'
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
-import { IParticipant, type IApiErrorResponse, type IParticipantPositionData } from '@typescript/services'
+import { type IApiErrorResponse, type IParticipantPositionData } from '@typescript/services'
 
 export const useGetDashboard = (
   options?: UseQueryOptions<IParticipantPositionData[], IApiErrorResponse>
 ) =>
   useQuery<IParticipantPositionData[], IApiErrorResponse>({
-    queryKey: ['getDashboardData'],
-    queryFn: getDashboardData,
+    queryKey: ['getParticipantPositionList'],
+    queryFn: getParticipantPositionList,
     ...options
   })
