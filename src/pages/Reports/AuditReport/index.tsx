@@ -64,8 +64,8 @@ const AuditReport = () => {
     } = useForm<IGetAuditReport>({
         defaultValues: {
             participantId: user?.participantId,
-            fromDate: moment().tz(selectedTZString).startOf('day').toISOString(),
-            toDate: moment().tz(selectedTZString).endOf('d').toISOString(),
+            fromDate: moment().format('YYYY-MM-DDTHH:mm'),
+            toDate: moment().format('YYYY-MM-DDTHH:mm'),
             userId: '',
             action: '',
             fileType: '',
@@ -88,14 +88,27 @@ const AuditReport = () => {
 
         const formData = getValues();
         const fileType = formData.fileType;
+        const currentTimeZone = moment.tz.guess();
 
-        const selectedTZString = selectedTimezone.value;
-        let tzOffSet: string = selectedTimezone.offset === 0
-            ? "0000"
-            : moment().tz(selectedTZString).format('ZZ').replace('+', '');
+        // Convert to UTC
+        const utcFromDate = moment(formData.fromDate)
+            .tz(selectedTimezone?.value || currentTimeZone)
+            .utc()
+            .format('YYYY-MM-DDTHH:mm:ss[Z]');
+
+        const utcToDate = moment(formData.toDate)
+            .tz(selectedTimezone?.value || currentTimeZone)
+            .utc()
+            .format('YYYY-MM-DDTHH:mm:ss[Z]');
+
+        const tzOffSet = selectedTimezone?.offset === 0
+            ? '0000'
+            : moment().tz(selectedTimezone?.value || currentTimeZone).format('ZZ').replace('+', '');
 
         generateAuditReport({
             ...formData,
+            fromDate: utcFromDate,
+            toDate: utcToDate,
             participantId: user?.participantId,
             timezoneOffset: tzOffSet
         })
@@ -137,15 +150,11 @@ const AuditReport = () => {
                             name="fromDate"
                             render={({ field: { value, onChange } }) => (
                                 <Input
-                                    type="date"
-                                    value={moment(value).format('YYYY-MM-DD')}
-                                    onChange={(event) => {
-                                        // Set ISO string at start of day
-                                        const date = moment(event.target.value, 'YYYY-MM-DD')
-                                            .startOf('day')
-                                            .toISOString();
-                                        onChange(date);
-                                        trigger('toDate');
+                                    type="datetime-local"
+                                    value={value}
+                                    onChange={(e) => {
+                                    onChange(e.target.value);
+                                    trigger('toDate');
                                     }}
                                 />
                             )}
@@ -160,15 +169,11 @@ const AuditReport = () => {
                             name="toDate"
                             render={({ field: { value, onChange } }) => (
                                 <Input
-                                    type="date"
-                                    value={moment(value).format('YYYY-MM-DD')}
-                                    onChange={(event) => {
-                                        // Set ISO string at end of day
-                                        const date = moment(event.target.value, 'YYYY-MM-DD')
-                                            .endOf('day')
-                                            .toISOString();
-                                        onChange(date);
-                                        trigger('fromDate');
+                                    type="datetime-local"
+                                    value={value}
+                                    onChange={(e) => {
+                                    onChange(e.target.value);
+                                    trigger('fromDate');
                                     }}
                                 />
                             )}
