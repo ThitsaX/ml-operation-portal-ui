@@ -35,7 +35,6 @@ import { useSelector } from 'react-redux';
 import moment from 'moment';
 
 import { RootState } from '@store';
-import { useGetDashboard } from '@hooks/services';
 import { IApprovalRequest, IParticipantPositionData, PositionActionType } from '@typescript/services';
 import type { ITimezoneOption } from 'react-timezone-select';
 
@@ -44,6 +43,7 @@ import WithdrawModal from '@components/interface/Participant/WidthdrawModal';
 import NetDebitCapModal from '@components/interface/Participant/NetDebitCardModal';
 import { syncHubParticipantsToPortal } from '@services/dashboard';
 import { createApprovalRequest } from '@services/participant';
+import { getParticipantPositionList } from '@services/dashboard';
 
 const ParticipantPositions = () => {
 
@@ -51,11 +51,7 @@ const ParticipantPositions = () => {
     const [tableData, setTableData] = useState<IParticipantPositionData[]>([]);
     const toast = useToast();
     const [selectedParticipant, setSelectedParticipant] = useState<IParticipantPositionData | null>(null);
-
-    useEffect(() => {
-        syncHubParticipantsToPortal();
-    }, []);
-
+    const [participantPositionList, setParticipantPositionList] = useState<IParticipantPositionData[]>([]);
     const selectedTimezone = useSelector<RootState, ITimezoneOption>(
         (s) => s.app.selectedTimezone
     );
@@ -74,10 +70,29 @@ const ParticipantPositions = () => {
 
     // Hooks
     const navigate = useNavigate();
-    const { data } = useGetDashboard();
     const { isOpen: isDepositOpen, onOpen: onDepositOpen, onClose: onDepositClose } = useDisclosure();
     const { isOpen: isWithdrawOpen, onOpen: onWithdrawOpen, onClose: onWithdrawClose } = useDisclosure();
     const { isOpen: isNdcOpen, onOpen: onNdcOpen, onClose: onNdcClose } = useDisclosure();
+
+    useEffect(() => {
+        syncHubParticipantsToPortal();
+        getPositionList();
+    }, []);
+
+    const getPositionList = async () => {
+        try {
+            const data = await getParticipantPositionList();
+            setParticipantPositionList(data);
+        } catch (error: any) {
+            toast({
+                title: 'Failed to fetch participant positions',
+                description: error?.message || 'Something went wrong. Please try again.',
+                status: 'error',
+                duration: 4000,
+                isClosable: true,
+            });
+        }
+    };
 
     useEffect(() => {
         setStringDateTime(handleTimeZone(stringTimezone))
@@ -224,10 +239,10 @@ const ParticipantPositions = () => {
     ) as Column<IParticipantPositionData>[];
 
     useEffect(() => {
-        if (data) {
-            setTableData(data);
+        if (participantPositionList) {
+            setTableData(participantPositionList);
         }
-    }, [data]);
+    }, [participantPositionList]);
 
     const handlePageValidation = (value: string) => {
         if (Number(value) > pageOptions.length) {
@@ -347,7 +362,7 @@ const ParticipantPositions = () => {
     return (
         <VStack w="full" align="flex-start" spacing={6} p={4}>
             <Heading size="md">Participant Positions</Heading>
-            
+
             <HStack align="center">
                 <Tooltip label='Refresh' bg='white' color='black'>
                     <IconButton

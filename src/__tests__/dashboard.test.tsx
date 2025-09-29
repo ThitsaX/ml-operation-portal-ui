@@ -17,7 +17,7 @@ const mockData = [{
     "participantPositionCurrencyId": 7
 }];
 
-jest.spyOn(dashboardService, 'getDashboardData').mockResolvedValue(mockData);
+jest.spyOn(dashboardService, 'getParticipantPositionList').mockResolvedValue(mockData);
 
 const wrapper = ({ children }: any) => (
     <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>
