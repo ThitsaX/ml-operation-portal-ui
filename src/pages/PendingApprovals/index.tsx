@@ -15,7 +15,8 @@ import {
   Input,
   Box,
   Divider,
-  Icon
+  Icon,
+  Select
 } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
 import { FiCheckCircle, FiXCircle } from 'react-icons/fi';
@@ -31,18 +32,21 @@ import { formatEpochToTZ } from '@helpers/dateHelper';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { ITimezoneOption } from 'react-timezone-select';
+import { hasMenuAccess } from '@helpers/permissions';
 
 const PendingApprovals = () => {
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
+  const [filterStatus, setFilterStatus] = useState('PENDING');
+  const [filteredRequests, setFilteredRequests] = useState([] as IPendingApproval[]);
 
   //Selected timezone offset
   const selectedTZString = selectedTimezone.value;
 
   const toast = useToast();
   const { data, isError, error, refetch } = useGetPendingApprovalList({
-    staleTime: 0,               
-    cacheTime: 0,               
-    refetchOnMount: true,       
+    staleTime: 0,
+    cacheTime: 0,
+    refetchOnMount: true,
     refetchOnWindowFocus: false
   });
 
@@ -55,10 +59,11 @@ const PendingApprovals = () => {
   const [actionType, setActionType] = useState<PendingApprovalStatus | null>(null);
 
   useEffect(() => {
-    if (data) {
-      setTableData(data);
-    }
-  }, [data]);
+    const filtered = data?.filter(request =>
+      filterStatus === 'PENDING ' ? true : request.action === filterStatus
+    ) ?? [];
+    setFilteredRequests(filtered);
+  }, [filterStatus, data])
 
   // Dialog Controls
   const openConfirmDialog = (row: IPendingApproval, type: PendingApprovalStatus) => {
@@ -105,62 +110,57 @@ const PendingApprovals = () => {
   };
 
   // Table setup
-  const columns = useMemo(
-    () => [
-      {
-        Header: 'Requested Action',
-        accessor: 'requestedAction'
-      },
-      {
-        Header: 'DFSP',
-        accessor: 'participantName'
-      },
-      {
-        Header: 'Currency',
-        accessor: 'currency'
-      },
-      {
-        Header: 'Amount',
-        accessor: 'amount'
-      },
-      {
-        Header: 'Requested By',
-        accessor: 'requestedBy'
-      },
+  const columns = useMemo(() => {
+    const baseColumns: Column<IPendingApproval>[] = [
+      { Header: 'Requested Action', accessor: 'requestedAction' },
+      { Header: 'DFSP', accessor: 'participantName' },
+      { Header: 'Currency', accessor: 'currency' },
+      { Header: 'Amount', accessor: 'amount' },
+      { Header: 'Requested By', accessor: 'requestedBy' },
       {
         Header: 'Requested Date Time',
         accessor: 'requestedDateTime',
-        Cell: ({ value }: any) => formatEpochToTZ(value, selectedTZString, "YYYY-MM-DDTHH:mm:ssZ"),
+        Cell: ({ value }: any) => formatEpochToTZ(value, selectedTZString, "YYYY-MM-DDTHH:mm:ssZ")
       },
-      {
-        Header: 'Action',
-        disableSortBy: true,
-        Cell: ({ row }: any) => (
-          <HStack spacing={4}>
-            <Box
-              as="span"
-              color="green.500"
-              cursor="pointer"
-              _hover={{ color: 'green.700' }}
-              onClick={() => openConfirmDialog(row.original, PendingApprovalStatus.APPROVED)}
-            >
-              <FiCheckCircle size="18px" />
-            </Box>
-            <Box
-              as="span"
-              color="red.500"
-              cursor="pointer"
-              _hover={{ color: 'red.700' }}
-              onClick={() => openConfirmDialog(row.original, PendingApprovalStatus.REJECTED)}
-            >
-              <FiXCircle size="18px" />
-            </Box>
-          </HStack>
-        ),
-      },
-    ],
-    []
-  ) as Column<IPendingApproval>[];
+      { Header: 'Status', accessor: 'action' },
+    ] as Column<IPendingApproval>[];;
+
+    const statusColumn: Column<IPendingApproval>[] =
+      filterStatus === 'PENDING' && hasMenuAccess("ModifyApprovalAction")
+        ? [
+
+          {
+            Header: 'Action',
+            disableSortBy: true,
+            Cell: ({ row }: any) => (
+              <HStack spacing={4}>
+                <Box
+                  as="span"
+                  color="green.500"
+                  cursor="pointer"
+                  _hover={{ color: 'green.700' }}
+                  onClick={() => openConfirmDialog(row.original, PendingApprovalStatus.APPROVED)}
+                >
+                  <FiCheckCircle size="18px" />
+                </Box>
+                <Box
+                  as="span"
+                  color="red.500"
+                  cursor="pointer"
+                  _hover={{ color: 'red.700' }}
+                  onClick={() => openConfirmDialog(row.original, PendingApprovalStatus.REJECTED)}
+                >
+                  <FiXCircle size="18px" />
+                </Box>
+              </HStack>
+            ),
+          },
+        ]
+        : [];
+
+    return [...baseColumns, ...statusColumn];
+  }, [filterStatus, selectedTZString]) as Column<IPendingApproval>[];;
+
 
   const {
     getTableProps,
@@ -179,7 +179,7 @@ const PendingApprovals = () => {
   } = useTable(
     {
       columns,
-      data: tableData,
+      data: filteredRequests,
       initialState: {
         pageIndex: 0,
         pageSize: 10
@@ -203,6 +203,27 @@ const PendingApprovals = () => {
   return (
     <VStack align="flex-start" w="full" p={8} spacing={8}>
       <Heading size="md">Pending Approvals</Heading>
+
+      <HStack w="full" justifyContent="space-between">
+        <Select
+          width="200px"
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          size="md"
+          rounded="md"
+          bg="white"
+          borderColor="gray.300"
+          focusBorderColor="blue.500"
+          _hover={{ borderColor: "blue.400" }}
+          _focus={{ boxShadow: "0 0 0 1px #3182CE" }}
+
+        >
+          <option value="PENDING">PENDING</option>
+          <option value="APPROVED">APPROVED </option>
+          <option value="REJECTED">REJECTED</option>
+
+        </Select>
+      </HStack>
 
       {isError && <Text color="red.500">{String(error)}</Text>}
 
