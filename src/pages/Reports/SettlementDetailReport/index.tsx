@@ -87,8 +87,8 @@ const SettlementDetailReport = () => {
       timezoneOffset: tzOffSet
     })
       .then((res: any) => {
-        if (res?.detail_report_byte?.length > 0) {
-          downloadFile(initialFileName, fileType, res?.detail_report_byte);
+        if (res?.rptByte?.length > 0) {
+          downloadFile(initialFileName, fileType, res?.rptByte);
         } else {
           toast({
             position: 'top',

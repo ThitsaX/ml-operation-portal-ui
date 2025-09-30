@@ -109,7 +109,7 @@ const SettlementWindows = () => {
         fromDate: moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'),
         toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
         currency: 'USD',
-        state: 'pending'
+        state: 'OPEN'
     }
 
 
@@ -514,8 +514,8 @@ const SettlementWindows = () => {
                                             Select State
                                         </option>
                                         {windowStateOptions.map((stateItem) => (
-                                            <option key={stateItem.value} value={stateItem.value}>
-                                                {stateItem.label}
+                                            <option key={stateItem} value={stateItem}>
+                                                {stateItem}
                                             </option>
                                         ))}
                                     </Select>

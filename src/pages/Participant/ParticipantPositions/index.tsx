@@ -23,7 +23,7 @@ import {
     Divider,
     Input,
     Icon,
-    useToast
+    useToast,
 } from '@chakra-ui/react';
 import { FiChevronDown } from 'react-icons/fi';
 import { IoReload, IoChevronDown, IoChevronUp } from 'react-icons/io5';
@@ -44,6 +44,7 @@ import NetDebitCapModal from '@components/interface/Participant/NetDebitCardModa
 import { syncHubParticipantsToPortal } from '@services/dashboard';
 import { createApprovalRequest } from '@services/participant';
 import { getParticipantPositionList } from '@services/dashboard';
+import { Badge } from '@chakra-ui/react';
 
 const ParticipantPositions = () => {
 
@@ -98,6 +99,18 @@ const ParticipantPositions = () => {
         setStringDateTime(handleTimeZone(stringTimezone))
     }, [selectedTimezone, stringTimezone])
 
+    const getValueColor = (num: number): string => {
+        if (num >= 40) {
+            return "red.500";      // NDC usage at 40% or above
+        }
+        if (num > 0) {
+            return "green.500";    // DFSP can use more than NDC (+ve)
+        }
+        if (num < 0 && num >= -39) {
+            return "blue.500";     // NDC usage below 40% (-1 to -39)
+        }
+        return "";
+    };
 
     const columns = useMemo(
         () => [
@@ -106,6 +119,7 @@ const ParticipantPositions = () => {
                 accessor: 'participantName',
                 Cell: ({ row }: any) => (
                     <Box
+                        textAlign={'center'}
                         color="blue.600"
                         fontWeight="bold"
                         cursor="pointer"
@@ -121,13 +135,18 @@ const ParticipantPositions = () => {
             },
             {
                 Header: 'Currency',
-                accessor: 'currency'
+                accessor: 'currency',
+                Cell: ({ value }) => (
+                    <Text textAlign="center">
+                        {value}
+                    </Text>
+                ),
             },
             {
                 Header: 'Balance',
                 accessor: 'balance',
                 Cell: ({ row }: any) => (
-                    <Box>
+                    <Box textAlign={'right'}>
                         {row.original.balance?.toFixed(2)}
                     </Box>
                 )
@@ -136,38 +155,64 @@ const ParticipantPositions = () => {
                 Header: 'Current Position',
                 accessor: 'currentPosition',
                 Cell: ({ row }: { row: Row<IParticipantPositionData> }) => (
-                    <Box>
+                    <Box textAlign={'right'}>
                         {row.original.currentPosition?.toFixed(2)}
                     </Box>
                 )
             },
             {
-                id: 'ndcPercent',
                 Header: 'NDC %',
-                accessor: 'ndc',
+                accessor: 'ndcPercent',
+                Cell: ({ value }) => (
+                    <Text textAlign="right">
+                        {value}
+                    </Text>
+                ),
             },
             {
                 Header: 'NDC',
                 accessor: 'ndc',
+                Cell: ({ value }) => (
+                    <Text textAlign="right">
+                        {value}
+                    </Text>
+                ),
             },
             {
                 Header: 'NDC Used %',
                 accessor: 'ndcUsed',
+                Cell: ({ value }) => (
+                    <HStack spacing={2} w="full" justifyContent="flex-end">
+                        <Box
+                            w="10px"
+                            h="10px"
+                            borderRadius="full"
+                            bg={getValueColor(Number(value))}
+                        />
+                        <Box textAlign="right">
+                            <Text fontSize="sm">
+                                {value}
+                            </Text>
+                        </Box>
+                    </HStack>
+                ),
             },
             {
                 Header: 'Enable/Disable',
                 disableSortBy: true,
                 Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
                     const isEnabled = row.original.ndc > 0;
-                    const id = row.original.participantName; // change to your actual identifier
+                    const id = row.original.participantName;
 
                     return (
-                        <Switch
-                            colorScheme="green"
-                            size="sm"
-                            isChecked={isEnabled}
-                            onChange={(e) => toggleStatus(id, e.target.checked)}
-                        />
+                        <Box w="full" display="flex" justifyContent="center" alignItems="center">
+                            <Switch
+                                colorScheme="green"
+                                size="sm"
+                                isChecked={isEnabled}
+                                onChange={(e) => toggleStatus(id, e.target.checked)}
+                            />
+                        </Box>
                     );
                 }
             },
@@ -392,7 +437,7 @@ const ParticipantPositions = () => {
                         {headerGroups.map((headerGroup) => (
                             <Tr {...headerGroup.getHeaderGroupProps()}>
                                 {headerGroup.headers.map((column) => (
-                                    <Th
+                                    <Th px={3}
                                         {...column.getHeaderProps(
                                             column.disableSortBy
                                                 ? undefined
