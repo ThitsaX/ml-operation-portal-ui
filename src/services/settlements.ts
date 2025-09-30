@@ -54,7 +54,8 @@ export const getSettlementWindowsList = async (values: any) => {
             params: {
                 fromDate: values?.fromDate,
                 toDate: values?.toDate,
-                currency: values?.currency
+                currency: values?.currency,
+                state: values?.state
             }
         })
         .then((d) => d.data.settlementWindowList)
