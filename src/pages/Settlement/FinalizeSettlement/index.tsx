@@ -412,8 +412,8 @@ const FinalizeSettlement = () => {
                                             Select State
                                         </option>
                                         {windowStateOptions .map((stateItem) => (
-                                            <option key={stateItem.value} value={stateItem.value}>
-                                                {stateItem.label}
+                                            <option key={stateItem} value={stateItem}>
+                                                {stateItem}
                                             </option>
                                         ))}
                                     </Select>

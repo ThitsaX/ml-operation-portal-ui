@@ -65,12 +65,12 @@ const SettlementAuditReport = () => {
   } = useForm<ISettlementAuditReport>({
     resolver: zodResolver(settlementAuditReportHelper.schema),
     defaultValues: {
-      startDate: moment().tz(selectedTZString).startOf('day').toISOString(),
-      endDate: moment().tz(selectedTZString).endOf('d').toISOString(),
-      dfspId: '',
-      currencyId: '',
-      fileType: '',
-      timezoneOffset: ''
+        startDate: moment().format('YYYY-MM-DDTHH:mm'),
+        endDate: moment().format('YYYY-MM-DDTHH:mm'),
+        dfspId: '',
+        currencyId: '',
+        fileType: '',
+        timezoneOffset: ''
     },
     mode: 'onChange'
   });
@@ -82,14 +82,26 @@ const SettlementAuditReport = () => {
 
     const formData = getValues();
     const fileType = formData.fileType;
+    const currentTimeZone = moment.tz.guess();
 
-    const selectedTZString = selectedTimezone.value;
-    let tzOffSet: string = selectedTimezone.offset === 0
-      ? "0000"
-      : moment().tz(selectedTZString).format('ZZ').replace('+', '');
+    const utcStartDate = moment(formData.startDate)
+      .tz(selectedTimezone?.value || currentTimeZone)
+      .utc()
+      .format('YYYY-MM-DDTHH:mm:ss[Z]');
+
+    const utcEndDate = moment(formData.endDate)
+      .tz(selectedTimezone?.value || currentTimeZone)
+      .utc()
+      .format('YYYY-MM-DDTHH:mm:ss[Z]');
+
+    const tzOffSet = selectedTimezone?.offset === 0
+      ? '0000'
+      : moment().tz(selectedTimezone?.value || currentTimeZone).format('ZZ').replace('+', '');
 
     generateSettlementAuditReport({
       ...formData,
+      startDate: utcStartDate,
+      endDate: utcEndDate,
       timezoneOffset: tzOffSet
     })
       .then((res: any) => {
@@ -147,14 +159,10 @@ const SettlementAuditReport = () => {
               name="startDate"
               render={({ field: { value, onChange } }) => (
                 <Input
-                  type="date"
-                  value={moment(value).format('YYYY-MM-DD')}
-                  onChange={(event) => {
-                    // Set ISO string at start of day
-                    const date = moment(event.target.value, 'YYYY-MM-DD')
-                      .startOf('day')
-                      .toISOString();
-                    onChange(date);
+                    type="datetime-local"
+                    value={value}
+                    onChange={(e) => {
+                    onChange(e.target.value);
                     trigger('endDate');
                   }}
                 />
@@ -170,14 +178,10 @@ const SettlementAuditReport = () => {
               name="endDate"
               render={({ field: { value, onChange } }) => (
                 <Input
-                  type="date"
-                  value={moment(value).format('YYYY-MM-DD')}
-                  onChange={(event) => {
-                    // Set ISO string at start of day
-                    const date = moment(event.target.value, 'YYYY-MM-DD')
-                      .startOf('day')
-                      .toISOString();
-                    onChange(date);
+                    type="datetime-local"
+                    value={value}
+                    onChange={(e) => {
+                    onChange(e.target.value);
                     trigger('startDate');
                   }}
                 />

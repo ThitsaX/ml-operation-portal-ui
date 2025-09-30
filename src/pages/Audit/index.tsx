@@ -98,11 +98,17 @@ const Audit = () => {
   const onSearchHandler = useCallback(
     (values: IGetAuditByParticipantValues) => {
 
-      const startDate = values.fromDate;
-      const endDate = values.toDate;
+     const currentTimeZone = moment.tz.guess();
+      const fromDate = moment(values.fromDate)
+        .tz(selectedTZString || currentTimeZone)
+        .utc()  // Convert to UTC
+        .format();
 
-      let fromDate = moment.utc(startDate).startOf('day').format().toString();
-      const toDate = moment.utc(endDate).endOf('day').format().toString();
+      const toDate = moment(values.toDate)
+        .tz(selectedTZString || currentTimeZone)
+        .utc()  // Convert to UTC
+        .format();
+
 
       const payload = {
         fromDate,
