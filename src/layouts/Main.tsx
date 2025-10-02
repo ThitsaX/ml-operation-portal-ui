@@ -1,56 +1,59 @@
-import { Box, HStack, Stack } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Header, SideBar } from '@components/interface';
 import { useGetUserState } from '@store/hooks';
 import { useCallback, useDeferredValue, useEffect, useState } from 'react';
-import { ResizeCallback } from 're-resizable';
 
 const DEFAULT_WIDTH = 260;
+const COLLAPSED_WIDTH = 64;
+const HEADER_HEIGHT = '64px';
 
 function Main() {
-  /* Router */
   const navigate = useNavigate();
-
-  /* Redux */
   const user = useGetUserState();
 
-  /* State */
-  const [sideBarWidth, setSideBarWidth] = useState(DEFAULT_WIDTH);
-  const deferredSideBarWidth = useDeferredValue(sideBarWidth);
+  const [sideBarWidth, setSideBarWidth] = useState<number>(DEFAULT_WIDTH);
+  const [collapsed, setCollapsed] = useState<boolean>(false);
+  const deferredSideBarWidth = useDeferredValue<number>(sideBarWidth);
 
-  /* Handlers */
-  const onResizeHandler = useCallback<ResizeCallback>(
-    (_event, _direction, _elementRef, { width }) => {
-      setSideBarWidth((prevWidth) => {
-        if (prevWidth !== width) {
-          return DEFAULT_WIDTH + width;
-        }
-        return prevWidth;
-      });
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (user.auth == null) {
-      navigate('/auth/login', { replace: true });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  const toggleCollapse = useCallback(() => {
+    setCollapsed(prev => {
+      const next = !prev;
+      setSideBarWidth(next ? COLLAPSED_WIDTH : DEFAULT_WIDTH);
+      return next;
+    });
   }, []);
 
+  useEffect(() => {
+    if (user.auth == null) navigate('/auth/login', { replace: true });
+  }, [user.auth, navigate]);
+
   return (
-    <Stack pt="12" spacing={0} overflowY="scroll">
-      <Header />
-      <HStack>
-        <Box w={deferredSideBarWidth}>
-          <SideBar onResizeHandler={onResizeHandler} />
+    <Box minH="100vh" display="flex" flexDirection="column">
+      {/* Header stays in normal flow */}
+      <Box flex="none">
+        <Header />
+      </Box>
+
+      {/* Sidebar + Main */}
+      <Box display="flex" flex="1" overflow="hidden">
+        {/* Sidebar */}
+        <Box w={`${Number(deferredSideBarWidth)}px`} flex="none">
+          <SideBar
+            collapsed={collapsed}
+            toggleCollapse={toggleCollapse}
+            width={sideBarWidth}
+            headerHeight={HEADER_HEIGHT}
+          />
         </Box>
 
-        <Box w={`calc(100vw - ${deferredSideBarWidth}px)`} alignSelf='flex-start'>
+        {/* Main content */}
+        <Box flex="1" p="4" overflowY="auto">
           <Outlet />
         </Box>
-      </HStack>
-    </Stack>
+      </Box>
+    </Box>
+
   );
 }
 
