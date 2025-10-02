@@ -16,10 +16,10 @@ import {
   Tr,
   useToast,
   VStack,
+  Stack,
   Divider,
   IconButton,
   Text,
-  Select,
   Icon,
 } from '@chakra-ui/react';
 import {
@@ -98,7 +98,7 @@ const Audit = () => {
   const onSearchHandler = useCallback(
     (values: IGetAuditByParticipantValues) => {
 
-     const currentTimeZone = moment.tz.guess();
+      const currentTimeZone = moment.tz.guess();
       const fromDate = moment(values.fromDate)
         .tz(selectedTZString || currentTimeZone)
         .utc()  // Convert to UTC
@@ -178,59 +178,72 @@ const Audit = () => {
   };
 
   return (
-    <VStack align="flex-start" w="full" h="full" p="3" spacing={4}>
-      <VStack align="flex-start">
-        <Heading fontSize="3xl">Audit</Heading>
-      </VStack>
+    <VStack align="flex-start" w="full" h="full" p="3" mt={10}>
+      <Heading fontSize="2xl" mb={6}>Audit</Heading>
 
-      {/* Search Filters */}
-      <HStack alignItems="flex-end" alignSelf="stretch" spacing={4}>
-        <FormControl isInvalid={!isEmpty(errors.fromDate)}>
-          <FormLabel>From</FormLabel>
-          <Controller
-            control={control}
-            render={({ field: { value, onChange } }) => (
-              <Input
-                type="datetime-local"
-                value={value}
-                onChange={(e) => {
-                  onChange(e);
-                  trigger('fromDate');
-                }}
-              />
-            )}
-            name="fromDate"
-          />
-          <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
-        </FormControl>
+{/* Search Filters */}
+<Stack
+  direction={{ base: "column", md: "row" }}  // column on mobile, row on desktop
+  spacing={4}
+  align="stretch"
+  w="full"
+>
+  <FormControl isInvalid={!isEmpty(errors.fromDate)}>
+    <FormLabel>From</FormLabel>
+    <Controller
+      control={control}
+      name="fromDate"
+      render={({ field: { value, onChange } }) => (
+        <Input
+          type="datetime-local"
+          value={value}
+          onChange={(e) => {
+            onChange(e);
+            trigger("fromDate");
+          }}
+        />
+      )}
+    />
+    <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
+  </FormControl>
 
-        <FormControl isInvalid={!isEmpty(errors.toDate)}>
-          <FormLabel>To</FormLabel>
-          <Controller
-            control={control}
-            render={({ field: { value, onChange } }) => (
-              <Input
-                type="datetime-local"
-                value={value}
-                onChange={(e) => {
-                  onChange(e);
-                  trigger('toDate');
-                }}
-              />
-            )}
-            name="toDate"
-          />
-          <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
-        </FormControl>
+  <FormControl isInvalid={!isEmpty(errors.toDate)}>
+    <FormLabel>To</FormLabel>
+    <Controller
+      control={control}
+      name="toDate"
+      render={({ field: { value, onChange } }) => (
+        <Input
+          type="datetime-local"
+          value={value}
+          onChange={(e) => {
+            onChange(e);
+            trigger("toDate");
+          }}
+        />
+      )}
+    />
+    <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
+  </FormControl>
 
-        <FormControl isInvalid={!isEmpty(errors.fromDate)} textAlign="right">
-          <Button onClick={handleSubmit(onSearchHandler)} isDisabled={!isValid}
-            colorScheme='blue' gap="2"
-            size='md'>
-            <FaSearch /> Search
-          </Button>
-        </FormControl>
-      </HStack>
+  <FormControl
+    isInvalid={!isEmpty(errors.fromDate)}
+    display="flex"
+    alignItems="flex-end"
+  >
+    <Button
+      onClick={handleSubmit(onSearchHandler)}
+      isDisabled={!isValid}
+      colorScheme="blue"
+      gap="2"
+      size="md"
+      w={{ base: "full", md: "auto" }} // full width on mobile
+    >
+      <FaSearch /> Search
+    </Button>
+  </FormControl>
+</Stack>
+
 
       <GlobalFilter globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
 

@@ -19,7 +19,8 @@ import {
   Divider,
   Switch,
   Toast,
-  useToast
+  useToast,
+  Stack
 } from '@chakra-ui/react';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { usePagination, useSortBy, useTable, Column, CellProps, useGlobalFilter } from 'react-table';
@@ -250,12 +251,18 @@ const User = () => {
   }
 
   return (
-    <VStack w="full" align="flex-start" spacing={6} p={4}>
-      <Heading size="md">User Management</Heading>
 
-      <HStack w="full" justifyContent="space-between">
+    <VStack align="flex-start" w="full" h="full" p="3" spacing={0} mt={10}>
+      <Heading fontSize="2xl" mb={6}>User Management</Heading>
+
+      <Stack
+        w="full"
+        direction={{ base: "column", sm: "row" }} // vertical on mobile, horizontal on larger
+        spacing={2}
+        justifyContent="space-between"
+      >
         <ChakraSelect
-          width="200px"
+          w={{ base: "full", sm: "200px" }}
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
           size="md"
@@ -265,16 +272,20 @@ const User = () => {
           focusBorderColor="blue.500"
           _hover={{ borderColor: "blue.400" }}
           _focus={{ boxShadow: "0 0 0 1px #3182CE" }}
-
         >
           <option value="All">All</option>
           <option value="ACTIVE">Active</option>
           <option value="INACTIVE">Inactive</option>
+        </ChakraSelect>
 
-        </ChakraSelect >
+        <Button
+          colorScheme="blue"
+          onClick={handleNewClick}
+          w={{ base: "full", sm: "auto" }}>
+          New User
+        </Button>
+      </Stack>
 
-        <Button colorScheme="blue" onClick={() => handleNewClick()}>New User</Button>
-      </HStack>
 
       <VStack w="full" align="flex-start" spacing={2}>
         <GlobalFilter globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />

@@ -405,8 +405,9 @@ const ParticipantPositions = () => {
     );
 
     return (
-        <VStack w="full" align="flex-start" spacing={6} p={4}>
-            <Heading size="md">Participant Positions</Heading>
+
+        <VStack align="flex-start" w="full" h="full" p="3" spacing={0} mt={10}>
+            <Heading fontSize="2xl" mb={6}>Participant Positions</Heading>
 
             <HStack align="center">
                 <Tooltip label='Refresh' bg='white' color='black'>
