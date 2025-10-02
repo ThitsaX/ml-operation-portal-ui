@@ -10,7 +10,10 @@ import {
   Stack,
   useToast,
   HStack,
-  Select
+  Select,
+  VStack,
+  SimpleGrid,
+  Grid
 } from '@chakra-ui/react';
 import { SettlementAuditReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -65,12 +68,12 @@ const SettlementAuditReport = () => {
   } = useForm<ISettlementAuditReport>({
     resolver: zodResolver(settlementAuditReportHelper.schema),
     defaultValues: {
-        startDate: moment().format('YYYY-MM-DDTHH:mm'),
-        endDate: moment().format('YYYY-MM-DDTHH:mm'),
-        dfspId: '',
-        currencyId: '',
-        fileType: '',
-        timezoneOffset: ''
+      startDate: moment().format('YYYY-MM-DDTHH:mm'),
+      endDate: moment().format('YYYY-MM-DDTHH:mm'),
+      dfspId: '',
+      currencyId: '',
+      fileType: '',
+      timezoneOffset: ''
     },
     mode: 'onChange'
   });
@@ -127,14 +130,24 @@ const SettlementAuditReport = () => {
 
 
   return (
-    <Box height="fit" p="4">
-      <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" pb="3">
+    // <Box height="fit" p="4">
+    //   <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" pb="3">
+    //     Settlement Audit Report
+    //   </Heading>
+
+    <VStack align="flex-start" h="full" p="3" mt={10} w="full">
+      <Heading fontSize="2xl" mb={6}>
         Settlement Audit Report
       </Heading>
-      <Stack borderWidth="1px" borderRadius="lg" height="full" p="4" spacing={4}>
-        <HStack alignItems={'flex-start'} spacing={4}>
 
-          <FormControl isInvalid={!isEmpty(errors.currencyId)}>
+      <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
+        {/* --- Filters Section --- 1 per row on mobile, 2 on md, 4 on lg+*/}
+        <SimpleGrid
+          columns={{ base: 1, md: 2, lg: 4 }}
+          spacing={4}
+          w="full"
+        >
+          <FormControl isInvalid={!isEmpty(errors.dfspId)}>
             <FormLabel>DFSP Name</FormLabel>
             <Controller
               name="dfspId"
@@ -149,7 +162,7 @@ const SettlementAuditReport = () => {
                 </Select>
               )}
             />
-            <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.dfspId?.message}</FormErrorMessage>
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.startDate)}>
@@ -159,11 +172,11 @@ const SettlementAuditReport = () => {
               name="startDate"
               render={({ field: { value, onChange } }) => (
                 <Input
-                    type="datetime-local"
-                    value={value}
-                    onChange={(e) => {
+                  type="datetime-local"
+                  value={value}
+                  onChange={(e) => {
                     onChange(e.target.value);
-                    trigger('endDate');
+                    trigger("endDate");
                   }}
                 />
               )}
@@ -178,11 +191,11 @@ const SettlementAuditReport = () => {
               name="endDate"
               render={({ field: { value, onChange } }) => (
                 <Input
-                    type="datetime-local"
-                    value={value}
-                    onChange={(e) => {
+                  type="datetime-local"
+                  value={value}
+                  onChange={(e) => {
                     onChange(e.target.value);
-                    trigger('startDate');
+                    trigger("startDate");
                   }}
                 />
               )}
@@ -207,32 +220,39 @@ const SettlementAuditReport = () => {
             />
             <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
           </FormControl>
-        </HStack>
-        <HStack justifyContent='flex-end'>
+        </SimpleGrid>
 
-          <FormControl width="250px">
+        {/* --- Download Section --- */}
+        <Stack
+          direction={{ base: "column", md: "row" }}
+          spacing={4}
+          justify={{ base: "flex-start", md: "flex-end" }}
+          w="full"
+        >
+          <FormControl w={{ base: "100%", sm: "auto", md: "250px" }}>
             <Controller
               control={control}
               name="fileType"
               render={({ field }) => (
-                <Select {...field} placeholder="Choose Format" width="250px">
+                <Select {...field} placeholder="Choose Format">
                   <option value="xlsx">XLSX</option>
                   <option value="csv">CSV</option>
                 </Select>
               )}
             />
           </FormControl>
+
           <Button
-            colorScheme='blue'
+            colorScheme="blue"
             isDisabled={!isValid || !runButtonState}
             onClick={onDownloadChangeHandler}
+            w={{ base: "100%", sm: "auto" }}
           >
             Download
           </Button>
-        </HStack>
-
+        </Stack>
       </Stack>
-    </Box >
+    </VStack>
   );
 };
 

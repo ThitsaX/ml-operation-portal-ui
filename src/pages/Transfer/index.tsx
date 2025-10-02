@@ -24,6 +24,7 @@ import {
   IconButton,
   Divider,
   Icon,
+  Collapse,
 } from '@chakra-ui/react';
 import { useCallback } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -82,7 +83,7 @@ const Transfer = () => {
   const [transferData, setTransferData] = useState<IGetTransferData[]>([]);
   const [transferId, setTransferId] = useState<string>('');
   const [pageNumber, setPageNumber] = useState<String>('1');
-
+  const { isOpen: isToggle, onToggle } = useDisclosure();
   // Redux
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
   //Selected timezone offset
@@ -370,14 +371,22 @@ const Transfer = () => {
         </Suspense>
       )}
 
-      <Box>
-        <Heading color="trueGray.600" fontSize="2xl">
-          Transfer Overview
-        </Heading>
-      </Box>
+      <VStack align="flex-start" w="full" h="full" p="3" spacing={0} mt={10}>
+        <Heading fontSize="2xl" mb={6}>Transfer Overview</Heading>
+      </VStack>
 
-      <Flex justify="center" flexDirection="row" flex={1} my="4">
-        <Flex flexDirection="column" flex={1} p="3" gap="2">
+      <Flex
+        flexDirection={{ base: 'column', md: 'row' }} // stack on small screens, row on medium+
+        flex={1}
+        my="4"
+        gap={{ base: 4, md: 0 }} // spacing between stacked columns
+      >
+        <Flex
+          flexDirection="column"
+          flex={{ base: '1 1 100%', md: 1 }} // full width on small screens
+          p="3"
+          gap="2"
+        >
           <FormControl isInvalid={!isEmpty(errors.transferId)}>
             <Input
               type="input"
@@ -471,7 +480,12 @@ const Transfer = () => {
           </FormControl>
         </Flex>
 
-        <Flex flexDirection="column" flex={1} p="3" gap="2">
+        <Flex
+          flexDirection="column"
+          flex={{ base: '1 1 100%', md: 1 }}
+          p="3"
+          gap="2"
+        >
           <FormControl isInvalid={!isEmpty(errors.transferStateId)}>
             <Select
               placeholder="Transfer State"
@@ -564,7 +578,12 @@ const Transfer = () => {
           </FormControl>
         </Flex>
 
-        <Flex flexDirection="column" flex={1} p="3" gap="2">
+        <Flex
+          flexDirection="column"
+          flex={{ base: '1 1 100%', md: 1 }}
+          p="3"
+          gap="2"
+        >
           <Box h="40px"></Box>
           <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
             {selectedTZString ?

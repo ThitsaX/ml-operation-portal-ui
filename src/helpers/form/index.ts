@@ -192,20 +192,20 @@ export class SettlementSummaryReportHelper extends FormHelper {
   get schema() {
     return z
       .object({
-        start_date: z.coerce.date({
+        startDate: z.coerce.date({
           required_error: 'Required'
         }),
-        end_date: z.coerce.date({
+        endDate: z.coerce.date({
           required_error: 'Required'
         }),
         settlementId: z.string().optional(),
         fspId: z.string().optional(),
-        file_type: z.string().optional(),
-        time_zone_offset: z.string().optional()
+        fileType: z.string().optional(),
+        timezoneOffset: z.string().optional()
       })
-      .refine((data) => data.start_date < data.end_date, {
+      .refine((data) => data.startDate < data.endDate, {
         message: 'End Date must not earlier than Start Date',
-        path: ['end_date']
+        path: ['endDate']
       });
   }
 }
