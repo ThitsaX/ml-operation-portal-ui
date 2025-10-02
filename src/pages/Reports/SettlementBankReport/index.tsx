@@ -9,7 +9,9 @@ import {
   useToast,
   Select,
   Input,
-  FormErrorMessage
+  FormErrorMessage,
+  VStack,
+  SimpleGrid
 } from '@chakra-ui/react';
 import { SettlementBankReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -44,14 +46,7 @@ const SettlementBankReport = () => {
   const [runButtonState, setRunButtonState] = useState(true);
   const [transferType, setTransferType] = useState<TransferType>('outbound');
   const [settlementModel, setSettlementModel] = useState<string>('');
-  const [settlementIdOptions, setSettlementIdOptions] = useState<
-    { value: string; label: string }[]
-  >([
-    { value: '', label: 'Select Settlement ID' }, // placeholder
-    { value: 'SETTLEMENT-001', label: 'Settlement ID - 001' },
-    { value: 'SETTLEMENT-002', label: 'Settlement ID - 002' },
-    { value: 'SETTLEMENT-003', label: 'Settlement ID - 003' },
-  ]);
+  const [settlementIdOptions, setSettlementIdOptions] = useState<any[]>([]);
 
   const [selectedSettlementId, setSelectedSettlementId] = useState<{
     value: string;
@@ -207,80 +202,98 @@ const SettlementBankReport = () => {
   };
 
   return (
-    <Box height="fit" p="4">
-      <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" p="3">
-        Settlement Bank Report
-      </Heading>
-      <Stack borderWidth="1px" borderRadius="lg" height="full" p="2" mb={4}>
-        <HStack alignItems={'flex-start'} p={2} spacing={8}>
 
+    <VStack align="flex-start" w="full" h="full" p="3" mt={10}>
+      <Stack>
+        <Heading fontSize="2xl" mb={6}>Settlement Bank Report</Heading>
+      </Stack>
+
+      <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
+        {/* --- Filters Section // 1 per row on mobile, 2 on md, 4 on lg+ */}
+        <SimpleGrid
+          columns={{ base: 1, md: 3 }}
+          spacing={4}
+          w="full"
+        >
           <FormControl
             isInvalid={!isEmpty(errors.start_date)}
-            pb="1">
+          >
             <FormLabel>Start Date</FormLabel>
             <Controller
               control={control}
-              render={({ field: { value, onChange, onBlur } }) => {
-                return (
-                  <Input
-                    value={value}
-                    onChange={(e) => {
-                      onChange(e);
-                      trigger('end_date');
-                    }}
-                    onBlur={onBlur}
-                    type="datetime-local"
-                  />
-                );
-              }}
               name="start_date"
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  type="datetime-local"
+                  onChange={(e) => {
+                    field.onChange(e);
+                    trigger("end_date");
+                  }}
+                />
+              )}
             />
             <FormErrorMessage>{errors.start_date?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.end_date)} pb="1">
+          <FormControl
+            isInvalid={!isEmpty(errors.end_date)}
+          >
             <FormLabel>End Date</FormLabel>
             <Controller
               control={control}
-              render={({
-                field: { value, onChange, onBlur },
-                fieldState: { error }
-              }) => {
-                return (
-                  <Input
-                    value={value}
-                    onChange={(e) => {
-                      onChange(e);
-                      trigger('start_date');
-                    }}
-                    onBlur={onBlur}
-                    type="datetime-local"
-                  />
-                );
-              }}
               name="end_date"
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  type="datetime-local"
+                  onChange={(e) => {
+                    field.onChange(e);
+                    trigger("start_date");
+                  }}
+                />
+              )}
             />
             <FormErrorMessage>{errors.end_date?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.settlementId)} textAlign="right">
-            <Button onClick={handleSubmit(onSearchClick)} isDisabled={!isValid}
-              colorScheme='blue' gap="2"
-              mt="30px"
-              size='md'>
+
+          {/* Search Button */}
+          <FormControl
+            display="flex"
+            justifyContent={{ base: "stretch", md: "flex-end" }}
+            alignItems="flex-end"
+            mb={1}
+          >
+            <Button
+              onClick={handleSubmit(onSearchClick)}
+              isDisabled={!isValid}
+              colorScheme="blue"
+              gap="2"
+              size="md"
+              w={{ base: "100%", md: "auto" }}
+            >
               <FaSearch /> Search
             </Button>
           </FormControl>
 
-        </HStack>
+        </SimpleGrid>
       </Stack>
-      <Stack borderWidth="1px" borderRadius="lg" p={4} height="full">
-        <HStack alignItems={'flex-start'} p={2} spacing={4}>
 
-
+      {/* --- Settlement & Download --- */}
+      {settlementIdOptions.length > 0 && (<Stack borderWidth="1px" w="full" borderRadius="lg" p={4} spacing={4}>
+        {/* Top Row: Settlement ID & Currency */}
+        <Stack
+          w="full"
+          direction={{ base: "column", md: "row" }}
+          spacing={4}
+          flexWrap="wrap"
+          align="flex-end"
+        >
           <FormControl
-            width={{ base: '200px', md: '250px' }}
-            isInvalid={!isEmpty(errors.settlementId)}>
+            width={{ base: "100%", md: "220px" }}
+            isInvalid={!isEmpty(errors.settlementId)}
+          >
             <FormLabel>Settlement ID:</FormLabel>
             <Controller
               name="settlementId"
@@ -296,7 +309,11 @@ const SettlementBankReport = () => {
               )}
             />
           </FormControl>
-          <FormControl width={{ base: '200px', md: '250px' }} isInvalid={!isEmpty(errors.currency)}>
+
+          <FormControl
+            width={{ base: "100%", md: "220px" }}
+            isInvalid={!isEmpty(errors.currency)}
+          >
             <FormLabel>Currency</FormLabel>
             <Controller
               name="currency"
@@ -313,25 +330,40 @@ const SettlementBankReport = () => {
             />
             <FormErrorMessage>{errors.currency?.message}</FormErrorMessage>
           </FormControl>
+        </Stack>
 
-
-        </HStack>
-        <HStack justifyContent='flex-end' p={2}>
+        {/* Bottom Row: Format & Download */}
+        <Stack
+          direction={{ base: "column", md: "row" }}
+          spacing={4}
+          justify="flex-end"
+          align="flex-end"
+          flexWrap="wrap"
+        >
           <Select
             placeholder="Choose Format"
             value={settlementModel}
             onChange={(e) => setSettlementModel(e.target.value)}
-            width="250px"
+            width={{ base: "100%", md: "220px" }}
           >
             <option value="xlsx">XLSX</option>
             <option value="pdf">PDF</option>
           </Select>
-          <Button colorScheme='blue' isDisabled={!isValid || !runButtonState} onClick={onDownloadChangeHandler}>
+
+          <Button
+            colorScheme="blue"
+            width={{ base: "100%", md: "auto" }}
+            isDisabled={!isValid || !runButtonState}
+            onClick={onDownloadChangeHandler}
+          >
             Download
           </Button>
-        </HStack>
+        </Stack>
       </Stack>
-    </Box>
+      )}
+    </VStack>
+
+
   );
 };
 

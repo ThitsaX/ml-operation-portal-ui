@@ -1,4 +1,9 @@
-import { Box, Button, FormControl, FormErrorMessage, FormLabel, HStack, Heading, Input, Menu, MenuButton, MenuItem, MenuList, Stack, useToast, Select } from "@chakra-ui/react";
+import {
+  Button, FormControl, FormErrorMessage, FormLabel, HStack, Heading,
+  Input, Stack,
+  VStack, SimpleGrid,
+  useToast, Select
+} from "@chakra-ui/react";
 import { useLoadingContext } from "@contexts/hooks";
 import { SettlementStatementReportHelper } from "@helpers/form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -99,12 +104,17 @@ const SettlementStatementReport = () => {
 
   return (
 
-    <Box height="fit" p="4">
-      <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" pb="3">
+    <VStack align="flex-start" h="full" p="3" mt={10} w="full">
+      <Heading fontSize="2xl" mb={6}>
         Settlement Statement Report
       </Heading>
-      <Stack borderWidth="1px" borderRadius='lg' height="full" p="4">
-        <HStack alignItems={'flex-start'} spacing={4}>
+
+      <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
+        <SimpleGrid
+          columns={{ base: 1, md: 2, lg: 4 }} // 1 per row on mobile, 2 on md, 4 on lg+
+          spacing={4}
+          w="full"
+        >
           <FormControl isInvalid={!isEmpty(errors.fspId)}>
             <FormLabel>DFSP Name</FormLabel>
             <Controller
@@ -184,16 +194,21 @@ const SettlementStatementReport = () => {
             />
             <FormErrorMessage>{errors.currency?.message}</FormErrorMessage>
           </FormControl>
-        </HStack>
+        </SimpleGrid>
 
-        <HStack justifyContent='flex-end' p={2}>
+        {/* Download Section */}
+        <Stack
+          direction={{ base: "column", md: "row" }}
+          spacing={4}
+          justify={{ base: "flex-start", md: "flex-end" }}
+          w="full">
 
-          <FormControl width="250px">
+          <FormControl w={{ base: "100%", sm: "auto", md: "250px" }}>
             <Controller
               control={control}
               name="fileType"
               render={({ field }) => (
-                <Select {...field} placeholder="Choose Format" width="250px">
+                <Select {...field} placeholder="Choose Format">
                   <option value="xlsx">XLSX</option>
                   <option value="csv">CSV</option>
                 </Select>
@@ -201,12 +216,15 @@ const SettlementStatementReport = () => {
             />
           </FormControl>
 
-          <Button colorScheme='blue' isDisabled={!isValid || !runButtonState} onClick={onDownloadChangeHandler}>
+          <Button colorScheme='blue'
+            isDisabled={!isValid || !runButtonState}
+            onClick={onDownloadChangeHandler}
+            w={{ base: "100%", sm: "auto" }}>
             Download
           </Button>
-        </HStack>
+        </Stack>
       </Stack>
-    </Box>
+    </VStack >
   );
 };
 

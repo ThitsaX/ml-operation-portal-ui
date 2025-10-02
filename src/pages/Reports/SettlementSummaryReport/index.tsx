@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   FormControl,
   FormErrorMessage,
@@ -9,7 +8,9 @@ import {
   Stack,
   useToast,
   HStack,
-  Select
+  VStack,
+  Select,
+  SimpleGrid
 } from '@chakra-ui/react';
 import { SettlementSummaryReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -159,19 +160,25 @@ const SettlementSummaryReport = () => {
   );
 
   return (
-    <Box height="fit" p="4">
-      <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" pb="3">
+    <VStack align="flex-start" h="full" p="3" mt={10} w="full">
+      <Heading fontSize="2xl" mb={6}>
         Settlement Summary Report
       </Heading>
-      <Stack borderWidth="1px" borderRadius="lg" height="full" p="2" mb={4}>
-        <HStack alignItems={'flex-end'} p={2} spacing={4}>
+
+      <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
+        {/* --- Filters Section --- 1 per row on mobile, 2 on md, 4 on lg+*/}
+        <SimpleGrid
+          columns={{ base: 1, md: 2, lg: 4 }}
+          spacing={4}
+          w="full">
+
           <FormControl isInvalid={!isEmpty(errors.fspId)}>
             <FormLabel>DFSP Name</FormLabel>
             <Controller
               name="fspId"
               control={control}
               render={({ field }) => (
-                <Select {...field} placeholder="Select DFSP">
+                <Select {...field} placeholder="Select DFSP" width="100%">
                   {participantList?.map((item, index) => (
                     <option key={index} value={item.participantName}>
                       {item.description}
@@ -183,105 +190,123 @@ const SettlementSummaryReport = () => {
             <FormErrorMessage>{errors.fspId?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl
-            isInvalid={!isEmpty(errors.startDate)}
-            pb="1">
+          <FormControl isInvalid={!isEmpty(errors.startDate)} pb="1">
             <FormLabel>Start Date</FormLabel>
             <Controller
               control={control}
-              render={({ field: { value, onChange, onBlur } }) => {
-                return (
-                  <Input
-                    value={value}
-                    onChange={(e) => {
-                      onChange(e);
-                      trigger('endDate');
-                    }}
-                    onBlur={onBlur}
-                    type="datetime-local"
-                  />
-                );
-              }}
               name="startDate"
+              render={({ field: { value, onChange, onBlur } }) => (
+                <Input
+                  value={value}
+                  onChange={(e) => {
+                    onChange(e);
+                    trigger("endDate");
+                  }}
+                  onBlur={onBlur}
+                  type="datetime-local"
+                  width="100%"
+                />
+              )}
             />
             <FormErrorMessage>{errors.startDate?.message}</FormErrorMessage>
           </FormControl>
+
           <FormControl isInvalid={!isEmpty(errors.endDate)} pb="1">
             <FormLabel>End Date</FormLabel>
             <Controller
               control={control}
-              render={({
-                field: { value, onChange, onBlur },
-                fieldState: { error }
-              }) => {
-                return (
-                  <Input
-                    value={value}
-                    onChange={(e) => {
-                      onChange(e);
-                      trigger('startDate');
-                    }}
-                    onBlur={onBlur}
-                    type="datetime-local"
-                  />
-                );
-              }}
               name="endDate"
+              render={({ field: { value, onChange, onBlur } }) => (
+                <Input
+                  value={value}
+                  onChange={(e) => {
+                    onChange(e);
+                    trigger("startDate");
+                  }}
+                  onBlur={onBlur}
+                  type="datetime-local"
+                  width="100%"
+                />
+              )}
             />
             <FormErrorMessage>{errors.endDate?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.fspId)} textAlign="right">
-            <Button onClick={handleSubmit(onSearchClick)} isDisabled={!isValid}
-              colorScheme='blue' gap="2"
-              size='md'>
+          <FormControl
+            display="flex"
+            justifyContent={{ base: "stretch", md: "flex-end" }}
+            alignItems="flex-end"
+            mb={1}>
+            <Button
+              onClick={handleSubmit(onSearchClick)}
+              isDisabled={!isValid}
+              colorScheme="blue"
+              gap="2"
+              size="md"
+              w={{ base: "100%", md: "auto" }}>
               <FaSearch /> Search
             </Button>
           </FormControl>
-
-        </HStack>
+        </SimpleGrid>
       </Stack>
-      {settlementIdOptions.length > 0 && (<Stack borderWidth="1px" borderRadius="lg" p={4} height="full">
-        <HStack alignItems={'flex-start'} p={2} spacing={4}>
 
-          <FormControl
-            width={{ base: '200px', md: '250px' }}
-            isInvalid={!isEmpty(errors.settlementId)}>
-            <FormLabel>Settlement ID:</FormLabel>
-            <Controller
-              name="settlementId"
-              control={control}
-              render={({ field }) => (
-                <Select {...field} placeholder="Select Settlement ID"
-                  onChange={field.onChange} >
-                  {settlementIdOptions.map((opt, index) => (
-                    <option key={index} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            />
-          </FormControl>
-        </HStack>
-        <HStack justifyContent='flex-end' p={2}>
-          <Select
-            placeholder="Choose Format"
-            value={settlementModel}
-            onChange={(e) => setSettlementModel(e.target.value)}
-            width="250px"
+      {settlementIdOptions.length > 0 && (
+        <Stack borderWidth="1px" borderRadius="lg" p={4} w="full" spacing={4}>
+
+          <HStack
+            spacing={4}
+            align="flex-start"
+            wrap="wrap" // allows stacking on small screens
           >
-            <option value="xlsx">XLSX</option>
-            <option value="pdf">PDF</option>
-          </Select>
-          <Button colorScheme='blue' isDisabled={!isValid || !runButtonState} onClick={onDownloadChangeHandler}>
-            Download
-          </Button>
-        </HStack>
+            <FormControl isInvalid={!isEmpty(errors.settlementId)}
+              w={{ base: "100%", sm: "auto", md: "250px" }}>
+              <FormLabel>Settlement ID:</FormLabel>
+              <Controller
+                name="settlementId"
+                control={control}
+                render={({ field }) => (
+                  <Select {...field} placeholder="Select Settlement ID">
+                    {settlementIdOptions.map((opt, index) => (
+                      <option key={index} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              />
+            </FormControl>
+          </HStack>
 
-      </Stack>
+          <Stack
+            direction={{ base: "column", md: "row" }}
+            spacing={{ base: 3, md: 4 }}
+            justify={{ base: "flex-start", md: "flex-end" }}
+            align={{ base: "stretch", md: "center" }}
+            w="full">
+            <FormControl w={{ base: "100%", md: "250px" }}>
+              <Controller
+                control={control}
+                name="fileType"
+                render={({ field }) => (
+                  <Select {...field} placeholder="Choose Format">
+                    <option value="xlsx">XLSX</option>
+                    <option value="pdf">PDF</option>
+                  </Select>
+                )}
+              />
+            </FormControl>
+
+            <Button
+              colorScheme="blue"
+              isDisabled={!isValid || !runButtonState}
+              onClick={onDownloadChangeHandler}
+              w={{ base: "100%", md: "auto" }}>
+              Download
+            </Button>
+          </Stack>
+        </Stack>
       )}
-    </Box>
+    </VStack>
   );
 };
 
