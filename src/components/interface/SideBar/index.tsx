@@ -82,7 +82,7 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
             icon={<HiOutlineBuildingLibrary />}
             label="Participant"
             collapsed={collapsed}
-            menuId="participant_positions"
+            menuId="participants"
             items={[
               {
                 id: 'position',
@@ -97,13 +97,13 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
             icon={<IoPeopleCircle />}
             label="User Management"
             collapsed={collapsed}
-            menuId="participant_positions"
+            menuId="user_management"
             items={[
               {
                 id: 'user',
                 label: 'User',
                 to: '/user-management/user',
-                menuId: 'participant_positions',
+                menuId: 'users',
               },
             ]}
           />

@@ -114,6 +114,11 @@ const User = () => {
         Header: "Status",
         accessor: "status",
         disableSortBy: true,
+        Cell: ({ value }) => (
+          <Box textAlign="left" px={3}>
+            {value}
+          </Box>
+        ),
       },
       {
         Header: "Action",
@@ -257,7 +262,7 @@ const User = () => {
 
       <Stack
         w="full"
-        direction={{ base: "column", sm: "row" }} // vertical on mobile, horizontal on larger
+        direction={{ base: "column", sm: "row" }}
         spacing={2}
         justifyContent="space-between"
       >
@@ -286,9 +291,8 @@ const User = () => {
         </Button>
       </Stack>
 
-
-      <VStack w="full" align="flex-start" spacing={2}>
-        <GlobalFilter globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+      <VStack w="full" align="flex-start" spacing={2} >
+        <GlobalFilter mt={5} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
 
         <TableContainer
           w="full"
