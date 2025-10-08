@@ -85,6 +85,7 @@ const Audit = () => {
     control,
     handleSubmit,
     trigger,
+    setValue,
     formState: { isValid, errors },
   } = useForm<IGetAuditByParticipantValues>({
     defaultValues: {
@@ -94,19 +95,22 @@ const Audit = () => {
     resolver: zodResolver(auditHelper.schema),
     mode: 'onChange',
   });
+  useEffect(() => {
+        setValue('fromDate',  moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+        setValue('toDate',   moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
 
+    }, [selectedTimezone, setValue]);
   const onSearchHandler = useCallback(
     (values: IGetAuditByParticipantValues) => {
 
       const currentTimeZone = moment.tz.guess();
-      const fromDate = moment(values.fromDate)
-        .tz(selectedTZString || currentTimeZone)
-        .utc()  // Convert to UTC
+      // Interpret input as selected timezone, then convert to UTC
+      const fromDate = moment.tz(values.fromDate, selectedTZString || currentTimeZone)
+        .utc()
         .format();
 
-      const toDate = moment(values.toDate)
-        .tz(selectedTZString || currentTimeZone)
-        .utc()  // Convert to UTC
+      const toDate = moment.tz(values.toDate, selectedTZString || currentTimeZone)
+        .utc()
         .format();
 
 
@@ -128,7 +132,7 @@ const Audit = () => {
         })
         .finally(() => complete());
     },
-    [complete, mutateAsync, start, toast, user?.participantId]
+    [complete, mutateAsync, start, toast, user?.participantId, selectedTZString]
   );
 
   // Pagination + Search + Sort

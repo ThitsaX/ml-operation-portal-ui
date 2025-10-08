@@ -1,4 +1,4 @@
-import { memo, useState, useMemo } from "react";
+import {useEffect, memo, useState, useMemo } from "react";
 import {
   Box,
   Button,
@@ -43,7 +43,7 @@ const SettlementAuditReport = () => {
   const { start, complete } = useLoadingContext();
   const [runButtonState, setRunButtonState] = useState(true);
 
-  // custom hooks 
+  // custom hooks
   const { data } = useGetParticipantCurrencyList();
   const { data: participantList } = useGetParticipantList();
 
@@ -64,6 +64,7 @@ const SettlementAuditReport = () => {
     trigger,
     handleSubmit,
     getValues,
+    setValue,
     formState: { errors, isValid }
   } = useForm<ISettlementAuditReport>({
     resolver: zodResolver(settlementAuditReportHelper.schema),
@@ -77,6 +78,11 @@ const SettlementAuditReport = () => {
     },
     mode: 'onChange'
   });
+    useEffect(() => {
+        setValue('startDate',  moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+        setValue('endDate',   moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+
+    }, [selectedTimezone, setValue]);
 
   /* Handlers */
   const onDownloadChangeHandler = (e: any) => {
@@ -85,26 +91,21 @@ const SettlementAuditReport = () => {
 
     const formData = getValues();
     const fileType = formData.fileType;
-    const currentTimeZone = moment.tz.guess();
 
-    const utcStartDate = moment(formData.startDate)
-      .tz(selectedTimezone?.value || currentTimeZone)
-      .utc()
+    const StartDate = moment.tz(formData.startDate, selectedTimezone?.value)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
-    const utcEndDate = moment(formData.endDate)
-      .tz(selectedTimezone?.value || currentTimeZone)
-      .utc()
+    const EndDate = moment.tz(formData.endDate, selectedTimezone?.value)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const tzOffSet = selectedTimezone?.offset === 0
       ? '0000'
-      : moment().tz(selectedTimezone?.value || currentTimeZone).format('ZZ').replace('+', '');
+      : moment().tz(selectedTimezone?.value ).format('ZZ').replace('+', '');
 
     generateSettlementAuditReport({
       ...formData,
-      startDate: utcStartDate,
-      endDate: utcEndDate,
+      startDate: StartDate,
+      endDate: EndDate,
       timezoneOffset: tzOffSet
     })
       .then((res: any) => {
@@ -125,6 +126,7 @@ const SettlementAuditReport = () => {
       })
       .finally(() => {
         complete();
+        setRunButtonState(true);
       });
   };
 

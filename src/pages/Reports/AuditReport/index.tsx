@@ -67,8 +67,8 @@ const AuditReport = () => {
     } = useForm<IGetAuditReport>({
         defaultValues: {
             participantId: user?.participantId,
-            fromDate: moment().format('YYYY-MM-DDTHH:mm'),
-            toDate: moment().format('YYYY-MM-DDTHH:mm'),
+            fromDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
+            toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
             userId: '',
             action: '',
             fileType: '',
@@ -82,7 +82,10 @@ const AuditReport = () => {
         if (user?.participantId) {
             setValue('participantId', user.participantId);
         }
-    }, [user?.participantId, setValue]);
+        setValue('fromDate',  moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+        setValue('toDate',   moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+
+    }, [selectedTimezone,user?.participantId, setValue]);
 
     // Handler
     const onDownloadChangeHandler = (e: any) => {
@@ -93,14 +96,12 @@ const AuditReport = () => {
         const fileType = formData.fileType;
         const currentTimeZone = moment.tz.guess();
 
-        // Convert to UTC
-        const utcFromDate = moment(formData.fromDate)
-            .tz(selectedTimezone?.value || currentTimeZone)
+       // Interpret input as selected timezone, then convert to UTC
+        const utcFromDate = moment.tz(formData.fromDate, selectedTimezone?.value || currentTimeZone)
             .utc()
             .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
-        const utcToDate = moment(formData.toDate)
-            .tz(selectedTimezone?.value || currentTimeZone)
+        const utcToDate = moment.tz(formData.toDate, selectedTimezone?.value || currentTimeZone)
             .utc()
             .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
