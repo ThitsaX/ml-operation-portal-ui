@@ -34,9 +34,13 @@ const WidthdrawMoal: React.FC<DepositModalProps> = ({ isOpen, onClose, onSubmit 
     }, [isOpen]);
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
+        <Modal isOpen={isOpen} onClose={onClose} isCentered>
             <ModalOverlay />
-            <ModalContent>
+            <ModalContent
+                w={{ base: "90%", md: "500px" }}  
+                maxW="90%"                       
+                mx="auto"                       
+            >
                 <ModalHeader textAlign="center">Widthdraw Funds</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>

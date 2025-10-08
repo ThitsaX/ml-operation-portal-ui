@@ -19,7 +19,7 @@ import {
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import MultiSelect, { OptionType } from './MultiSelect';
-import { IParticipantOrganization, IParticipantUser,IParticipantUserForm ,IParticipantUserRole } from '@typescript/services';
+import { IParticipantOrganization, IParticipantUser, IParticipantUserForm, IParticipantUserRole } from '@typescript/services';
 import { UserManagementHelper } from '@helpers/form';
 import { isEmpty } from 'lodash-es';
 import { IoReload } from 'react-icons/io5';
@@ -144,7 +144,11 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside" isCentered>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent
+        w={{ base: "90%", md: "500px" }}
+        maxW="90%"
+        mx="auto"
+      >
         <ModalHeader textAlign="center">{isEdit ? 'Edit User' : 'Add New User'}</ModalHeader>
         <ModalCloseButton />
         <ModalBody pb={10}>
