@@ -472,7 +472,7 @@ export const getParticipantCurrencyList = async () => {
   return axios
     .get<{ hubCurrencyList: ICurrency[] }>(uri, {
       params: {
-        dfspId: "wallet1"
+        dfspId: "hub"
       }
     })
     .then((d) => d.data.hubCurrencyList)
