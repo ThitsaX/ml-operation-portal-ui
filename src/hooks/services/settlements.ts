@@ -20,13 +20,13 @@ export const useGetFinalizeSettlementList = (
         ...options
     })
 
-export const useGetSettlementWindowList = (
-    options?: UseQueryOptions<ISettlementWindow[],
-        IApiErrorResponse
-    >
-) =>
-    useQuery<ISettlementWindow[], IApiErrorResponse>({
-        queryKey: ['getSettlementWindowsList'],
-        queryFn: getSettlementWindowsList,
-        ...options
-    })
+// export const useGetSettlementWindowList = (
+//     options?: UseQueryOptions<ISettlementWindow[],
+//         IApiErrorResponse
+//     >
+// ) =>
+//     useQuery<ISettlementWindow[], IApiErrorResponse>({
+//         queryKey: ['getSettlementWindowsList'],
+//         queryFn: getSettlementWindowsList,
+//         ...options
+//     })
