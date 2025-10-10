@@ -115,7 +115,7 @@ export const getAllTransferStates = async () => {
     });
 };
 
-export const getAllTransfers = async (data: Partial<ITransferValues>) => {
+export const getAllTransfers = async (data: Partial<ITransferValues>, pageIndex: number, pageSize: number) => {
   const {
     user: { auth }
   } = store.getState();
@@ -123,7 +123,8 @@ export const getAllTransfers = async (data: Partial<ITransferValues>) => {
   const uri = routes.get_all_transfer;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
-
+  data.pageIndex = pageIndex;
+  data.pageSize = pageSize;
   const accessToken = await generateAccessToken({
     method: 'GET',
     uri,

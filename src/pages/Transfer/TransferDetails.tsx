@@ -34,6 +34,7 @@ const defaultTransferDetails: IGetTransferDetails = {
     quoteId: '',
     transferState: '',
     transferType: '',
+    subScenario: '',
     currency: '',
     amountType: '',
     quoteAmount: 0,
@@ -126,6 +127,7 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
                   ['Quote ID', data?.transferDetails.quoteId],
                   ['Transfer State', data?.transferDetails.transferState],
                   ['Transfer Type', data?.transferDetails.transferType],
+                  ['Use Case', data?.transferDetails.subScenario],
                   ['Currency', data?.transferDetails.currency],
                   ['Amount Type', data?.transferDetails.amountType],
                   ['Quote Amount', data?.transferDetails.quoteAmount],
@@ -146,7 +148,7 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
             </Box>
 
             <VStack flex="1" spacing={4} align="stretch">
-        
+
               <Box
                 bg="white"
                 p={6}

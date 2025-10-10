@@ -96,7 +96,11 @@ export default function ResetPasswordModal({
     return (
         <Modal isOpen={isOpen} onClose={handleCancel} isCentered>
             <ModalOverlay />
-            <ModalContent rounded="lg" shadow="xl">
+            <ModalContent rounded="lg" shadow="xl"
+                w={{ base: "90%", md: "500px" }}
+                maxW="90%"                      
+                mx="auto"
+            >
                 <ModalHeader>Reset Password</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
