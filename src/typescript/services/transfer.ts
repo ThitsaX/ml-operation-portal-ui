@@ -40,6 +40,7 @@ export interface IGetTransferData {
 
 export interface IGetTransferDataArr {
   transferInfoList: IGetTransferData[];
+  totalPage: number;
 }
 
 interface ITransferDetails {
@@ -47,6 +48,7 @@ interface ITransferDetails {
   quoteId: string;
   transferState: string;
   transferType: string;
+  subScenario: string;
   currency: string;
   amountType: string;
   quoteAmount: number;

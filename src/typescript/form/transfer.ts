@@ -10,5 +10,7 @@ export interface ITransferValues {
   payeeIdentifierValue?: string
   currencyId?: string
   transferStateId?: string
-  timezone?:string
+  timezone?: string
+  pageIndex: number
+  pageSize: number
 }

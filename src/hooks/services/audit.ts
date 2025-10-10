@@ -1,7 +1,7 @@
 import { getAllAuditByParticipant, getMadeByList, getActionList, getAllAuditList } from '@services/audit';
 import { UseMutationOptions, useMutation } from '@tanstack/react-query';
 import { IGetAuditByParticipantValues } from '@typescript/form';
-import { AuditInfo, IApiErrorResponse } from '@typescript/services';
+import { AuditInfo, IGetAuditByParticipant, IApiErrorResponse } from '@typescript/services';
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
 import { IGetAction, IGetMadeBy } from '@typescript/services/audit'
 
@@ -19,12 +19,12 @@ export const useGetAllAuditByParticipant = (
 
 export const useGetAllAudit = (
   options?: UseMutationOptions<
-    AuditInfo[],
+    IGetAuditByParticipant,
     IApiErrorResponse,
     IGetAuditByParticipantValues
   >
 ) =>
-  useMutation<AuditInfo[], IApiErrorResponse, IGetAuditByParticipantValues>(
+  useMutation<IGetAuditByParticipant, IApiErrorResponse, IGetAuditByParticipantValues>(
     getAllAuditList,
     options
   );

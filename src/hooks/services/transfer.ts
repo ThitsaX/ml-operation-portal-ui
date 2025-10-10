@@ -53,14 +53,16 @@ export const useGetTransferDetails = (transferId: string) => {
 
 export const useGetAllTransfers = (
   user: IUserState,
-  params: ITransferValues
+  params: ITransferValues,
+  pageIndex: number,
+  pageSize: number
 ) => {
   params.fromDate = moment.utc(params.fromDate).format();
   params.toDate = moment.utc(params.toDate).format();
 
   return useQuery<IGetTransferDataArr, IApiErrorResponse>({
     queryKey: ['getAllTransfers'],
-    queryFn: () => getAllTransfers(params),
+    queryFn: () => getAllTransfers(params, pageIndex, pageSize),
     refetchOnWindowFocus: false,
     enabled: false
   });
