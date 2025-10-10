@@ -25,7 +25,7 @@ import {
 import { useGetUserState } from '@store/hooks';
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone';
-import { memo, useEffect, useState, useCallback } from 'react';
+import { memo,useMemo , useEffect, useState, useCallback } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { type IGetAllOtherParticipant } from '@typescript/services';
 import { type ISettlementBankReport } from '@typescript/form/fee-report';
@@ -62,6 +62,11 @@ const SettlementBankReport = () => {
   const { start, complete } = useLoadingContext();
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
 
+   const selectedTZString = useMemo(
+    () => (selectedTimezone.value),
+    [selectedTimezone]
+  );
+
   const schema = settlementBankReport.schema;
 
   const {
@@ -69,6 +74,7 @@ const SettlementBankReport = () => {
     getValues,
     trigger,
     handleSubmit,
+    setValue,
     formState: { errors, isValid }
   } = useForm<ISettlementBankReport>({
     resolver: zodResolver(schema),
@@ -79,29 +85,29 @@ const SettlementBankReport = () => {
     mode: 'onChange'
   });
 
+   useEffect(() => {
+        setValue('start_date',  moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+        setValue('end_date',   moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+
+    }, [selectedTimezone, setValue]);
+
   const search = useCallback(() => {
     start();
     setRunButtonState(false);
 
     const values = getValues();
-    const currentTimeZone = moment.tz.guess();
 
-    // Convert to UTC
-    const utcStartDate = moment(values.start_date)
-      .tz(selectedTimezone?.value || currentTimeZone)
-      .utc()
+    const StartDate = moment.tz(values.start_date, selectedTimezone?.value)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
-    const utcEndDate = moment(values.end_date)
-      .tz(selectedTimezone?.value || currentTimeZone)
-      .utc()
+    const EndDate = moment.tz(values.end_date, selectedTimezone?.value)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const tzOffSet = selectedTimezone?.offset === 0
       ? '0000'
-      : moment().tz(selectedTimezone?.value || currentTimeZone).format('ZZ').replace('+', '');
+      : moment().tz(selectedTimezone?.value ).format('ZZ').replace('+', '');
 
-    getSettlementIds(user, utcStartDate, utcEndDate, tzOffSet)
+    getSettlementIds(user, StartDate, EndDate, tzOffSet)
       .then((data: IGetSettlementIds) => {
         if (data.settlementIdDataList?.length === 0) {
           toast({

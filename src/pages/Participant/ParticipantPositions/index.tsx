@@ -48,6 +48,11 @@ import { Badge } from '@chakra-ui/react';
 
 const ParticipantPositions = () => {
 
+    // Utility function to format numbers with commas
+    const formatNumber = (num: number ): string => {
+        return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
     const [pageNumber, setPageNumber] = useState<String>('1');
     const [tableData, setTableData] = useState<IParticipantPositionData[]>([]);
     const toast = useToast();
@@ -147,7 +152,7 @@ const ParticipantPositions = () => {
                 accessor: 'balance',
                 Cell: ({ row }: any) => (
                     <Box textAlign={'right'}>
-                        {row.original.balance?.toFixed(2)}
+                        {formatNumber(row.original.balance)}
                     </Box>
                 )
             },
@@ -156,7 +161,7 @@ const ParticipantPositions = () => {
                 accessor: 'currentPosition',
                 Cell: ({ row }: { row: Row<IParticipantPositionData> }) => (
                     <Box textAlign={'right'}>
-                        {row.original.currentPosition?.toFixed(2)}
+                        {formatNumber(row.original.currentPosition)}
                     </Box>
                 )
             },
@@ -174,7 +179,7 @@ const ParticipantPositions = () => {
                 accessor: 'ndc',
                 Cell: ({ value }) => (
                     <Text textAlign="right">
-                        {value}
+                        {formatNumber(value)}
                     </Text>
                 ),
             },

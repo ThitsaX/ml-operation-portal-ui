@@ -14,7 +14,7 @@ import { type ISettlementStatementReport } from '@typescript/form/settlement-det
 
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone'
-import { memo, useState } from 'react'
+import { useMemo,useEffect,memo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { ITimezoneOption } from "react-timezone-select";
 import { useSelector } from "react-redux";
@@ -36,6 +36,10 @@ const SettlementStatementReport = () => {
   // Redux
   const user = useGetUserState()
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
+  const selectedTZString = useMemo(
+    () => (selectedTimezone.value),
+    [selectedTimezone]
+  );
   const { data: currencyList } = useGetParticipantCurrencyList();
 
   const onDownloadChangeHandler = (e: any) => {
@@ -44,27 +48,20 @@ const SettlementStatementReport = () => {
     const fileType = e.target.value
 
     const formData = getValues();
-    const currentTimeZone = moment.tz.guess();
 
-    // Convert to UTC
-    const utcStartDate = moment(formData.startDate)
-      .tz(selectedTimezone?.value || currentTimeZone)
-      .utc()
+    const StartDate = moment.tz(formData.startDate, selectedTimezone?.value)
       .format();
 
-    const utcEndDate = moment(formData.endDate)
-      .tz(selectedTimezone?.value || currentTimeZone)
-      .utc()
+    const EndDate = moment.tz(formData.endDate, selectedTimezone?.value)
       .format();
 
-    const selectedTZString = selectedTimezone.value;
     let tzOffSet: string = selectedTimezone.offset === 0
       ? "0000"
       : moment().tz(selectedTZString).format('ZZ').replace('+', '');
 
     generateSettlementStatementReport(user, {
-      startDate: utcStartDate,
-      endDate: utcEndDate,
+      startDate: StartDate,
+      endDate: EndDate,
       timezoneoffset: tzOffSet,
       fileType: getValues().fileType,
       fspId: getValues().fspId,
@@ -89,7 +86,7 @@ const SettlementStatementReport = () => {
       })
   }
 
-  const { control, trigger, getValues, formState: { errors, isValid } } = useForm<ISettlementStatementReport>({
+  const { control, trigger, setValue, getValues, formState: { errors, isValid } } = useForm<ISettlementStatementReport>({
     resolver: zodResolver(settlementStatementReportHelper.schema),
     defaultValues: {
       startDate: moment().format('YYYY-MM-DDTHH:mm'),
@@ -101,6 +98,12 @@ const SettlementStatementReport = () => {
     },
     mode: 'onChange'
   })
+
+  useEffect(() => {
+        setValue('startDate',  moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+        setValue('endDate',   moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+
+    }, [selectedTimezone, setValue]);
 
   return (
 
