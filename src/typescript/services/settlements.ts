@@ -54,3 +54,18 @@ export interface ISettlementAccount {
     }
 }
 
+export interface INetTransferDetail {
+    participantName: string;
+    debitAmount: number;
+    creditAmount: number;
+    currency: string;
+}
+
+export interface INetTransferAmount {
+    settlementWindowId?: string;
+    settlementWindowIds?: string;
+    settlementId?: string;
+    windowOpenedDate: string;
+    windowClosedDate: string;
+    details: INetTransferDetail[];
+}

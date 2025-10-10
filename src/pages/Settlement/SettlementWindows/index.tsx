@@ -3,7 +3,6 @@ import {
     Button,
     FormControl,
     FormErrorMessage,
-    FormLabel,
     Heading,
     HStack,
     Input,
@@ -51,21 +50,27 @@ import moment from 'moment-timezone';
 import { memo, useMemo, useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { IGetAllOtherParticipant } from '@typescript/services';
-import { ISettlementWindowForm } from '@typescript/form/settlements';
+import { ISettlementWindowForm, ISettlementWindowCreateForm } from '@typescript/form/settlements';
 import { ITimezoneOption } from 'react-timezone-select';
 import { useSelector } from 'react-redux';
 
 import { RootState } from '@store';
 import { Ranges } from '@typescript/pages';
-import { usePagination, useSortBy, useTable, Row, Column } from 'react-table';
-import { ISettlementWindow } from '@typescript/services';
+import { usePagination, useSortBy, useTable, Column } from 'react-table';
+import { ISettlementWindow, INetTransferAmount, INetTransferDetail } from '@typescript/services';
 
-import { getSettlementWindowsList } from '@services/settlements';
-import { ISettlementWindows } from '@typescript/services';
+import { 
+    getSettlementWindowsList, 
+    getNetTransferAmountByWindow, 
+    createSettlementWindow 
+} from '@services/settlements';
+// import { ISettlementWindows } from '@typescript/services';
 import { useLoadingContext } from '@contexts/hooks';
 import { Checkbox } from "@chakra-ui/react";
 import { closeSettlementWindow } from "@services/settlements";
 import { WINDOW_STATE_OPTIONS as windowStateOptions } from '@utils/constants';
+
+import { useGetParticipantCurrencyList } from '@hooks/services/participant';
 
 const SettlementWindows = () => {
     const { start, complete } = useLoadingContext();
@@ -73,9 +78,8 @@ const SettlementWindows = () => {
     const user = useGetUserState();
     const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
 
-
     const [dateRange, setDateRange] = useState<Ranges>('oneDay');
-    const [currencyList] = useState([{ value: 'USD', label: 'USD' }, { value: 'MMK', label: 'MMK' }, { value: 'EUR', label: 'EUR' }]);
+    const { data } = useGetParticipantCurrencyList();
 
     const [toFspOptions, setToFspOptions] = useState<any[]>([]);
     const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string }>();
@@ -83,10 +87,10 @@ const SettlementWindows = () => {
 
     const [pageNumber, setPageNumber] = useState<String>('1');
     const { isOpen: isFinalizeOpen, onOpen: onFinalizeOpen, onClose: onFinalizeClose } = useDisclosure();
-    const [selectedRow, setSelectedRow] = useState<any>(null);
 
     const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure();
-    const [selectedSettlement, setSelectedSettlement] = useState<any>(null);
+    const [netTransferAmount, setNetTransferAmount] = useState<INetTransferAmount | null>(null);
+    const [selectedWindow, setSelectedWindow] = useState<ISettlementWindow | null>(null);
 
     const settlementWindowHelper = new SettlementWindowHelper();
     const [settlementWindows, setSettlementWindows] = useState<ISettlementWindow[]>([]);
@@ -99,23 +103,24 @@ const SettlementWindows = () => {
 
     //Selected timezone offset
     const selectedTZString = selectedTimezone.value;
-    const timezone = selectedTimezone.offset === 0
-        ? "0000"
-        : moment().tz(selectedTZString).format('ZZ').replace('+', '');
+    // const timezone = selectedTimezone.offset === 0
+    //     ? "0000"
+    //     : moment().tz(selectedTZString).format('ZZ').replace('+', '');
 
 
     //Form initial values
     const initialValues = {
         fromDate: moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'),
         toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
-        currency: 'USD',
-        state: 'OPEN'
+        currency: '',
+        state: ''
     }
 
 
-    const onSearchHandler = useCallback((values: any) => {
+    const onSearchHandler = (values: ISettlementWindowForm) => {
         const currentTimeZone = moment.tz.guess();
 
+        // Convert the current timezone to UTC
         values.fromDate = moment
             .utc(values.fromDate)
             .tz(selectedTZString ? selectedTZString : currentTimeZone)
@@ -126,7 +131,14 @@ const SettlementWindows = () => {
             .tz(selectedTZString ? selectedTZString : currentTimeZone)
             .utc()
             .format();
-        values.timezone = timezone;
+
+        if (values.state === '') {
+            delete values.state;
+        }
+        if (values.currency === '') {
+            delete values.currency;
+        }
+        
         start();
 
         getSettlementWindowsList(values)
@@ -142,63 +154,155 @@ const SettlementWindows = () => {
                 }
                 setSettlementWindows(data);
             })
+            .catch((err) => {
+                // Because mojaloop api returns 400 instead of 404
+                // if no data found, we had to check for 400 for now
+                if (err.error_code === '3100') {
+                    toast({
+                        position: 'top',
+                        description: 'No data found',
+                        status: 'warning',
+                        isClosable: true,
+                        duration: 3000
+                    });
+                    setSettlementWindows([]);
+                } else {
+                    toast({
+                        position: 'top',
+                        description: err.default_error_message || "Internal error",
+                        status: 'error',
+                        isClosable: true,
+                        duration: 3000
+                    });
+                }
+            })
             .finally(() => {
                 complete();
             });
-    }, [complete, start, toast, user]);
+    };
 
 
-    const onTrClickHandler = useCallback(
-        (row: any) => {
-            setSelectedSettlement(row);
-            onDetailOpen();
-        },
-        [onDetailOpen]
-    );
+    const onTrClickHandler = useCallback((window: ISettlementWindow) => {
+        setSelectedWindow(window);
+        setNetTransferAmount(null);
 
-    const handleClose = (row: any) => {
-        setSelectedRow(row);
+        start();
+        // Get settlement details
+        getNetTransferAmountByWindow(window.settlementWindowId).then((data: INetTransferAmount) => {
+            setNetTransferAmount(data);
+        })
+        .catch((err) => {
+            toast({
+                position: 'top',
+                description: err.default_error_message || 'Cannot retrieve net transfer amount',
+                status: 'error',
+                isClosable: true,
+                duration: 3000
+            });
+            
+            setNetTransferAmount(null);
+        })
+        .finally(() => {
+            complete();
+        });
+        
+        onDetailOpen();
+            
+    }, [start, toast, complete, onDetailOpen]);
+
+
+    const handleClose = (window: ISettlementWindow) => {
+        setSelectedWindow(window);
         onFinalizeOpen();
     }
 
 
-    const closeSettlement = (row: any) => {
-        const data = {
-            settlementWindowId: selectedRow.settlementWindowId,
-            state: 'CLOSED',
-            reason: selectedRow.reason
+    const closeSettlement = () => {
+        if (!selectedWindow) {
+            return;
         }
+        
+        const data = {
+            settlementWindowId: selectedWindow.settlementWindowId,
+            state: 'CLOSED',
+            reason: selectedWindow.reason
+        }
+
+        start();
         closeSettlementWindow(data).then(() => {
             toast({
                 position: 'top',
-
                 description: 'Settlement Window Closed Successfully',
                 status: 'success',
                 isClosable: true,
                 duration: 3000
             });
-            onFinalizeClose();
+           
             // Refresh the list after closing
             onSearchHandler(getValues());
-        }
-        ).catch(() => {
-
+        })
+        .catch((err) => {
             toast({
                 position: 'top',
-                description: 'Failed to close Settlement Window',
-
+                description: err.default_error_message || 'Failed to close Settlement Window',
                 status: 'error',
                 isClosable: true,
                 duration: 3000
             });
+        })
+        .finally(() => {
+            complete();
+            // Close the model
             onFinalizeClose();
         });
-
     };
 
-    const createSettlement = (model: string) => {
-        console.log('Creating Settlement with Model:', model);
-        // Do your API call / logic here
+
+    const createSettlement = () => {
+        // Validate
+        if (settlementModel === '') {
+            toast({
+                position: 'top',
+                description: 'Please choose a settlement model first',
+                status: 'warning',
+                isClosable: true,
+                duration: 3000
+            });
+            return;
+        }
+        
+        const formData: ISettlementWindowCreateForm = {
+            settlementModel: settlementModel,
+            reason: "Create settlement via Operation Portal",
+            settlementWindowIdList: selectedRowIds.map((id) => ({ id })),
+        }
+
+        start();
+        createSettlementWindow(formData).then(() => {
+            toast({
+                position: 'top',
+                description: 'Settlement Created Successfully',
+                status: 'success',
+                isClosable: true,
+                duration: 3000
+            });
+
+            // Refresh the window list
+            onSearchHandler(getValues());
+        })
+        .catch((err) => {
+            toast({
+                position: 'top',
+                description: err.default_error_message || 'Failed to create settlement',
+                status: 'error',
+                isClosable: true,
+                duration: 3000
+            });
+        })
+        .finally(() => {
+            complete();
+            setSettlementModel('');
+        });
     };
 
 
@@ -225,29 +329,33 @@ const SettlementWindows = () => {
                 />
             ),
             Cell: ({ row }: any) => {
-                const rowId = row.original.settlementWindowId;
-                const isChecked = selectedRowIds.includes(rowId);
+                const windowId = row.original.settlementWindowId;
+                const isChecked = selectedRowIds.includes(windowId);
 
-                return (
-                    <Checkbox
-                        isChecked={isChecked}
-                        onClick={(e) => e.stopPropagation()} // ✅ prevent row click
-                        onChange={(e) => {
-                            if (e.target.checked) {
-                                setSelectedRowIds((prev) => [...prev, rowId]);
-                            } else {
-                                setSelectedRowIds((prev) => prev.filter((id) => id !== rowId));
-                            }
-                        }}
-                    />
-                );
+                if (row.original.state === 'CLOSED') {
+                    return (
+                        <Checkbox
+                            isChecked={isChecked}
+                            onClick={(e) => e.stopPropagation()} // ✅ prevent row click
+                            onChange={(e) => {
+                                if (e.target.checked) {
+                                    setSelectedRowIds((prev) => [...prev, windowId]);
+                                } else {
+                                    setSelectedRowIds((prev) => prev.filter((id) => id !== windowId));
+                                }
+                            }}
+                        />
+                    );
+                }
+
+                return <></>;
             },
         },
 
         {
             Header: 'Window ID',
             accessor: 'settlementWindowId',
-            Cell: ({ row }: any) => (
+            Cell: ({ row, value }: any) => (
                 <Box
                     color="blue.600"
                     fontWeight="bold"
@@ -255,7 +363,7 @@ const SettlementWindows = () => {
                     _hover={{ textDecoration: 'underline' }}
                     onClick={() => onTrClickHandler(row.original)}
                 >
-                    {row.original.settlementWindowId}
+                    { value }
                 </Box>)
         },
         {
@@ -272,24 +380,36 @@ const SettlementWindows = () => {
         {
             Header: 'Closed Date',
             accessor: 'changedDate',
-            Cell: ({ value }) => (
-                <Text>{moment(value).format('YYYY-MM-DD HH:mm')}</Text>
-            ),
+            Cell: ({ row, value }) => {
+                if (row.original.state === 'OPEN') {
+                    return <></>;
+                }
+
+                return (
+                    <Text>{moment(value).format('YYYY-MM-DD HH:mm')}</Text>
+                );
+            },
         },
         {
             Header: 'Action',
             disableSortBy: true,
-            Cell: ({ row }: any) => (
-                <HStack spacing={4}>
-                    <Button
-                        size="sm"
-                        colorScheme="green"
-                        variant="solid"
-                        onClick={() => handleClose(row.original)}>
-                        Close Window
-                    </Button>
-                </HStack>
-            )
+            Cell: ({ row }: any) => {
+                if (row.original.state === 'OPEN') {
+                    return (
+                        <HStack spacing={4}>
+                            <Button
+                                size="sm"
+                                colorScheme="green"
+                                variant="solid"
+                                onClick={() => handleClose(row.original)}>
+                                Close Window
+                            </Button>
+                        </HStack>
+                    );
+                }
+
+                return <></>;
+            }
 
         },
     ],
@@ -331,11 +451,11 @@ const SettlementWindows = () => {
         trigger,
         reset,
         handleSubmit,
-        formState: { errors, isValid }
+        register,
+        formState: { errors }
     } = useForm<ISettlementWindowForm>({
         resolver: zodResolver(schema),
-        defaultValues:
-            initialValues,
+        defaultValues: initialValues,
         mode: 'onChange'
     });
 
@@ -405,7 +525,7 @@ const SettlementWindows = () => {
         const options = { shouldValidate: true, shouldDirty: true }
         setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'), options)
         setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'), options)
-        setValue('timezoneOffset', timezone, options)
+        // setValue('timezoneOffset', timezone, options)
     }, [selectedTimezone]);
 
     // Reseting values as soon as timezone change
@@ -504,44 +624,27 @@ const SettlementWindows = () => {
 
                     <HStack alignItems={'flex-start'} spacing={4}>
 
-                        <FormControl isRequired>
-                            <Controller
-                                control={control}
-                                name="state"
-                                render={({ field }) => (
-                                    <Select {...field}>
-                                        <option value="" disabled>
-                                            Select State
-                                        </option>
-                                        {windowStateOptions.map((stateItem) => (
-                                            <option key={stateItem} value={stateItem}>
-                                                {stateItem}
-                                            </option>
-                                        ))}
-                                    </Select>
-                                )}
-                            />
-                        </FormControl>
-                        <FormControl isRequired>
-                            <Controller
-                                control={control}
-                                name="currency"
-                                render={({ field }) => (
-                                    <Select {...field}>
-                                        <option value="" disabled>
-                                            Select Currency
-                                        </option>
-                                        {currencyList.map((currency) => (
-                                            <option key={currency.value} value={currency.value}>
-                                                {currency.label}
-                                            </option>
-                                        ))}
-                                    </Select>
-                                )}
-                            />
-                        </FormControl>
-
-
+                        <Select
+                            placeholder="Select State"
+                            { ...register('state') }
+                        >
+                            {windowStateOptions.map((stateItem) => (
+                                <option key={stateItem} value={stateItem}>
+                                    {stateItem}
+                                </option>
+                            ))}
+                        </Select>
+                        <Select
+                            placeholder="Select Currency"
+                            { ...register('currency') }
+                        >
+                            {data?.map((item, index) => (
+                                <option key={index} value={item.currency}>
+                                    {item.currency}
+                                </option>
+                            ))}
+                        </Select>
+                        
                     </HStack>
 
                     <HStack justifyContent='flex-end'>
@@ -563,17 +666,13 @@ const SettlementWindows = () => {
                 </Stack>
 
                 <Flex justify="flex-end" flex={1} gap={5} mt={6} >
-
                     <Select
                         placeholder="Choose Settlement Model"
                         value={settlementModel}
                         onChange={(e) => setSettlementModel(e.target.value)}
                         width="250px"
                     >
-                        <option value="gross">Gross Settlement</option>
-                        <option value="net">Net Settlement</option>
-                        <option value="deferred">Deferred Settlement</option>
-                        <option value="real-time">Real-Time Settlement</option>
+                        <option value="DEFERREDNET">DEFERREDNET</option>
                     </Select>
                     <Button
                         color="white"
@@ -582,11 +681,9 @@ const SettlementWindows = () => {
                             bg: 'primary',
                             opacity: 0.4
                         }}
-                        onClick={() => createSettlement(settlementModel)}>
+                        onClick={createSettlement}>
                         Create Settlement
                     </Button>
-
-
                 </Flex>
 
                 <TableContainer
@@ -725,7 +822,7 @@ const SettlementWindows = () => {
             <Modal isOpen={isFinalizeOpen} onClose={onFinalizeClose} isCentered>
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>Finalize Settlement ID:<strong>{selectedRow?.settlementId}</strong></ModalHeader>
+                    <ModalHeader>Close Settlement Window ID: <strong>{selectedWindow?.settlementWindowId}</strong></ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
                         Are you sure you want to proceed?
@@ -735,9 +832,8 @@ const SettlementWindows = () => {
                         <Button variant="ghost" mr={3} onClick={onFinalizeClose}>
                             Cancel
                         </Button>
-                        <Button colorScheme="green" onClick={closeSettlement}
-                        >
-                            Yes, Finalize
+                        <Button colorScheme="green" onClick={closeSettlement}>
+                            Yes, Close
                         </Button>
                     </ModalFooter>
                 </ModalContent>
@@ -753,19 +849,37 @@ const SettlementWindows = () => {
                             <SimpleGrid columns={{ base: 1, md: 5 }} spacing={6} textAlign="center">
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window ID</Text>
-                                    <Text fontSize="md">{selectedSettlement?.windowId}</Text>
+                                    <Text fontSize="md">{selectedWindow?.settlementWindowId}</Text>
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window State</Text>
-                                    <Text fontSize="md">{selectedSettlement?.state}</Text>
+                                    <Text fontSize="md">{selectedWindow?.state}</Text>
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window Open Date</Text>
-                                    <Text fontSize="md">{selectedSettlement?.settlementCreatedDate}</Text>
+                                    <Text fontSize="md">
+                                        {
+                                            (
+                                                selectedWindow?.createdDate ? 
+                                                moment(selectedWindow.createdDate).format('YYYY-MM-DD HH:mm')
+                                                :
+                                                ""
+                                            )
+                                        }
+                                    </Text>
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window Close Date</Text>
-                                    <Text fontSize="md">{selectedSettlement?.settlementFinalizeDate}</Text>
+                                    <Text fontSize="md">
+                                        {
+                                            selectedWindow?.state !== 'OPEN' && (
+                                                selectedWindow?.changedDate ? 
+                                                moment(selectedWindow.changedDate).format('YYYY-MM-DD HH:mm')
+                                                :
+                                                ""
+                                            )
+                                        }
+                                    </Text>
                                 </Box>
                             </SimpleGrid>
 
@@ -781,12 +895,12 @@ const SettlementWindows = () => {
                                         </Tr>
                                     </Thead>
                                     <Tbody>
-                                        {selectedSettlement?.details?.map((item: any, index: number) => (
+                                        {netTransferAmount?.details?.map((item: INetTransferDetail, index: number) => (
                                             <Tr key={index}>
-                                                <Td>{item.dfsp}</Td>
+                                                <Td>{item.participantName}</Td>
                                                 <Td>{item.currency}</Td>
-                                                <Td isNumeric>{item.debit || '-'}</Td>
-                                                <Td isNumeric>{item.credit || '-'}</Td>
+                                                <Td isNumeric>{item.debitAmount || '-'}</Td>
+                                                <Td isNumeric>{item.creditAmount || '-'}</Td>
                                             </Tr>
                                         ))}
                                     </Tbody>
