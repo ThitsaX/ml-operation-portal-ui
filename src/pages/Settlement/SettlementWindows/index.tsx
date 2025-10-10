@@ -301,6 +301,7 @@ const SettlementWindows = () => {
         })
         .finally(() => {
             complete();
+            setSettlementModel('');
         });
     };
 
@@ -671,10 +672,7 @@ const SettlementWindows = () => {
                         onChange={(e) => setSettlementModel(e.target.value)}
                         width="250px"
                     >
-                        <option value="gross">Gross Settlement</option>
-                        <option value="net">Net Settlement</option>
-                        <option value="deferred">Deferred Settlement</option>
-                        <option value="real-time">Real-Time Settlement</option>
+                        <option value="DEFERREDNET">DEFERREDNET</option>
                     </Select>
                     <Button
                         color="white"
