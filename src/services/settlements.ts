@@ -4,7 +4,7 @@ import { store } from '@store'
 import { type IApiErrorResponse, IFinalizeSettlement } from '@typescript/services'
 import { type AxiosError } from 'axios'
 import { ISettlementWindow, INetTransferAmount } from '@typescript/services'
-import { ISettlementWindowForm } from '@typescript/form/settlements'
+import { ISettlementWindowForm, ISettlementWindowCreateForm } from '@typescript/form/settlements'
 
 export const getFinalizeSettlementList = async (values: any) => {
     const {
@@ -29,7 +29,8 @@ export const getFinalizeSettlementList = async (values: any) => {
             if (code && message) {
                 throw {
                     error_code: code,
-                    default_error_message: getErrorMessageByCode(code),
+                    description: getErrorMessageByCode(code),
+                    default_error_message: message,
                     i18n_error_messages: null
                 }
             }
@@ -61,7 +62,8 @@ export const getSettlementWindowsList = async (values: ISettlementWindowForm) =>
             if (code && message) {
                 throw {
                     error_code: code,
-                    default_error_message: getErrorMessageByCode(code),
+                    description: getErrorMessageByCode(code),
+                    default_error_message: message,
                     i18n_error_messages: null
                 }
             }
@@ -130,7 +132,8 @@ export const getNetTransferAmountBySettlement = async (settlementId: number) => 
             if (code && message) {
                 throw {
                     error_code: code,
-                    default_error_message: getErrorMessageByCode(code),
+                    description: getErrorMessageByCode(code),
+                    default_error_message: message,
                     i18n_error_messages: null
                 }
             }
@@ -138,7 +141,7 @@ export const getNetTransferAmountBySettlement = async (settlementId: number) => 
         })
 }
 
-export const createSettlementWindow = async (data: any) => {
+export const createSettlementWindow = async (data: ISettlementWindowCreateForm) => {
     const {
         user: { auth }
     } = store.getState()
@@ -160,7 +163,8 @@ export const createSettlementWindow = async (data: any) => {
             if (code && message) {
                 throw {
                     error_code: code,
-                    default_error_message: getErrorMessageByCode(code),
+                    description: getErrorMessageByCode(code),
+                    default_error_message: message,
                     i18n_error_messages: null
                 }
             }
@@ -190,7 +194,8 @@ export const closeSettlementWindow = async (data: any) => {
             if (code && message) {
                 throw {
                     error_code: code,
-                    default_error_message: getErrorMessageByCode(code),
+                    description: getErrorMessageByCode(code),
+                    default_error_message: message,
                     i18n_error_messages: null
                 }
             }
@@ -221,7 +226,8 @@ export const finalizeSettlementWindow = async (data: any) => {
             if (code && message) {
                 throw {
                     error_code: code,
-                    default_error_message: getErrorMessageByCode(code),
+                    description: getErrorMessageByCode(code),
+                    default_error_message: message,
                     i18n_error_messages: null
                 }
             }

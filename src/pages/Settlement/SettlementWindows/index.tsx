@@ -50,7 +50,7 @@ import moment from 'moment-timezone';
 import { memo, useMemo, useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { IGetAllOtherParticipant } from '@typescript/services';
-import { ISettlementWindowForm } from '@typescript/form/settlements';
+import { ISettlementWindowForm, ISettlementWindowCreateForm } from '@typescript/form/settlements';
 import { ITimezoneOption } from 'react-timezone-select';
 import { useSelector } from 'react-redux';
 
@@ -59,7 +59,11 @@ import { Ranges } from '@typescript/pages';
 import { usePagination, useSortBy, useTable, Column } from 'react-table';
 import { ISettlementWindow, INetTransferAmount, INetTransferDetail } from '@typescript/services';
 
-import { getSettlementWindowsList, getNetTransferAmountByWindow } from '@services/settlements';
+import { 
+    getSettlementWindowsList, 
+    getNetTransferAmountByWindow, 
+    createSettlementWindow 
+} from '@services/settlements';
 // import { ISettlementWindows } from '@typescript/services';
 import { useLoadingContext } from '@contexts/hooks';
 import { Checkbox } from "@chakra-ui/react";
@@ -74,7 +78,6 @@ const SettlementWindows = () => {
     const user = useGetUserState();
     const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
 
-
     const [dateRange, setDateRange] = useState<Ranges>('oneDay');
     const { data } = useGetParticipantCurrencyList();
 
@@ -84,7 +87,6 @@ const SettlementWindows = () => {
 
     const [pageNumber, setPageNumber] = useState<String>('1');
     const { isOpen: isFinalizeOpen, onOpen: onFinalizeOpen, onClose: onFinalizeClose } = useDisclosure();
-    const [selectedRow, setSelectedRow] = useState<any>(null);
 
     const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure();
     const [netTransferAmount, setNetTransferAmount] = useState<INetTransferAmount | null>(null);
@@ -164,7 +166,15 @@ const SettlementWindows = () => {
                         duration: 3000
                     });
                     setSettlementWindows([]);
-                } 
+                } else {
+                    toast({
+                        position: 'top',
+                        description: err.default_error_message || "Internal error",
+                        status: 'error',
+                        isClosable: true,
+                        duration: 3000
+                    });
+                }
             })
             .finally(() => {
                 complete();
@@ -174,6 +184,7 @@ const SettlementWindows = () => {
 
     const onTrClickHandler = useCallback((window: ISettlementWindow) => {
         setSelectedWindow(window);
+        setNetTransferAmount(null);
 
         start();
         // Get settlement details
@@ -183,8 +194,8 @@ const SettlementWindows = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: err.default_error_message,
-                status: 'warning',
+                description: err.default_error_message || 'Cannot retrieve net transfer amount',
+                status: 'error',
                 isClosable: true,
                 duration: 3000
             });
@@ -200,49 +211,97 @@ const SettlementWindows = () => {
     }, [start, toast, complete, onDetailOpen]);
 
 
-    const handleClose = (row: any) => {
-        setSelectedRow(row);
+    const handleClose = (window: ISettlementWindow) => {
+        setSelectedWindow(window);
         onFinalizeOpen();
     }
 
 
-    const closeSettlement = (row: any) => {
-        const data = {
-            settlementWindowId: selectedRow.settlementWindowId,
-            state: 'CLOSED',
-            reason: selectedRow.reason
+    const closeSettlement = () => {
+        if (!selectedWindow) {
+            return;
         }
+        
+        const data = {
+            settlementWindowId: selectedWindow.settlementWindowId,
+            state: 'CLOSED',
+            reason: selectedWindow.reason
+        }
+
+        start();
         closeSettlementWindow(data).then(() => {
             toast({
                 position: 'top',
-
                 description: 'Settlement Window Closed Successfully',
                 status: 'success',
                 isClosable: true,
                 duration: 3000
             });
-            onFinalizeClose();
+           
             // Refresh the list after closing
             onSearchHandler(getValues());
-        }
-        ).catch(() => {
-
+        })
+        .catch((err) => {
             toast({
                 position: 'top',
-                description: 'Failed to close Settlement Window',
-
+                description: err.default_error_message || 'Failed to close Settlement Window',
                 status: 'error',
                 isClosable: true,
                 duration: 3000
             });
+        })
+        .finally(() => {
+            complete();
+            // Close the model
             onFinalizeClose();
         });
-
     };
 
-    const createSettlement = (model: string) => {
-        console.log('Creating Settlement with Model:', model);
-        // Do your API call / logic here
+
+    const createSettlement = () => {
+        // Validate
+        if (settlementModel === '') {
+            toast({
+                position: 'top',
+                description: 'Please choose a settlement model first',
+                status: 'warning',
+                isClosable: true,
+                duration: 3000
+            });
+            return;
+        }
+        
+        const formData: ISettlementWindowCreateForm = {
+            settlementModel: settlementModel,
+            reason: "Create settlement via Operation Portal",
+            settlementWindowIdList: selectedRowIds.map((id) => ({ id })),
+        }
+
+        start();
+        createSettlementWindow(formData).then(() => {
+            toast({
+                position: 'top',
+                description: 'Settlement Created Successfully',
+                status: 'success',
+                isClosable: true,
+                duration: 3000
+            });
+
+            // Refresh the window list
+            onSearchHandler(getValues());
+        })
+        .catch((err) => {
+            toast({
+                position: 'top',
+                description: err.default_error_message || 'Failed to create settlement',
+                status: 'error',
+                isClosable: true,
+                duration: 3000
+            });
+        })
+        .finally(() => {
+            complete();
+        });
     };
 
 
@@ -269,22 +328,26 @@ const SettlementWindows = () => {
                 />
             ),
             Cell: ({ row }: any) => {
-                const rowId = row.original.settlementWindowId;
-                const isChecked = selectedRowIds.includes(rowId);
+                const windowId = row.original.settlementWindowId;
+                const isChecked = selectedRowIds.includes(windowId);
 
-                return (
-                    <Checkbox
-                        isChecked={isChecked}
-                        onClick={(e) => e.stopPropagation()} // ✅ prevent row click
-                        onChange={(e) => {
-                            if (e.target.checked) {
-                                setSelectedRowIds((prev) => [...prev, rowId]);
-                            } else {
-                                setSelectedRowIds((prev) => prev.filter((id) => id !== rowId));
-                            }
-                        }}
-                    />
-                );
+                if (row.original.state === 'CLOSED') {
+                    return (
+                        <Checkbox
+                            isChecked={isChecked}
+                            onClick={(e) => e.stopPropagation()} // ✅ prevent row click
+                            onChange={(e) => {
+                                if (e.target.checked) {
+                                    setSelectedRowIds((prev) => [...prev, windowId]);
+                                } else {
+                                    setSelectedRowIds((prev) => prev.filter((id) => id !== windowId));
+                                }
+                            }}
+                        />
+                    );
+                }
+
+                return <></>;
             },
         },
 
@@ -602,7 +665,6 @@ const SettlementWindows = () => {
                 </Stack>
 
                 <Flex justify="flex-end" flex={1} gap={5} mt={6} >
-
                     <Select
                         placeholder="Choose Settlement Model"
                         value={settlementModel}
@@ -621,11 +683,9 @@ const SettlementWindows = () => {
                             bg: 'primary',
                             opacity: 0.4
                         }}
-                        onClick={() => createSettlement(settlementModel)}>
+                        onClick={createSettlement}>
                         Create Settlement
                     </Button>
-
-
                 </Flex>
 
                 <TableContainer
@@ -764,7 +824,7 @@ const SettlementWindows = () => {
             <Modal isOpen={isFinalizeOpen} onClose={onFinalizeClose} isCentered>
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>Finalize Settlement ID:<strong>{selectedRow?.settlementId}</strong></ModalHeader>
+                    <ModalHeader>Close Settlement Window ID: <strong>{selectedWindow?.settlementWindowId}</strong></ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
                         Are you sure you want to proceed?
@@ -774,9 +834,8 @@ const SettlementWindows = () => {
                         <Button variant="ghost" mr={3} onClick={onFinalizeClose}>
                             Cancel
                         </Button>
-                        <Button colorScheme="green" onClick={closeSettlement}
-                        >
-                            Yes, Finalize
+                        <Button colorScheme="green" onClick={closeSettlement}>
+                            Yes, Close
                         </Button>
                     </ModalFooter>
                 </ModalContent>
