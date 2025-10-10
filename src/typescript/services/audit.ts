@@ -1,5 +1,7 @@
 export interface IGetAuditByParticipant {
   auditInfoList: AuditInfo[];
+  total: number,
+  totalPages: number
 }
 
 export interface AuditInfo {

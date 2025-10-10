@@ -1,6 +1,8 @@
 export interface IGetAuditByParticipantValues {
   fromDate: string;
   toDate: string;
+  page: number;
+  pageSize: number;
 }
 
 export interface IGetAuditReport {

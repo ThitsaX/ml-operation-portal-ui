@@ -82,8 +82,15 @@ const Transfer = () => {
   const [dateRange, setDateRange] = useState<Ranges>('oneDay');
   const [transferData, setTransferData] = useState<IGetTransferData[]>([]);
   const [transferId, setTransferId] = useState<string>('');
-  const [pageNumber, setPageNumber] = useState<String>('1');
   const { isOpen: isToggle, onToggle } = useDisclosure();
+
+  // Pagination
+  const [pageIndex, setPageIndex] = useState<number>(1); // start from 1
+  const [pageNumber, setPageNumber] = useState<number>(1); // for input
+  const [pageSize, setPageSize] = useState<number>(10); // make it mutable
+
+  const [totalPages, setTotalPages] = useState<number>(1);
+
   // Redux
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
   //Selected timezone offset
@@ -206,7 +213,7 @@ const Transfer = () => {
   }, [selectedTimezone])
 
   const onFindHandler = useCallback(
-    (values: ITransferValues) => {
+    (values: ITransferValues, currentPage = 1, currentSize = 10) => {
       const currentTimeZone = moment.tz.guess();
 
       values.fromDate = moment
@@ -222,9 +229,11 @@ const Transfer = () => {
       values.timezone = timezone;
 
       start();
-      getAllTransfers(omitBy(values, isEmpty))
+      getAllTransfers(omitBy(values, isEmpty), currentPage, currentSize)  // number of rows per page)
         .then((data) => {
           setTransferData(data.transferInfoList);
+          setTotalPages(Math.ceil(data.totalPage / currentSize));
+          setPageNumber(currentPage);
         })
         .catch((error) => {
           toast({
@@ -239,7 +248,7 @@ const Transfer = () => {
           complete();
         });
     },
-    [complete, start, toast]
+    [complete, start, toast, pageIndex, pageSize]
   );
 
   const onCancelHandler = useCallback(() => {
@@ -313,32 +322,21 @@ const Transfer = () => {
     []
   );
 
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    page,
-    prepareRow,
-    canPreviousPage,
-    canNextPage,
-    pageOptions,
-    pageCount,
-    gotoPage,
-    nextPage,
-    previousPage,
-    state: { pageIndex }
-  } = useTable(
-    {
-      columns,
-      data: transferData,
-      initialState: {
-        pageIndex: 0,
-        pageSize: 10
-      }
-    },
-    useSortBy,
-    usePagination
-  );
+const {
+  getTableProps,
+  getTableBodyProps,
+  headerGroups,
+  rows, // ✅ use rows instead of page
+  prepareRow,
+} = useTable(
+  {
+    columns,
+    data: transferData,
+    manualPagination: true, // ✅ tell react-table we handle pagination
+    pageCount: totalPages,  // ✅ inform how many pages there are
+  },
+  useSortBy
+);
 
   useEffect(() => {
     setFocus('transferId');
@@ -349,15 +347,15 @@ const Transfer = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handlePageValidation = (value: string) => {
-    if (Number(value) > pageOptions.length) {
-      setPageNumber(pageNumber)
-    } else if (value.startsWith('0')) {
-      setPageNumber('')
-    } else {
-      setPageNumber(value)
-    }
-  }
+  // const handlePageValidation = (value: string) => {
+  //   if (Number(value) > pageOptions.length) {
+  //     setPageNumber(pageNumber)
+  //   } else if (value.startsWith('0')) {
+  //     setPageNumber('')
+  //   } else {
+  //     setPageNumber(value)
+  //   }
+  // }
 
   return (
     <Flex justify="center" flexDirection="column" flex={1} p="2">
@@ -648,7 +646,7 @@ const Transfer = () => {
             bg: 'primary',
             opacity: 0.4
           }}
-          onClick={handleSubmit(onFindHandler)}>
+          onClick={handleSubmit((values) => onFindHandler(values, pageIndex, pageSize))}>
           Find Transfer
         </Button>
 
@@ -709,7 +707,7 @@ const Transfer = () => {
             ))}
           </Thead>
           <Tbody maxH={300} overflowY="auto" {...getTableBodyProps()}>
-            {page.map((row) => {
+            {rows.map((row) => {
               prepareRow(row);
               return (
                 <Tr
@@ -732,40 +730,77 @@ const Transfer = () => {
               aria-label="Skip to start"
               variant="ghost"
               icon={<TfiAngleDoubleLeft />}
-              isDisabled={!canPreviousPage}
-              onClick={() => gotoPage(0)}
+              isDisabled={pageIndex === 1}
+              onClick={() => {
+                setPageIndex(1);
+                handleSubmit((values) => onFindHandler(values, 1, pageSize))();
+              }}
             />
             <IconButton
               aria-label="Go Previous"
               variant="ghost"
               icon={<TfiAngleLeft />}
-              isDisabled={!canPreviousPage}
-              onClick={previousPage}
+              isDisabled={pageIndex === 1}
+              onClick={() => {
+                const newPage = pageIndex - 1;
+                setPageIndex(newPage);
+                handleSubmit((values) => onFindHandler(values, newPage, pageSize))();
+              }}
             />
             <IconButton
               aria-label="Go Next"
               variant="ghost"
               icon={<TfiAngleRight />}
-              isDisabled={!canNextPage}
-              onClick={nextPage}
+              isDisabled={pageIndex === totalPages}
+              onClick={() => {
+                const newPage = pageIndex + 1;
+                setPageIndex(newPage);
+                handleSubmit((values) => onFindHandler(values, newPage, pageSize))();
+              }}
             />
             <IconButton
               aria-label="Skip to end"
               variant="ghost"
               icon={<TfiAngleDoubleRight />}
-              isDisabled={!canNextPage}
-              onClick={() => gotoPage(pageCount - 1)}
+              isDisabled={pageIndex === totalPages}
+              onClick={() => {
+                setPageIndex(totalPages);
+                handleSubmit((values) => onFindHandler(values, totalPages, pageSize))();
+              }}
             />
           </HStack>
           <Text>
             Page{' '}
             <strong>
-              {pageIndex + 1} of {pageOptions.length || 1}
+              {pageIndex} of {totalPages || 1}
             </strong>
           </Text>
           <Box h="6">
             <Divider orientation="vertical" />
           </Box>
+
+          {/* Page size selector */}
+          <HStack spacing={2}>
+            <Text>Rows:</Text>
+            <Select
+              w="20"
+              size="sm"
+              value={pageSize}
+              onChange={(e) => {
+                const newSize = Number(e.target.value);
+                setPageSize(newSize);       // <-- update pageSize state
+                setPageIndex(1);            // reset to first page
+                setPageNumber(1);         // update input
+                handleSubmit(values => onFindHandler(values, 1, newSize))();
+              }}
+            >
+              {[5, 10, 25, 50].map((size) => (
+                <option key={size} value={size}>{size}</option>
+              ))}
+            </Select>
+
+          </HStack>
+
           <HStack>
             <Text> Go to page : </Text>
             <Input
@@ -773,14 +808,17 @@ const Transfer = () => {
               textAlign="center"
               w="14"
               type="number"
-              min={pageIndex + 1}
-              max={pageOptions.length}
-              onChange={(e) => {
-                handlePageValidation(e.target.value)
-                const pageNumber = e.target.value
-                  ? Number(e.target.value) - 1
-                  : 0;
-                gotoPage(pageNumber);
+              min={1}
+              max={totalPages}
+              onChange={(e) => setPageNumber(Number(e.target.value))}
+              onBlur={() => {
+                let newPage = Number(pageNumber);
+                if (!newPage || newPage < 1) newPage = 1;
+                if (newPage > totalPages) newPage = totalPages;
+
+                setPageIndex(newPage);
+                setPageNumber(newPage);
+                handleSubmit(values => onFindHandler(values, newPage, pageSize))();
               }}
             />
           </HStack>
