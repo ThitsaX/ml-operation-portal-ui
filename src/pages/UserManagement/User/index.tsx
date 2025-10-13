@@ -46,6 +46,8 @@ import { createUser } from '@services/participant';
 import { GrPowerReset } from "react-icons/gr";
 import ResetPasswordModal from '@components/interface/ResetPassword';
 import GlobalFilter from '@components/interface/GlobalFilter';
+import { store } from '@store'
+
 const User = () => {
   const [filterStatus, setFilterStatus] = useState('ACTIVE');
   const [filteredUsers, setFilteredUsers] = useState([] as IParticipantUser[]);
@@ -123,32 +125,40 @@ const User = () => {
       {
         Header: "Action",
         disableSortBy: true,
-        Cell: ({ row }: CellProps<IParticipantUser>) => (
-          <HStack spacing={3}>
-            <IconButton
-              icon={<GrPowerReset />}
-              aria-label="Edit"
-              size="md"
-              onClick={() => handleResetClick(row.original)}
-              variant="ghost"
-            />
-            <IconButton
-              icon={<FaRegEdit />}
-              aria-label="Edit"
-              size="md"
-              onClick={() => handleEditClick(row.original)}
-              variant="ghost"
-            />
-            <Switch
-              colorScheme="green"
-              size="sm"
-              isChecked={row.original.status === "ACTIVE"}
-              onChange={e =>
-                toggleStatus(row.original.userId, e.target.checked)
-              }
-            />
-          </HStack>
-        ),
+        Cell: ({ row }: CellProps<IParticipantUser>) => {
+          const { user: { data: user } } = store.getState();
+
+          const isDisabled = row.original.userId === user?.userId;
+
+          return (
+            <HStack spacing={3}>
+              <IconButton
+                icon={<GrPowerReset />}
+                aria-label="Edit"
+                size="md"
+                onClick={() => handleResetClick(row.original)}
+                variant="ghost"
+                isDisabled={isDisabled}
+              />
+              <IconButton
+                icon={<FaRegEdit />}
+                aria-label="Edit"
+                size="md"
+                onClick={() => handleEditClick(row.original)}
+                variant="ghost"
+              />
+              <Switch
+                colorScheme="green"
+                size="sm"
+                isChecked={row.original.status === "ACTIVE"}
+                onChange={e =>
+                  toggleStatus(row.original.userId, e.target.checked)
+                }
+                isDisabled={isDisabled}
+              />
+            </HStack>
+          )
+        }
       },
     ];
   }, []);
