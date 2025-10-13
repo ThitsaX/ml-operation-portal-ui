@@ -44,7 +44,7 @@ import {
 import { getAllTransfers } from '@services/transfer';
 import { IGetTransferData, IApiErrorResponse } from '@typescript/services';
 import moment from 'moment';
-import { usePagination, useSortBy, useTable, Row } from 'react-table';
+import { usePagination, useSortBy, SortByFn, useTable, Row, Column } from 'react-table';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import {
   TfiAngleDoubleLeft,
@@ -269,74 +269,109 @@ const Transfer = () => {
   );
 
   //Number Sorting
-  const numberSort = (rowA: Row, rowB: Row) => {
-    if (Number(rowA.values.amount) > Number(rowB.values.amount)) return -1;
-    if (Number(rowB.values.amount) > Number(rowA.values.amount)) return 1;
-  }
+  const numberSort: SortByFn<IGetTransferData> = (rowA, rowB) => {
+    const a = Number(rowA.values.amount);
+    const b = Number(rowB.values.amount);
 
-  const columns = useMemo<
-    { Header: string; accessor: keyof IGetTransferData }[]
-  >(
+    if (a > b) return 1;
+    if (a < b) return -1;
+    return 0;
+  };
+
+  const columns = useMemo<Column<IGetTransferData>[]>(
     () => [
       {
-        Header: 'Transfer ID',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Transfer ID</Text>
+        ),
         accessor: 'transferId', // accessor is the "key" in the data
         disableSortBy: true
       },
       {
-        Header: 'State',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">State</Text>
+        ),
         accessor: 'state'
       },
       {
-        Header: 'Type',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Type</Text>
+        ),
         accessor: 'type',
         disableSortBy: true
       },
       {
-        Header: 'Currency',
-        accessor: 'currency'
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Currency</Text>
+        ),
+        accessor: 'currency',
+        Cell: ({ value }) => (
+          <Text textAlign="center">
+            {value}
+          </Text>
+        ),
       },
       {
-        Header: 'Amount',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Amount</Text>
+        ),
         accessor: 'amount',
-        sortType: numberSort
+        sortType: numberSort,
+        Cell: ({ value }) => (
+          <Text textAlign="right">
+            {value}
+          </Text>
+        ),
       },
       {
-        Header: 'Payer DFSP',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Payer DFSP</Text>
+        ),
         accessor: 'payerDfsp'
       },
       {
-        Header: 'Payee DFSP',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Payee DFSP</Text>
+        ),
         accessor: 'payeeDfsp'
       },
       {
-        Header: 'Settlement Batch',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Settlement Batch</Text>
+        ),
         accessor: 'settlementBatch',
-        disableSortBy: true
+        disableSortBy: true,
+        Cell: ({ value }) => (
+          <Text textAlign="right">
+            {value}
+          </Text>
+        ),
       },
       {
-        Header: 'Date Submitted',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Date Submitted</Text>
+        ),
         accessor: 'submittedOnDate'
       }
     ],
     []
   );
 
-const {
-  getTableProps,
-  getTableBodyProps,
-  headerGroups,
-  rows, // ✅ use rows instead of page
-  prepareRow,
-} = useTable(
-  {
-    columns,
-    data: transferData,
-    manualPagination: true, // ✅ tell react-table we handle pagination
-    pageCount: totalPages,  // ✅ inform how many pages there are
-  },
-  useSortBy
-);
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows, // ✅ use rows instead of page
+    prepareRow,
+  } = useTable(
+    {
+      columns,
+      data: transferData,
+      manualPagination: true, // ✅ tell react-table we handle pagination
+      pageCount: totalPages,  // ✅ inform how many pages there are
+    },
+    useSortBy
+  );
 
   useEffect(() => {
     setFocus('transferId');
@@ -374,16 +409,18 @@ const {
       </VStack>
 
       <Flex
-        flexDirection={{ base: 'column', md: 'row' }} // stack on small screens, row on medium+
-        flex={1}
+        flexWrap="wrap"
+        w="100%"
         my="4"
-        gap={{ base: 4, md: 0 }} // spacing between stacked columns
+        gap={{ base: 4, md: 4 }}
+        alignItems="stretch"
       >
         <Flex
+          flex={{ base: '1 1 100%', md: '1 1 0' }}
           flexDirection="column"
-          flex={{ base: '1 1 100%', md: 1 }} // full width on small screens
-          p="3"
+          p={{ base: 3, md: 2 }}
           gap="2"
+          minW={{ md: 0 }}
         >
           <FormControl isInvalid={!isEmpty(errors.transferId)}>
             <Input
@@ -479,10 +516,11 @@ const {
         </Flex>
 
         <Flex
+          flex={{ base: '1 1 100%', md: '1 1 0' }}
           flexDirection="column"
-          flex={{ base: '1 1 100%', md: 1 }}
-          p="3"
+          p={{ base: 3, md: 2 }}
           gap="2"
+          minW={{ md: 0 }}
         >
           <FormControl isInvalid={!isEmpty(errors.transferStateId)}>
             <Select
@@ -577,10 +615,11 @@ const {
         </Flex>
 
         <Flex
+          flex={{ base: '1 1 100%', md: '1 1 0' }}
           flexDirection="column"
-          flex={{ base: '1 1 100%', md: 1 }}
-          p="3"
+          p={{ base: 3, md: 2 }}
           gap="2"
+          minW={{ md: 0 }}
         >
           <Box h="40px"></Box>
           <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
@@ -670,7 +709,7 @@ const {
                         : column.getSortByToggleProps()
                     )}>
                     <HStack align="center" spacing="2" flex={1}>
-                      <Text flex={1}>{column.render('Header')}</Text>
+                      {column.render('Header')}
                       {column.disableSortBy ? null : (
                         <VStack
                           display="inline-flex"

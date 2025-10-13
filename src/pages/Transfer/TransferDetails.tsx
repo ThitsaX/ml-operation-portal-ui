@@ -99,9 +99,17 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
   }, [transferId, timezone]);
 
   return (
-    <Modal size="6xl" isOpen={isOpen} onClose={onClose}>
+    <Modal size="auto" isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent
+        w={{ base: "90%", md: "950px" }}
+        maxW="90%"
+        mx="auto"
+        bg="gray.50"
+        borderRadius="lg"
+        overflow="hidden"
+        boxShadow="2xl"
+      >
         <ModalHeader bg="gray.100" borderTop="1px solid" borderColor="gray.200">
           Transfer Details - {transferId}
         </ModalHeader>
