@@ -69,7 +69,7 @@ const AuditReport = () => {
             fromDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
             toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
             userId: '',
-            action: '',
+            actionId: '',
             fileType: 'xlsx',
             timezoneOffset: ''
         },
@@ -195,11 +195,11 @@ const AuditReport = () => {
                         <FormLabel>Action</FormLabel>
                         <Controller
                             control={control}
-                            name="action"
+                            name="actionId"
                             render={({ field }) => (
                                 <Select {...field} placeholder="All">
                                     {actionList?.map((item) => (
-                                        <option key={item.actionId} value={item.actionName}>
+                                        <option key={item.actionId} value={item.actionId}>
                                             {item.actionName}
                                         </option>
                                     ))}
