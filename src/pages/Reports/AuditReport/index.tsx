@@ -66,12 +66,11 @@ const AuditReport = () => {
         reset
     } = useForm<IGetAuditReport>({
         defaultValues: {
-            participantId: user?.participantId,
             fromDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
             toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
             userId: '',
-            action: '',
-            fileType: '',
+            actionId: '',
+            fileType: 'xlsx',
             timezoneOffset: ''
         },
         resolver: zodResolver(auditHelper.schema),
@@ -79,13 +78,10 @@ const AuditReport = () => {
     });
 
     useEffect(() => {
-        if (user?.participantId) {
-            setValue('participantId', user.participantId);
-        }
-        setValue('fromDate',  moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
-        setValue('toDate',   moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+        setValue('fromDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+        setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
 
-    }, [selectedTimezone,user?.participantId, setValue]);
+    }, [selectedTimezone, user?.participantId, setValue]);
 
     // Handler
     const onDownloadChangeHandler = (e: any) => {
@@ -96,7 +92,7 @@ const AuditReport = () => {
         const fileType = formData.fileType;
         const currentTimeZone = moment.tz.guess();
 
-       // Interpret input as selected timezone, then convert to UTC
+        // Interpret input as selected timezone, then convert to UTC
         const utcFromDate = moment.tz(formData.fromDate, selectedTimezone?.value || currentTimeZone)
             .utc()
             .format('YYYY-MM-DDTHH:mm:ss[Z]');
@@ -113,7 +109,6 @@ const AuditReport = () => {
             ...formData,
             fromDate: utcFromDate,
             toDate: utcToDate,
-            participantId: user?.participantId,
             timezoneOffset: tzOffSet
         })
             .then((res: any) => {
@@ -129,8 +124,15 @@ const AuditReport = () => {
                     });
                 }
             })
-            .catch((e) => {
-                console.log(e);
+            .catch((error) => {
+                const message = `${error?.default_error_message ?? ''}: ${error?.error_code ?? ''} ${error?.description ?? ''}`;
+                toast({
+                    position: 'top',
+                    description: message || 'Faield to download',
+                    status: 'warning',
+                    isClosable: true,
+                    duration: 3000
+                });
             })
             .finally(() => {
                 complete();
@@ -193,11 +195,11 @@ const AuditReport = () => {
                         <FormLabel>Action</FormLabel>
                         <Controller
                             control={control}
-                            name="action"
+                            name="actionId"
                             render={({ field }) => (
                                 <Select {...field} placeholder="All">
                                     {actionList?.map((item) => (
-                                        <option key={item.actionId} value={item.actionName}>
+                                        <option key={item.actionId} value={item.actionId}>
                                             {item.actionName}
                                         </option>
                                     ))}
@@ -236,7 +238,10 @@ const AuditReport = () => {
                             control={control}
                             name="fileType"
                             render={({ field }) => (
-                                <Select {...field} placeholder="Choose Format">
+                                <Select {...field}>
+                                    <option value="" disabled hidden>
+                                        Choose Format
+                                    </option>
                                     <option value="xlsx">XLSX</option>
                                     <option value="csv">CSV</option>
                                 </Select>

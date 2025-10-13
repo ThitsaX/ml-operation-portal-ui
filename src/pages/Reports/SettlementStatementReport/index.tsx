@@ -14,7 +14,7 @@ import { type ISettlementStatementReport } from '@typescript/form/settlement-det
 
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone'
-import { useMemo,useEffect,memo, useState } from 'react'
+import { useMemo, useEffect, memo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { ITimezoneOption } from "react-timezone-select";
 import { useSelector } from "react-redux";
@@ -32,6 +32,8 @@ const SettlementStatementReport = () => {
   const [runButtonState, setRunButtonState] = useState(true);
   const { data: participantList } = useGetParticipantList();
 
+  const [settlementId, setSettlementId] = useState("");
+  const [fspId, setFspId] = useState("");
 
   // Redux
   const user = useGetUserState()
@@ -42,12 +44,15 @@ const SettlementStatementReport = () => {
   );
   const { data: currencyList } = useGetParticipantCurrencyList();
 
+  const isHubUser =
+    typeof user.data?.participantName === 'string' &&
+    user.data.participantName.toLowerCase() === 'hub';
+
   const onDownloadChangeHandler = (e: any) => {
     start()
 
-    const fileType = e.target.value
-
     const formData = getValues();
+    const fileType = formData.fileType;
 
     const StartDate = moment.tz(formData.startDate, selectedTimezone?.value)
       .format();
@@ -62,14 +67,14 @@ const SettlementStatementReport = () => {
     generateSettlementStatementReport(user, {
       startDate: StartDate,
       endDate: EndDate,
-      timezoneoffset: tzOffSet,
-      fileType: getValues().fileType,
-      fspId: getValues().fspId,
-      currency: getValues().currency
+      timezoneOffset: tzOffSet,
+      fileType: fileType,
+      fspId: isHubUser ? formData.fspId : user?.data?.participantName,
+      currencyId: formData.currencyId
     })
       .then((res: any) => {
         if (res?.detail_report_byte?.length > 0) {
-          downloadFile(initialFileName, fileType, res?.detail_report_byte)
+          downloadFile(initialFileName, fileType, res?.rptByte)
         } else {
           toast({
             position: 'top',
@@ -79,9 +84,17 @@ const SettlementStatementReport = () => {
             duration: 3000
           })
         }
-      }).catch((e) => {
-        console.log(e)
+      }).catch((error) => {
+        const message = `${error?.default_error_message ?? ''}: ${error?.error_code ?? ''} ${error?.description ?? ''}`;
+        toast({
+          position: 'top',
+          description: message || 'Faield to download',
+          status: 'warning',
+          isClosable: true,
+          duration: 3000
+        });
       }).finally(() => {
+        setRunButtonState(true);
         complete()
       })
   }
@@ -91,19 +104,19 @@ const SettlementStatementReport = () => {
     defaultValues: {
       startDate: moment().format('YYYY-MM-DDTHH:mm'),
       endDate: moment().format('YYYY-MM-DDTHH:mm'),
-      fspId: '',
-      currency: '',
+      fspId: 'all',
+      currencyId: 'all',
       settlementId: '',
-      fileType: ''
+      fileType: 'xlsx'
     },
     mode: 'onChange'
   })
 
   useEffect(() => {
-        setValue('startDate',  moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
-        setValue('endDate',   moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+    setValue('startDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+    setValue('endDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
 
-    }, [selectedTimezone, setValue]);
+  }, [selectedTimezone, setValue]);
 
   return (
 
@@ -120,19 +133,38 @@ const SettlementStatementReport = () => {
         >
           <FormControl isInvalid={!isEmpty(errors.fspId)}>
             <FormLabel>DFSP Name</FormLabel>
-            <Controller
-              name="fspId"
-              control={control}
-              render={({ field }) => (
-                <Select {...field} placeholder="Select DFSP">
-                  {participantList?.map((item, index) => (
-                    <option key={index} value={item.participantName}>
-                      {item.description}
+
+            {isHubUser ? (
+              <Controller
+                name="fspId"
+                control={control}
+                render={({ field }) => (
+                  <Select {...field} width="100%"
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setFspId(e.target.value);
+                    }}>
+                    <option value="" disabled hidden>
+                      Select DFSP
                     </option>
-                  ))}
-                </Select>
-              )}
-            />
+                    <option value="all">All</option>
+                    {participantList?.map((item, index) => (
+                      <option key={index} value={item.participantName}>
+                        {item.participantName}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              />
+            ) : (
+              <Input
+                value={user.data?.participantName || ""}
+                readOnly
+                bg="gray.100"
+                _readOnly={{ opacity: 1, cursor: "not-allowed" }}
+              />
+            )}
+
             <FormErrorMessage>{errors.fspId?.message}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!isEmpty(errors.startDate)} pb="1">
@@ -180,13 +212,17 @@ const SettlementStatementReport = () => {
             />
             <FormErrorMessage>{errors.endDate?.message}</FormErrorMessage>
           </FormControl>
-          <FormControl isInvalid={!isEmpty(errors.currency)}>
+          <FormControl isInvalid={!isEmpty(errors.currencyId)}>
             <FormLabel>Currency</FormLabel>
             <Controller
-              name="currency"
+              name="currencyId"
               control={control}
               render={({ field }) => (
-                <Select {...field} placeholder="Select Currency">
+                <Select {...field}>
+                  <option value="" disabled hidden>
+                    Select Currency
+                  </option>
+                  <option value="all">All</option>
                   {currencyList?.map((item, index) => (
                     <option key={index} value={item.currency}>
                       {item.currency}
@@ -195,7 +231,7 @@ const SettlementStatementReport = () => {
                 </Select>
               )}
             />
-            <FormErrorMessage>{errors.currency?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
           </FormControl>
         </SimpleGrid>
 
@@ -211,7 +247,10 @@ const SettlementStatementReport = () => {
               control={control}
               name="fileType"
               render={({ field }) => (
-                <Select {...field} placeholder="Choose Format">
+                <Select {...field}>
+                  <option value="" disabled hidden>
+                    Choose Format
+                  </option>
                   <option value="xlsx">XLSX</option>
                   <option value="csv">CSV</option>
                 </Select>

@@ -14,6 +14,7 @@ export interface ISettlementSummaryReport {
   settlementId: string
   timezoneOffset: string
   fileType: string
+  currencyId: string
 }
 
 export interface ISettlementStatementReport {
@@ -21,7 +22,7 @@ export interface ISettlementStatementReport {
   startDate: string
   endDate: string
   settlementId: string
-  currency: string
+  currencyId: string
   timezoneOffset: string
   fileType: string
 }

@@ -112,25 +112,68 @@ const PendingApprovals = () => {
   // Table setup
   const columns = useMemo(() => {
     const baseColumns: Column<IPendingApproval>[] = [
-      { Header: 'Requested Action', accessor: 'requestedAction' },
-      { Header: 'DFSP', accessor: 'participantName' },
-      { Header: 'Currency', accessor: 'currency' },
-      { Header: 'Amount', accessor: 'amount' },
-      { Header: 'Requested By', accessor: 'requestedBy' },
       {
-        Header: 'Requested Date Time',
+        Header: () => (
+          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Requested Action</Text>
+        ),
+        accessor: 'requestedAction'
+      },
+      {
+        Header: () => (
+          <Text fontWeight="bold" fontSize="sm">DFSP</Text>
+        ),
+        accessor: 'participantName'
+      },
+      {
+        Header: () => (
+          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Currency</Text>
+        ),
+        accessor: 'currency',
+        Cell: ({ value }) => (
+          <Text textAlign="center">
+            {value}
+          </Text>
+        ),
+      },
+      {
+        Header: () => (
+          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Amount/Percentage</Text>
+        ),
+        accessor: 'amount',
+        Cell: ({ value }: any) => (
+          <Box textAlign={'right'}>
+            {value}
+          </Box>
+        )
+
+      },
+      {
+        Header: () => (
+          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Requested By</Text>
+        ),
+        accessor: 'requestedBy'
+      },
+      {
+        Header: () => (
+          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Requested Date Time</Text>
+        ),
         accessor: 'requestedDateTime',
         Cell: ({ value }: any) => formatEpochToTZ(value, selectedTZString, "YYYY-MM-DDTHH:mm:ssZ")
       },
-      { Header: 'Status', accessor: 'action' },
+      {
+        Header: () => (
+          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Status</Text>
+        ),
+        accessor: 'action'
+      },
     ] as Column<IPendingApproval>[];;
 
-    const statusColumn: Column<IPendingApproval>[] =
+    const statusColumn: Partial<Column<IPendingApproval>>[] =
       filterStatus === 'PENDING' && hasMenuAccess("ModifyApprovalAction")
         ? [
-
           {
-            Header: 'Action',
+            Header: () => <Text fontWeight="bold" fontSize="sm" textTransform="none">Action</Text>,
+            id: 'id',
             disableSortBy: true,
             Cell: ({ row }: any) => (
               <HStack spacing={4}>
