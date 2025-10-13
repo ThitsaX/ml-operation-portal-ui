@@ -43,6 +43,7 @@ import {
   usePagination,
   useSortBy,
   useTable,
+  Column,
 } from 'react-table';
 import { Controller, useForm } from 'react-hook-form';
 import { isNumber, isEmpty } from 'lodash-es';
@@ -124,13 +125,25 @@ const Audit = () => {
     [mutateAsync, pageSize, toast]
   );
   // Pagination + Search + Sort
-  const columns = useMemo<
-    { Header: string; accessor: keyof IGetAuditByParticipant }[]
-  >(
+  const columns = useMemo<Column<IGetAuditByParticipant>[]>(
     () => [
-      { Header: 'DATE', accessor: 'date' },
-      { Header: 'ACTION', accessor: 'action' },
-      { Header: 'MADE BY', accessor: 'madeBy' },
+      {
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Date</Text>
+        ),
+        accessor: 'date'
+      },
+      {
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Action</Text>
+        ),
+        accessor: 'action'
+      },
+      {
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Made By</Text>
+        ), accessor: 'madeBy'
+      },
     ],
     []
   );
@@ -252,7 +265,7 @@ const Audit = () => {
                     )}
                   >
                     <HStack align="center" spacing="2" flex={1}>
-                      <Text flex={1}>{column.render('Header')}</Text>
+                      {column.render('Header')}
                       {!column.disableSortBy && (
                         <VStack display="inline-flex" align="center" spacing={0}>
                           <Icon

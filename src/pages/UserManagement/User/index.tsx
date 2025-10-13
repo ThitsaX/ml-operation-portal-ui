@@ -97,15 +97,21 @@ const User = () => {
   const columns: Column<IParticipantUser>[] = useMemo(() => {
     return [
       {
-        Header: "Email",
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Email</Text>
+        ),
         accessor: "email",
       },
       {
-        Header: "Name",
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Name</Text>
+        ),
         accessor: "name",
       },
       {
-        Header: "Role",
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Role</Text>
+        ),
         accessor: "roleList",
         Cell: ({ value }: CellProps<IParticipantUser, string[]>) => {
           if (!value || value.length === 0) return <span>-</span>;
@@ -113,7 +119,9 @@ const User = () => {
         },
       },
       {
-        Header: "Status",
+        Header: () => (
+          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Status</Text>
+        ),
         accessor: "status",
         disableSortBy: true,
         Cell: ({ value }) => (
@@ -123,7 +131,10 @@ const User = () => {
         ),
       },
       {
-        Header: "Action",
+        Header: () => (
+          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Action</Text>
+        ),
+        id: "id",
         disableSortBy: true,
         Cell: ({ row }: CellProps<IParticipantUser>) => {
           const { user: { data: user } } = store.getState();
@@ -322,7 +333,7 @@ const User = () => {
                           : column.getSortByToggleProps()
                       )}>
                       <HStack align="center" spacing="2" flex={1}>
-                        <Text flex={1}>{column.render('Header')}</Text>
+                        {column.render('Header')}
                         {column.disableSortBy ? null : (
                           <VStack
                             display="inline-flex"

@@ -114,19 +114,19 @@ const PendingApprovals = () => {
     const baseColumns: Column<IPendingApproval>[] = [
       {
         Header: () => (
-          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Requested Action</Text>
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Requested Action</Text>
         ),
         accessor: 'requestedAction'
       },
       {
         Header: () => (
-          <Text fontWeight="bold" fontSize="sm">DFSP</Text>
+          <Text flex={1} fontWeight="bold" fontSize="sm">DFSP</Text>
         ),
         accessor: 'participantName'
       },
       {
         Header: () => (
-          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Currency</Text>
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Currency</Text>
         ),
         accessor: 'currency',
         Cell: ({ value }) => (
@@ -137,7 +137,7 @@ const PendingApprovals = () => {
       },
       {
         Header: () => (
-          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Amount/Percentage</Text>
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Amount/Percentage</Text>
         ),
         accessor: 'amount',
         Cell: ({ value }: any) => (
@@ -149,20 +149,20 @@ const PendingApprovals = () => {
       },
       {
         Header: () => (
-          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Requested By</Text>
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Requested By</Text>
         ),
         accessor: 'requestedBy'
       },
       {
         Header: () => (
-          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Requested Date Time</Text>
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Requested Date Time</Text>
         ),
         accessor: 'requestedDateTime',
         Cell: ({ value }: any) => formatEpochToTZ(value, selectedTZString, "YYYY-MM-DDTHH:mm:ssZ")
       },
       {
         Header: () => (
-          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Status</Text>
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Status</Text>
         ),
         accessor: 'action'
       },
@@ -290,7 +290,7 @@ const PendingApprovals = () => {
                           : column.getSortByToggleProps()
                       )}>
                       <HStack align="center" spacing="2" flex={1}>
-                        <Text flex={1}>{column.render('Header')}</Text>
+                        {column.render('Header')}
                         {column.disableSortBy ? null : (
                           <VStack
                             display="inline-flex"
