@@ -374,7 +374,7 @@ const SettlementWindows = () => {
             Header: 'Open Date',
             accessor: 'createdDate',
             Cell: ({ value }) => (
-                <Text>{moment(value).format('YYYY-MM-DD HH:mm')}</Text>
+                <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DD HH:mm')}</Text>
             ),
         },
         {
@@ -386,7 +386,7 @@ const SettlementWindows = () => {
                 }
 
                 return (
-                    <Text>{moment(value).format('YYYY-MM-DD HH:mm')}</Text>
+                    <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DD HH:mm')}</Text>
                 );
             },
         },
@@ -413,7 +413,7 @@ const SettlementWindows = () => {
 
         },
     ],
-        [settlementWindows, selectedRowIds]
+        [settlementWindows, selectedRowIds, selectedTZString]
     );
 
     const {
@@ -520,13 +520,13 @@ const SettlementWindows = () => {
         [setValue, selectedTimezone]
     );
 
-    const onSelectedTimezoneChange = useCallback(() => {
-        reset()
-        const options = { shouldValidate: true, shouldDirty: true }
-        setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'), options)
-        setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'), options)
-        // setValue('timezoneOffset', timezone, options)
-    }, [selectedTimezone]);
+    // const onSelectedTimezoneChange = useCallback(() => {
+    //     reset()
+    //     const options = { shouldValidate: true, shouldDirty: true }
+    //     setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'), options)
+    //     setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'), options)
+    //     // setValue('timezoneOffset', timezone, options)
+    // }, [selectedTimezone]);
 
     // Reseting values as soon as timezone change
     useEffect(() => {
@@ -536,12 +536,10 @@ const SettlementWindows = () => {
     }, [selectedTimezone])
 
 
-    const onCancelHandler = useCallback(() => {
+    const onClearHandler = useCallback(() => {
         reset()
         onChangeDateRange('oneDay');
-        onSelectedTimezoneChange();
-
-        setSettlementWindows([]);
+        // onSelectedTimezoneChange();
     }, [onChangeDateRange, reset, selectedTimezone]);
 
 
@@ -562,93 +560,97 @@ const SettlementWindows = () => {
                     Settlement Windows
                 </Heading>
                 <Stack borderWidth="1px" borderRadius="lg" height="full" p="4" spacing={4}>
-                    <HStack alignItems={'flex-start'} spacing={4}>
-                        <Select value={dateRange} onChange={(e) => onChangeDateRange(e.target.value as Ranges)}>
-                            <option value="oneDay">Past 24 Hours</option>
-                            <option value="today">Today</option>
-                            <option value="twoDay">Past 48 Hours</option>
-                            <option value="oneWeek">Past Week</option>
-                            <option value="oneMonth">Past Month</option>
-                            <option value="oneYear">Past Year</option>
-                            <option value="custom">Custom Range</option>
-                        </Select>
+                    <HStack spacing={4} align="start">
+                        <VStack flex={1} spacing={4}>
+                            <Select value={dateRange} onChange={(e) => onChangeDateRange(e.target.value as Ranges)}>
+                                <option value="oneDay">Past 24 Hours</option>
+                                <option value="today">Today</option>
+                                <option value="twoDay">Past 48 Hours</option>
+                                <option value="oneWeek">Past Week</option>
+                                <option value="oneMonth">Past Month</option>
+                                <option value="oneYear">Past Year</option>
+                                <option value="custom">Custom Range</option>
+                            </Select>
 
-                        <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
-                            {/* <FormLabel fontSize="sm">Start Date</FormLabel> */}
-                            {selectedTZString ?
-                                <Controller
-                                    control={control}
-                                    render={({ field: { value, onChange } }) => {
-                                        return (
-                                            <Input
-                                                disabled={dateRange !== 'custom' ? true : false}
-                                                type="datetime-local"
-                                                value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
-                                                onChange={(event) => {
-                                                    const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
-                                                    trigger('fromDate')
-                                                    onChange(date);
-                                                }}
-                                            />
-                                        );
-                                    }}
-                                    name="fromDate"
-                                /> : <p>Loading</p>}
-                            <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
-                        </FormControl>
-                        <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
-                            {/* <FormLabel fontSize="sm">End Date</FormLabel> */}
-                            {selectedTZString ?
-                                <Controller
-                                    control={control}
-                                    render={({ field: { value, onChange } }) => {
-                                        return (
-                                            <Input
-                                                disabled={dateRange !== 'custom' ? true : false}
-                                                type="datetime-local"
-                                                value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
-                                                onChange={(event) => {
-                                                    const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
-                                                    trigger('toDate')
-                                                    onChange(date);
-                                                }}
-                                            />
-                                        );
-                                    }}
-                                    name="toDate"
-                                />
-                                : <p>Loading</p>}
-                            <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
-                        </FormControl>
-                    </HStack>
+                            <Select
+                                placeholder="Select State"
+                                { ...register('state') }
+                            >
+                                {windowStateOptions.map((stateItem) => (
+                                    <option key={stateItem} value={stateItem}>
+                                        {stateItem}
+                                    </option>
+                                ))}
+                            </Select>
+                        </VStack>
 
-                    <HStack alignItems={'flex-start'} spacing={4}>
+                        <VStack flex={1} spacing={4}>
+                            <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
+                                {/* <FormLabel fontSize="sm">Start Date</FormLabel> */}
+                                {selectedTZString ?
+                                    <Controller
+                                        control={control}
+                                        render={({ field: { value, onChange } }) => {
+                                            return (
+                                                <Input
+                                                    disabled={dateRange !== 'custom' ? true : false}
+                                                    type="datetime-local"
+                                                    value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
+                                                    onChange={(event) => {
+                                                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
+                                                        trigger('fromDate')
+                                                        onChange(date);
+                                                    }}
+                                                />
+                                            );
+                                        }}
+                                        name="fromDate"
+                                    /> : <p>Loading</p>}
+                                <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
+                            </FormControl>
 
-                        <Select
-                            placeholder="Select State"
-                            { ...register('state') }
-                        >
-                            {windowStateOptions.map((stateItem) => (
-                                <option key={stateItem} value={stateItem}>
-                                    {stateItem}
-                                </option>
-                            ))}
-                        </Select>
-                        <Select
-                            placeholder="Select Currency"
-                            { ...register('currency') }
-                        >
-                            {data?.map((item, index) => (
-                                <option key={index} value={item.currency}>
-                                    {item.currency}
-                                </option>
-                            ))}
-                        </Select>
-                        
+                            <Select
+                                placeholder="Select Currency"
+                                { ...register('currency') }
+                            >
+                                {data?.map((item, index) => (
+                                    <option key={index} value={item.currency}>
+                                        {item.currency}
+                                    </option>
+                                ))}
+                            </Select>
+                        </VStack>
+
+                        <VStack flex={1} spacing={4}>
+                            <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
+                                {/* <FormLabel fontSize="sm">End Date</FormLabel> */}
+                                {selectedTZString ?
+                                    <Controller
+                                        control={control}
+                                        render={({ field: { value, onChange } }) => {
+                                            return (
+                                                <Input
+                                                    disabled={dateRange !== 'custom' ? true : false}
+                                                    type="datetime-local"
+                                                    value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
+                                                    onChange={(event) => {
+                                                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
+                                                        trigger('toDate')
+                                                        onChange(date);
+                                                    }}
+                                                />
+                                            );
+                                        }}
+                                        name="toDate"
+                                    />
+                                    : <p>Loading</p>}
+                                <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
+                            </FormControl>
+                        </VStack>
                     </HStack>
 
                     <HStack justifyContent='flex-end'>
-                        <Button colorScheme='gray' variant='outline' onClick={onCancelHandler}>
+                        <Button colorScheme='gray' variant='outline' onClick={onClearHandler}>
                             Clear Filters
                         </Button>
                         <Button
@@ -861,7 +863,7 @@ const SettlementWindows = () => {
                                         {
                                             (
                                                 selectedWindow?.createdDate ? 
-                                                moment(selectedWindow.createdDate).format('YYYY-MM-DD HH:mm')
+                                                moment(selectedWindow.createdDate).tz(selectedTZString).format('YYYY-MM-DD HH:mm')
                                                 :
                                                 ""
                                             )
@@ -874,7 +876,7 @@ const SettlementWindows = () => {
                                         {
                                             selectedWindow?.state !== 'OPEN' && (
                                                 selectedWindow?.changedDate ? 
-                                                moment(selectedWindow.changedDate).format('YYYY-MM-DD HH:mm')
+                                                moment(selectedWindow.changedDate).tz(selectedTZString).format('YYYY-MM-DD HH:mm')
                                                 :
                                                 ""
                                             )
@@ -899,8 +901,8 @@ const SettlementWindows = () => {
                                             <Tr key={index}>
                                                 <Td>{item.participantName}</Td>
                                                 <Td>{item.currency}</Td>
-                                                <Td isNumeric>{item.debitAmount || '-'}</Td>
-                                                <Td isNumeric>{item.creditAmount || '-'}</Td>
+                                                <Td isNumeric>{item.debitAmount == null ? '-' : item.debitAmount}</Td>
+                                                <Td isNumeric>{item.creditAmount == null ? '-' : item.creditAmount}</Td>
                                             </Tr>
                                         ))}
                                     </Tbody>

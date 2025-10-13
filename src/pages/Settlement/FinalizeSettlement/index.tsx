@@ -3,7 +3,6 @@ import {
     Button,
     FormControl,
     FormErrorMessage,
-    FormLabel,
     Heading,
     HStack,
     Input,
@@ -58,11 +57,14 @@ import { useSelector } from 'react-redux';
 
 import { RootState } from '@store';
 import { Ranges } from '@typescript/pages';
-import { IFinalizeSettlement } from '@typescript/services';
-import { usePagination, useSortBy, useTable, Row, Column } from 'react-table';
+import { IFinalizeSettlement, INetTransferAmount } from '@typescript/services';
+import { usePagination, useSortBy, useTable, Column } from 'react-table';
 import { useGetParticipantCurrencyList } from '@hooks/services/participant';
-import { getFinalizeSettlementList } from '@services/settlements';
-import { finalizeSettlementWindow } from '@services/settlements';
+import { 
+    getFinalizeSettlementList,  
+    finalizeSettlementWindow, 
+    getNetTransferAmountBySettlement
+} from '@services/settlements';
 import { WINDOW_STATE_OPTIONS as windowStateOptions } from '@utils/constants';
 
 const finalizeSettlementHelper = new FinalizeSettlementHelper();
@@ -80,12 +82,12 @@ const FinalizeSettlement = () => {
 
     const [pageNumber, setPageNumber] = useState<String>('1');
     const { isOpen: isFinalizeOpen, onOpen: onFinalizeOpen, onClose: onFinalizeClose } = useDisclosure();
-    const [selectedRow, setSelectedRow] = useState<any>(null);
 
     const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure();
-    const [selectedSettlement, setSelectedSettlement] = useState<any>(null);
+    const [selectedSettlement, setSelectedSettlement] = useState<IFinalizeSettlement | null>(null);
+    const [netTransferAmount, setNetTransferAmount] = useState<INetTransferAmount | null>(null);
 
-    const [finalizeSettlement, setFinalizeSettlement] = useState<IFinalizeSettlement[]>([]);
+    const [finalizeSettlements, setFinalizeSettlements] = useState<IFinalizeSettlement[]>([]);
 
 
     const schema = finalizeSettlementHelper.schema;
@@ -95,9 +97,9 @@ const FinalizeSettlement = () => {
 
     //Selected timezone offset
     const selectedTZString = selectedTimezone.value;
-    const timezone = selectedTimezone.offset === 0
-        ? "0000"
-        : moment().tz(selectedTZString).format('ZZ').replace('+', '');
+    // const timezone = selectedTimezone.offset === 0
+    //     ? "0000"
+    //     : moment().tz(selectedTZString).format('ZZ').replace('+', '');
 
     const initialValues = {
         fromDate: moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'),
@@ -106,9 +108,10 @@ const FinalizeSettlement = () => {
         state: ''
     }
 
-    const onSearchHandler = useCallback((values: any) => {
+    const onSearchHandler = (values: IFinalizeSettlementForm) => {
         const currentTimeZone = moment.tz.guess();
 
+        // Convert the current timezone to UTC
         values.fromDate = moment
             .utc(values.fromDate)
             .tz(selectedTZString ? selectedTZString : currentTimeZone)
@@ -119,7 +122,14 @@ const FinalizeSettlement = () => {
             .tz(selectedTZString ? selectedTZString : currentTimeZone)
             .utc()
             .format();
-        values.timezone = timezone;
+
+        if (values.state === '') {
+            delete values.state;
+        }
+        if (values.currency === '') {
+            delete values.currency;
+        }
+        
         start();
 
         getFinalizeSettlementList(values)
@@ -133,62 +143,109 @@ const FinalizeSettlement = () => {
                         duration: 3000
                     });
                 }
-                setFinalizeSettlement(data);
+                setFinalizeSettlements(data);
+            })
+            .catch((err) => {
+                // Because mojaloop api returns 400 instead of 404
+                // if no data found, we had to check for 400 for now
+                if (err.error_code === '3100') {
+                    toast({
+                        position: 'top',
+                        description: 'No data found',
+                        status: 'warning',
+                        isClosable: true,
+                        duration: 3000
+                    });
+                    setFinalizeSettlements([]);
+                } else {
+                    toast({
+                        position: 'top',
+                        description: err.default_error_message || "Internal error",
+                        status: 'error',
+                        isClosable: true,
+                        duration: 3000
+                    });
+                }
             })
             .finally(() => {
                 complete();
             });
-    }, [complete, start, toast, user]);
+    };
 
 
-    const onTrClickHandler = useCallback(
-        (row: any) => {
-            setSelectedSettlement(row);
-            onDetailOpen();
-        },
-        [onDetailOpen]
-    );
+    const onTrClickHandler = useCallback((settlement: IFinalizeSettlement) => {
+        setSelectedSettlement(settlement);
+        setNetTransferAmount(null);
 
-    const handleFinalize = (row: any) => {
-        setSelectedRow(row);
+        start();
+        // Get settlement details
+        getNetTransferAmountBySettlement(settlement.settlementId).then((data: INetTransferAmount) => {
+            setNetTransferAmount(data);
+        })
+        .catch((err) => {
+            toast({
+                position: 'top',
+                description: err.default_error_message || 'Cannot retrieve net transfer amount',
+                status: 'error',
+                isClosable: true,
+                duration: 3000
+            });
+            
+            setNetTransferAmount(null);
+        })
+        .finally(() => {
+            complete();
+        });
+
+        onDetailOpen();
+
+    }, [start, toast, complete, onDetailOpen]);
+
+    const handleFinalize = (settlement: IFinalizeSettlement) => {
+        setSelectedSettlement(settlement);
         onFinalizeOpen();
     };
 
-    const handleFinalizeSettlementWindow = () => {
-        const data = { settlementId: selectedRow.settlementId };
-        console.log("Selected row settlement id", selectedRow);
+    const handleConfirmedFinalize = () => {
+        if (!selectedSettlement) {
+            return;
+        }
 
-        finalizeSettlementWindow(data).then((resp) => {
-            if (resp?.finalized) {
+        const data = { settlementId: selectedSettlement.settlementId };
+
+        start();
+        finalizeSettlementWindow(data).then((data) => {
+            if (data.finalized) {
                 toast({
                     position: 'top',
                     description: 'Settlement finalized successfully',
                     status: 'success',
                     isClosable: true,
-                })
+                });
             }
 
-            onFinalizeClose();
             onSearchHandler(getValues());
-        }).catch((e) => {
+        })
+        .catch((err) => {
             toast({
-
                 position: 'top',
-                description: e?.default_error_message || 'Something went wrong',
+                description: err.default_error_message || 'Failed to finalize the settlement',
                 status: 'error',
                 isClosable: true,
                 duration: 3000
-            })
-            onFinalizeClose();
-            onSearchHandler(getValues());
+            });
         })
+        .finally(() => {
+            complete();
+            onFinalizeClose();
+        });
     }
 
     const columns = useMemo<Column<IFinalizeSettlement>[]>(() => [
         {
             Header: 'Settlement ID',
-            accessor: 'id',
-            Cell: ({ row }: any) => (
+            accessor: 'settlementId',
+            Cell: ({ row, value }: any) => (
                 <Box
                     color="blue.600"
                     fontWeight="bold"
@@ -196,7 +253,7 @@ const FinalizeSettlement = () => {
                     _hover={{ textDecoration: 'underline' }}
                     onClick={() => onTrClickHandler(row.original)}
                 >
-                    {row.original.settlementId}
+                    {value}
                 </Box>)
         },
         {
@@ -219,33 +276,38 @@ const FinalizeSettlement = () => {
             Header: 'Settlement Created Date',
             accessor: 'createdDate',
             Cell: ({ value }) => (
-                <Text>{moment(value).format('YYYY-MM-DD HH:mm')}</Text>
+                <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DD HH:mm')}</Text>
             ),
         },
         {
             Header: 'Settlement Finalize Date',
             accessor: 'changedDate',
             Cell: ({ value }) => (
-                <Text>{moment(value).format('YYYY-MM-DD HH:mm')}</Text>
+                <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DD HH:mm')}</Text>
             )
         },
         {
             Header: 'Action',
             disableSortBy: true,
-            Cell: ({ row }: any) => (
-                <HStack spacing={4}>
-                    <Button
-                        size="sm"
-                        colorScheme="green"
-                        variant="solid"
-                        onClick={() => handleFinalize(row.original)}>
-                        Finalize
-                    </Button>
-                </HStack>
-            )
+            Cell: ({ row }: any) => {
+                if (row.original.state !== 'SETTLED') {
+                    (
+                        <HStack spacing={4}>
+                            <Button
+                                size="sm"
+                                colorScheme="green"
+                                variant="solid"
+                                onClick={() => handleFinalize(row.original)}>
+                                Finalize
+                            </Button>
+                        </HStack>
+                    )
+                }
 
+                return <></>
+            }
         },
-    ], []);
+    ], [finalizeSettlements, selectedTZString]);
 
 
     const {
@@ -265,7 +327,7 @@ const FinalizeSettlement = () => {
     } = useTable(
         {
             columns,
-            data: finalizeSettlement,
+            data: finalizeSettlements,
             initialState: {
                 pageIndex: 0,
                 pageSize: 10
@@ -340,7 +402,6 @@ const FinalizeSettlement = () => {
                 case 'custom':
                     setDateRange(range);
                     return;
-                    break;
             }
 
             setDateRange(range);
@@ -351,28 +412,25 @@ const FinalizeSettlement = () => {
         [setValue, selectedTimezone]
     );
 
-    const onSelectedTimezoneChange = useCallback(() => {
-        reset()
-        const options = { shouldValidate: true, shouldDirty: true }
-        setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'), options)
-        setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'), options)
-        setValue('timezoneOffset', timezone, options)
-    }, [selectedTimezone]);
+    // const onSelectedTimezoneChange = useCallback(() => {
+    //     reset()
+    //     const options = { shouldValidate: true, shouldDirty: true }
+    //     setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'), options)
+    //     setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'), options)
+    // }, [selectedTimezone]);
 
     // Reseting values as soon as timezone change
     useEffect(() => {
         reset(initialValues)
         onChangeDateRange('oneDay');
-        setFinalizeSettlement([]);
+        setFinalizeSettlements([]);
     }, [selectedTimezone])
 
 
-    const onCancelHandler = useCallback(() => {
+    const onClearHandler = useCallback(() => {
         reset()
         onChangeDateRange('oneDay');
-        onSelectedTimezoneChange();
-
-        setFinalizeSettlement([]);
+        // onSelectedTimezoneChange();
     }, [onChangeDateRange, reset, selectedTimezone]);
 
     const handlePageValidation = (value: string) => {
@@ -478,7 +536,7 @@ const FinalizeSettlement = () => {
                     </HStack>
 
                     <HStack justifyContent='flex-end'>
-                        <Button colorScheme='gray' variant='outline' onClick={onCancelHandler}>
+                        <Button colorScheme='gray' variant='outline' onClick={onClearHandler}>
                             Clear Filters
                         </Button>
                         <Button
@@ -632,7 +690,7 @@ const FinalizeSettlement = () => {
             <Modal isOpen={isFinalizeOpen} onClose={onFinalizeClose} isCentered size="lg">
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>Finalize Settlement ID:<strong>{selectedRow?.settlementId}</strong></ModalHeader>
+                    <ModalHeader>Finalize Settlement ID: <strong>{selectedSettlement?.settlementId}</strong></ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
                         Are you sure you want to proceed?
@@ -641,11 +699,11 @@ const FinalizeSettlement = () => {
                     <ModalFooter>
                         <Flex w="100%" justify="center" gap={4}>
                             <IconButton
-                                aria-label="Finalize"
+                                aria-label="Yes, Finalize"
                                 icon={<IoCheckmark size={24} />}
                                 colorScheme="green"
                                 borderRadius="full"
-                                onClick={handleFinalizeSettlementWindow}
+                                onClick={handleConfirmedFinalize}
                             />
 
                             <IconButton
@@ -675,7 +733,11 @@ const FinalizeSettlement = () => {
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window ID</Text>
-                                    <Text fontSize="md">{selectedSettlement?.windowId?.join(',')}</Text>
+                                    <Text fontSize="md">
+                                        { 
+                                            selectedSettlement?.settlementWindowList?.map((window) => window.settlementWindowId).join(', ')
+                                        }
+                                    </Text>
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Settlement State</Text>
@@ -683,11 +745,29 @@ const FinalizeSettlement = () => {
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Created Date</Text>
-                                    <Text fontSize="md">{selectedSettlement?.settlementCreatedDate}</Text>
+                                    <Text fontSize="md">
+                                        {
+                                            (
+                                                selectedSettlement?.createdDate ? 
+                                                moment(selectedSettlement.createdDate).tz(selectedTZString).format('YYYY-MM-DD HH:mm')
+                                                :
+                                                ""
+                                            )
+                                        }
+                                    </Text>
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Finalized Date</Text>
-                                    <Text fontSize="md">{selectedSettlement?.settlementFinalizeDate}</Text>
+                                    <Text fontSize="md">
+                                        {
+                                            (
+                                                selectedSettlement?.changedDate ? 
+                                                moment(selectedSettlement.changedDate).tz(selectedTZString).format('YYYY-MM-DD HH:mm')
+                                                :
+                                                ""
+                                            )
+                                        }
+                                    </Text>
                                 </Box>
                             </SimpleGrid>
 
@@ -703,12 +783,12 @@ const FinalizeSettlement = () => {
                                         </Tr>
                                     </Thead>
                                     <Tbody>
-                                        {selectedSettlement?.details?.map((item: any, index: number) => (
+                                        {netTransferAmount?.details?.map((item: any, index: number) => (
                                             <Tr key={index}>
-                                                <Td>{item.dfsp}</Td>
+                                                <Td>{item.participantName}</Td>
                                                 <Td>{item.currency}</Td>
-                                                <Td isNumeric>{item.debit || '-'}</Td>
-                                                <Td isNumeric>{item.credit || '-'}</Td>
+                                                <Td isNumeric>{item.debitAmount == null ? '-' : item.debitAmount}</Td>
+                                                <Td isNumeric>{item.creditAmount == null ? '-' : item.creditAmount}</Td>
                                             </Tr>
                                         ))}
                                     </Tbody>
@@ -722,8 +802,6 @@ const FinalizeSettlement = () => {
                     </ModalFooter>
                 </ModalContent>
             </Modal>
-
-
         </Box >
     );
 };
