@@ -25,7 +25,7 @@ import { type ISettlementDetailReport } from '@typescript/form/settlement-detail
 
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone';
-import {useMemo, memo,useEffect, useCallback, useState } from "react";
+import { useMemo, memo, useEffect, useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { FaSearch } from "react-icons/fa";
 import { IGetSettlementIds } from "@typescript/services/report";
@@ -44,7 +44,10 @@ const SettlementDetailReport = () => {
   const toast = useToast();
   const [runButtonState, setRunButtonState] = useState(true);
   const [settlementIdOptions, setSettlementIdOptions] = useState<any[]>([]);
-  const [selectedSettlementId, setSelectedSettlementId] = useState<any>();
+
+
+  const [settlementId, setSettlementId] = useState("");
+  const [fspId, setFspId] = useState("");
 
 
   // Redux
@@ -57,6 +60,10 @@ const SettlementDetailReport = () => {
   );
   const { data: participantList } = useGetParticipantList();
 
+  const isHubUser =
+    typeof user.data?.participantName === 'string' &&
+    user.data.participantName.toLowerCase() === 'hub';
+
   const {
     control,
     trigger,
@@ -67,20 +74,21 @@ const SettlementDetailReport = () => {
   } = useForm<ISettlementDetailReport>({
     resolver: zodResolver(settlementDetailReportHelper.schema),
     defaultValues: {
-      fspId: '',
+      fspId: 'all',
       settlementId: '',
-      fileType: '',
+      fileType: 'xlsx',
       startDate: moment().format('YYYY-MM-DDTHH:mm'),
       endDate: moment().format('YYYY-MM-DDTHH:mm'),
     },
     mode: 'onChange'
   });
 
-   useEffect(() => {
-        setValue('startDate',  moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
-        setValue('endDate',   moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+  useEffect(() => {
+    setValue('startDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+    setValue('endDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
 
-    }, [selectedTimezone, setValue]);
+  }, [selectedTimezone, setValue]);
+
   const onDownloadChangeHandler = (e: any) => {
     start();
     setRunButtonState(false);
@@ -92,10 +100,11 @@ const SettlementDetailReport = () => {
     let tzOffSet: string = selectedTimezone.offset === 0
       ? "0000"
       : moment().tz(selectedTZString).format('ZZ').replace('+', '');
+
     generateSettlementDetailReport({
-      settlementId: getValues().settlementId,
-      fspId: getValues().fspId,
-      fileType: getValues().fileType,
+      settlementId: formData.settlementId,
+      fspId: isHubUser ? formData.fspId : user?.data?.participantName,
+      fileType: fileType,
       timezoneOffset: tzOffSet
     })
       .then((res: any) => {
@@ -111,10 +120,18 @@ const SettlementDetailReport = () => {
           });
         }
       })
-      .catch((e) => {
-        console.log(e);
+      .catch((error) => {
+        const message = `${error?.default_error_message ?? ''}: ${error?.error_code ?? ''} ${error?.description ?? ''}`;
+        toast({
+          position: 'top',
+          description: message || 'Faield to download',
+          status: 'warning',
+          isClosable: true,
+          duration: 3000
+        });
       })
       .finally(() => {
+        setRunButtonState(true);
         complete();
       });
   };
@@ -133,7 +150,7 @@ const SettlementDetailReport = () => {
 
     const tzOffSet = selectedTimezone?.offset === 0
       ? '0000'
-      : moment().tz(selectedTimezone?.value ).format('ZZ').replace('+', '');
+      : moment().tz(selectedTimezone?.value).format('ZZ').replace('+', '');
 
     getSettlementIds(user, StartDate, EndDate, tzOffSet)
       .then((data: IGetSettlementIds) => {
@@ -154,8 +171,11 @@ const SettlementDetailReport = () => {
         });
 
         setSettlementIdOptions(options);
+        setSettlementId("");
+        setValue('settlementId', ''); // update form state
 
-        setSelectedSettlementId(null);
+        // Optional: reset file type if needed
+        setValue('fileType', 'xlsx');
       })
       .finally(() => {
         setRunButtonState(true);
@@ -168,6 +188,8 @@ const SettlementDetailReport = () => {
   },
     [search]
   );
+
+
 
   return (
     <VStack align="flex-start" h="full" p="3" mt={10} w="full">
@@ -184,19 +206,38 @@ const SettlementDetailReport = () => {
 
           <FormControl isInvalid={!isEmpty(errors.fspId)}>
             <FormLabel>DFSP Name</FormLabel>
-            <Controller
-              name="fspId"
-              control={control}
-              render={({ field }) => (
-                <Select {...field} placeholder="Select DFSP" width="100%">
-                  {participantList?.map((item, index) => (
-                    <option key={index} value={item.participantName}>
-                      {item.description}
+
+            {isHubUser ? (
+              <Controller
+                name="fspId"
+                control={control}
+                render={({ field }) => (
+                  <Select {...field} width="100%"
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setFspId(e.target.value);
+                    }}>
+                    <option value="" disabled hidden>
+                      Select DFSP
                     </option>
-                  ))}
-                </Select>
-              )}
-            />
+                    <option value="all">All</option>
+                    {participantList?.map((item, index) => (
+                      <option key={index} value={item.participantName}>
+                        {item.participantName}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              />
+            ) : (
+              <Input
+                value={user.data?.participantName || ""}
+                readOnly
+                bg="gray.100"
+                _readOnly={{ opacity: 1, cursor: "not-allowed" }}
+              />
+            )}
+
             <FormErrorMessage>{errors.fspId?.message}</FormErrorMessage>
           </FormControl>
 
@@ -211,6 +252,8 @@ const SettlementDetailReport = () => {
                   onChange={(e) => {
                     onChange(e);
                     trigger("endDate");
+                    setSettlementIdOptions([]);
+                    setSettlementId(""); // also clear selected settlementId
                   }}
                   onBlur={onBlur}
                   type="datetime-local"
@@ -232,6 +275,8 @@ const SettlementDetailReport = () => {
                   onChange={(e) => {
                     onChange(e);
                     trigger("startDate");
+                    setSettlementIdOptions([]);
+                    setSettlementId(""); // also clear selected settlementId
                   }}
                   onBlur={onBlur}
                   type="datetime-local"
@@ -277,7 +322,11 @@ const SettlementDetailReport = () => {
                 name="settlementId"
                 control={control}
                 render={({ field }) => (
-                  <Select {...field} placeholder="Select Settlement ID">
+                  <Select {...field} placeholder="Select Settlement ID"
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSettlementId(e.target.value);
+                    }}>
                     {settlementIdOptions.map((opt, index) => (
                       <option key={index} value={opt.value}>
                         {opt.label}
@@ -302,9 +351,12 @@ const SettlementDetailReport = () => {
                 control={control}
                 name="fileType"
                 render={({ field }) => (
-                  <Select {...field} placeholder="Choose Format">
+                  <Select {...field} >
+                    <option value="" disabled hidden>
+                      Choose Format
+                    </option>
                     <option value="xlsx">XLSX</option>
-                    <option value="pdf">PDF</option>
+                    <option value="csv">CSV</option>
                   </Select>
                 )}
               />
@@ -312,7 +364,7 @@ const SettlementDetailReport = () => {
 
             <Button
               colorScheme="blue"
-              isDisabled={!isValid || !runButtonState}
+              isDisabled={!settlementId || !runButtonState}
               onClick={onDownloadChangeHandler}
               w={{ base: "100%", md: "auto" }}
             >

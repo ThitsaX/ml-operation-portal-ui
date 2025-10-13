@@ -34,11 +34,12 @@ export const privateRoutes = {
   getUserListByParticipant: '/secured/getUserListByParticipant',
   getRoleListByParticipant: '/secured/getRoleListByParticipant',
   getParticipantListByParticipant: '/secured/getParticipantListByParticipant',
+  updateParticipantStatus: '/secured/updateParticipantStatus',
 
   createUser: '/secured/createUser',
   modifyUser: '/secured/modifyUser',
   modifyUserStatus: '/secured/modifyUserStatus',
-  generate_fee_report: '/secured/generate_fee_report',
+  generateSettlementBankReport: '/secured/generateSettlementBankReport',
 
   create_new_participant_user: '/secured/create_new_participant_user',
   modify_participant_user: '/secured/modify_participant_user',

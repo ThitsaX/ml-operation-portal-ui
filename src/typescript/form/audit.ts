@@ -8,7 +8,6 @@ export interface IGetAuditByParticipantValues {
 export interface IGetAuditReport {
   fromDate: string;
   toDate: string;
-  participantId: string;
   action: string;
   userId: string;
   timezoneOffset: string;

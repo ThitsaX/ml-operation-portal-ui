@@ -4,7 +4,6 @@ import {
   FormControl,
   FormLabel,
   Heading,
-  HStack,
   Stack,
   useToast,
   Select,
@@ -17,23 +16,21 @@ import { SettlementBankReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   downloadFile,
-  generateFeeReport,
-  getAllOtherParticipants,
+  generateSettlementBankReport,
   getSettlementIds
 } from '@services/report';
 
 import { useGetUserState } from '@store/hooks';
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone';
-import { memo,useMemo , useEffect, useState, useCallback } from 'react';
+import { memo, useMemo, useEffect, useState, useCallback } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { type IGetAllOtherParticipant } from '@typescript/services';
 import { type ISettlementBankReport } from '@typescript/form/fee-report';
 import { useLoadingContext } from '@contexts/hooks';
 import { ITimezoneOption } from 'react-timezone-select';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
-import { TransferType } from '@typescript/pages';
+
 import { FaSearch } from "react-icons/fa";
 import { IGetSettlementIds } from "@typescript/services/report";
 import { useGetParticipantCurrencyList } from '@hooks/services';
@@ -44,17 +41,9 @@ const initialFileName = 'Settlement-Bank-Report';
 const SettlementBankReport = () => {
 
   const [runButtonState, setRunButtonState] = useState(true);
-  const [transferType, setTransferType] = useState<TransferType>('outbound');
-  const [settlementModel, setSettlementModel] = useState<string>('');
   const [settlementIdOptions, setSettlementIdOptions] = useState<any[]>([]);
+  const [settlementId, setSettlementId] = useState("");
 
-  const [selectedSettlementId, setSelectedSettlementId] = useState<{
-    value: string;
-    label: string;
-  } | null>(null);
-
-  const [toFspOptions, setToFspOptions] = useState<any[]>([]);
-  const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string; }>();
   const { data: currencyList } = useGetParticipantCurrencyList();
   // Redux
   const user = useGetUserState();
@@ -62,7 +51,7 @@ const SettlementBankReport = () => {
   const { start, complete } = useLoadingContext();
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
 
-   const selectedTZString = useMemo(
+  const selectedTZString = useMemo(
     () => (selectedTimezone.value),
     [selectedTimezone]
   );
@@ -79,17 +68,21 @@ const SettlementBankReport = () => {
   } = useForm<ISettlementBankReport>({
     resolver: zodResolver(schema),
     defaultValues: {
-      start_date: moment().format('YYYY-MM-DDTHH:mm'),
-      end_date: moment().format('YYYY-MM-DDTHH:mm')
+      startDate: '',
+      endDate: '',
+      settlementId: '',
+      currency: 'all',
+      fileType: 'xlsx',
+      timezoneOffset: '',
     },
     mode: 'onChange'
   });
 
-   useEffect(() => {
-        setValue('start_date',  moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
-        setValue('end_date',   moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+  useEffect(() => {
+    setValue('startDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+    setValue('endDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
 
-    }, [selectedTimezone, setValue]);
+  }, [selectedTimezone, setValue]);
 
   const search = useCallback(() => {
     start();
@@ -97,15 +90,15 @@ const SettlementBankReport = () => {
 
     const values = getValues();
 
-    const StartDate = moment.tz(values.start_date, selectedTimezone?.value)
+    const StartDate = moment.tz(values.startDate, selectedTimezone?.value)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
-    const EndDate = moment.tz(values.end_date, selectedTimezone?.value)
+    const EndDate = moment.tz(values.endDate, selectedTimezone?.value)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const tzOffSet = selectedTimezone?.offset === 0
       ? '0000'
-      : moment().tz(selectedTimezone?.value ).format('ZZ').replace('+', '');
+      : moment().tz(selectedTimezone?.value).format('ZZ').replace('+', '');
 
     getSettlementIds(user, StartDate, EndDate, tzOffSet)
       .then((data: IGetSettlementIds) => {
@@ -126,8 +119,9 @@ const SettlementBankReport = () => {
         });
 
         setSettlementIdOptions(options);
-
-        setSelectedSettlementId(null);
+        setSettlementId("");
+        setValue('settlementId', '');
+        setValue('fileType', 'xlsx');
       })
       .finally(() => {
         setRunButtonState(true);
@@ -136,54 +130,25 @@ const SettlementBankReport = () => {
   }, [complete, getValues, start, toast, user]);
 
   const onSearchClick = useCallback(async () => {
-    const isValid = await trigger();
-    if (isValid) {
-      search();
-    }
-  }, [search, trigger]);
-
-  useEffect(() => {
-    getAllOtherParticipants(user, {
-      participantId: user.data?.participantId
-    }).then((data) => {
-      prepareToFspsOptions(data);
-    });
-  }, []);
-
-  const prepareToFspsOptions = (data: IGetAllOtherParticipant) => {
-    const options: any[] = [];
-
-    options.push({ value: 'all', label: 'All' }); /** Default option */
-
-    data.participantInfoList.map((toFsp) => {
-      options.push({ value: toFsp.dfsp_code, label: toFsp.dfsp_code });
-    });
-
-    setToFspOptions(options);
-    setSelectedToFspOption(options[0]);
-  };
+    search();
+  }, [search]);
 
   const onDownloadChangeHandler = (e: any) => {
     start();
     setRunButtonState(false);
 
-    const fileType = e.target.value;
-
-    // const startDate = getValues().start_date;
-    // const endDate = getValues().end_date;
-
-    // const utcStartDate = moment.utc(startDate).startOf('day').format();
-    // const utcEndDate = moment.utc(endDate).endOf('day').format();
+    const formData = getValues();
+    const fileType = formData.fileType;
 
     const selectedTZString = selectedTimezone.value;
 
-    generateFeeReport(user, {
-      fromFspId: transferType === 'outbound' ? user.data?.participantName : selectedToFspOption?.value,
-      toFspId: transferType === 'outbound' ? selectedToFspOption?.value : user.data?.participantName,
-      tzOffSet: selectedTimezone.offset === 0
+    generateSettlementBankReport(user, {
+      settlementId: formData.settlementId,
+      currencyId: formData.currency,
+      timezoneOffset: selectedTimezone.offset === 0
         ? "0000"
         : moment().tz(selectedTZString).format('ZZ').replace('+', ''),
-      fileType
+      fileType: fileType
     })
       .then((res: any) => {
         if (res?.rpt_byte?.length > 0) {
@@ -198,8 +163,15 @@ const SettlementBankReport = () => {
           });
         }
       })
-      .catch((e) => {
-        console.log(e);
+      .catch((error) => {
+        const message = `${error?.default_error_message ?? ''}: ${error?.error_code ?? ''} ${error?.description ?? ''}`;
+        toast({
+          position: 'top',
+          description: message || 'Faield to download',
+          status: 'warning',
+          isClosable: true,
+          duration: 3000
+        });
       })
       .finally(() => {
         complete();
@@ -215,56 +187,57 @@ const SettlementBankReport = () => {
       </Stack>
 
       <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
-        {/* --- Filters Section // 1 per row on mobile, 2 on md, 4 on lg+ */}
         <SimpleGrid
           columns={{ base: 1, md: 3 }}
           spacing={4}
           w="full"
         >
           <FormControl
-            isInvalid={!isEmpty(errors.start_date)}
+            isInvalid={!isEmpty(errors.startDate)}
           >
             <FormLabel>Start Date</FormLabel>
             <Controller
               control={control}
-              name="start_date"
+              name="startDate"
               render={({ field }) => (
                 <Input
                   {...field}
                   type="datetime-local"
                   onChange={(e) => {
                     field.onChange(e);
-                    trigger("end_date");
+                    trigger("endDate");
+                    setSettlementIdOptions([]);
+                    setSettlementId(""); // also clear selected settlementId
                   }}
                 />
               )}
             />
-            <FormErrorMessage>{errors.start_date?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.startDate?.message}</FormErrorMessage>
           </FormControl>
 
           <FormControl
-            isInvalid={!isEmpty(errors.end_date)}
+            isInvalid={!isEmpty(errors.endDate)}
           >
             <FormLabel>End Date</FormLabel>
             <Controller
               control={control}
-              name="end_date"
+              name="endDate"
               render={({ field }) => (
                 <Input
                   {...field}
                   type="datetime-local"
                   onChange={(e) => {
                     field.onChange(e);
-                    trigger("start_date");
+                    trigger("startDate");
+                    setSettlementIdOptions([]);
+                    setSettlementId(""); // also clear selected settlementId
                   }}
                 />
               )}
             />
-            <FormErrorMessage>{errors.end_date?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.endDate?.message}</FormErrorMessage>
           </FormControl>
 
-
-          {/* Search Button */}
           <FormControl
             display="flex"
             justifyContent={{ base: "stretch", md: "flex-end" }}
@@ -286,9 +259,7 @@ const SettlementBankReport = () => {
         </SimpleGrid>
       </Stack>
 
-      {/* --- Settlement & Download --- */}
       {settlementIdOptions.length > 0 && (<Stack borderWidth="1px" w="full" borderRadius="lg" p={4} spacing={4}>
-        {/* Top Row: Settlement ID & Currency */}
         <Stack
           w="full"
           direction={{ base: "column", md: "row" }}
@@ -304,8 +275,13 @@ const SettlementBankReport = () => {
             <Controller
               name="settlementId"
               control={control}
+
               render={({ field }) => (
-                <Select {...field} placeholder="Select Settlement ID">
+                <Select {...field} placeholder="Select Settlement ID"
+                  onChange={(e) => {
+                    field.onChange(e);
+                    setSettlementId(e.target.value);
+                  }}>
                   {settlementIdOptions.map((opt, index) => (
                     <option key={index} value={opt.value}>
                       {opt.label}
@@ -325,7 +301,11 @@ const SettlementBankReport = () => {
               name="currency"
               control={control}
               render={({ field }) => (
-                <Select {...field} placeholder="Select Currency">
+                <Select {...field} >
+                  <option value="" disabled hidden>
+                    Select Currency
+                  </option>
+                  <option value="all">All</option>
                   {currencyList?.map((item, index) => (
                     <option key={index} value={item.currency}>
                       {item.currency}
@@ -338,28 +318,32 @@ const SettlementBankReport = () => {
           </FormControl>
         </Stack>
 
-        {/* Bottom Row: Format & Download */}
         <Stack
           direction={{ base: "column", md: "row" }}
           spacing={4}
           justify="flex-end"
           align="flex-end"
-          flexWrap="wrap"
-        >
-          <Select
-            placeholder="Choose Format"
-            value={settlementModel}
-            onChange={(e) => setSettlementModel(e.target.value)}
-            width={{ base: "100%", md: "220px" }}
-          >
-            <option value="xlsx">XLSX</option>
-            <option value="pdf">PDF</option>
-          </Select>
+          flexWrap="wrap">
+          <FormControl w={{ base: "100%", md: "250px" }}>
+            <Controller
+              control={control}
+              name="fileType"
+              render={({ field }) => (
+                <Select {...field}>
+                  <option value="" disabled hidden>
+                    Choose Format
+                  </option>
+                  <option value="xlsx">XLSX</option>
+                  <option value="pdf">PDF</option>
+                </Select>
+              )}
+            />
+          </FormControl>
 
           <Button
             colorScheme="blue"
             width={{ base: "100%", md: "auto" }}
-            isDisabled={!isValid || !runButtonState}
+            isDisabled={!settlementId || !runButtonState}
             onClick={onDownloadChangeHandler}
           >
             Download
@@ -368,8 +352,6 @@ const SettlementBankReport = () => {
       </Stack>
       )}
     </VStack>
-
-
   );
 };
 

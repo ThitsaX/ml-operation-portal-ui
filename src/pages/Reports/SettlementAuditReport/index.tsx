@@ -1,6 +1,5 @@
-import {useEffect, memo, useState, useMemo } from "react";
+import { useEffect, memo, useState, useMemo } from "react";
 import {
-  Box,
   Button,
   FormControl,
   FormErrorMessage,
@@ -9,11 +8,9 @@ import {
   Input,
   Stack,
   useToast,
-  HStack,
-  Select,
   VStack,
   SimpleGrid,
-  Grid
+  Select
 } from '@chakra-ui/react';
 import { SettlementAuditReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -71,18 +68,18 @@ const SettlementAuditReport = () => {
     defaultValues: {
       startDate: moment().format('YYYY-MM-DDTHH:mm'),
       endDate: moment().format('YYYY-MM-DDTHH:mm'),
-      dfspId: '',
-      currencyId: '',
-      fileType: '',
+      dfspId: 'all',
+      currencyId: 'all',
+      fileType: 'xlsx',
       timezoneOffset: ''
     },
     mode: 'onChange'
   });
-    useEffect(() => {
-        setValue('startDate',  moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
-        setValue('endDate',   moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+  useEffect(() => {
+    setValue('startDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+    setValue('endDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
 
-    }, [selectedTimezone, setValue]);
+  }, [selectedTimezone, setValue]);
 
   /* Handlers */
   const onDownloadChangeHandler = (e: any) => {
@@ -100,7 +97,7 @@ const SettlementAuditReport = () => {
 
     const tzOffSet = selectedTimezone?.offset === 0
       ? '0000'
-      : moment().tz(selectedTimezone?.value ).format('ZZ').replace('+', '');
+      : moment().tz(selectedTimezone?.value).format('ZZ').replace('+', '');
 
     generateSettlementAuditReport({
       ...formData,
@@ -121,8 +118,15 @@ const SettlementAuditReport = () => {
           });
         }
       })
-      .catch((e) => {
-        console.log(e);
+      .catch((error) => {
+        const message = `${error?.default_error_message ?? ''}: ${error?.error_code ?? ''} ${error?.description ?? ''}`;
+        toast({
+          position: 'top',
+          description: message || 'Faield to download',
+          status: 'warning',
+          isClosable: true,
+          duration: 3000
+        });
       })
       .finally(() => {
         complete();
@@ -156,9 +160,13 @@ const SettlementAuditReport = () => {
               control={control}
               render={({ field }) => (
                 <Select {...field} placeholder="Select DFSP">
+                  <option value="" disabled hidden>
+                    Select DFSP
+                  </option>
+                  <option value="all">All</option>
                   {participantList?.map((item, index) => (
                     <option key={index} value={item.participantName}>
-                      {item.description}
+                      {item.participantName}
                     </option>
                   ))}
                 </Select>
@@ -212,6 +220,10 @@ const SettlementAuditReport = () => {
               control={control}
               render={({ field }) => (
                 <Select {...field} placeholder="Select Currency">
+                  <option value="" disabled hidden>
+                    Select Currency
+                  </option>
+                  <option value="all">All</option>
                   {data?.map((item, index) => (
                     <option key={index} value={item.currency}>
                       {item.currency}
@@ -236,7 +248,10 @@ const SettlementAuditReport = () => {
               control={control}
               name="fileType"
               render={({ field }) => (
-                <Select {...field} placeholder="Choose Format">
+                <Select {...field}>
+                  <option value="" disabled hidden>
+                    Choose Format
+                  </option>
                   <option value="xlsx">XLSX</option>
                   <option value="csv">CSV</option>
                 </Select>
