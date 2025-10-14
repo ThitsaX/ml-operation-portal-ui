@@ -93,6 +93,7 @@ const Audit = () => {
     handleSubmit,
     trigger,
     getValues,
+    setValue,
     formState: { isValid, errors },
   } = useForm<IGetAuditByParticipantValues>({
     defaultValues: {
@@ -103,10 +104,15 @@ const Audit = () => {
     mode: 'onChange',
   });
 
+  useEffect(() => {
+      setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
+      setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+  }, [selectedTZString, setValue]);
+
   const onSearchHandler = useCallback(
     async (values: IGetAuditByParticipantValues, page = 1, size = pageSize) => {
-      const fromDate = moment(values.fromDate).utc().format();
-      const toDate = moment(values.toDate).utc().format();
+      const fromDate = moment.tz(values.fromDate ,selectedTZString).utc().format();
+      const toDate = moment.tz(values.toDate ,selectedTZString).utc().format();
       const payload = { fromDate, toDate, page, pageSize: size };
 
       try {
@@ -126,7 +132,7 @@ const Audit = () => {
         });
       }
     },
-    [mutateAsync, pageSize, toast]
+    [mutateAsync, pageSize,selectedTZString, toast]
   );
   // Pagination + Search + Sort
   const columns = useMemo<Column<IGetAuditByParticipant>[]>(

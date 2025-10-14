@@ -81,7 +81,7 @@ const SettlementBankReport = () => {
   });
 
   useEffect(() => {
-    setValue('startDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+    setValue('startDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
     setValue('endDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
 
   }, [selectedTimezone, setValue]);
