@@ -123,7 +123,9 @@ const ParticipantPositions = () => {
     const columns = useMemo(
         () => [
             {
-                Header: 'DFSP ID',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">DFSP ID</Text>
+                ),
                 accessor: 'participantName',
                 Cell: ({ row }: any) => (
                     <Box
@@ -138,11 +140,15 @@ const ParticipantPositions = () => {
                     </Box>)
             },
             {
-                Header: 'DFSP Name',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">DFSP Name</Text>
+                ),
                 accessor: 'description'
             },
             {
-                Header: 'Currency',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Currency</Text>
+                ),
                 accessor: 'currency',
                 Cell: ({ value }) => (
                     <Text textAlign="center">
@@ -151,7 +157,9 @@ const ParticipantPositions = () => {
                 ),
             },
             {
-                Header: 'Balance',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Balance</Text>
+                ),
                 accessor: 'balance',
                 Cell: ({ row }: any) => (
                     <Box textAlign={'right'}>
@@ -160,7 +168,9 @@ const ParticipantPositions = () => {
                 )
             },
             {
-                Header: 'Current Position',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Current Position</Text>
+                ),
                 accessor: 'currentPosition',
                 Cell: ({ row }: { row: Row<IParticipantPositionData> }) => (
                     <Box textAlign={'right'}>
@@ -169,7 +179,9 @@ const ParticipantPositions = () => {
                 )
             },
             {
-                Header: 'NDC %',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC %</Text>
+                ),
                 accessor: 'ndcPercent',
                 Cell: ({ value }) => (
                     <Text textAlign="right">
@@ -178,7 +190,9 @@ const ParticipantPositions = () => {
                 ),
             },
             {
-                Header: 'NDC',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC</Text>
+                ),
                 accessor: 'ndc',
                 Cell: ({ value }) => (
                     <Text textAlign="right">
@@ -187,7 +201,9 @@ const ParticipantPositions = () => {
                 ),
             },
             {
-                Header: 'NDC Used %',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC Used %</Text>
+                ),
                 accessor: 'ndcUsed',
                 Cell: ({ value }) => (
                     <HStack spacing={2} w="full" justifyContent="flex-end">
@@ -206,7 +222,10 @@ const ParticipantPositions = () => {
                 ),
             },
             {
-                Header: 'Enable/Disable',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Enable/Disable</Text>
+                ),
+                id: "isActive",
                 disableSortBy: true,
                 Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
                     return (
@@ -222,7 +241,10 @@ const ParticipantPositions = () => {
                 }
             },
             {
-                Header: 'Action',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Action</Text>
+                ),
+                id: "action",
                 disableSortBy: true,
                 width: 180,
                 minWidth: 200,
@@ -476,7 +498,7 @@ const ParticipantPositions = () => {
                                                 : column.getSortByToggleProps()
                                         )}>
                                         <HStack align="center" spacing="2" flex={1}>
-                                            <Text flex={1}>{column.render('Header')}</Text>
+                                            {column.render('Header')}
                                             {column.disableSortBy ? null : (
                                                 <VStack
                                                     display="inline-flex"
