@@ -30,6 +30,8 @@ import { ITimezoneOption } from 'react-timezone-select';
 import { downloadFile, generateAuditReport } from '@services/report';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
+import { OptionType } from '@components/interface/CustomSelect';
+import { CustomSelect } from '@components/interface';
 
 const auditHelper = new AuditReportHelper();
 
@@ -198,13 +200,29 @@ const AuditReport = () => {
                             control={control}
                             name="actionId"
                             render={({ field }) => (
-                                <Select {...field} placeholder="All">
-                                    {actionList?.map((item) => (
-                                        <option key={item.actionId} value={item.actionId}>
-                                            {item.actionName}
-                                        </option>
-                                    ))}
-                                </Select>
+                                <CustomSelect
+                                    isMulti={false}
+                                    maxMenuHeight={300}
+                                    isClearable={true}
+                                    options={
+                                        (actionList ?? []).map((item) => ({
+                                            value: item.actionId,
+                                            label: item.actionName,
+                                        }))
+                                    }
+                                    value={
+                                        field.value
+                                            ? {
+                                                value: field.value,
+                                                label:
+                                                    actionList?.find((a) => a.actionId === field.value)
+                                                        ?.actionName || '',
+                                            }
+                                            : null
+                                    }
+                                    onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                                    placeholder="All"
+                                />
                             )}
                         />
                     </FormControl>
@@ -215,13 +233,29 @@ const AuditReport = () => {
                             control={control}
                             name="userId"
                             render={({ field }) => (
-                                <Select {...field} placeholder="All">
-                                    {userList?.map((user) => (
-                                        <option key={user.userId} value={user.userId}>
-                                            {user.email}
-                                        </option>
-                                    ))}
-                                </Select>
+                                <CustomSelect
+                                    isMulti={false}
+                                    maxMenuHeight={300}
+                                    isClearable={true}
+                                    options={
+                                        (userList ?? []).map((item) => ({
+                                            value: item.userId,
+                                            label: item.email,
+                                        }))
+                                    }
+                                    value={
+                                        field.value
+                                            ? {
+                                                value: field.value,
+                                                label:
+                                                    userList?.find((a) => a.userId === field.value)
+                                                        ?.email || '',
+                                            }
+                                            : null
+                                    }
+                                    onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                                    placeholder="All"
+                                />
                             )}
                         />
                     </FormControl>

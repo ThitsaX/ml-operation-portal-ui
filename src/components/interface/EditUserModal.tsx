@@ -18,7 +18,8 @@ import {
 } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import MultiSelect, { OptionType } from './MultiSelect';
+import { CustomSelect } from '@components/interface';
+import { OptionType } from '@components/interface/CustomSelect';
 import { IParticipantOrganization, IParticipantUser, IParticipantUserForm, IParticipantUserRole } from '@typescript/services';
 import { UserManagementHelper } from '@helpers/form';
 import { isEmpty } from 'lodash-es';
@@ -205,7 +206,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                 control={control}
                 name="roleIdList"
                 render={({ field }) => (
-                  <MultiSelect
+                  <CustomSelect
+                    isMulti={true}
                     options={roleList?.map(role => ({ value: role.roleId, label: role.name })) ?? []}
                     value={
                       (roleList ?? [])
