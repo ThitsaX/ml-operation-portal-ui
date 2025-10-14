@@ -14,7 +14,6 @@ export interface ISettlementWindowCreateForm {
 export interface IFinalizeSettlementForm {
     fromDate: string
     toDate: string
-    currency: string
-    state: string
-    timezoneOffset: string
+    currency?: string
+    state?: string
 }

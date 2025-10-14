@@ -29,7 +29,7 @@ export interface IFinalizeSettlements {
 }
 
 export interface IFinalizeSettlement {
-    id: string
+    settlementId: string
     state: string
     reason: string
     createdDate: string
@@ -39,11 +39,11 @@ export interface IFinalizeSettlement {
 }
 
 export interface ISettlementParticipant {
-    participantId: number,
+    participantId: string,
     accountList: ISettlementAccount[];
 }
 export interface ISettlementAccount {
-    accountId: number,
+    accountId: string,
     state: string,
     reason: string,
     externalReference: string | null,

@@ -4,11 +4,15 @@ import { store } from '@store'
 import { type IApiErrorResponse, IFinalizeSettlement } from '@typescript/services'
 import { type AxiosError } from 'axios'
 import { ISettlementWindow, INetTransferAmount } from '@typescript/services'
-import { ISettlementWindowForm, ISettlementWindowCreateForm } from '@typescript/form/settlements'
+import { 
+    ISettlementWindowForm, 
+    ISettlementWindowCreateForm, 
+    IFinalizeSettlementForm,
+} from '@typescript/form/settlements'
 
-export const getFinalizeSettlementList = async (values: any) => {
+export const getFinalizeSettlementList = async (values: IFinalizeSettlementForm) => {
     const {
-        user: { auth, data }
+        user: { auth }
     } = store.getState()
     const uri = routes.getSettlementList
     const accessKey = auth?.accessKey as string
@@ -106,11 +110,11 @@ export const getNetTransferAmountByWindow = async (settlementWindowId: string) =
         })
 }
 
-export const getNetTransferAmountBySettlement = async (settlementId: number) => {
+export const getNetTransferAmountBySettlement = async (settlementId: string) => {
     const {
         user: { auth }
     } = store.getState()
-    const uri = routes.getNetTransferAmountByWindowId
+    const uri = routes.getNetTransferAmountBySettlementId
     const accessKey = auth?.accessKey as string
     const secretKey = auth?.secretKey as string
     const accessToken = await generateAccessToken({
@@ -204,7 +208,7 @@ export const closeSettlementWindow = async (data: any) => {
 }
 
 
-export const finalizeSettlementWindow = async (data: any) => {
+export const finalizeSettlementWindow = async (data: { settlementId: string }) => {
     const {
         user: { auth }
     } = store.getState()
