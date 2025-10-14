@@ -24,7 +24,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '@store';
 import { UserActions } from '@store/features/user';
 import { type IApiErrorResponse } from '@typescript/services';
-import { getRequestErrorMessage } from '@helpers/errors';
+import { getErrorMessage } from '@helpers/errors';
 
 const authHelper = new AuthHelper();
 
@@ -65,7 +65,7 @@ const Login = () => {
       .catch((e: IApiErrorResponse) => {
         toast({
           position: 'top',
-          description: getRequestErrorMessage(e),
+          description: getErrorMessage(e) || 'Login failed',
           status: 'error',
           isClosable: true,
           duration: 3000

@@ -35,6 +35,14 @@ export const getRequestErrorMessage = (
   return error?.default_error_message
 }
 
+export const getErrorMessage = (
+  error: IApiErrorResponse | null,
+) => {
+  const message = `${error?.default_error_message ?? ''}: ${error?.error_code ?? ''} ${error?.description ?? ''}`;
+
+  return message
+}
+
 export interface IAxiosErrorHandlerReturn {
   code: string | null
   message: string | null

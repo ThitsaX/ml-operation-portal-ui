@@ -53,6 +53,8 @@ import { ITimezoneOption } from 'react-timezone-select';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import { FaSearch } from "react-icons/fa";
 import GlobalFilter from '@components/interface/GlobalFilter';
+import { type IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from '@helpers/errors';
 
 const auditHelper = new AuditHelper();
 
@@ -112,10 +114,11 @@ const Audit = () => {
         setTotalPages(response.totalPages || 1);
         setPageNumber(page);
         setPageSize(size);
-      } catch (err: any) {
+      } catch (error: any) {
+        const err = error as IApiErrorResponse;
         toast({
           position: 'top',
-          description: err?.message || 'Failed to fetch data',
+          description: getErrorMessage(err) || 'Failed to fetch data',
           status: 'error',
           duration: 3000,
           isClosable: true,

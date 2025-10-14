@@ -38,7 +38,8 @@ import { modifyUser, modifyUserStatus } from '@services/participant';
 import {
   type IParticipantUser,
   type IModifyUser,
-  type IParticipantUserForm
+  type IParticipantUserForm,
+  IApiErrorResponse
 } from '@typescript/services';
 import { UserStatus } from '@typescript/form';
 import { useGetOrganizationListByParticipant } from '@hooks/services/participant';
@@ -47,6 +48,7 @@ import { GrPowerReset } from "react-icons/gr";
 import ResetPasswordModal from '@components/interface/ResetPassword';
 import GlobalFilter from '@components/interface/GlobalFilter';
 import { store } from '@store'
+import { getErrorMessage } from '@helpers/errors';
 
 const User = () => {
   const [filterStatus, setFilterStatus] = useState('ACTIVE');
@@ -82,10 +84,10 @@ const User = () => {
         isClosable: true,
       });
       await refetch();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         position: 'top',
-        description: error.message || 'Failed to update user status',
+        description: getErrorMessage(error as IApiErrorResponse) || 'Failed to update user status',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -255,10 +257,10 @@ const User = () => {
         refetch();
         setIsOpen(false);
       })
-      .catch((error: any) => {
+      .catch((error: IApiErrorResponse) => {
         toast({
           position: 'top',
-          description: error?.error_code || 'Something went wrong',
+          description: getErrorMessage(error) || 'Something went wrong',
           status: 'error',
           duration: 3000,
           isClosable: true,

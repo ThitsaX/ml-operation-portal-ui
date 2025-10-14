@@ -21,6 +21,9 @@ import { OrganizationHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isEmpty } from 'lodash-es'
 import { getParticipantProfile } from '@services/participant';
+import { type IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from '@helpers/errors';
+
 interface OrganizationProfileProps {
   participantId: string;
 }
@@ -59,10 +62,10 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
             setPreview(profileData.logo);
           }
         })
-        .catch(error => {
+        .catch((err: IApiErrorResponse) => {
           toast({
             title: 'Error',
-            description: error.message || 'Failed to load organization profile.',
+            description: getErrorMessage(err) || 'Failed to load organization profile.',
             status: 'error',
             duration: 3000,
             isClosable: true,
@@ -110,9 +113,10 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
 
       reset(values);
     } catch (error: any) {
+      const err = error as IApiErrorResponse;
       toast({
         title: 'Update failed',
-        description: error.message || 'Something went wrong.',
+        description: getErrorMessage(err) || 'Failed to update organization profile.',
         status: 'error',
         duration: 3000,
         isClosable: true,

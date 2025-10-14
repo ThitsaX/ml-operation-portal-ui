@@ -31,6 +31,8 @@ import { createLiquidityProfile, modifyLiquidityProfile, removeLiquidityProfile 
 import { useGetUserState } from '@store/hooks';
 import { useRef } from 'react';
 import { Cell } from '../Table';
+import { type IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from '@helpers/errors';
 
 const defaultForm: ILiquidityProfile = {
     participantId: '',
@@ -93,10 +95,10 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                 onClose();
 
             })
-            .catch((err) => {
+            .catch((err: IApiErrorResponse) => {
                 toast({
                     position: 'top',
-                    description: err.error_code || 'Something went wrong',
+                    description: getErrorMessage(err) || 'Failed to save liquidity profile',
                     status: 'error',
                     duration: 3000,
                     isClosable: true,
@@ -121,10 +123,10 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                 });
                 refetch();
             })
-            .catch(err => {
+            .catch((err: IApiErrorResponse) => {
                 toast({
                     position: 'top',
-                    description: err.message || 'Something went wrong',
+                    description: getErrorMessage(err) || 'Failed to delete liquidity profile',
                     status: 'error',
                     isClosable: true,
                     duration: 3000

@@ -31,7 +31,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { useGetParticipantList } from '@hooks/services/participant';
 import { useGetParticipantCurrencyList } from '@hooks/services';
-
+import { type IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from '@helpers/errors';
 
 const settlementSummaryReportHelper = new SettlementSummaryReportHelper();
 const initialFileName = 'Settlement-Details-Report';
@@ -121,11 +122,10 @@ const SettlementSummaryReport = () => {
           });
         }
       })
-      .catch((error) => {
-        const message = `${error?.default_error_message ?? ''}: ${error?.error_code ?? ''} ${error?.description ?? ''}`;
+      .catch((error: IApiErrorResponse) => {
         toast({
           position: 'top',
-          description: message || 'Faield to download',
+          description: getErrorMessage(error) || 'Faield to download',
           status: 'warning',
           isClosable: true,
           duration: 3000
