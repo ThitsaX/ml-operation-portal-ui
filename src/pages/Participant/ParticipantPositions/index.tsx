@@ -42,7 +42,7 @@ import DepositModal from '@components/interface/Participant';
 import WithdrawModal from '@components/interface/Participant/WidthdrawModal';
 import NetDebitCapModal from '@components/interface/Participant/NetDebitCardModal';
 import { syncHubParticipantsToPortal } from '@services/dashboard';
-import { createApprovalRequest } from '@services/participant';
+import { createApprovalRequest, updateParticipantStatus } from '@services/participant';
 import { getParticipantPositionList } from '@services/dashboard';
 import { Badge } from '@chakra-ui/react';
 import { type IApiErrorResponse } from '@typescript/services';
@@ -209,16 +209,13 @@ const ParticipantPositions = () => {
                 Header: 'Enable/Disable',
                 disableSortBy: true,
                 Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
-                    const isEnabled = row.original.ndc > 0;
-                    const id = row.original.participantName;
-
                     return (
                         <Box w="full" display="flex" justifyContent="center" alignItems="center">
                             <Switch
                                 colorScheme="green"
                                 size="sm"
-                                isChecked={isEnabled}
-                                onChange={(e) => toggleStatus(id, e.target.checked)}
+                                isChecked={row.original.isActive}
+                                onChange={(e) => toggleStatus(row.original)}
                             />
                         </Box>
                     );
@@ -380,10 +377,35 @@ const ParticipantPositions = () => {
     };
 
 
-    const toggleStatus = (id: string | number, newValue: boolean) => {
-        // Example: Send update to API or update local state
-        console.log('Toggle row id:', id, 'New status:', newValue);
-        // ...your logic here
+    const toggleStatus = async (data: IParticipantPositionData) => {
+        const values = {
+            participantCurrencyId: data.participantPositionCurrencyId,
+            participantName: data.participantName,
+            activeStatus: data.isActive ? 'INACTIVE' : 'ACTIVE',
+        };
+
+        try {
+            await updateParticipantStatus(values);
+            toast({
+                title: `Success`,
+                position: 'top',
+                description: `Participant status ${values.activeStatus} updated successfully`,
+                status: 'success',
+                duration: 3000,
+                isClosable: true,
+            });
+            await getPositionList();
+        } catch (error: any) {
+            const err = error as IApiErrorResponse;
+            toast({
+                title: 'Error',
+                position: 'top',
+                description: getErrorMessage(err) || 'Failed to update status.',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+            });
+        }
     };
 
     const {
