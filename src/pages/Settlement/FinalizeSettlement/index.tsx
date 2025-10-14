@@ -22,7 +22,6 @@ import {
     IconButton,
     Divider,
     Icon,
-    Flex,
     Modal,
     ModalBody,
     ModalOverlay,
@@ -40,8 +39,6 @@ import {
     TfiAngleLeft,
     TfiAngleRight,
 } from 'react-icons/tfi';
-import { RxCross2 } from "react-icons/rx";
-import { IoCheckmark } from "react-icons/io5";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getAllOtherParticipants } from '@services/report';
 import { useGetUserState } from '@store/hooks';
@@ -290,8 +287,8 @@ const FinalizeSettlement = () => {
             Header: 'Action',
             disableSortBy: true,
             Cell: ({ row }: any) => {
-                if (row.original.state !== 'SETTLED') {
-                    (
+                if (row.original.state === 'PENDING_SETTLEMENT') {
+                    return (
                         <HStack spacing={4}>
                             <Button
                                 size="sm"
@@ -301,10 +298,10 @@ const FinalizeSettlement = () => {
                                 Finalize
                             </Button>
                         </HStack>
-                    )
+                    );
                 }
 
-                return <></>
+                return <></>;
             }
         },
     ], [finalizeSettlements, selectedTZString]);
@@ -345,7 +342,7 @@ const FinalizeSettlement = () => {
         trigger,
         reset,
         handleSubmit,
-        formState: { errors, isValid }
+        formState: { errors }
     } = useForm<IFinalizeSettlementForm>({
         resolver: zodResolver(schema),
         defaultValues: initialValues,
@@ -450,89 +447,93 @@ const FinalizeSettlement = () => {
                     Finalize Settlement
                 </Heading>
                 <Stack borderWidth="1px" borderRadius="lg" height="full" p="4" spacing={4}>
-                    <HStack alignItems={'flex-start'} spacing={4}>
-                        <Select value={dateRange} onChange={(e) => onChangeDateRange(e.target.value as Ranges)}>
-                            <option value="oneDay">Past 24 Hours</option>
-                            <option value="today">Today</option>
-                            <option value="twoDay">Past 48 Hours</option>
-                            <option value="oneWeek">Past Week</option>
-                            <option value="oneMonth">Past Month</option>
-                            <option value="oneYear">Past Year</option>
-                            <option value="custom">Custom Range</option>
-                        </Select>
+                    <HStack spacing={4} align="start">
+                        <VStack flex={1} spacing={4}>
+                            <Select value={dateRange} onChange={(e) => onChangeDateRange(e.target.value as Ranges)}>
+                                <option value="oneDay">Past 24 Hours</option>
+                                <option value="today">Today</option>
+                                <option value="twoDay">Past 48 Hours</option>
+                                <option value="oneWeek">Past Week</option>
+                                <option value="oneMonth">Past Month</option>
+                                <option value="oneYear">Past Year</option>
+                                <option value="custom">Custom Range</option>
+                            </Select>
 
-                        <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
-                            {/* <FormLabel fontSize="sm">Start Date</FormLabel> */}
-                            {selectedTZString ?
-                                <Controller
-                                    control={control}
-                                    render={({ field: { value, onChange } }) => {
-                                        return (
-                                            <Input
-                                                disabled={dateRange !== 'custom' ? true : false}
-                                                type="datetime-local"
-                                                value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
-                                                onChange={(event) => {
-                                                    const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
-                                                    trigger('fromDate')
-                                                    onChange(date);
-                                                }}
-                                            />
-                                        );
-                                    }}
-                                    name="fromDate"
-                                /> : <p>Loading</p>}
-                            <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
-                        </FormControl>
-                        <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
-                            {/* <FormLabel fontSize="sm">End Date</FormLabel> */}
-                            {selectedTZString ?
-                                <Controller
-                                    control={control}
-                                    render={({ field: { value, onChange } }) => {
-                                        return (
-                                            <Input
-                                                disabled={dateRange !== 'custom' ? true : false}
-                                                type="datetime-local"
-                                                value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
-                                                onChange={(event) => {
-                                                    const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
-                                                    trigger('toDate')
-                                                    onChange(date);
-                                                }}
-                                            />
-                                        );
-                                    }}
-                                    name="toDate"
-                                />
-                                : <p>Loading</p>}
-                            <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
-                        </FormControl>
-                    </HStack>
+                            <Select
+                                placeholder="Select State"
+                                { ...register('state') }
+                            >
+                                {windowStateOptions.map((stateItem) => (
+                                    <option key={stateItem} value={stateItem}>
+                                        {stateItem}
+                                    </option>
+                                ))}
+                            </Select>
+                        </VStack>
 
-                    <HStack alignItems={'flex-start'} spacing={4}>
+                        <VStack flex={1} spacing={4}>
+                            <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
+                                {/* <FormLabel fontSize="sm">Start Date</FormLabel> */}
+                                {selectedTZString ?
+                                    <Controller
+                                        control={control}
+                                        render={({ field: { value, onChange } }) => {
+                                            return (
+                                                <Input
+                                                    disabled={dateRange !== 'custom' ? true : false}
+                                                    type="datetime-local"
+                                                    value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
+                                                    onChange={(event) => {
+                                                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
+                                                        trigger('fromDate')
+                                                        onChange(date);
+                                                    }}
+                                                />
+                                            );
+                                        }}
+                                        name="fromDate"
+                                    /> : <p>Loading</p>}
+                                <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
+                            </FormControl>
 
-                        <Select
-                            placeholder="Select State"
-                            { ...register('state') }
-                        >
-                            {windowStateOptions.map((stateItem) => (
-                                <option key={stateItem} value={stateItem}>
-                                    {stateItem}
-                                </option>
-                            ))}
-                        </Select>
-                        <Select
-                            placeholder="Select Currency"
-                            { ...register('currency') }
-                        >
-                            {data?.map((item, index) => (
-                                <option key={index} value={item.currency}>
-                                    {item.currency}
-                                </option>
-                            ))}
-                        </Select>
-                        
+                            <Select
+                                placeholder="Select Currency"
+                                { ...register('currency') }
+                            >
+                                {data?.map((item, index) => (
+                                    <option key={index} value={item.currency}>
+                                        {item.currency}
+                                    </option>
+                                ))}
+                            </Select>
+                        </VStack>
+
+                        <VStack flex={1} spacing={4}>
+                            <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
+                                {/* <FormLabel fontSize="sm">End Date</FormLabel> */}
+                                {selectedTZString ?
+                                    <Controller
+                                        control={control}
+                                        render={({ field: { value, onChange } }) => {
+                                            return (
+                                                <Input
+                                                    disabled={dateRange !== 'custom' ? true : false}
+                                                    type="datetime-local"
+                                                    value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
+                                                    onChange={(event) => {
+                                                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
+                                                        trigger('toDate')
+                                                        onChange(date);
+                                                    }}
+                                                />
+                                            );
+                                        }}
+                                        name="toDate"
+                                    />
+                                    : <p>Loading</p>}
+                                <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
+                            </FormControl>
+                        </VStack>
                     </HStack>
 
                     <HStack justifyContent='flex-end'>
@@ -697,27 +698,15 @@ const FinalizeSettlement = () => {
                     </ModalBody>
 
                     <ModalFooter>
-                        <Flex w="100%" justify="center" gap={4}>
-                            <IconButton
-                                aria-label="Yes, Finalize"
-                                icon={<IoCheckmark size={24} />}
-                                colorScheme="green"
-                                borderRadius="full"
-                                onClick={handleConfirmedFinalize}
-                            />
-
-                            <IconButton
-                                aria-label="Cancel"
-                                icon={<RxCross2 size={24} />}
-                                colorScheme="red"
-                                borderRadius="full"
-                                onClick={onFinalizeClose}
-                            />
-                        </Flex>
+                        <Button variant="ghost" mr={3} onClick={onFinalizeClose}>
+                            Cancel
+                        </Button>
+                        <Button colorScheme="green" onClick={handleConfirmedFinalize}>
+                            Yes, Finalize
+                        </Button>
                     </ModalFooter>
-
                 </ModalContent>
-            </Modal >
+            </Modal>
 
             <Modal isOpen={isDetailOpen} onClose={onDetailClose} size="4xl" isCentered>
                 <ModalOverlay />
