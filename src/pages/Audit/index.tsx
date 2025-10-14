@@ -21,7 +21,8 @@ import {
   IconButton,
   Text,
   Icon,
-  Select
+  Select,
+  SimpleGrid,
 } from '@chakra-ui/react';
 import {
   TfiAngleDoubleLeft,
@@ -192,11 +193,15 @@ const Audit = () => {
       {/* Search Filters */}
       <Stack
         direction={{ base: "column", md: "row" }}  // column on mobile, row on desktop
-        spacing={4}
+        spacing={6}
         w="full"
-        align="stretch"
       >
-        <FormControl isInvalid={!isEmpty(errors.fromDate)}>
+       <SimpleGrid
+          columns={{ base: 1, md: 2, lg: 4 }}
+          spacing={4}
+          w="full"
+        >
+        <FormControl isInvalid={!isEmpty(errors.fromDate)} position="relative">
           <FormLabel>From</FormLabel>
           <Controller
             control={control}
@@ -212,10 +217,10 @@ const Audit = () => {
               />
             )}
           />
-          <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
+          <FormErrorMessage position="absolute" bottom="-20px">{errors.fromDate?.message}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isInvalid={!isEmpty(errors.toDate)}>
+        <FormControl isInvalid={!isEmpty(errors.toDate)} position="relative">
           <FormLabel>To</FormLabel>
           <Controller
             control={control}
@@ -231,7 +236,7 @@ const Audit = () => {
               />
             )}
           />
-          <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
+          <FormErrorMessage position="absolute" bottom="-20px">{errors.toDate?.message}</FormErrorMessage>
         </FormControl>
 
         <FormControl
@@ -250,6 +255,7 @@ const Audit = () => {
             <FaSearch /> Search
           </Button>
         </FormControl>
+        </SimpleGrid>
       </Stack>
 
 
