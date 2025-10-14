@@ -75,7 +75,7 @@ const SettlementStatementReport = () => {
       currencyId: formData.currencyId
     })
       .then((res: any) => {
-        if (res?.detail_report_byte?.length > 0) {
+        if (res?.rptByte?.length > 0) {
           downloadFile(initialFileName, fileType, res?.rptByte)
         } else {
           toast({
