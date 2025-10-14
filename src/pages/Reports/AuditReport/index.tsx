@@ -28,6 +28,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { ITimezoneOption } from 'react-timezone-select';
 import { downloadFile, generateAuditReport } from '@services/report';
+import { type IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from '@helpers/errors';
 
 const auditHelper = new AuditReportHelper();
 
@@ -124,11 +126,10 @@ const AuditReport = () => {
                     });
                 }
             })
-            .catch((error) => {
-                const message = `${error?.default_error_message ?? ''}: ${error?.error_code ?? ''} ${error?.description ?? ''}`;
+            .catch((error: IApiErrorResponse) => {
                 toast({
                     position: 'top',
-                    description: message || 'Faield to download',
+                    description: getErrorMessage(error) || 'Faield to download',
                     status: 'warning',
                     isClosable: true,
                     duration: 3000

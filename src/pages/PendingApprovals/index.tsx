@@ -33,6 +33,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { ITimezoneOption } from 'react-timezone-select';
 import { hasMenuAccess } from '@helpers/permissions';
+import { IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from '@helpers/errors';
 
 const PendingApprovals = () => {
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
@@ -98,10 +100,10 @@ const PendingApprovals = () => {
         });
         refetch();
       })
-      .catch((error) => {
+      .catch((error: IApiErrorResponse) => {
         toast({
           title: 'Error',
-          description: error?.message || `Failed to ${actionType?.toLowerCase()} request.`,
+          description: getErrorMessage(error) || `Failed to ${actionType?.toLowerCase()} request.`,
           status: 'error',
           duration: 3000,
           isClosable: true,

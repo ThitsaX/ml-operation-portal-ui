@@ -34,6 +34,8 @@ import { RootState } from '@store';
 import { FaSearch } from "react-icons/fa";
 import { IGetSettlementIds } from "@typescript/services/report";
 import { useGetParticipantCurrencyList } from '@hooks/services';
+import { type IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from '@helpers/errors';
 
 const settlementBankReport = new SettlementBankReportHelper();
 const initialFileName = 'Settlement-Bank-Report';
@@ -163,11 +165,10 @@ const SettlementBankReport = () => {
           });
         }
       })
-      .catch((error) => {
-        const message = `${error?.default_error_message ?? ''}: ${error?.error_code ?? ''} ${error?.description ?? ''}`;
+      .catch((error: IApiErrorResponse) => {
         toast({
           position: 'top',
-          description: message || 'Faield to download',
+          description: getErrorMessage(error) || 'Faield to download',
           status: 'warning',
           isClosable: true,
           duration: 3000

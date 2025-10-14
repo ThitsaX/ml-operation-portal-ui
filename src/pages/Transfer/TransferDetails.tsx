@@ -21,7 +21,7 @@ import moment from 'moment';
 import { ITimezoneOption } from 'react-timezone-select';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
-import { getRequestErrorMessage } from '@helpers/errors';
+import { getErrorMessage } from '@helpers/errors';
 import { IGetTransferDetails, IApiErrorResponse } from '@typescript/services';
 
 interface IModalProps extends Omit<ModalProps, 'children'> {
@@ -82,10 +82,10 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
     try {
       const tfData: IGetTransferDetails = await getTransferDetails(transferId, timezone)
       setData(tfData);
-    } catch (error: unknown) {
+    } catch (error) {
       toast({
         position: 'top',
-        title: getRequestErrorMessage(error as IApiErrorResponse),
+        title: getErrorMessage(error as IApiErrorResponse),
         status: 'error',
         isClosable: true,
         duration: 3000

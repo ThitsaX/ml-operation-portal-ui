@@ -1,7 +1,8 @@
 export interface IApiErrorResponse {
   default_error_message: string
   error_code: string
-  i18n_error_messages: I18nErrorMessages
+  i18n_error_messages?: I18nErrorMessages
+  description: string
 }
 
 export interface I18nErrorMessages {

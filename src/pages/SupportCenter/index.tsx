@@ -17,7 +17,7 @@ import {
   Image,
   SimpleGrid,
 } from '@chakra-ui/react';
-import { getRequestErrorMessage } from '@helpers/errors';
+import { getErrorMessage } from '@helpers/errors';
 import { useState } from 'react';
 import { TbGavel } from "react-icons/tb";
 import { GrServices } from "react-icons/gr";
@@ -26,6 +26,7 @@ import { useGetParticipantList } from '@hooks/services/participant';
 import { getContactList } from '@services/participant';
 import { IBusinessContact, IParticipantProfile } from '@typescript/services';
 import { SupportCard } from '@components/interface/SupportCenter';
+import { type IApiErrorResponse } from '@typescript/services';
 
 const SupportCenter = () => {
   const toast = useToast();
@@ -50,7 +51,7 @@ const SupportCenter = () => {
     } catch (err) {
       toast({
         title: 'Error fetching contact list',
-        description: getRequestErrorMessage(err as any),
+        description: getErrorMessage(err as IApiErrorResponse),
         status: 'error',
         duration: 3000,
         isClosable: true,

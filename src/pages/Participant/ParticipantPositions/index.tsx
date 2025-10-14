@@ -45,11 +45,13 @@ import { syncHubParticipantsToPortal } from '@services/dashboard';
 import { createApprovalRequest } from '@services/participant';
 import { getParticipantPositionList } from '@services/dashboard';
 import { Badge } from '@chakra-ui/react';
+import { type IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from '@helpers/errors';
 
 const ParticipantPositions = () => {
 
     // Utility function to format numbers with commas
-    const formatNumber = (num: number ): string => {
+    const formatNumber = (num: number): string => {
         return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
@@ -90,9 +92,10 @@ const ParticipantPositions = () => {
             const data = await getParticipantPositionList();
             setParticipantPositionList(data);
         } catch (error: any) {
+            const err = error as IApiErrorResponse;
             toast({
                 title: 'Failed to fetch participant positions',
-                description: error?.message || 'Something went wrong. Please try again.',
+                description: getErrorMessage(err as IApiErrorResponse) || 'Something went wrong. Please try again.',
                 status: 'error',
                 duration: 4000,
                 isClosable: true,
@@ -328,9 +331,10 @@ const ParticipantPositions = () => {
 
             if (onSuccess) onSuccess(); // ✅ close modal on success
         } catch (err: any) {
+            const error = err as IApiErrorResponse;
             toast({
                 title: `Failed to ${actionLabel}`,
-                description: err?.message || 'Something went wrong',
+                description: getErrorMessage(error) || 'Something went wrong',
                 status: 'error',
                 duration: 4000,
                 isClosable: true,

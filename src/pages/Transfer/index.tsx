@@ -33,7 +33,7 @@ import { TransferHelper } from '@helpers/form';
 import { omitBy, isEmpty } from 'lodash-es';
 import { useGetUserState } from '@store/hooks';
 import { useLoadingContext } from '@contexts/hooks';
-import { getRequestErrorMessage } from '@helpers/errors';
+import { getErrorMessage } from '@helpers/errors';
 import { ITransferValues } from '@typescript/form/transfer';
 import {
   useGetAllOtherParticipants,
@@ -235,10 +235,10 @@ const Transfer = () => {
           setTotalPages(Math.ceil(data.totalPage / currentSize));
           setPageNumber(currentPage);
         })
-        .catch((error) => {
+        .catch((error: IApiErrorResponse) => {
           toast({
             position: 'top',
-            title: getRequestErrorMessage(error as IApiErrorResponse),
+            title: getErrorMessage(error),
             status: 'error',
             isClosable: true,
             duration: 3000

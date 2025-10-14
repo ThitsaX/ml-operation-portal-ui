@@ -29,7 +29,8 @@ import { ITimezoneOption } from "react-timezone-select";
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { useGetParticipantCurrencyList } from '@hooks/services/participant';
-
+import { type IApiErrorResponse } from "@typescript/services";
+import { getErrorMessage } from "@helpers/errors";
 
 const settlementAuditReportHelper = new SettlementAuditReportHelper();
 const initialFileName = 'Settlement-Audit-Report';
@@ -118,11 +119,10 @@ const SettlementAuditReport = () => {
           });
         }
       })
-      .catch((error) => {
-        const message = `${error?.default_error_message ?? ''}: ${error?.error_code ?? ''} ${error?.description ?? ''}`;
+      .catch((error: IApiErrorResponse) => {
         toast({
           position: 'top',
-          description: message || 'Faield to download',
+          description: getErrorMessage(error) || 'Faield to download',
           status: 'warning',
           isClosable: true,
           duration: 3000
