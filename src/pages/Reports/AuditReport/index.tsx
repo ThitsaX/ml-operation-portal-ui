@@ -80,7 +80,7 @@ const AuditReport = () => {
     });
 
     useEffect(() => {
-        setValue('fromDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+        setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
         setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
 
     }, [selectedTimezone, user?.participantId, setValue]);
