@@ -340,13 +340,8 @@ const SettlementBankReport = () => {
         </SimpleGrid>
 
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} w="full">
-          {/* Empty first column */}
           <Box />
-
-          {/* Empty second column */}
           <Box />
-
-          {/* Last column with two elements equally */}
           <Stack direction="row" spacing={4} w="100%">
             <FormControl>
               <Controller
@@ -361,7 +356,6 @@ const SettlementBankReport = () => {
                     value={field ? { value: field.value, label: field.value.toUpperCase() } : null}
                     onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
                     placeholder="Choose Format"
-                    w="100%" // fills half of the last column
                   />
                 )}
               />
@@ -371,7 +365,6 @@ const SettlementBankReport = () => {
               colorScheme="blue"
               onClick={onDownloadChangeHandler}
               isDisabled={!settlementId || !runButtonState}
-              w="100%" // fills half of the last column
             >
               Download
             </Button>
