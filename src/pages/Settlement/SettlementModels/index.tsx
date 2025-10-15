@@ -17,10 +17,17 @@ import {
     Select as ChakraSelect,
     Icon,
     Divider,
+    useToast
 } from '@chakra-ui/react';
-import { useState, useMemo } from 'react';
-import { usePagination, useSortBy, useTable, Row, Column } from 'react-table';
-import { IGetUserData } from '@typescript/form';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import {
+    usePagination,
+    useSortBy,
+    useTable,
+    Row,
+    Column,
+    CellProps
+} from 'react-table';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import {
     TfiAngleDoubleLeft,
@@ -30,120 +37,88 @@ import {
 } from 'react-icons/tfi';
 import SettlementModal from '@components/interface/SettlementModels/SettlementModals';
 import { ISettlementModel } from '@typescript/services';
-
-// Sample data
-const sampleSettlementWindow = [
-
-    {
-        "modelName": 'testuser1@gmail.com',
-        "modelType": 'Test User One',
-        "currency": 'DFSP - Admin',
-    },
-    {
-        "modelName": 'testuser2@gmail.com',
-        "modelType": 'Test User Two',
-        "currency": 'DFSP - Operation',
-    },
-    {
-        "modelName": 'testuser3@gmail.com',
-        "modelType": 'Test User Three',
-        "currency": 'HUB - Admin',
-    },
-    {
-        "modelName": 'testuser4@gmail.com',
-        "modelType": 'Test User Four',
-        "currency": 'HUB - Manager',
-    },
-    {
-        "modelName": 'testuser5@gmail.com',
-        "modelType": 'Test User Five',
-        "currency": 'HUB - User',
-    },
-    {
-        "modelName": 'testuser1@gmail.com',
-        "modelType": 'Test User One',
-        "currency": 'DFSP - Admin',
-    },
-    {
-        "modelName": 'testuser2@gmail.com',
-        "modelType": 'Test User Two',
-        "currency": 'DFSP - Operation',
-    },
-    {
-        "modelName": 'testuser3@gmail.com',
-        "modelType": 'Test User Three',
-        "currency": 'HUB - Admin',
-    },
-    {
-        "modelName": 'testuser4@gmail.com',
-        "modelType": 'Test User Four',
-        "currency": 'HUB - Manager',
-    },
-    {
-        "modelName": 'testuser5@gmail.com',
-        "modelType": 'Test User Five',
-        "currency": 'HUB - User',
-    },
-    {
-        "modelName": 'testuser1@gmail.com',
-        "modelType": 'Test User One',
-        "currency": 'DFSP - Admin',
-    },
-    {
-        "modelName": 'testuser2@gmail.com',
-        "modelType": 'Test User Two',
-        "currency": 'DFSP - Operation',
-    },
-    {
-        "modelName": 'testuser3@gmail.com',
-        "modelType": 'Test User Three',
-        "currency": 'HUB - Admin',
-    },
-    {
-        "modelName": 'testuser4@gmail.com',
-        "modelType": 'Test User Four',
-        "currency": 'HUB - Manager',
-    },
-    {
-        "modelName": 'testuser5@gmail.com',
-        "modelType": 'Test User Five',
-        "currency": 'HUB - User',
-    }
-];
+import { getSettlementModelList } from '@services/settlements';
 
 const SettlementModels = () => {
+    const [models, setModels] = useState<ISettlementModel[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
     const [isOpen, setIsOpen] = useState(false);
-    const [pageNumber, setPageNumber] = useState<String>('1');
+    const [pageNumber, setPageNumber] = useState<string>('1');
+
+    const toast = useToast();
+    const handleEditClick = useCallback((rowItem: ISettlementModel) => {
+        setIsOpen(true);
+    }, []);
 
     const toggleStatus = (id: string | number, newValue: boolean) => {
         // Example: Send update to API or update local state
         console.log('Toggle row id:', id, 'New status:', newValue);
         // ...your logic here
     };
+    useEffect(() => {
+        let ignore = false;
 
-    
+        const run = async () => {
+            try {
+                setLoading(true);
+                const data = await getSettlementModelList({});
+                if (ignore) return;
 
-    const columns = useMemo<Column<ISettlementModel>[]>(() => [
+                if (!data || data.length === 0) {
+                    toast({
+                        position: 'top',
+                        description: 'No data found',
+                        status: 'warning',
+                        isClosable: true,
+                        duration: 3000
+                    });
+                }
+                setModels(data ?? []);
+            } catch (e: any) {
+                if (!ignore) {
+                    console.error('[SettlementModels] fetch failed:', e);
+                    setError(e?.message || 'Failed to load settlement models');
+                }
+            } finally {
+                if (!ignore) setLoading(false);
+            }
+        };
+
+        run();
+        return () => {
+            ignore = true;
+        };
+    }, [toast]);
+
+    const columns = useMemo<Column<ISettlementModel>[]>(
+        () => [
             {
                 Header: 'Model Name',
-                accessor: 'modelName',
+                accessor: 'name'
             },
             {
                 Header: 'Model Type',
-                accessor: 'modelType'
+                accessor: 'type'
             },
             {
                 Header: 'Currency',
-                accessor: 'currency',
+                accessor: 'currencyId',
+                Cell: ({
+                    value
+                }: CellProps<ISettlementModel, string | undefined>) => (
+                    <Text>{value ?? 'N/A'}</Text>
+                )
             },
             {
                 Header: 'Action',
                 disableSortBy: true,
                 Cell: ({ row }: { row: Row<ISettlementModel> }) => (
-
                     <HStack spacing={3}>
-                        <Button colorScheme="blue" size="md"
+                        <Button
+                            colorScheme="blue"
+                            size="md"
                             onClick={() => handleEditClick(row.original)}>
                             Edit
                         </Button>
@@ -151,10 +126,14 @@ const SettlementModels = () => {
                 )
             }
         ],
-        []
+        [handleEditClick]
     );
 
-
+    const data = useMemo<ISettlementModel[]>(
+        () => (models && models.length ? models : []),
+        [models]
+    );
+    const initialState = useMemo(() => ({ pageIndex: 0, pageSize: 10 }), []);
     const {
         getTableProps,
         getTableBodyProps,
@@ -172,29 +151,22 @@ const SettlementModels = () => {
     } = useTable(
         {
             columns,
-            data: sampleSettlementWindow,
-            initialState: {
-                pageIndex: 0,
-                pageSize: 10
-            }
+            data,
+            initialState
         },
         useSortBy,
         usePagination
     );
 
-    const handleEditClick = (user: any) => {
-        setIsOpen(true);
-    };
-
     const handlePageValidation = (value: string) => {
         if (Number(value) > pageOptions.length) {
-            setPageNumber(pageNumber)
+            setPageNumber(pageNumber);
         } else if (value.startsWith('0')) {
-            setPageNumber('')
+            setPageNumber('');
         } else {
-            setPageNumber(value)
+            setPageNumber(value);
         }
-    }
+    };
 
     return (
         <VStack w="full" align="flex-start" spacing={6} p={4}>
@@ -212,13 +184,19 @@ const SettlementModels = () => {
                             <Tr {...headerGroup.getHeaderGroupProps()}>
                                 {headerGroup.headers.map((column) => (
                                     <Th
+                                        textTransform="none"
                                         {...column.getHeaderProps(
                                             column.disableSortBy
                                                 ? undefined
                                                 : column.getSortByToggleProps()
                                         )}>
-                                        <HStack align="center" spacing="2" flex={1}>
-                                            <Text flex={1}>{column.render('Header')}</Text>
+                                        <HStack
+                                            align="center"
+                                            spacing="2"
+                                            flex={1}>
+                                            <Text flex={1}>
+                                                {column.render('Header')}
+                                            </Text>
                                             {column.disableSortBy ? null : (
                                                 <VStack
                                                     display="inline-flex"
@@ -231,8 +209,8 @@ const SettlementModels = () => {
                                                             !column.isSorted
                                                                 ? 'gray.400'
                                                                 : !column.isSortedDesc
-                                                                    ? 'gray.700'
-                                                                    : 'gray.400'
+                                                                ? 'gray.700'
+                                                                : 'gray.400'
                                                         }
                                                     />
                                                     <Icon
@@ -242,8 +220,8 @@ const SettlementModels = () => {
                                                             !column.isSorted
                                                                 ? 'gray.400'
                                                                 : column.isSortedDesc
-                                                                    ? 'gray.700'
-                                                                    : 'gray.400'
+                                                                ? 'gray.700'
+                                                                : 'gray.400'
                                                         }
                                                     />
                                                 </VStack>
@@ -262,10 +240,11 @@ const SettlementModels = () => {
                                     fontSize="sm"
                                     cursor="pointer"
                                     _hover={{ bg: 'muted.50' }}
-                                    {...row.getRowProps()}
-                                >
+                                    {...row.getRowProps()}>
                                     {row.cells.map((cell) => (
-                                        <Td {...cell.getCellProps()}>{cell.render('Cell')}</Td>
+                                        <Td {...cell.getCellProps()}>
+                                            {cell.render('Cell')}
+                                        </Td>
                                     ))}
                                 </Tr>
                             );
@@ -322,7 +301,7 @@ const SettlementModels = () => {
                             min={pageIndex + 1}
                             max={pageOptions.length}
                             onChange={(e) => {
-                                handlePageValidation(e.target.value)
+                                handlePageValidation(e.target.value);
                                 const pageNumber = e.target.value
                                     ? Number(e.target.value) - 1
                                     : 0;
@@ -333,10 +312,7 @@ const SettlementModels = () => {
                 </HStack>
             </TableContainer>
 
-            <SettlementModal
-                isOpen={isOpen}
-                onClose={() => setIsOpen(false)}
-            />
+            <SettlementModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
         </VStack>
     );
 };
