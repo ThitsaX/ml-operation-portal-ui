@@ -35,6 +35,8 @@ import { ITimezoneOption } from 'react-timezone-select';
 import { hasMenuAccess } from '@helpers/permissions';
 import { IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
+import { CustomSelect } from '@components/interface';
+import { OptionType } from '@components/interface/CustomSelect';
 
 const PendingApprovals = () => {
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
@@ -251,24 +253,17 @@ const PendingApprovals = () => {
       <Heading fontSize="2xl" mb={6}>Pending Approvals</Heading>
 
       <HStack w="full" justifyContent="space-between">
-        <Select
+        <CustomSelect
           width="200px"
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          size="md"
-          rounded="md"
-          bg="white"
-          borderColor="gray.300"
-          focusBorderColor="blue.500"
-          _hover={{ borderColor: "blue.400" }}
-          _focus={{ boxShadow: "0 0 0 1px #3182CE" }}
+          options={[
+            { value: 'PENDING', label: 'PENDING' },
+            { value: 'APPROVED', label: 'APPROVED' },
+            { value: 'REJECTED', label: 'REJECTED' },
+          ]}
+          value={{ value: filterStatus, label: filterStatus }}
+          onChange={(selectedOption: OptionType | null) => setFilterStatus(selectedOption?.value || 'PENDING')}
+        />
 
-        >
-          <option value="PENDING">PENDING</option>
-          <option value="APPROVED">APPROVED </option>
-          <option value="REJECTED">REJECTED</option>
-
-        </Select>
       </HStack>
 
       {isError && <Text color="red.500">{String(error)}</Text>}

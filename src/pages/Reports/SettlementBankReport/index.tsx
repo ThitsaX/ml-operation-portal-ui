@@ -153,8 +153,8 @@ const SettlementBankReport = () => {
       fileType: fileType
     })
       .then((res: any) => {
-        if (res?.rpt_byte?.length > 0) {
-          downloadFile(initialFileName, fileType, res.rpt_byte);
+        if (res?.rptByte?.length > 0) {
+          downloadFile(initialFileName, fileType, res.rptByte);
         } else {
           toast({
             position: 'top',
