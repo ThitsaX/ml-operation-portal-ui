@@ -8,7 +8,6 @@ import {
   Stack,
   useToast,
   HStack,
-  Select,
   VStack,
   SimpleGrid
 } from '@chakra-ui/react';
@@ -36,10 +35,11 @@ import { RootState } from '@store';
 import { useGetParticipantList } from '@hooks/services/participant';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
-
+import { OptionType } from '@components/interface/CustomSelect';
+import { CustomSelect } from '@components/interface';
 
 const settlementDetailReportHelper = new SettlementDetailReportHelper();
-const initialFileName = 'Settlement-Details-Report';
+const initialFileName = 'DFSPSettlementDetailReport';
 
 const SettlementDetailReport = () => {
   const { start, complete } = useLoadingContext();
@@ -76,11 +76,11 @@ const SettlementDetailReport = () => {
   } = useForm<ISettlementDetailReport>({
     resolver: zodResolver(settlementDetailReportHelper.schema),
     defaultValues: {
-      fspId: 'all',
+      fspId: '',
       settlementId: '',
       fileType: 'xlsx',
-      startDate: moment().format('YYYY-MM-DDTHH:mm'),
-      endDate: moment().format('YYYY-MM-DDTHH:mm'),
+      startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
+      endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
     },
     mode: 'onChange'
   });
@@ -173,9 +173,7 @@ const SettlementDetailReport = () => {
 
         setSettlementIdOptions(options);
         setSettlementId("");
-        setValue('settlementId', ''); // update form state
-
-        // Optional: reset file type if needed
+        setValue('settlementId', '');
         setValue('fileType', 'xlsx');
       })
       .finally(() => {
@@ -213,21 +211,35 @@ const SettlementDetailReport = () => {
                 name="fspId"
                 control={control}
                 render={({ field }) => (
-                  <Select {...field} width="100%"
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setFspId(e.target.value);
-                    }}>
-                    <option value="" disabled hidden>
-                      Select DFSP
-                    </option>
-                    <option value="all">All</option>
-                    {participantList?.map((item, index) => (
-                      <option key={index} value={item.participantName}>
-                        {item.participantName}
-                      </option>
-                    ))}
-                  </Select>
+                  <CustomSelect
+                    isClearable
+                    placeholder="Select DFSP"
+                    options={
+                      (participantList ?? []).map(
+                        (item): OptionType => ({
+                          value: item.participantName,
+                          label: item.participantName,
+                        })
+                      )
+                    }
+                    value={
+                      field.value
+                        ? {
+                          value: field.value,
+                          label:
+                            participantList?.find(
+                              (p) => p.participantName === field.value
+                            )?.participantName || '',
+                        }
+                        : null
+                    }
+                    onChange={(selected: OptionType | null) => {
+                      const value = selected?.value || '';
+                      field.onChange(value);
+                      setFspId(value);
+                    }}
+                  />
+
                 )}
               />
             ) : (
@@ -254,7 +266,7 @@ const SettlementDetailReport = () => {
                     onChange(e);
                     trigger("endDate");
                     setSettlementIdOptions([]);
-                    setSettlementId(""); // also clear selected settlementId
+                    setSettlementId("");
                   }}
                   onBlur={onBlur}
                   type="datetime-local"
@@ -277,7 +289,7 @@ const SettlementDetailReport = () => {
                     onChange(e);
                     trigger("startDate");
                     setSettlementIdOptions([]);
-                    setSettlementId(""); // also clear selected settlementId
+                    setSettlementId("");
                   }}
                   onBlur={onBlur}
                   type="datetime-local"
@@ -323,17 +335,24 @@ const SettlementDetailReport = () => {
                 name="settlementId"
                 control={control}
                 render={({ field }) => (
-                  <Select {...field} placeholder="Select Settlement ID"
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setSettlementId(e.target.value);
-                    }}>
-                    {settlementIdOptions.map((opt, index) => (
-                      <option key={index} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </Select>
+                  <CustomSelect
+                    maxMenuHeight={300}
+                    isClearable={true}
+                    options={settlementIdOptions}
+                    value={
+                      field.value
+                        ? {
+                          value: field.value,
+                          label: settlementIdOptions.find((s) => s.value === field.value)?.label || '',
+                        }
+                        : null
+                    }
+                    onChange={(selected: OptionType | null) => {
+                      field.onChange(selected?.value || '');
+                      setSettlementId(selected?.value || '');
+                    }}
+                    placeholder="Select Settlement ID"
+                  />
                 )}
               />
             </FormControl>
@@ -352,20 +371,29 @@ const SettlementDetailReport = () => {
                 control={control}
                 name="fileType"
                 render={({ field }) => (
-                  <Select {...field} >
-                    <option value="" disabled hidden>
-                      Choose Format
-                    </option>
-                    <option value="xlsx">XLSX</option>
-                    <option value="csv">CSV</option>
-                  </Select>
+                  <CustomSelect
+                    options={[
+                      { value: 'xlsx', label: 'XLSX' },
+                      { value: 'csv', label: 'CSV' },
+                    ]}
+                    value={
+                      field
+                        ? {
+                          value: field.value,
+                          label: field.value.toUpperCase(),
+                        }
+                        : null
+                    }
+                    onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                    placeholder="Choose Format"
+                  />
                 )}
               />
             </FormControl>
 
             <Button
               colorScheme="blue"
-              isDisabled={!settlementId || !runButtonState}
+              isDisabled={!fspId || !settlementId || !runButtonState}
               onClick={onDownloadChangeHandler}
               w={{ base: "100%", md: "auto" }}
             >
