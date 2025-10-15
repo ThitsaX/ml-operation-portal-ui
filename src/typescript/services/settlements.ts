@@ -1,7 +1,8 @@
 export interface ISettlementModel {
-    modelName: string;
-    modelType: string;
-    currency: string;
+    settlementModelId: string;
+    name: string;
+    type: string;
+    currencyId: string;
 }
 
 export interface ISettlementWindows {

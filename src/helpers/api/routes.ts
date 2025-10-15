@@ -17,6 +17,7 @@ export const privateRoutes = {
   getOtherParticipantList: '/secured/getOtherParticipantList',
 
   getSettlementList: '/secured/getSettlementList',
+  getSettlementModelList: '/secured/getSettlementModelList',
   getSettlementWindowsList: '/secured/getSettlementWindowsList',
   closeSettlementWindow: '/secured/closeSettlementWindow',
   createSettlement: '/secured/createSettlement',
