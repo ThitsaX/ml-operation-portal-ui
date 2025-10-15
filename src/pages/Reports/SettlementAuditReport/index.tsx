@@ -10,7 +10,6 @@ import {
   useToast,
   VStack,
   SimpleGrid,
-  Select
 } from '@chakra-ui/react';
 import { SettlementAuditReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,9 +30,11 @@ import { RootState } from '@store';
 import { useGetParticipantCurrencyList } from '@hooks/services/participant';
 import { type IApiErrorResponse } from "@typescript/services";
 import { getErrorMessage } from "@helpers/errors";
+import { CustomSelect } from '@components/interface';
+import { OptionType } from '@components/interface/CustomSelect';
 
 const settlementAuditReportHelper = new SettlementAuditReportHelper();
-const initialFileName = 'Settlement-Audit-Report';
+const initialFileName = 'SettlementAuditReport';
 
 const SettlementAuditReport = () => {
 
@@ -42,7 +43,7 @@ const SettlementAuditReport = () => {
   const [runButtonState, setRunButtonState] = useState(true);
 
   // custom hooks
-  const { data } = useGetParticipantCurrencyList();
+  const { data: currencyList } = useGetParticipantCurrencyList();
   const { data: participantList } = useGetParticipantList();
 
   // Redux
@@ -67,8 +68,8 @@ const SettlementAuditReport = () => {
   } = useForm<ISettlementAuditReport>({
     resolver: zodResolver(settlementAuditReportHelper.schema),
     defaultValues: {
-      startDate: moment().format('YYYY-MM-DDTHH:mm'),
-      endDate: moment().format('YYYY-MM-DDTHH:mm'),
+      startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
+      endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
       dfspId: 'all',
       currencyId: 'all',
       fileType: 'xlsx',
@@ -159,17 +160,33 @@ const SettlementAuditReport = () => {
               name="dfspId"
               control={control}
               render={({ field }) => (
-                <Select {...field} placeholder="Select DFSP">
-                  <option value="" disabled hidden>
-                    Select DFSP
-                  </option>
-                  <option value="all">All</option>
-                  {participantList?.map((item, index) => (
-                    <option key={index} value={item.participantName}>
-                      {item.participantName}
-                    </option>
-                  ))}
-                </Select>
+                <CustomSelect
+                  includeAllOption={true}
+                  placeholder="Select DFSP"
+                  options={(participantList ?? []).map(
+                    (item): OptionType => ({
+                      value: item.participantName,
+                      label: item.participantName,
+                    })
+                  )}
+                  value={
+                    field.value
+                      ? field.value === 'all'
+                        ? { value: 'all', label: 'All' }
+                        : {
+                          value: field.value,
+                          label:
+                            participantList?.find(
+                              (p) => p.participantName === field.value
+                            )?.participantName || '',
+                        }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => {
+                    const value = selected?.value || '';
+                    field.onChange(value);
+                  }}
+                />
               )}
             />
             <FormErrorMessage>{errors.dfspId?.message}</FormErrorMessage>
@@ -219,24 +236,36 @@ const SettlementAuditReport = () => {
               name="currencyId"
               control={control}
               render={({ field }) => (
-                <Select {...field} placeholder="Select Currency">
-                  <option value="" disabled hidden>
-                    Select Currency
-                  </option>
-                  <option value="all">All</option>
-                  {data?.map((item, index) => (
-                    <option key={index} value={item.currency}>
-                      {item.currency}
-                    </option>
-                  ))}
-                </Select>
+                <CustomSelect
+                  maxMenuHeight={300}
+                  isClearable={false}
+                  options={[
+                    { value: 'all', label: 'All' },
+                    ...(currencyList ?? []).map((item) => ({
+                      value: item.currency,
+                      label: item.currency,
+                    })),
+                  ]}
+                  value={
+                    field.value
+                      ? {
+                        value: field.value,
+                        label:
+                          field.value === 'all'
+                            ? 'All'
+                            : currencyList?.find((c) => c.currency === field.value)?.currency || '',
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                  placeholder="Select Currency"
+                />
               )}
             />
             <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
           </FormControl>
         </SimpleGrid>
 
-        {/* --- Download Section --- */}
         <Stack
           direction={{ base: "column", md: "row" }}
           spacing={4}
@@ -248,13 +277,22 @@ const SettlementAuditReport = () => {
               control={control}
               name="fileType"
               render={({ field }) => (
-                <Select {...field}>
-                  <option value="" disabled hidden>
-                    Choose Format
-                  </option>
-                  <option value="xlsx">XLSX</option>
-                  <option value="csv">CSV</option>
-                </Select>
+                <CustomSelect
+                  options={[
+                    { value: 'xlsx', label: 'XLSX' },
+                    { value: 'csv', label: 'CSV' },
+                  ]}
+                  value={
+                    field
+                      ? {
+                        value: field.value,
+                        label: field.value.toUpperCase(),
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                  placeholder="Choose Format"
+                />
               )}
             />
           </FormControl>
