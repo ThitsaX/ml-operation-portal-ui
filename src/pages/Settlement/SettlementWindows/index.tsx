@@ -68,9 +68,13 @@ import {
 import { useLoadingContext } from '@contexts/hooks';
 import { Checkbox } from "@chakra-ui/react";
 import { closeSettlementWindow } from "@services/settlements";
-import { WINDOW_STATE_OPTIONS as windowStateOptions } from '@utils/constants';
 
 import { useGetParticipantCurrencyList } from '@hooks/services/participant';
+import { 
+    useGetSettlementWindowStateList,
+    useGetSettlementModelList,
+} from '@hooks/services/settlements';
+
 
 const SettlementWindows = () => {
     const { start, complete } = useLoadingContext();
@@ -79,7 +83,9 @@ const SettlementWindows = () => {
     const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
 
     const [dateRange, setDateRange] = useState<Ranges>('oneDay');
-    const { data } = useGetParticipantCurrencyList();
+    const { data: currencyList } = useGetParticipantCurrencyList();
+    const { data: stateList } = useGetSettlementWindowStateList();
+    const { data: modelList } = useGetSettlementModelList();
 
     const [toFspOptions, setToFspOptions] = useState<any[]>([]);
     const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string }>();
@@ -576,9 +582,9 @@ const SettlementWindows = () => {
                                 placeholder="Select State"
                                 { ...register('state') }
                             >
-                                {windowStateOptions.map((stateItem) => (
-                                    <option key={stateItem} value={stateItem}>
-                                        {stateItem}
+                                {stateList?.map(({ settlementWindowStateId, enumeration }, index) => (
+                                    <option key={index} value={settlementWindowStateId}>
+                                        {enumeration}
                                     </option>
                                 ))}
                             </Select>
@@ -613,7 +619,7 @@ const SettlementWindows = () => {
                                 placeholder="Select Currency"
                                 { ...register('currency') }
                             >
-                                {data?.map((item, index) => (
+                                {currencyList?.map((item, index) => (
                                     <option key={index} value={item.currency}>
                                         {item.currency}
                                     </option>
@@ -674,7 +680,11 @@ const SettlementWindows = () => {
                         onChange={(e) => setSettlementModel(e.target.value)}
                         width="250px"
                     >
-                        <option value="DEFERREDNET">DEFERREDNET</option>
+                        {modelList?.map(({ name }, index) => (
+                            <option key={index} value={name}>
+                                {name}
+                            </option>
+                        ))}
                     </Select>
                     <Button
                         color="white"

@@ -1,32 +1,37 @@
-// import {
-//     getUserListByParticipant, getRoleListByParticipant, getOrganizationListByParticipant, getContactList, getParticipantProfile,
-//     getParticipantCurrencyList, getHubCurrency, getLiquidityProfileList, getParticipantList
-// } from '@services/participant'
-// import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
-// import {
-//     type IApiErrorResponse, type IParticipantUser,
-// } from '@typescript/services'
-// import { ISettlementWindow, IFinalizeSettlement } from '@typescript/services'
-import { getSettlementWindowsList, getFinalizeSettlementList } from '@services/settlements'
+import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
+import { 
+    type IApiErrorResponse,
+    ISettlementWindowState,
+    ISettlementModel,
+    ISettlementState,
+} from '@typescript/services';
+import { 
+    getSettlementWindowStateList, 
+    getSettlementModelList, 
+    getSettlementStateList 
+} from '@services/settlements';
 
-// export const useGetFinalizeSettlementList = (
-//     options?: UseQueryOptions<IFinalizeSettlement[],
-//         IApiErrorResponse
-//     >
-// ) =>
-//     useQuery<IFinalizeSettlement[], IApiErrorResponse>({
-//         queryKey: ['getFinalizeSettlementList'],
-//         queryFn: getFinalizeSettlementList,
-//         ...options
-//     })
 
-// export const useGetSettlementWindowList = (
-//     options?: UseQueryOptions<ISettlementWindow[],
-//         IApiErrorResponse
-//     >
-// ) =>
-//     useQuery<ISettlementWindow[], IApiErrorResponse>({
-//         queryKey: ['getSettlementWindowsList'],
-//         queryFn: getSettlementWindowsList,
-//         ...options
-//     })
+export const useGetSettlementWindowStateList = (
+    options?: UseQueryOptions<ISettlementWindowState[], IApiErrorResponse>
+) => useQuery<ISettlementWindowState[], IApiErrorResponse>({
+        queryKey: ['getSettlementWindowStateList'],
+        queryFn: getSettlementWindowStateList,
+        ...options
+    });
+
+export const useGetSettlementModelList = (
+    options?: UseQueryOptions<ISettlementModel[], IApiErrorResponse>
+) => useQuery<ISettlementModel[], IApiErrorResponse>({
+        queryKey: ['getSettlementModelList'],
+        queryFn: getSettlementModelList,
+        ...options
+    });
+
+export const useGetSettlementStateList = (
+    options?: UseQueryOptions<ISettlementState[], IApiErrorResponse>
+) => useQuery<ISettlementState[], IApiErrorResponse>({
+        queryKey: ['getSettlementStateList'],
+        queryFn: getSettlementStateList,
+        ...options
+    });

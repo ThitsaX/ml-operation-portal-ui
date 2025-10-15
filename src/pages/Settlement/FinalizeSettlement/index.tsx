@@ -58,11 +58,14 @@ import { IFinalizeSettlement, INetTransferAmount } from '@typescript/services';
 import { usePagination, useSortBy, useTable, Column } from 'react-table';
 import { useGetParticipantCurrencyList } from '@hooks/services/participant';
 import { 
+    useGetSettlementStateList,
+} from '@hooks/services/settlements';
+import { 
     getFinalizeSettlementList,  
     finalizeSettlementWindow, 
     getNetTransferAmountBySettlement
 } from '@services/settlements';
-import { WINDOW_STATE_OPTIONS as windowStateOptions } from '@utils/constants';
+
 
 const finalizeSettlementHelper = new FinalizeSettlementHelper();
 
@@ -72,7 +75,9 @@ const FinalizeSettlement = () => {
     const { start, complete } = useLoadingContext();
     const toast = useToast();
 
-    const { data } = useGetParticipantCurrencyList();
+    const { data: currencyList } = useGetParticipantCurrencyList();
+    const { data: stateList } = useGetSettlementStateList();
+
     const user = useGetUserState();
     const [toFspOptions, setToFspOptions] = useState<any[]>([]);
     const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string }>();
@@ -463,9 +468,9 @@ const FinalizeSettlement = () => {
                                 placeholder="Select State"
                                 { ...register('state') }
                             >
-                                {windowStateOptions.map((stateItem) => (
-                                    <option key={stateItem} value={stateItem}>
-                                        {stateItem}
+                                {stateList?.map(({ settlementStateId, enumeration }, index) => (
+                                    <option key={index} value={settlementStateId}>
+                                        {enumeration}
                                     </option>
                                 ))}
                             </Select>
@@ -500,7 +505,7 @@ const FinalizeSettlement = () => {
                                 placeholder="Select Currency"
                                 { ...register('currency') }
                             >
-                                {data?.map((item, index) => (
+                                {currencyList?.map((item, index) => (
                                     <option key={index} value={item.currency}>
                                         {item.currency}
                                     </option>

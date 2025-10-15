@@ -1,7 +1,22 @@
+export interface ISettlementWindowState {
+    settlementWindowStateId: string;
+    enumeration: string;
+}
 export interface ISettlementModel {
-    modelName: string;
-    modelType: string;
-    currency: string;
+    settlementModelId: string;
+    name: string;
+    currencyId: string | null;
+    isActive: boolean;
+    autoCloseWindow: boolean;
+    requireLiquidityCheck: boolean;
+    autoPositionReset: boolean;
+    adjustPosition: boolean;
+    schedulerConfigIds: [];
+}
+
+export interface ISettlementState {
+    settlementStateId: string;
+    enumeration: string;
 }
 
 export interface ISettlementWindows {
