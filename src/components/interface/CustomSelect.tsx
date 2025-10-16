@@ -14,6 +14,7 @@ interface BaseProps {
   includeAllOption?: boolean;
   isClearable?: boolean;
   isDisabled?: boolean;
+  menuPortalTarget?: boolean;
 }
 
 interface SingleSelectProps extends BaseProps {
@@ -42,6 +43,7 @@ const CustomSelect: React.FC<UnifiedSelectProps> = (props) => {
     includeAllOption = false,
     isClearable = false,
     isDisabled = false,
+    menuPortalTarget = false, 
   } = props;
 
   const finalOptions = includeAllOption
@@ -67,6 +69,7 @@ const handleChange = (
       placeholder={placeholder || 'Select...'}
       isClearable={isClearable}
       isDisabled={isDisabled} 
+      menuPortalTarget={menuPortalTarget ? document.body : undefined} 
       closeMenuOnScroll={false}
       menuShouldBlockScroll={true}
       styles={{

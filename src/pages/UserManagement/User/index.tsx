@@ -278,6 +278,11 @@ const User = () => {
       setPageNumber(value)
     }
   }
+  const statusOptions = [
+      { value: 'All', label: 'All' },
+      { value: 'ACTIVE', label: 'Active' },
+      { value: 'INACTIVE', label: 'Inactive' },
+    ];
 
   return (
 
@@ -290,23 +295,18 @@ const User = () => {
         spacing={2}
         justifyContent="space-between"
       >
-        <ChakraSelect
-          w={{ base: "full", sm: "200px" }}
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          size="md"
-          rounded="md"
-          bg="white"
-          borderColor="gray.300"
-          focusBorderColor="blue.500"
-          _hover={{ borderColor: "blue.400" }}
-          _focus={{ boxShadow: "0 0 0 1px #3182CE" }}
-        >
-          <option value="All">All</option>
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
-        </ChakraSelect>
 
+        <Box w={{ base: "full", sm: "200px" }}>
+        <CustomSelect
+          options={statusOptions}
+          value={statusOptions.find(option => option.value === filterStatus) || null}
+          onChange={(selectedOption) => {
+            setFilterStatus(selectedOption?.value || '');
+          }}
+          placeholder="Select status"
+          includeAllOption={false}
+        />
+        </Box>
         <Button
           colorScheme="blue"
           onClick={handleNewClick}

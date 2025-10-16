@@ -175,19 +175,32 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
             <FormControl isInvalid={!isEmpty(errors.participantId)} isRequired>
               <HStack>
-                <ChakraSelect
-                  placeholder="Select Organization*"
-                  {...register('participantId')}
-                  onChange={e => handleOrgChange(e.target.value)}
-                  size="md"
-                  width="100%"
-                >
-                  {participantInfoList?.map(org => (
-                    <option key={org.participantId} value={org.participantId}>
-                      {org.participantName}
-                    </option>
-                  ))}
-                </ChakraSelect>
+                <Controller
+                  control={control}
+                  name="participantId"
+                  render={({ field }) => (
+                    <CustomSelect
+                    menuPortalTarget={true}
+                    placeholder="Select Organization*"
+                      options={participantInfoList?.map(org => ({
+                          value: org.participantId,
+                          label: org.participantName })) ?? []}
+                      value={
+                          participantInfoList?.find(org => org.participantId === field.value)
+                            ? {
+                                value: field.value,
+                                label: participantInfoList.find(org => org.participantId === field.value)?.participantName || field.value
+                              }
+                            : null
+                        }
+                      onChange={(selected: OptionType | null) => {
+                        field.onChange(selected ? selected.value : '');
+                        handleOrgChange(selected ? selected.value : '');
+                      }}
+                    />
+                  )}
+                />
+
                 <Button
                   leftIcon={<IoReload />}
                   colorScheme="teal"
@@ -207,6 +220,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                 name="roleIdList"
                 render={({ field }) => (
                   <CustomSelect
+                    menuPortalTarget={true}
                     isMulti={true}
                     options={roleList?.map(role => ({ value: role.roleId, label: role.name })) ?? []}
                     value={
