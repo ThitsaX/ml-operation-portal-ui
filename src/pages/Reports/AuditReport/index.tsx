@@ -273,13 +273,16 @@ const AuditReport = () => {
                             control={control}
                             name="fileType"
                             render={({ field }) => (
-                                <Select {...field}>
-                                    <option value="" disabled hidden>
-                                        Choose Format
-                                    </option>
-                                    <option value="xlsx">XLSX</option>
-                                    <option value="csv">CSV</option>
-                                </Select>
+                                <CustomSelect
+                                  options={[
+                                    { value: "xlsx", label: "XLSX" },
+                                    { value: "csv", label: "CSV" }
+                                  ]}
+                                  value={field.value ? { value: field.value, label: field.value === "xlsx" ? "XLSX" : "CSV" } : null}
+                                  onChange={(selectedOption) => {
+                                    field.onChange(selectedOption?.value || '');
+                                  }}
+                                />
                             )}
                         />
                     </FormControl>

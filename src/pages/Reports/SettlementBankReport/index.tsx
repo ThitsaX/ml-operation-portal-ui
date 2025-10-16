@@ -36,6 +36,7 @@ import { IGetSettlementIds } from "@typescript/services/report";
 import { useGetParticipantCurrencyList } from '@hooks/services';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
+import { CustomSelect } from '@components/interface';
 
 const settlementBankReport = new SettlementBankReportHelper();
 const initialFileName = 'Settlement-Bank-Report';
@@ -278,17 +279,25 @@ const SettlementBankReport = () => {
               control={control}
 
               render={({ field }) => (
-                <Select {...field} placeholder="Select Settlement ID"
-                  onChange={(e) => {
-                    field.onChange(e);
-                    setSettlementId(e.target.value);
-                  }}>
-                  {settlementIdOptions.map((opt, index) => (
-                    <option key={index} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </Select>
+                <CustomSelect
+                isMulti={false}
+                maxMenuHeight={300}
+                isClearable={true}
+                placeholder="Select Settlement ID"
+                  options={[{ value: "all", label: "All" },
+                      ...settlementIdOptions.map((item) => ({
+                        value: item.value,
+                        label: item.label
+                      }))]}
+                  value={field.value ? {
+                      value: field.value,
+                      label: field.value === "all" ? "ALL" : field.value
+                    } : null}
+                  onChange={(selectedOption) => {
+                    field.onChange(selectedOption?.value || '');
+                    setSettlementId(selectedOption?.value || '');
+                  }}
+                />
               )}
             />
           </FormControl>
@@ -302,17 +311,24 @@ const SettlementBankReport = () => {
               name="currency"
               control={control}
               render={({ field }) => (
-                <Select {...field} >
-                  <option value="" disabled hidden>
-                    Select Currency
-                  </option>
-                  <option value="all">All</option>
-                  {currencyList?.map((item, index) => (
-                    <option key={index} value={item.currency}>
-                      {item.currency}
-                    </option>
-                  ))}
-                </Select>
+
+                <CustomSelect
+                isMulti={false}
+                maxMenuHeight={300}
+                isClearable={true}
+                placeholder="Select Currency"
+                  options={[{ value: "all", label: "All" },
+                      ...(currencyList?.map((item) => ({
+                        value: item.currency,
+                        label: item.currency
+                      })) || [])]}
+                  value={field.value ? {
+                      value: field.value,
+                      label: field.value === "all" ? "ALL" : field.value } : null}
+                  onChange={(selectedOption) => {
+                    field.onChange(selectedOption?.value || '');
+                  }}
+                />
               )}
             />
             <FormErrorMessage>{errors.currency?.message}</FormErrorMessage>
@@ -330,13 +346,16 @@ const SettlementBankReport = () => {
               control={control}
               name="fileType"
               render={({ field }) => (
-                <Select {...field}>
-                  <option value="" disabled hidden>
-                    Choose Format
-                  </option>
-                  <option value="xlsx">XLSX</option>
-                  <option value="pdf">PDF</option>
-                </Select>
+                <CustomSelect
+                  options={[
+                    { value: "xlsx", label: "XLSX" },
+                    { value: "pdf", label: "PDF" }
+                  ]}
+                  value={field.value ? { value: field.value, label: field.value === "xlsx" ? "XLSX" : "PDF" } : null}
+                  onChange={(selectedOption) => {
+                    field.onChange(selectedOption?.value || '');
+                  }}
+                />
               )}
             />
           </FormControl>

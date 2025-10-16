@@ -73,6 +73,17 @@ const handleChange = (
           maxHeight: maxMenuHeight,
           overflowY: 'auto',
         }),
+        placeholder: (base) => ({
+          ...base,
+          fontSize: '14px',
+          pointerEvents: 'none',
+          lineHeight: '1',
+        }),
+        valueContainer: (base) => ({
+        ...base,
+        height: '38px', // Slightly less than control height
+        padding: '0 12px',
+        }),
         container: base => ({
           ...base,
           overflow: 'visible',

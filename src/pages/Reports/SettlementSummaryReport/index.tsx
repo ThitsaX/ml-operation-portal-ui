@@ -33,6 +33,7 @@ import { useGetParticipantList } from '@hooks/services/participant';
 import { useGetParticipantCurrencyList } from '@hooks/services';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
+import { CustomSelect } from '@components/interface';
 
 const settlementSummaryReportHelper = new SettlementSummaryReportHelper();
 const initialFileName = 'Settlement-Details-Report';
@@ -213,21 +214,23 @@ const SettlementSummaryReport = () => {
                 name="fspId"
                 control={control}
                 render={({ field }) => (
-                  <Select {...field} width="100%"
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setFspId(e.target.value);
-                    }}>
-                    <option value="" disabled hidden>
-                      Select DFSP
-                    </option>
-                    <option value="all">All</option>
-                    {participantList?.map((item, index) => (
-                      <option key={index} value={item.participantName}>
-                        {item.participantName}
-                      </option>
-                    ))}
-                  </Select>
+                    <CustomSelect
+                    isMulti={false}
+                    maxMenuHeight={300}
+                    isClearable={true}
+                    placeholder="Select DFSP Name"
+                      options={[
+                        { value: "all", label: "All" },
+                        ...(participantList?.map((item) => ({
+                          value: item.participantName,
+                          label: item.participantName
+                        })) || [])
+                      ]}
+                      value={field.value ? { value: field.value, label: field.value === "all" ? "ALL" : field.value } : null}
+                      onChange={(selectedOption) => {
+                        field.onChange(selectedOption?.value || '');
+                      }}
+                    />
                 )}
               />
             ) : (
@@ -323,17 +326,18 @@ const SettlementSummaryReport = () => {
                 name="settlementId"
                 control={control}
                 render={({ field }) => (
-                  <Select {...field} placeholder="Select Settlement ID"
-                    onChange={(e) => {
-                      field.onChange(e);
-                      setSettlementId(e.target.value);
-                    }}>
-                    {settlementIdOptions.map((opt, index) => (
-                      <option key={index} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </Select>
+                  <CustomSelect
+                    isMulti={false}
+                    maxMenuHeight={300}
+                    isClearable={true}
+                    placeholder="Select Settlement ID"
+                    options={settlementIdOptions}
+                    value={field.value ? { value: field.value, label: field.value } : null}
+                    onChange={(selectedOption) => {
+                      field.onChange(selectedOption?.value || '');
+                      setSettlementId(selectedOption?.value || '');
+                    }}
+                  />
                 )}
               />
             </FormControl>
@@ -376,13 +380,16 @@ const SettlementSummaryReport = () => {
                 control={control}
                 name="fileType"
                 render={({ field }) => (
-                  <Select {...field} >
-                    <option value="" disabled hidden>
-                      Choose Format
-                    </option>
-                    <option value="csv">PDF</option>
-                    <option value="xlsx">XLSX</option>
-                  </Select>
+                  <CustomSelect
+                      options={[
+                        { value: "xlsx", label: "XLSX" },
+                        { value: "csv", label: "CSV" }
+                      ]}
+                      value={field.value ? { value: field.value, label: field.value === "xlsx" ? "XLSX" : "CSV" } : null}
+                      onChange={(selectedOption) => {
+                        field.onChange(selectedOption?.value || '');
+                      }}
+                    />
                 )}
               />
             </FormControl>
