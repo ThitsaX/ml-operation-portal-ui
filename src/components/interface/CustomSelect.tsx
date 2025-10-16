@@ -13,6 +13,7 @@ interface BaseProps {
   width?: string | number;
   includeAllOption?: boolean;
   isClearable?: boolean;
+  isDisabled?: boolean;
 }
 
 interface SingleSelectProps extends BaseProps {
@@ -40,6 +41,7 @@ const CustomSelect: React.FC<UnifiedSelectProps> = (props) => {
     width = '100%',
     includeAllOption = false,
     isClearable = false,
+    isDisabled = false,
   } = props;
 
   const finalOptions = includeAllOption
@@ -64,6 +66,7 @@ const handleChange = (
       onChange={handleChange}
       placeholder={placeholder || 'Select...'}
       isClearable={isClearable}
+      isDisabled={isDisabled} 
       closeMenuOnScroll={false}
       menuShouldBlockScroll={true}
       styles={{

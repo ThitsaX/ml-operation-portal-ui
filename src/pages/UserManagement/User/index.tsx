@@ -49,6 +49,7 @@ import ResetPasswordModal from '@components/interface/ResetPassword';
 import GlobalFilter from '@components/interface/GlobalFilter';
 import { store } from '@store'
 import { getErrorMessage } from '@helpers/errors';
+import { CustomSelect } from '@components/interface';
 
 const User = () => {
   const [filterStatus, setFilterStatus] = useState('ACTIVE');

@@ -460,8 +460,9 @@ const Transfer = () => {
                 }}
             />
 
-        <fieldset disabled={isHubUser}>
+        
            <CustomSelect
+            isDisabled={isHubUser}
             placeholder="Transfer Type"
             options={transferTypeOptions.map(option => ({
                 value: option.value,
@@ -474,7 +475,7 @@ const Transfer = () => {
                 }
             }}
             />
-        </fieldset>
+        
 
           <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
             {(isHubUser || transferType === 'inbound') ? (
