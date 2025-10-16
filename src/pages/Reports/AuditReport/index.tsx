@@ -40,7 +40,7 @@ const AuditReport = () => {
 
     const { start, complete } = useLoadingContext();
     const [runButtonState, setRunButtonState] = useState(true);
-    const initialFileName = 'Audit-Report';
+    const initialFileName = 'AuditReport';
 
     /* Redux */
     const { data: user } = useGetUserState();
@@ -70,7 +70,7 @@ const AuditReport = () => {
         reset
     } = useForm<IGetAuditReport>({
         defaultValues: {
-            fromDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
+            fromDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
             toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
             userId: '',
             actionId: '',
@@ -201,7 +201,6 @@ const AuditReport = () => {
                             name="actionId"
                             render={({ field }) => (
                                 <CustomSelect
-                                    isMulti={false}
                                     maxMenuHeight={300}
                                     isClearable={true}
                                     options={
@@ -234,7 +233,6 @@ const AuditReport = () => {
                             name="userId"
                             render={({ field }) => (
                                 <CustomSelect
-                                    isMulti={false}
                                     maxMenuHeight={300}
                                     isClearable={true}
                                     options={

@@ -12,7 +12,8 @@ import moment from 'moment';
 
 const contentTypes = {
   csv: 'text/csv;',
-  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;'
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;',
+  pdf: 'application/pdf;'
 };
 
 export const generateSettlementDetailReport = async (params: any) => {
@@ -288,14 +289,17 @@ export const downloadFile = (
     downloadContentType = contentTypes.csv;
   } else if (fileType == 'xlsx') {
     downloadContentType = contentTypes.xlsx;
-  } else {
+  }else if (fileType == 'pdf') {
+    downloadContentType = contentTypes.pdf;
+  } 
+  else {
     throw 'Content type not supported';
   }
 
   const downloadLink = document.createElement('a');
   const linkSource = `data:${downloadContentType}base64,${base64String}`;
   downloadLink.href = linkSource;
-  downloadLink.download = `${initialFileName}_${moment().format('DD-MM-YYYY')}`;
+  downloadLink.download = `${initialFileName}-${moment().format('DDMMMYYYY')}`;
   downloadLink.target = '_blank';
   downloadLink.click();
 };

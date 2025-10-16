@@ -10,11 +10,9 @@ import {
   useToast,
   VStack,
   SimpleGrid,
-  Select
 } from '@chakra-ui/react';
 import { SettlementAuditReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CustomSelect } from '@components/interface';
 import {
   downloadFile,
   generateSettlementAuditReport,
@@ -32,9 +30,11 @@ import { RootState } from '@store';
 import { useGetParticipantCurrencyList } from '@hooks/services/participant';
 import { type IApiErrorResponse } from "@typescript/services";
 import { getErrorMessage } from "@helpers/errors";
+import { CustomSelect } from '@components/interface';
+import { OptionType } from '@components/interface/CustomSelect';
 
 const settlementAuditReportHelper = new SettlementAuditReportHelper();
-const initialFileName = 'Settlement-Audit-Report';
+const initialFileName = 'SettlementAuditReport';
 
 const SettlementAuditReport = () => {
 
@@ -43,7 +43,7 @@ const SettlementAuditReport = () => {
   const [runButtonState, setRunButtonState] = useState(true);
 
   // custom hooks
-  const { data } = useGetParticipantCurrencyList();
+  const { data: currencyList } = useGetParticipantCurrencyList();
   const { data: participantList } = useGetParticipantList();
 
   // Redux
@@ -68,8 +68,8 @@ const SettlementAuditReport = () => {
   } = useForm<ISettlementAuditReport>({
     resolver: zodResolver(settlementAuditReportHelper.schema),
     defaultValues: {
-      startDate: moment().format('YYYY-MM-DDTHH:mm'),
-      endDate: moment().format('YYYY-MM-DDTHH:mm'),
+      startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
+      endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
       dfspId: 'all',
       currencyId: 'all',
       fileType: 'xlsx',
@@ -160,21 +160,31 @@ const SettlementAuditReport = () => {
               name="dfspId"
               control={control}
               render={({ field }) => (
-           <CustomSelect
-            isMulti={false}
-            maxMenuHeight={300}
-            isClearable={true}
-            placeholder="Select DFSP Name"
-                  options={[
-                    { value: "all", label: "All" },
-                    ...(participantList?.map((item) => ({
+                <CustomSelect
+                  includeAllOption={true}
+                  placeholder="Select DFSP"
+                  options={(participantList ?? []).map(
+                    (item): OptionType => ({
                       value: item.participantName,
-                      label: item.participantName
-                    })) || [])
-                  ]}
-                  value={field.value ? { value: field.value, label: field.value === "all" ? "ALL" : field.value } : null}
-                  onChange={(selectedOption) => {
-                    field.onChange(selectedOption?.value || '');
+                      label: item.participantName,
+                    })
+                  )}
+                  value={
+                    field.value
+                      ? field.value === 'all'
+                        ? { value: 'all', label: 'All' }
+                        : {
+                          value: field.value,
+                          label:
+                            participantList?.find(
+                              (p) => p.participantName === field.value
+                            )?.participantName || '',
+                        }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => {
+                    const value = selected?.value || '';
+                    field.onChange(value);
                   }}
                 />
               )}
@@ -227,24 +237,28 @@ const SettlementAuditReport = () => {
               control={control}
               render={({ field }) => (
                 <CustomSelect
-                isMulti={false}
-                maxMenuHeight={300}
-                isClearable={true}
-                placeholder="Select Currency"
+                  maxMenuHeight={300}
+                  isClearable={false}
                   options={[
-                    { value: "all", label: "ALL" },
-                    ...(data?.map((item) => ({
+                    { value: 'all', label: 'All' },
+                    ...(currencyList ?? []).map((item) => ({
                       value: item.currency,
-                      label: item.currency
-                    })) || [])
+                      label: item.currency,
+                    })),
                   ]}
-                  value={field.value ? {
-                    value: field.value,
-                    label: field.value === "all" ? "ALL" : field.value
-                  } : null}
-                  onChange={(selectedOption) => {
-                    field.onChange(selectedOption?.value || '');
-                  }}
+                  value={
+                    field.value
+                      ? {
+                        value: field.value,
+                        label:
+                          field.value === 'all'
+                            ? 'All'
+                            : currencyList?.find((c) => c.currency === field.value)?.currency || '',
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                  placeholder="Select Currency"
                 />
               )}
             />
@@ -252,7 +266,6 @@ const SettlementAuditReport = () => {
           </FormControl>
         </SimpleGrid>
 
-        {/* --- Download Section --- */}
         <Stack
           direction={{ base: "column", md: "row" }}
           spacing={4}
@@ -266,13 +279,19 @@ const SettlementAuditReport = () => {
               render={({ field }) => (
                 <CustomSelect
                   options={[
-                    { value: "xlsx", label: "XLSX" },
-                    { value: "csv", label: "CSV" }
+                    { value: 'xlsx', label: 'XLSX' },
+                    { value: 'csv', label: 'CSV' },
                   ]}
-                  value={field.value ? { value: field.value, label: field.value === "xlsx" ? "XLSX" : "CSV" } : null}
-                  onChange={(selectedOption) => {
-                    field.onChange(selectedOption?.value || '');
-                  }}
+                  value={
+                    field
+                      ? {
+                        value: field.value,
+                        label: field.value.toUpperCase(),
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                  placeholder="Choose Format"
                 />
               )}
             />

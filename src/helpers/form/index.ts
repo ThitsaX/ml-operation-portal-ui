@@ -220,8 +220,7 @@ export class SettlementStatementReportHelper extends FormHelper {
         endDate: z.coerce.date({
           required_error: 'Required'
         }),
-        settlementId: z.string().optional(),
-        fspid: z.string().optional(),
+        fspId: z.string().optional(),
         currencyId: z.string().optional(),
         fileType: z.string().optional(),
         timezoneOffset: z.string().optional()

@@ -6,7 +6,6 @@ import {
   Heading,
   Stack,
   useToast,
-  Select,
   Input,
   FormErrorMessage,
   VStack,
@@ -37,9 +36,10 @@ import { useGetParticipantCurrencyList } from '@hooks/services';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 import { CustomSelect } from '@components/interface';
+import { OptionType } from '@components/interface/CustomSelect';
 
 const settlementBankReport = new SettlementBankReportHelper();
-const initialFileName = 'Settlement-Bank-Report';
+const initialFileName = 'SettlementBankReport';
 
 const SettlementBankReport = () => {
 
@@ -71,8 +71,8 @@ const SettlementBankReport = () => {
   } = useForm<ISettlementBankReport>({
     resolver: zodResolver(schema),
     defaultValues: {
-      startDate: '',
-      endDate: '',
+      startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
+      endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
       settlementId: '',
       currency: 'all',
       fileType: 'xlsx',
@@ -252,7 +252,7 @@ const SettlementBankReport = () => {
               colorScheme="blue"
               gap="2"
               size="md"
-              w={{ base: "100%", md: "auto" }}
+              w={{ base: "100%", md: "50%" }}
             >
               <FaSearch /> Search
             </Button>
@@ -262,15 +262,13 @@ const SettlementBankReport = () => {
       </Stack>
 
       {settlementIdOptions.length > 0 && (<Stack borderWidth="1px" w="full" borderRadius="lg" p={4} spacing={4}>
-        <Stack
-          w="full"
-          direction={{ base: "column", md: "row" }}
+        <SimpleGrid
+          columns={{ base: 1, md: 3 }}
           spacing={4}
-          flexWrap="wrap"
-          align="flex-end"
+          w="full"
         >
           <FormControl
-            width={{ base: "100%", md: "220px" }}
+            width={{ base: "100%" }}
             isInvalid={!isEmpty(errors.settlementId)}
           >
             <FormLabel>Settlement ID:</FormLabel>
@@ -280,30 +278,30 @@ const SettlementBankReport = () => {
 
               render={({ field }) => (
                 <CustomSelect
-                isMulti={false}
-                maxMenuHeight={300}
-                isClearable={true}
-                placeholder="Select Settlement ID"
-                  options={[{ value: "all", label: "All" },
-                      ...settlementIdOptions.map((item) => ({
-                        value: item.value,
-                        label: item.label
-                      }))]}
-                  value={field.value ? {
-                      value: field.value,
-                      label: field.value === "all" ? "ALL" : field.value
-                    } : null}
-                  onChange={(selectedOption) => {
-                    field.onChange(selectedOption?.value || '');
-                    setSettlementId(selectedOption?.value || '');
+                  maxMenuHeight={300}
+                  isClearable={true}
+                  options={settlementIdOptions}
+                  value={
+                    field.value
+                      ? {
+                        value: field.value,
+                        label: settlementIdOptions.find((s) => s.value === field.value)?.label || '',
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => {
+                    field.onChange(selected?.value || '');
+                    setSettlementId(selected?.value || '');
                   }}
+                  placeholder="Select Settlement ID"
                 />
+
               )}
             />
           </FormControl>
 
           <FormControl
-            width={{ base: "100%", md: "220px" }}
+            width={{ base: "100%" }}
             isInvalid={!isEmpty(errors.currency)}
           >
             <FormLabel>Currency</FormLabel>
@@ -311,50 +309,94 @@ const SettlementBankReport = () => {
               name="currency"
               control={control}
               render={({ field }) => (
-
                 <CustomSelect
-                isMulti={false}
-                maxMenuHeight={300}
-                isClearable={true}
-                placeholder="Select Currency"
-                  options={[{ value: "all", label: "All" },
-                      ...(currencyList?.map((item) => ({
-                        value: item.currency,
-                        label: item.currency
-                      })) || [])]}
-                  value={field.value ? {
-                      value: field.value,
-                      label: field.value === "all" ? "ALL" : field.value } : null}
-                  onChange={(selectedOption) => {
-                    field.onChange(selectedOption?.value || '');
-                  }}
+                  maxMenuHeight={300}
+                  isClearable={false}
+                  options={[
+                    { value: 'all', label: 'All' },
+                    ...(currencyList ?? []).map((item) => ({
+                      value: item.currency,
+                      label: item.currency,
+                    })),
+                  ]}
+                  value={
+                    field.value
+                      ? {
+                        value: field.value,
+                        label:
+                          field.value === 'all'
+                            ? 'All'
+                            : currencyList?.find((c) => c.currency === field.value)?.currency || '',
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                  placeholder="Select Currency"
                 />
               )}
             />
             <FormErrorMessage>{errors.currency?.message}</FormErrorMessage>
           </FormControl>
-        </Stack>
+        </SimpleGrid>
 
-        <Stack
+        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} w="full">
+          <Box />
+          <Box />
+          <Stack direction="row" spacing={4} w="100%">
+            <FormControl>
+              <Controller
+                control={control}
+                name="fileType"
+                render={({ field }) => (
+                  <CustomSelect
+                    options={[
+                      { value: 'xlsx', label: 'XLSX' },
+                      { value: 'pdf', label: 'PDF' },
+                    ]}
+                    value={field ? { value: field.value, label: field.value.toUpperCase() } : null}
+                    onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                    placeholder="Choose Format"
+                  />
+                )}
+              />
+            </FormControl>
+
+            <Button
+              colorScheme="blue"
+              onClick={onDownloadChangeHandler}
+              isDisabled={!settlementId || !runButtonState}
+            >
+              Download
+            </Button>
+          </Stack>
+        </SimpleGrid>
+
+        {/* <Stack
           direction={{ base: "column", md: "row" }}
           spacing={4}
           justify="flex-end"
           align="flex-end"
           flexWrap="wrap">
-          <FormControl w={{ base: "100%", md: "250px" }}>
+          <FormControl w={{ base: "100%" }}>
             <Controller
               control={control}
               name="fileType"
               render={({ field }) => (
                 <CustomSelect
                   options={[
-                    { value: "xlsx", label: "XLSX" },
-                    { value: "pdf", label: "PDF" }
+                    { value: 'xlsx', label: 'XLSX' },
+                    { value: 'pdf', label: 'PDF' },
                   ]}
-                  value={field.value ? { value: field.value, label: field.value === "xlsx" ? "XLSX" : "PDF" } : null}
-                  onChange={(selectedOption) => {
-                    field.onChange(selectedOption?.value || '');
-                  }}
+                  value={
+                    field
+                      ? {
+                        value: field.value,
+                        label: field.value.toUpperCase(),
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                  placeholder="Choose Format"
                 />
               )}
             />
@@ -362,16 +404,17 @@ const SettlementBankReport = () => {
 
           <Button
             colorScheme="blue"
-            width={{ base: "100%", md: "auto" }}
+            width={{ base: "100%" }}
             isDisabled={!settlementId || !runButtonState}
             onClick={onDownloadChangeHandler}
           >
             Download
           </Button>
-        </Stack>
+        </Stack> */}
       </Stack>
-      )}
-    </VStack>
+      )
+      }
+    </VStack >
   );
 };
 

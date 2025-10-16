@@ -8,7 +8,6 @@ import {
   Stack,
   useToast,
   HStack,
-  Select,
   VStack,
   SimpleGrid
 } from '@chakra-ui/react';
@@ -35,12 +34,12 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { useGetParticipantList } from '@hooks/services/participant';
 import { type IApiErrorResponse } from '@typescript/services';
-import { CustomSelect } from '@components/interface';
 import { getErrorMessage } from '@helpers/errors';
-
+import { OptionType } from '@components/interface/CustomSelect';
+import { CustomSelect } from '@components/interface';
 
 const settlementDetailReportHelper = new SettlementDetailReportHelper();
-const initialFileName = 'Settlement-Details-Report';
+const initialFileName = 'DFSPSettlementDetailReport';
 
 const SettlementDetailReport = () => {
   const { start, complete } = useLoadingContext();
@@ -77,11 +76,11 @@ const SettlementDetailReport = () => {
   } = useForm<ISettlementDetailReport>({
     resolver: zodResolver(settlementDetailReportHelper.schema),
     defaultValues: {
-      fspId: 'all',
+      fspId: '',
       settlementId: '',
       fileType: 'xlsx',
-      startDate: moment().format('YYYY-MM-DDTHH:mm'),
-      endDate: moment().format('YYYY-MM-DDTHH:mm'),
+      startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
+      endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
     },
     mode: 'onChange'
   });
@@ -174,9 +173,7 @@ const SettlementDetailReport = () => {
 
         setSettlementIdOptions(options);
         setSettlementId("");
-        setValue('settlementId', ''); // update form state
-
-        // Optional: reset file type if needed
+        setValue('settlementId', '');
         setValue('fileType', 'xlsx');
       })
       .finally(() => {
@@ -215,22 +212,34 @@ const SettlementDetailReport = () => {
                 control={control}
                 render={({ field }) => (
                   <CustomSelect
-                  isMulti={false}
-                  maxMenuHeight={300}
-                  isClearable={true}
-                  placeholder="Select DFSP Name"
-                  options={[
-                    { value: "all", label: "All" },
-                    ...(participantList?.map((item) => ({
-                      value: item.participantName,
-                      label: item.participantName
-                    })) || [])
-                  ]}
-                  value={field.value ? { value: field.value, label: field.value === "all" ? "ALL" : field.value } : null}
-                  onChange={(selectedOption) => {
-                    field.onChange(selectedOption?.value || '');
-                  }}
-                />
+                    isClearable
+                    placeholder="Select DFSP"
+                    options={
+                      (participantList ?? []).map(
+                        (item): OptionType => ({
+                          value: item.participantName,
+                          label: item.participantName,
+                        })
+                      )
+                    }
+                    value={
+                      field.value
+                        ? {
+                          value: field.value,
+                          label:
+                            participantList?.find(
+                              (p) => p.participantName === field.value
+                            )?.participantName || '',
+                        }
+                        : null
+                    }
+                    onChange={(selected: OptionType | null) => {
+                      const value = selected?.value || '';
+                      field.onChange(value);
+                      setFspId(value);
+                    }}
+                  />
+
                 )}
               />
             ) : (
@@ -257,7 +266,7 @@ const SettlementDetailReport = () => {
                     onChange(e);
                     trigger("endDate");
                     setSettlementIdOptions([]);
-                    setSettlementId(""); // also clear selected settlementId
+                    setSettlementId("");
                   }}
                   onBlur={onBlur}
                   type="datetime-local"
@@ -280,7 +289,7 @@ const SettlementDetailReport = () => {
                     onChange(e);
                     trigger("startDate");
                     setSettlementIdOptions([]);
-                    setSettlementId(""); // also clear selected settlementId
+                    setSettlementId("");
                   }}
                   onBlur={onBlur}
                   type="datetime-local"
@@ -326,25 +335,24 @@ const SettlementDetailReport = () => {
                 name="settlementId"
                 control={control}
                 render={({ field }) => (
-
                   <CustomSelect
-                  isMulti={false}
-                  maxMenuHeight={300}
-                  isClearable={true}
-                  placeholder="Select Settlement ID"
-                      options={settlementIdOptions.map(option => ({
-                        value: option.value,
-                        label: option.label
-                      }))}
-                      value={settlementIdOptions.find(option => option.value === field.value) || null}
-                      onChange={(selectedOption) => {
-                        const value = selectedOption?.value || '';
-                        field.onChange(value);
-                        setSettlementId(value);
-                      }}
-                    />
-
-
+                    maxMenuHeight={300}
+                    isClearable={true}
+                    options={settlementIdOptions}
+                    value={
+                      field.value
+                        ? {
+                          value: field.value,
+                          label: settlementIdOptions.find((s) => s.value === field.value)?.label || '',
+                        }
+                        : null
+                    }
+                    onChange={(selected: OptionType | null) => {
+                      field.onChange(selected?.value || '');
+                      setSettlementId(selected?.value || '');
+                    }}
+                    placeholder="Select Settlement ID"
+                  />
                 )}
               />
             </FormControl>
@@ -363,23 +371,29 @@ const SettlementDetailReport = () => {
                 control={control}
                 name="fileType"
                 render={({ field }) => (
-                   <CustomSelect
-                      options={[
-                        { value: "xlsx", label: "XLSX" },
-                        { value: "csv", label: "CSV" }
-                      ]}
-                      value={field.value ? { value: field.value, label: field.value === "xlsx" ? "XLSX" : "CSV" } : null}
-                      onChange={(selectedOption) => {
-                        field.onChange(selectedOption?.value || '');
-                      }}
-                    />
+                  <CustomSelect
+                    options={[
+                      { value: 'xlsx', label: 'XLSX' },
+                      { value: 'csv', label: 'CSV' },
+                    ]}
+                    value={
+                      field
+                        ? {
+                          value: field.value,
+                          label: field.value.toUpperCase(),
+                        }
+                        : null
+                    }
+                    onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                    placeholder="Choose Format"
+                  />
                 )}
               />
             </FormControl>
 
             <Button
               colorScheme="blue"
-              isDisabled={!settlementId || !runButtonState}
+              isDisabled={!fspId || !settlementId || !runButtonState}
               onClick={onDownloadChangeHandler}
               w={{ base: "100%", md: "auto" }}
             >
