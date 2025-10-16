@@ -41,15 +41,10 @@ import {
     TfiAngleRight,
 } from 'react-icons/tfi';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-    getAllOtherParticipants
-} from '@services/report';
-import { useGetUserState } from '@store/hooks';
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone';
 import { memo, useMemo, useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { IGetAllOtherParticipant } from '@typescript/services';
 import { ISettlementWindowForm, ISettlementWindowCreateForm } from '@typescript/form/settlements';
 import { ITimezoneOption } from 'react-timezone-select';
 import { useSelector } from 'react-redux';
@@ -74,12 +69,12 @@ import {
     useGetSettlementWindowStateList,
     useGetSettlementModelList,
 } from '@hooks/services/settlements';
+import { useNavigate } from "react-router-dom";
 
 
 const SettlementWindows = () => {
     const { start, complete } = useLoadingContext();
     const toast = useToast();
-    const user = useGetUserState();
     const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
 
     const [dateRange, setDateRange] = useState<Ranges>('oneDay');
@@ -87,12 +82,13 @@ const SettlementWindows = () => {
     const { data: stateList } = useGetSettlementWindowStateList();
     const { data: modelList } = useGetSettlementModelList();
 
-    const [toFspOptions, setToFspOptions] = useState<any[]>([]);
-    const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string }>();
+    // const [toFspOptions, setToFspOptions] = useState<any[]>([]);
+    // const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string }>();
     const [settlementModel, setSettlementModel] = useState<string>('');
 
     const [pageNumber, setPageNumber] = useState<String>('1');
     const { isOpen: isFinalizeOpen, onOpen: onFinalizeOpen, onClose: onFinalizeClose } = useDisclosure();
+    const { isOpen: isMoveOnOpen, onOpen: onMoveOnOpen, onClose: onMoveOnClose } = useDisclosure();
 
     const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure();
     const [netTransferAmount, setNetTransferAmount] = useState<INetTransferAmount | null>(null);
@@ -100,6 +96,8 @@ const SettlementWindows = () => {
 
     const settlementWindowHelper = new SettlementWindowHelper();
     const [settlementWindows, setSettlementWindows] = useState<ISettlementWindow[]>([]);
+
+    const navigate = useNavigate();
 
 
     const schema = settlementWindowHelper.schema;
@@ -127,13 +125,11 @@ const SettlementWindows = () => {
         const currentTimeZone = moment.tz.guess();
 
         // Convert the current timezone to UTC
-        values.fromDate = moment
-            .utc(values.fromDate)
+        values.fromDate = moment(values.fromDate)
             .tz(selectedTZString ? selectedTZString : currentTimeZone)
             .utc()
             .format();
-        values.toDate = moment
-            .utc(values.toDate)
+        values.toDate = moment(values.toDate)
             .tz(selectedTZString ? selectedTZString : currentTimeZone)
             .utc()
             .format();
@@ -267,13 +263,9 @@ const SettlementWindows = () => {
     const createSettlement = () => {
         // Validate
         if (settlementModel === '') {
-            toast({
-                position: 'top',
-                description: 'Please choose a settlement model first',
-                status: 'warning',
-                isClosable: true,
-                duration: 3000
-            });
+            return;
+        }
+        if (selectedRowIds.length < 1) {
             return;
         }
         
@@ -308,7 +300,15 @@ const SettlementWindows = () => {
         .finally(() => {
             complete();
             setSettlementModel('');
+            setSelectedRowIds([]);
+            // Ask wheter to go to finalize settlement page
+            onMoveOnOpen();
         });
+    };
+
+
+    const moveToSettlementFinalize = () => {
+        navigate('../finalize-settlement', { state: { autoSearch: true } });
     };
 
 
@@ -465,22 +465,22 @@ const SettlementWindows = () => {
         mode: 'onChange'
     });
 
-    useEffect(() => {
-        getAllOtherParticipants(user, {
-            participantId: user.data?.participantId
-        }).then((data) => {
-            prepareToFspsOptions(data);
-        });
-    }, []);
+    // useEffect(() => {
+    //     getAllOtherParticipants(user, {
+    //         participantId: user.data?.participantId
+    //     }).then((data) => {
+    //         prepareToFspsOptions(data);
+    //     });
+    // }, []);
 
-    const prepareToFspsOptions = (data: IGetAllOtherParticipant) => {
-        const options: any[] = [{ value: 'all', label: 'All' }];
-        data.participantInfoList.forEach((toFsp) => {
-            options.push({ value: toFsp.dfsp_code, label: toFsp.dfsp_code });
-        });
-        setToFspOptions(options);
-        setSelectedToFspOption(options[0]);
-    };
+    // const prepareToFspsOptions = (data: IGetAllOtherParticipant) => {
+    //     const options: any[] = [{ value: 'all', label: 'All' }];
+    //     data.participantInfoList.forEach((toFsp) => {
+    //         options.push({ value: toFsp.dfsp_code, label: toFsp.dfsp_code });
+    //     });
+    //     setToFspOptions(options);
+    //     setSelectedToFspOption(options[0]);
+    // };
 
     const onChangeDateRange = useCallback(
         (range: Ranges) => {
@@ -560,7 +560,7 @@ const SettlementWindows = () => {
     }
 
     return (
-        <Box height='100vh'>
+        <Box>
             <Box height="fit" p="4">
                 <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" p="3">
                     Settlement Windows
@@ -687,6 +687,7 @@ const SettlementWindows = () => {
                         ))}
                     </Select>
                     <Button
+                        isDisabled={ settlementModel === '' || selectedRowIds.length < 1 }
                         color="white"
                         bg="primary"
                         _hover={{
@@ -830,6 +831,24 @@ const SettlementWindows = () => {
                     </HStack>
                 </TableContainer>
             </Box>
+
+            <Modal isOpen={isMoveOnOpen} onClose={onMoveOnClose} isCentered>
+                <ModalOverlay />
+                <ModalContent paddingBottom={"1em"}>
+                    <ModalHeader>Settlement(s) Submitted</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <VStack spacing={3} flex={1}>
+                            <Button w="100%" colorScheme="green" onClick={moveToSettlementFinalize}>
+                                View Submitted Settlements
+                            </Button>
+                            <Button w="100%" colorScheme="red" onClick={onMoveOnClose}>
+                                Continue Viewing Windows
+                            </Button>
+                        </VStack>
+                    </ModalBody>
+                </ModalContent>
+            </Modal>
 
             <Modal isOpen={isFinalizeOpen} onClose={onFinalizeClose} isCentered>
                 <ModalOverlay />

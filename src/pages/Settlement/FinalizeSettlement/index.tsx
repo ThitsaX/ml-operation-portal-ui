@@ -40,13 +40,10 @@ import {
     TfiAngleRight,
 } from 'react-icons/tfi';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getAllOtherParticipants } from '@services/report';
-import { useGetUserState } from '@store/hooks';
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone';
 import { memo, useMemo, useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { IGetAllOtherParticipant } from '@typescript/services';
 import { IFinalizeSettlementForm } from '@typescript/form/settlements';
 import { useLoadingContext } from '@contexts/hooks';
 import { ITimezoneOption } from 'react-timezone-select';
@@ -65,6 +62,7 @@ import {
     finalizeSettlementWindow, 
     getNetTransferAmountBySettlement
 } from '@services/settlements';
+import { useLocation } from "react-router-dom";
 
 
 const finalizeSettlementHelper = new FinalizeSettlementHelper();
@@ -78,10 +76,6 @@ const FinalizeSettlement = () => {
     const { data: currencyList } = useGetParticipantCurrencyList();
     const { data: stateList } = useGetSettlementStateList();
 
-    const user = useGetUserState();
-    const [toFspOptions, setToFspOptions] = useState<any[]>([]);
-    const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string }>();
-
     const [pageNumber, setPageNumber] = useState<String>('1');
     const { isOpen: isFinalizeOpen, onOpen: onFinalizeOpen, onClose: onFinalizeClose } = useDisclosure();
 
@@ -90,6 +84,8 @@ const FinalizeSettlement = () => {
     const [netTransferAmount, setNetTransferAmount] = useState<INetTransferAmount | null>(null);
 
     const [finalizeSettlements, setFinalizeSettlements] = useState<IFinalizeSettlement[]>([]);
+
+    const { state } = useLocation();
 
 
     const schema = finalizeSettlementHelper.schema;
@@ -114,13 +110,11 @@ const FinalizeSettlement = () => {
         const currentTimeZone = moment.tz.guess();
 
         // Convert the current timezone to UTC
-        values.fromDate = moment
-            .utc(values.fromDate)
+        values.fromDate = moment(values.fromDate)
             .tz(selectedTZString ? selectedTZString : currentTimeZone)
             .utc()
             .format();
-        values.toDate = moment
-            .utc(values.toDate)
+        values.toDate = moment(values.toDate)
             .tz(selectedTZString ? selectedTZString : currentTimeZone)
             .utc()
             .format();
@@ -292,7 +286,7 @@ const FinalizeSettlement = () => {
             Header: 'Action',
             disableSortBy: true,
             Cell: ({ row }: any) => {
-                if (row.original.state === 'PENDING_SETTLEMENT') {
+                if (!['SETTLED', 'ABORTED'].includes(row.original.state)) {
                     return (
                         <HStack spacing={4}>
                             <Button
@@ -355,21 +349,20 @@ const FinalizeSettlement = () => {
     });
 
     useEffect(() => {
-        getAllOtherParticipants(user, {
-            participantId: user.data?.participantId
-        }).then((data) => {
-            prepareToFspsOptions(data);
-        });
+        // Auto search settlements if coming from settlement windows page
+        if (state?.autoSearch) {
+            onSearchHandler(getValues());
+        }
     }, []);
 
-    const prepareToFspsOptions = (data: IGetAllOtherParticipant) => {
-        const options: any[] = [{ value: 'all', label: 'All' }];
-        data.participantInfoList.forEach((toFsp) => {
-            options.push({ value: toFsp.dfsp_code, label: toFsp.dfsp_code });
-        });
-        setToFspOptions(options);
-        setSelectedToFspOption(options[0]);
-    };
+    // const prepareToFspsOptions = (data: IGetAllOtherParticipant) => {
+    //     const options: any[] = [{ value: 'all', label: 'All' }];
+    //     data.participantInfoList.forEach((toFsp) => {
+    //         options.push({ value: toFsp.dfsp_code, label: toFsp.dfsp_code });
+    //     });
+    //     setToFspOptions(options);
+    //     setSelectedToFspOption(options[0]);
+    // };
 
     const onChangeDateRange = useCallback(
         (range: Ranges) => {
@@ -446,7 +439,7 @@ const FinalizeSettlement = () => {
     }
 
     return (
-        <Box height='100vh'>
+        <Box>
             <Box height="fit" p="4">
                 <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" p="3">
                     Finalize Settlement
