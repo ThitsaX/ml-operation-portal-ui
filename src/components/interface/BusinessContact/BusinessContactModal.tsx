@@ -19,6 +19,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { IBusinessContact, BusinessContactType } from '@typescript/services/participant';
 import { ContactHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { CustomSelect } from '@components/interface';
 import { isEmpty } from 'lodash-es';
 import { useState, useEffect } from 'react';
 
@@ -81,15 +82,22 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
                 name="contactType"
                 control={control}
                 render={({ field }) => (
-                  <Select {...field}
-                    value={field.value || ""}
-                    placeholder="Select Contact Type">
-                    {Object.values(BusinessContactType).map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </Select>
+                  <CustomSelect
+                    options={Object.values(BusinessContactType).map((type) => ({
+                      value: type,
+                      label: type,
+                    }))}
+                    value={
+                      field.value
+                          ? { value: field.value,
+                              label: field.value }
+                          : null
+                      }
+                    onChange={(selectedOption) => {
+                      field.onChange(selectedOption ? selectedOption.value : '');
+                    }}
+                    placeholder="Select Contact Type"
+                  />
                 )}
               />
               <FormErrorMessage>{errors.contactType?.message}</FormErrorMessage>
