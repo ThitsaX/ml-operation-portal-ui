@@ -95,7 +95,6 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
                       }
                     onChange={(selectedOption) => {
                       field.onChange(selectedOption ? selectedOption.value : '');
-                      trigger('contactType');
                     }}
                     placeholder="Select Contact Type"
                   />
