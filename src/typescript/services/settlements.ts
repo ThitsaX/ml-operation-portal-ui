@@ -12,6 +12,7 @@ export interface ISettlementModel {
     autoPositionReset: boolean;
     adjustPosition: boolean;
     schedulerConfigIds: [];
+    type: string;
 }
 
 export interface ISettlementState {

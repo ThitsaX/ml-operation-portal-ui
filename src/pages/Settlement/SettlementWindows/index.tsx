@@ -128,11 +128,11 @@ const SettlementWindows = () => {
         values.fromDate = moment(values.fromDate)
             .tz(selectedTZString ? selectedTZString : currentTimeZone)
             .utc()
-            .format();
+            .format('YYYY-MM-DDTHH:mm:00');
         values.toDate = moment(values.toDate)
             .tz(selectedTZString ? selectedTZString : currentTimeZone)
             .utc()
-            .format();
+            .format('YYYY-MM-DDTHH:mm:59');
 
         if (values.state === '') {
             delete values.state;

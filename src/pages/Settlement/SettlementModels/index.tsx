@@ -35,79 +35,79 @@ import { ISettlementModel } from '@typescript/services';
 const sampleSettlementWindow = [
 
     {
-        "modelName": 'testuser1@gmail.com',
-        "modelType": 'Test User One',
-        "currency": 'DFSP - Admin',
+        "name": 'testuser1@gmail.com',
+        "type": 'Test User One',
+        "currencyId": 'DFSP - Admin',
     },
     {
-        "modelName": 'testuser2@gmail.com',
-        "modelType": 'Test User Two',
-        "currency": 'DFSP - Operation',
+        "name": 'testuser2@gmail.com',
+        "type": 'Test User Two',
+        "currencyId": 'DFSP - Operation',
     },
     {
-        "modelName": 'testuser3@gmail.com',
-        "modelType": 'Test User Three',
-        "currency": 'HUB - Admin',
+        "name": 'testuser3@gmail.com',
+        "type": 'Test User Three',
+        "currencyId": 'HUB - Admin',
     },
     {
-        "modelName": 'testuser4@gmail.com',
-        "modelType": 'Test User Four',
-        "currency": 'HUB - Manager',
+        "name": 'testuser4@gmail.com',
+        "type": 'Test User Four',
+        "currencyId": 'HUB - Manager',
     },
     {
-        "modelName": 'testuser5@gmail.com',
-        "modelType": 'Test User Five',
-        "currency": 'HUB - User',
+        "name": 'testuser5@gmail.com',
+        "type": 'Test User Five',
+        "currencyId": 'HUB - User',
     },
     {
-        "modelName": 'testuser1@gmail.com',
-        "modelType": 'Test User One',
-        "currency": 'DFSP - Admin',
+        "name": 'testuser1@gmail.com',
+        "type": 'Test User One',
+        "currencyId": 'DFSP - Admin',
     },
     {
-        "modelName": 'testuser2@gmail.com',
-        "modelType": 'Test User Two',
-        "currency": 'DFSP - Operation',
+        "name": 'testuser2@gmail.com',
+        "type": 'Test User Two',
+        "currencyId": 'DFSP - Operation',
     },
     {
-        "modelName": 'testuser3@gmail.com',
-        "modelType": 'Test User Three',
-        "currency": 'HUB - Admin',
+        "name": 'testuser3@gmail.com',
+        "type": 'Test User Three',
+        "currencyId": 'HUB - Admin',
     },
     {
-        "modelName": 'testuser4@gmail.com',
-        "modelType": 'Test User Four',
-        "currency": 'HUB - Manager',
+        "name": 'testuser4@gmail.com',
+        "type": 'Test User Four',
+        "currencyId": 'HUB - Manager',
     },
     {
-        "modelName": 'testuser5@gmail.com',
-        "modelType": 'Test User Five',
-        "currency": 'HUB - User',
+        "name": 'testuser5@gmail.com',
+        "type": 'Test User Five',
+        "currencyId": 'HUB - User',
     },
     {
-        "modelName": 'testuser1@gmail.com',
-        "modelType": 'Test User One',
-        "currency": 'DFSP - Admin',
+        "name": 'testuser1@gmail.com',
+        "type": 'Test User One',
+        "currencyId": 'DFSP - Admin',
     },
     {
-        "modelName": 'testuser2@gmail.com',
-        "modelType": 'Test User Two',
-        "currency": 'DFSP - Operation',
+        "name": 'testuser2@gmail.com',
+        "type": 'Test User Two',
+        "currencyId": 'DFSP - Operation',
     },
     {
-        "modelName": 'testuser3@gmail.com',
-        "modelType": 'Test User Three',
-        "currency": 'HUB - Admin',
+        "name": 'testuser3@gmail.com',
+        "type": 'Test User Three',
+        "currencyId": 'HUB - Admin',
     },
     {
-        "modelName": 'testuser4@gmail.com',
-        "modelType": 'Test User Four',
-        "currency": 'HUB - Manager',
+        "name": 'testuser4@gmail.com',
+        "type": 'Test User Four',
+        "currencyId": 'HUB - Manager',
     },
     {
-        "modelName": 'testuser5@gmail.com',
-        "modelType": 'Test User Five',
-        "currency": 'HUB - User',
+        "name": 'testuser5@gmail.com',
+        "type": 'Test User Five',
+        "currencyId": 'HUB - User',
     }
 ];
 
@@ -124,23 +124,23 @@ const SettlementModels = () => {
 
     
 
-    const columns = useMemo<Column<ISettlementModel>[]>(() => [
+    const columns = useMemo<Column<Partial<ISettlementModel>>[]>(() => [
             {
                 Header: 'Model Name',
-                accessor: 'modelName',
+                accessor: 'name',
             },
             {
                 Header: 'Model Type',
-                accessor: 'modelType'
+                accessor: 'type'
             },
             {
                 Header: 'Currency',
-                accessor: 'currency',
+                accessor: 'currencyId',
             },
             {
                 Header: 'Action',
                 disableSortBy: true,
-                Cell: ({ row }: { row: Row<ISettlementModel> }) => (
+                Cell: ({ row }: any) => (
 
                     <HStack spacing={3}>
                         <Button colorScheme="blue" size="md"
