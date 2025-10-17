@@ -9,7 +9,10 @@ import {
     Input,
     useToast,
     Select,
-    Stack
+    Stack,
+    VStack,
+    SimpleGrid,
+    Flex
 } from '@chakra-ui/react';
 import { useLoadingContext } from '@contexts/hooks';
 import { AuditReportHelper } from '@helpers/form';
@@ -25,6 +28,10 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { ITimezoneOption } from 'react-timezone-select';
 import { downloadFile, generateAuditReport } from '@services/report';
+import { type IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from '@helpers/errors';
+import { OptionType } from '@components/interface/CustomSelect';
+import { CustomSelect } from '@components/interface';
 
 const auditHelper = new AuditReportHelper();
 
@@ -33,7 +40,7 @@ const AuditReport = () => {
 
     const { start, complete } = useLoadingContext();
     const [runButtonState, setRunButtonState] = useState(true);
-    const initialFileName = 'Audit-Report';
+    const initialFileName = 'AuditReport';
 
     /* Redux */
     const { data: user } = useGetUserState();
@@ -63,12 +70,11 @@ const AuditReport = () => {
         reset
     } = useForm<IGetAuditReport>({
         defaultValues: {
-            participantId: user?.participantId,
-            fromDate: moment().format('YYYY-MM-DDTHH:mm'),
-            toDate: moment().format('YYYY-MM-DDTHH:mm'),
+            fromDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
+            toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
             userId: '',
-            action: '',
-            fileType: '',
+            actionId: '',
+            fileType: 'xlsx',
             timezoneOffset: ''
         },
         resolver: zodResolver(auditHelper.schema),
@@ -76,10 +82,10 @@ const AuditReport = () => {
     });
 
     useEffect(() => {
-        if (user?.participantId) {
-            setValue('participantId', user.participantId);
-        }
-    }, [user?.participantId, setValue]);
+        setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
+        setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+
+    }, [selectedTimezone, user?.participantId, setValue]);
 
     // Handler
     const onDownloadChangeHandler = (e: any) => {
@@ -90,14 +96,12 @@ const AuditReport = () => {
         const fileType = formData.fileType;
         const currentTimeZone = moment.tz.guess();
 
-        // Convert to UTC
-        const utcFromDate = moment(formData.fromDate)
-            .tz(selectedTimezone?.value || currentTimeZone)
+        // Interpret input as selected timezone, then convert to UTC
+        const utcFromDate = moment.tz(formData.fromDate, selectedTimezone?.value || currentTimeZone)
             .utc()
             .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
-        const utcToDate = moment(formData.toDate)
-            .tz(selectedTimezone?.value || currentTimeZone)
+        const utcToDate = moment.tz(formData.toDate, selectedTimezone?.value || currentTimeZone)
             .utc()
             .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
@@ -109,7 +113,6 @@ const AuditReport = () => {
             ...formData,
             fromDate: utcFromDate,
             toDate: utcToDate,
-            participantId: user?.participantId,
             timezoneOffset: tzOffSet
         })
             .then((res: any) => {
@@ -125,8 +128,14 @@ const AuditReport = () => {
                     });
                 }
             })
-            .catch((e) => {
-                console.log(e);
+            .catch((error: IApiErrorResponse) => {
+                toast({
+                    position: 'top',
+                    description: getErrorMessage(error) || 'Faield to download',
+                    status: 'warning',
+                    isClosable: true,
+                    duration: 3000
+                });
             })
             .finally(() => {
                 complete();
@@ -135,14 +144,18 @@ const AuditReport = () => {
     };
 
     return (
-        <Box height="fit" p="4">
-            <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" pb="3">
-                AuditReport
+        <VStack align="flex-start" h="full" p="3" mt={10} w="full">
+            <Heading fontSize="2xl" mb={6}>
+                Audit Report
             </Heading>
 
-            <Stack borderWidth="1px" borderRadius="lg" height="full" p="4" spacing={4}>
-                <HStack alignItems={'flex-start'} spacing={4}>
-
+            <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
+                {/* --- Filters Section --- 1 per row on mobile, 2 on md, 4 on lg+*/}
+                <SimpleGrid
+                    columns={{ base: 1, md: 2, lg: 4 }}
+                    spacing={4}
+                    w="full"
+                >
                     <FormControl isInvalid={!isEmpty(errors.fromDate)}>
                         <FormLabel>Start Date</FormLabel>
                         <Controller
@@ -153,8 +166,8 @@ const AuditReport = () => {
                                     type="datetime-local"
                                     value={value}
                                     onChange={(e) => {
-                                    onChange(e.target.value);
-                                    trigger('toDate');
+                                        onChange(e.target.value);
+                                        trigger("toDate");
                                     }}
                                 />
                             )}
@@ -172,71 +185,117 @@ const AuditReport = () => {
                                     type="datetime-local"
                                     value={value}
                                     onChange={(e) => {
-                                    onChange(e.target.value);
-                                    trigger('fromDate');
+                                        onChange(e.target.value);
+                                        trigger("fromDate");
                                     }}
                                 />
                             )}
                         />
                         <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
                     </FormControl>
+
                     <FormControl>
                         <FormLabel>Action</FormLabel>
                         <Controller
                             control={control}
-                            name="action"
+                            name="actionId"
                             render={({ field }) => (
-                                <Select {...field} placeholder="All">
-                                    {actionList?.map((item) => (
-                                        <option key={item.actionId} value={item.actionName}>
-                                            {item.actionName}
-                                        </option>
-                                    ))}
-                                </Select>
+                                <CustomSelect
+                                    maxMenuHeight={300}
+                                    isClearable={true}
+                                    options={
+                                        (actionList ?? []).map((item) => ({
+                                            value: item.actionId,
+                                            label: item.actionName,
+                                        }))
+                                    }
+                                    value={
+                                        field.value
+                                            ? {
+                                                value: field.value,
+                                                label:
+                                                    actionList?.find((a) => a.actionId === field.value)
+                                                        ?.actionName || '',
+                                            }
+                                            : null
+                                    }
+                                    onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                                    placeholder="All"
+                                />
                             )}
                         />
                     </FormControl>
 
                     <FormControl>
-                        <FormLabel>MadeBy</FormLabel>
+                        <FormLabel>Made By</FormLabel>
                         <Controller
                             control={control}
                             name="userId"
                             render={({ field }) => (
-                                <Select {...field} placeholder="All">
-                                    {userList?.map((user) => (
-                                        <option key={user.userId} value={user.userId}>
-                                            {user.email}
-                                        </option>
-                                    ))}
-                                </Select>
+                                <CustomSelect
+                                    maxMenuHeight={300}
+                                    isClearable={true}
+                                    options={
+                                        (userList ?? []).map((item) => ({
+                                            value: item.userId,
+                                            label: item.email,
+                                        }))
+                                    }
+                                    value={
+                                        field.value
+                                            ? {
+                                                value: field.value,
+                                                label:
+                                                    userList?.find((a) => a.userId === field.value)
+                                                        ?.email || '',
+                                            }
+                                            : null
+                                    }
+                                    onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                                    placeholder="All"
+                                />
                             )}
                         />
                     </FormControl>
-                </HStack>
-                <HStack width="100%" justifyContent="flex-end" spacing={4}>
-                    <FormControl width="250px">
+                </SimpleGrid>
+
+                {/* --- Download Section --- */}
+                <Stack
+                    direction={{ base: "column", md: "row" }}
+                    spacing={4}
+                    justify={{ base: "flex-start", md: "flex-end" }}
+                    w="full"
+                >
+                    <FormControl w={{ base: "100%", sm: "auto", md: "250px" }}>
                         <Controller
                             control={control}
                             name="fileType"
                             render={({ field }) => (
-                                <Select {...field} placeholder="Choose Format" width="250px">
-                                    <option value="xlsx">XLSX</option>
-                                    <option value="csv">CSV</option>
-                                </Select>
+                                <CustomSelect
+                                  options={[
+                                    { value: "xlsx", label: "XLSX" },
+                                    { value: "csv", label: "CSV" }
+                                  ]}
+                                  value={field.value ? { value: field.value, label: field.value === "xlsx" ? "XLSX" : "CSV" } : null}
+                                  onChange={(selectedOption) => {
+                                    field.onChange(selectedOption?.value || '');
+                                  }}
+                                />
                             )}
                         />
                     </FormControl>
+
                     <Button
-                        colorScheme='blue'
+                        colorScheme="blue"
                         isDisabled={!isValid || !runButtonState}
                         onClick={onDownloadChangeHandler}
+                        w={{ base: "100%", sm: "auto" }}
                     >
                         Download
                     </Button>
-                </HStack>
+                </Stack>
             </Stack>
-        </Box>
+        </VStack>
     );
 };
 

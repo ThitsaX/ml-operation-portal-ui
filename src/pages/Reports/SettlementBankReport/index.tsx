@@ -4,68 +4,60 @@ import {
   FormControl,
   FormLabel,
   Heading,
-  HStack,
   Stack,
   useToast,
-  Select,
   Input,
-  FormErrorMessage
+  FormErrorMessage,
+  VStack,
+  SimpleGrid
 } from '@chakra-ui/react';
 import { SettlementBankReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   downloadFile,
-  generateFeeReport,
-  getAllOtherParticipants,
+  generateSettlementBankReport,
   getSettlementIds
 } from '@services/report';
 
 import { useGetUserState } from '@store/hooks';
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone';
-import { memo, useEffect, useState, useCallback } from 'react';
+import { memo, useMemo, useEffect, useState, useCallback } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { type IGetAllOtherParticipant } from '@typescript/services';
 import { type ISettlementBankReport } from '@typescript/form/fee-report';
 import { useLoadingContext } from '@contexts/hooks';
 import { ITimezoneOption } from 'react-timezone-select';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
-import { TransferType } from '@typescript/pages';
+
 import { FaSearch } from "react-icons/fa";
 import { IGetSettlementIds } from "@typescript/services/report";
 import { useGetParticipantCurrencyList } from '@hooks/services';
+import { type IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from '@helpers/errors';
+import { CustomSelect } from '@components/interface';
+import { OptionType } from '@components/interface/CustomSelect';
 
 const settlementBankReport = new SettlementBankReportHelper();
-const initialFileName = 'Settlement-Bank-Report';
+const initialFileName = 'SettlementBankReport';
 
 const SettlementBankReport = () => {
 
   const [runButtonState, setRunButtonState] = useState(true);
-  const [transferType, setTransferType] = useState<TransferType>('outbound');
-  const [settlementModel, setSettlementModel] = useState<string>('');
-  const [settlementIdOptions, setSettlementIdOptions] = useState<
-    { value: string; label: string }[]
-  >([
-    { value: '', label: 'Select Settlement ID' }, // placeholder
-    { value: 'SETTLEMENT-001', label: 'Settlement ID - 001' },
-    { value: 'SETTLEMENT-002', label: 'Settlement ID - 002' },
-    { value: 'SETTLEMENT-003', label: 'Settlement ID - 003' },
-  ]);
+  const [settlementIdOptions, setSettlementIdOptions] = useState<any[]>([]);
+  const [settlementId, setSettlementId] = useState("");
 
-  const [selectedSettlementId, setSelectedSettlementId] = useState<{
-    value: string;
-    label: string;
-  } | null>(null);
-
-  const [toFspOptions, setToFspOptions] = useState<any[]>([]);
-  const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string; }>();
   const { data: currencyList } = useGetParticipantCurrencyList();
   // Redux
   const user = useGetUserState();
   const toast = useToast();
   const { start, complete } = useLoadingContext();
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
+
+  const selectedTZString = useMemo(
+    () => (selectedTimezone.value),
+    [selectedTimezone]
+  );
 
   const schema = settlementBankReport.schema;
 
@@ -74,39 +66,44 @@ const SettlementBankReport = () => {
     getValues,
     trigger,
     handleSubmit,
+    setValue,
     formState: { errors, isValid }
   } = useForm<ISettlementBankReport>({
     resolver: zodResolver(schema),
     defaultValues: {
-      start_date: moment().format('YYYY-MM-DDTHH:mm'),
-      end_date: moment().format('YYYY-MM-DDTHH:mm')
+      startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
+      endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
+      settlementId: '',
+      currency: 'all',
+      fileType: 'xlsx',
+      timezoneOffset: '',
     },
     mode: 'onChange'
   });
+
+  useEffect(() => {
+    setValue('startDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
+    setValue('endDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+
+  }, [selectedTimezone, setValue]);
 
   const search = useCallback(() => {
     start();
     setRunButtonState(false);
 
     const values = getValues();
-    const currentTimeZone = moment.tz.guess();
 
-    // Convert to UTC
-    const utcStartDate = moment(values.start_date)
-      .tz(selectedTimezone?.value || currentTimeZone)
-      .utc()
+    const StartDate = moment.tz(values.startDate, selectedTimezone?.value)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
-    const utcEndDate = moment(values.end_date)
-      .tz(selectedTimezone?.value || currentTimeZone)
-      .utc()
+    const EndDate = moment.tz(values.endDate, selectedTimezone?.value)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const tzOffSet = selectedTimezone?.offset === 0
       ? '0000'
-      : moment().tz(selectedTimezone?.value || currentTimeZone).format('ZZ').replace('+', '');
+      : moment().tz(selectedTimezone?.value).format('ZZ').replace('+', '');
 
-    getSettlementIds(user, utcStartDate, utcEndDate, tzOffSet)
+    getSettlementIds(user, StartDate, EndDate, tzOffSet)
       .then((data: IGetSettlementIds) => {
         if (data.settlementIdDataList?.length === 0) {
           toast({
@@ -125,8 +122,9 @@ const SettlementBankReport = () => {
         });
 
         setSettlementIdOptions(options);
-
-        setSelectedSettlementId(null);
+        setSettlementId("");
+        setValue('settlementId', '');
+        setValue('fileType', 'xlsx');
       })
       .finally(() => {
         setRunButtonState(true);
@@ -135,58 +133,29 @@ const SettlementBankReport = () => {
   }, [complete, getValues, start, toast, user]);
 
   const onSearchClick = useCallback(async () => {
-    const isValid = await trigger();
-    if (isValid) {
-      search();
-    }
-  }, [search, trigger]);
-
-  useEffect(() => {
-    getAllOtherParticipants(user, {
-      participantId: user.data?.participantId
-    }).then((data) => {
-      prepareToFspsOptions(data);
-    });
-  }, []);
-
-  const prepareToFspsOptions = (data: IGetAllOtherParticipant) => {
-    const options: any[] = [];
-
-    options.push({ value: 'all', label: 'All' }); /** Default option */
-
-    data.participantInfoList.map((toFsp) => {
-      options.push({ value: toFsp.dfsp_code, label: toFsp.dfsp_code });
-    });
-
-    setToFspOptions(options);
-    setSelectedToFspOption(options[0]);
-  };
+    search();
+  }, [search]);
 
   const onDownloadChangeHandler = (e: any) => {
     start();
     setRunButtonState(false);
 
-    const fileType = e.target.value;
-
-    // const startDate = getValues().start_date;
-    // const endDate = getValues().end_date;
-
-    // const utcStartDate = moment.utc(startDate).startOf('day').format();
-    // const utcEndDate = moment.utc(endDate).endOf('day').format();
+    const formData = getValues();
+    const fileType = formData.fileType;
 
     const selectedTZString = selectedTimezone.value;
 
-    generateFeeReport(user, {
-      fromFspId: transferType === 'outbound' ? user.data?.participantName : selectedToFspOption?.value,
-      toFspId: transferType === 'outbound' ? selectedToFspOption?.value : user.data?.participantName,
-      tzOffSet: selectedTimezone.offset === 0
+    generateSettlementBankReport(user, {
+      settlementId: formData.settlementId,
+      currencyId: formData.currency,
+      timezoneOffset: selectedTimezone.offset === 0
         ? "0000"
         : moment().tz(selectedTZString).format('ZZ').replace('+', ''),
-      fileType
+      fileType: fileType
     })
       .then((res: any) => {
-        if (res?.rpt_byte?.length > 0) {
-          downloadFile(initialFileName, fileType, res.rpt_byte);
+        if (res?.rptByte?.length > 0) {
+          downloadFile(initialFileName, fileType, res.rptByte);
         } else {
           toast({
             position: 'top',
@@ -197,8 +166,14 @@ const SettlementBankReport = () => {
           });
         }
       })
-      .catch((e) => {
-        console.log(e);
+      .catch((error: IApiErrorResponse) => {
+        toast({
+          position: 'top',
+          description: getErrorMessage(error) || 'Faield to download',
+          status: 'warning',
+          isClosable: true,
+          duration: 3000
+        });
       })
       .finally(() => {
         complete();
@@ -207,131 +182,239 @@ const SettlementBankReport = () => {
   };
 
   return (
-    <Box height="fit" p="4">
-      <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" p="3">
-        Settlement Bank Report
-      </Heading>
-      <Stack borderWidth="1px" borderRadius="lg" height="full" p="2" mb={4}>
-        <HStack alignItems={'flex-start'} p={2} spacing={8}>
 
+    <VStack align="flex-start" w="full" h="full" p="3" mt={10}>
+      <Stack>
+        <Heading fontSize="2xl" mb={6}>Settlement Bank Report</Heading>
+      </Stack>
+
+      <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
+        <SimpleGrid
+          columns={{ base: 1, md: 3 }}
+          spacing={4}
+          w="full"
+        >
           <FormControl
-            isInvalid={!isEmpty(errors.start_date)}
-            pb="1">
+            isInvalid={!isEmpty(errors.startDate)}
+          >
             <FormLabel>Start Date</FormLabel>
             <Controller
               control={control}
-              render={({ field: { value, onChange, onBlur } }) => {
-                return (
-                  <Input
-                    value={value}
-                    onChange={(e) => {
-                      onChange(e);
-                      trigger('end_date');
-                    }}
-                    onBlur={onBlur}
-                    type="datetime-local"
-                  />
-                );
-              }}
-              name="start_date"
+              name="startDate"
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  type="datetime-local"
+                  onChange={(e) => {
+                    field.onChange(e);
+                    trigger("endDate");
+                    setSettlementIdOptions([]);
+                    setSettlementId(""); // also clear selected settlementId
+                  }}
+                />
+              )}
             />
-            <FormErrorMessage>{errors.start_date?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.startDate?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.end_date)} pb="1">
+          <FormControl
+            isInvalid={!isEmpty(errors.endDate)}
+          >
             <FormLabel>End Date</FormLabel>
             <Controller
               control={control}
-              render={({
-                field: { value, onChange, onBlur },
-                fieldState: { error }
-              }) => {
-                return (
-                  <Input
-                    value={value}
-                    onChange={(e) => {
-                      onChange(e);
-                      trigger('start_date');
-                    }}
-                    onBlur={onBlur}
-                    type="datetime-local"
-                  />
-                );
-              }}
-              name="end_date"
+              name="endDate"
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  type="datetime-local"
+                  onChange={(e) => {
+                    field.onChange(e);
+                    trigger("startDate");
+                    setSettlementIdOptions([]);
+                    setSettlementId(""); // also clear selected settlementId
+                  }}
+                />
+              )}
             />
-            <FormErrorMessage>{errors.end_date?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.endDate?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.settlementId)} textAlign="right">
-            <Button onClick={handleSubmit(onSearchClick)} isDisabled={!isValid}
-              colorScheme='blue' gap="2"
-              mt="30px"
-              size='md'>
+          <FormControl
+            display="flex"
+            justifyContent={{ base: "stretch", md: "flex-end" }}
+            alignItems="flex-end"
+            mb={1}
+          >
+            <Button
+              onClick={handleSubmit(onSearchClick)}
+              isDisabled={!isValid}
+              colorScheme="blue"
+              gap="2"
+              size="md"
+              w={{ base: "100%", md: "50%" }}
+            >
               <FaSearch /> Search
             </Button>
           </FormControl>
 
-        </HStack>
+        </SimpleGrid>
       </Stack>
-      <Stack borderWidth="1px" borderRadius="lg" p={4} height="full">
-        <HStack alignItems={'flex-start'} p={2} spacing={4}>
 
-
+      {settlementIdOptions.length > 0 && (<Stack borderWidth="1px" w="full" borderRadius="lg" p={4} spacing={4}>
+        <SimpleGrid
+          columns={{ base: 1, md: 3 }}
+          spacing={4}
+          w="full"
+        >
           <FormControl
-            width={{ base: '200px', md: '250px' }}
-            isInvalid={!isEmpty(errors.settlementId)}>
+            width={{ base: "100%" }}
+            isInvalid={!isEmpty(errors.settlementId)}
+          >
             <FormLabel>Settlement ID:</FormLabel>
             <Controller
               name="settlementId"
               control={control}
+
               render={({ field }) => (
-                <Select {...field} placeholder="Select Settlement ID">
-                  {settlementIdOptions.map((opt, index) => (
-                    <option key={index} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </Select>
+                <CustomSelect
+                  maxMenuHeight={300}
+                  isClearable={true}
+                  options={settlementIdOptions}
+                  value={
+                    field.value
+                      ? {
+                        value: field.value,
+                        label: settlementIdOptions.find((s) => s.value === field.value)?.label || '',
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => {
+                    field.onChange(selected?.value || '');
+                    setSettlementId(selected?.value || '');
+                  }}
+                  placeholder="Select Settlement ID"
+                />
+
               )}
             />
           </FormControl>
-          <FormControl width={{ base: '200px', md: '250px' }} isInvalid={!isEmpty(errors.currency)}>
+
+          <FormControl
+            width={{ base: "100%" }}
+            isInvalid={!isEmpty(errors.currency)}
+          >
             <FormLabel>Currency</FormLabel>
             <Controller
               name="currency"
               control={control}
               render={({ field }) => (
-                <Select {...field} placeholder="Select Currency">
-                  {currencyList?.map((item, index) => (
-                    <option key={index} value={item.currency}>
-                      {item.currency}
-                    </option>
-                  ))}
-                </Select>
+                <CustomSelect
+                  maxMenuHeight={300}
+                  isClearable={false}
+                  options={[
+                    { value: 'all', label: 'All' },
+                    ...(currencyList ?? []).map((item) => ({
+                      value: item.currency,
+                      label: item.currency,
+                    })),
+                  ]}
+                  value={
+                    field.value
+                      ? {
+                        value: field.value,
+                        label:
+                          field.value === 'all'
+                            ? 'All'
+                            : currencyList?.find((c) => c.currency === field.value)?.currency || '',
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                  placeholder="Select Currency"
+                />
               )}
             />
             <FormErrorMessage>{errors.currency?.message}</FormErrorMessage>
           </FormControl>
+        </SimpleGrid>
 
+        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} w="full">
+          <Box />
+          <Box />
+          <Stack direction="row" spacing={4} w="100%">
+            <FormControl>
+              <Controller
+                control={control}
+                name="fileType"
+                render={({ field }) => (
+                  <CustomSelect
+                    options={[
+                      { value: 'xlsx', label: 'XLSX' },
+                      { value: 'pdf', label: 'PDF' },
+                    ]}
+                    value={field ? { value: field.value, label: field.value.toUpperCase() } : null}
+                    onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                    placeholder="Choose Format"
+                  />
+                )}
+              />
+            </FormControl>
 
-        </HStack>
-        <HStack justifyContent='flex-end' p={2}>
-          <Select
-            placeholder="Choose Format"
-            value={settlementModel}
-            onChange={(e) => setSettlementModel(e.target.value)}
-            width="250px"
+            <Button
+              colorScheme="blue"
+              onClick={onDownloadChangeHandler}
+              isDisabled={!settlementId || !runButtonState}
+            >
+              Download
+            </Button>
+          </Stack>
+        </SimpleGrid>
+
+        {/* <Stack
+          direction={{ base: "column", md: "row" }}
+          spacing={4}
+          justify="flex-end"
+          align="flex-end"
+          flexWrap="wrap">
+          <FormControl w={{ base: "100%" }}>
+            <Controller
+              control={control}
+              name="fileType"
+              render={({ field }) => (
+                <CustomSelect
+                  options={[
+                    { value: 'xlsx', label: 'XLSX' },
+                    { value: 'pdf', label: 'PDF' },
+                  ]}
+                  value={
+                    field
+                      ? {
+                        value: field.value,
+                        label: field.value.toUpperCase(),
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                  placeholder="Choose Format"
+                />
+              )}
+            />
+          </FormControl>
+
+          <Button
+            colorScheme="blue"
+            width={{ base: "100%" }}
+            isDisabled={!settlementId || !runButtonState}
+            onClick={onDownloadChangeHandler}
           >
-            <option value="xlsx">XLSX</option>
-            <option value="pdf">PDF</option>
-          </Select>
-          <Button colorScheme='blue' isDisabled={!isValid || !runButtonState} onClick={onDownloadChangeHandler}>
             Download
           </Button>
-        </HStack>
+        </Stack> */}
       </Stack>
-    </Box>
+      )
+      }
+    </VStack >
   );
 };
 

@@ -12,7 +12,8 @@ import moment from 'moment';
 
 const contentTypes = {
   csv: 'text/csv;',
-  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;'
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;',
+  pdf: 'application/pdf;'
 };
 
 export const generateSettlementDetailReport = async (params: any) => {
@@ -171,28 +172,26 @@ export const generateSettlementStatementReport = async (
     });
 };
 
-export const generateFeeReport = async (
+export const generateSettlementBankReport = async (
   user: IUserState,
   paramsValues: any
 ) => {
   const params = {
-    start_date: paramsValues.startDate,
-    end_date: paramsValues.endDate,
-    from_fsp_id: paramsValues.fromFspId,
-    to_fsp_id: paramsValues.toFspId,
-    time_zone_offset: paramsValues.tzOffSet,
-    file_type: paramsValues.fileType
+    settlementId: paramsValues.settlementId,
+    currencyId: paramsValues.currencyId,
+    fileType: paramsValues.fileType,
+    timezoneOffset: paramsValues.timezoneOffset,
   };
 
   const accessToken = await generateAccessToken({
     method: 'POST',
-    uri: routes.generate_fee_report,
+    uri: routes.generateSettlementBankReport,
     secret: user.auth?.secretKey as string
   });
 
   const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
   return axios
-    .post<any>(routes.generate_fee_report, null, {
+    .post<any>(routes.generateSettlementBankReport, null, {
       params
     })
     .then((d) => {
@@ -290,14 +289,17 @@ export const downloadFile = (
     downloadContentType = contentTypes.csv;
   } else if (fileType == 'xlsx') {
     downloadContentType = contentTypes.xlsx;
-  } else {
+  }else if (fileType == 'pdf') {
+    downloadContentType = contentTypes.pdf;
+  } 
+  else {
     throw 'Content type not supported';
   }
 
   const downloadLink = document.createElement('a');
   const linkSource = `data:${downloadContentType}base64,${base64String}`;
   downloadLink.href = linkSource;
-  downloadLink.download = `${initialFileName}_${moment().format('DD-MM-YYYY')}`;
+  downloadLink.download = `${initialFileName}-${moment().format('DDMMMYYYY')}`;
   downloadLink.target = '_blank';
   downloadLink.click();
 };

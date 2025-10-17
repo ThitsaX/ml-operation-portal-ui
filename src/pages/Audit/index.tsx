@@ -16,11 +16,13 @@ import {
   Tr,
   useToast,
   VStack,
+  Stack,
   Divider,
   IconButton,
   Text,
-  Select,
   Icon,
+  Select,
+  SimpleGrid,
 } from '@chakra-ui/react';
 import {
   TfiAngleDoubleLeft,
@@ -42,6 +44,7 @@ import {
   usePagination,
   useSortBy,
   useTable,
+  Column,
 } from 'react-table';
 import { Controller, useForm } from 'react-hook-form';
 import { isNumber, isEmpty } from 'lodash-es';
@@ -51,6 +54,8 @@ import { ITimezoneOption } from 'react-timezone-select';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import { FaSearch } from "react-icons/fa";
 import GlobalFilter from '@components/interface/GlobalFilter';
+import { type IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from '@helpers/errors';
 
 const auditHelper = new AuditHelper();
 
@@ -58,8 +63,10 @@ const Audit = () => {
   const toast = useToast();
   const { start, complete } = useLoadingContext();
   const [tableData, setTableData] = useState<IGetAuditByParticipant[]>([]);
-  const [pageNumber, setPageNumber] = useState<String>('1');
 
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
   /* Redux */
   const { data: user } = useGetUserState();
 
@@ -75,16 +82,18 @@ const Audit = () => {
   const { data, mutateAsync } = useGetAllAudit();
 
   useEffect(() => {
-    if (data) {
-      setTableData(data);
+    if (data?.auditInfoList) {
+      setTableData(data.auditInfoList);
     }
-  }, [data]);
+  }, [data?.auditInfoList]);
 
   /* Form */
   const {
     control,
     handleSubmit,
     trigger,
+    getValues,
+    setValue,
     formState: { isValid, errors },
   } = useForm<IGetAuditByParticipantValues>({
     defaultValues: {
@@ -95,147 +104,171 @@ const Audit = () => {
     mode: 'onChange',
   });
 
+  useEffect(() => {
+      setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
+      setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+  }, [selectedTZString, setValue]);
+
   const onSearchHandler = useCallback(
-    (values: IGetAuditByParticipantValues) => {
+    async (values: IGetAuditByParticipantValues, page = 1, size = pageSize) => {
+      const fromDate = moment.tz(values.fromDate ,selectedTZString).utc().format();
+      const toDate = moment.tz(values.toDate ,selectedTZString).utc().format();
+      const payload = { fromDate, toDate, page, pageSize: size };
 
-     const currentTimeZone = moment.tz.guess();
-      const fromDate = moment(values.fromDate)
-        .tz(selectedTZString || currentTimeZone)
-        .utc()  // Convert to UTC
-        .format();
-
-      const toDate = moment(values.toDate)
-        .tz(selectedTZString || currentTimeZone)
-        .utc()  // Convert to UTC
-        .format();
-
-
-      const payload = {
-        fromDate,
-        toDate,
-      };
-
-      start();
-      mutateAsync(payload)
-        .catch((err) => {
-          toast({
-            position: 'top',
-            description: getRequestErrorMessage(err),
-            status: 'error',
-            isClosable: true,
-            duration: 3000,
-          });
-        })
-        .finally(() => complete());
+      try {
+        const response = await mutateAsync(payload);
+        setTableData(response.auditInfoList || []);
+        setTotalPages(response.totalPages || 1);
+        setPageNumber(page);
+        setPageSize(size);
+      } catch (error: any) {
+        const err = error as IApiErrorResponse;
+        toast({
+          position: 'top',
+          description: getErrorMessage(err) || 'Failed to fetch data',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
     },
-    [complete, mutateAsync, start, toast, user?.participantId]
+    [mutateAsync, pageSize,selectedTZString, toast]
   );
-
   // Pagination + Search + Sort
-  const columns = useMemo<
-    { Header: string; accessor: keyof IGetAuditByParticipant }[]
-  >(
+  const columns = useMemo<Column<IGetAuditByParticipant>[]>(
     () => [
-      { Header: 'DATE', accessor: 'date' },
-      { Header: 'ACTION', accessor: 'action' },
-      { Header: 'MADE BY', accessor: 'madeBy' },
+      {
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Date</Text>
+        ),
+        accessor: 'date'
+      },
+      {
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Action</Text>
+        ),
+        accessor: 'action'
+      },
+      {
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Made By</Text>
+        ), accessor: 'madeBy'
+      },
     ],
     []
   );
 
   const {
     headerGroups,
-    page,
+    rows, // ✅ Use rows, not page
     prepareRow,
-    canPreviousPage,
-    canNextPage,
-    pageOptions,
-    pageCount,
-    gotoPage,
-    nextPage,
-    previousPage,
-    state: { pageIndex, globalFilter },
+    state: { globalFilter },
     setGlobalFilter,
   } = useTable(
     {
       columns,
       data: tableData,
-      initialState: { pageIndex: 0, pageSize: 10 },
+      manualPagination: true, // ✅ Tell react-table not to slice the data
+      pageCount: totalPages,  // ✅ Optional: helps with consistency
     },
     useGlobalFilter,
-    useSortBy,
-    usePagination
+    useSortBy
   );
 
-  const handlePageValidation = (value: string) => {
-    if (Number(value) > pageOptions.length) {
-      setPageNumber(pageNumber);
-    } else if (value.startsWith('0')) {
-      setPageNumber('');
-    } else {
-      setPageNumber(value);
-    }
-  };
+
+  // const handlePageValidation = (value: string) => {
+  //   if (Number(value) > pageOptions.length) {
+  //     setPageNumber(pageNumber);
+  //   } else if (value.startsWith('0')) {
+  //     setPageNumber('');
+  //   } else {
+  //     setPageNumber(value);
+  //   }
+  // };
 
   return (
-    <VStack align="flex-start" w="full" h="full" p="3" spacing={4}>
-      <VStack align="flex-start">
-        <Heading fontSize="3xl">Audit</Heading>
-      </VStack>
+    <VStack
+      align="flex-start"
+      w="full"
+      p="3"
+      spacing={4}
+      mt={10} // remove h="100vh" and overflowY="auto"
+    >
+      <Heading fontSize="2xl" mb={6}>Audit</Heading>
 
       {/* Search Filters */}
-      <HStack alignItems="flex-end" alignSelf="stretch" spacing={4}>
-        <FormControl isInvalid={!isEmpty(errors.fromDate)}>
+      <Stack
+        direction={{ base: "column", md: "row" }}  // column on mobile, row on desktop
+        spacing={6}
+        w="full"
+      >
+       <SimpleGrid
+          columns={{ base: 1, md: 2, lg: 4 }}
+          spacing={4}
+          w="full"
+        >
+        <FormControl isInvalid={!isEmpty(errors.fromDate)} position="relative">
           <FormLabel>From</FormLabel>
           <Controller
             control={control}
+            name="fromDate"
             render={({ field: { value, onChange } }) => (
               <Input
                 type="datetime-local"
                 value={value}
                 onChange={(e) => {
-                  onChange(e);
-                  trigger('fromDate');
+                  onChange(e.target.value);
+                  trigger("toDate");
                 }}
               />
             )}
-            name="fromDate"
           />
-          <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
+          <FormErrorMessage position="absolute" bottom="-20px">{errors.fromDate?.message}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isInvalid={!isEmpty(errors.toDate)}>
+        <FormControl isInvalid={!isEmpty(errors.toDate)} position="relative">
           <FormLabel>To</FormLabel>
           <Controller
             control={control}
+            name="toDate"
             render={({ field: { value, onChange } }) => (
               <Input
                 type="datetime-local"
                 value={value}
                 onChange={(e) => {
-                  onChange(e);
-                  trigger('toDate');
+                  onChange(e.target.value);
+                  trigger("fromDate");
                 }}
               />
             )}
-            name="toDate"
           />
-          <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
+          <FormErrorMessage position="absolute" bottom="-20px">{errors.toDate?.message}</FormErrorMessage>
         </FormControl>
 
-        <FormControl isInvalid={!isEmpty(errors.fromDate)} textAlign="right">
-          <Button onClick={handleSubmit(onSearchHandler)} isDisabled={!isValid}
-            colorScheme='blue' gap="2"
-            size='md'>
+        <FormControl
+          isInvalid={!isEmpty(errors.fromDate)}
+          display="flex"
+          alignItems="flex-end"
+        >
+          <Button
+            onClick={handleSubmit((values) => onSearchHandler(values, 1, pageSize))}
+            isDisabled={!isValid}
+            colorScheme="blue"
+            gap="2"
+            size="md"
+            w={{ base: "full", md: "auto" }} // full width on mobile
+          >
             <FaSearch /> Search
           </Button>
         </FormControl>
-      </HStack>
+        </SimpleGrid>
+      </Stack>
+
 
       <GlobalFilter globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
 
       {/* Table */}
-      <TableContainer w="full" borderWidth={1} borderBottom={0} borderColor="gray.100" rounded="lg">
+      <TableContainer mt={8} w="full" borderWidth={1} borderColor="gray.100" rounded="lg">
         <Table variant="simple">
           <Thead bg="gray.100">
             {headerGroups.map((headerGroup) => (
@@ -247,7 +280,7 @@ const Audit = () => {
                     )}
                   >
                     <HStack align="center" spacing="2" flex={1}>
-                      <Text flex={1}>{column.render('Header')}</Text>
+                      {column.render('Header')}
                       {!column.disableSortBy && (
                         <VStack display="inline-flex" align="center" spacing={0}>
                           <Icon
@@ -282,7 +315,7 @@ const Audit = () => {
           </Thead>
 
           <Tbody>
-            {page.map((row) => {
+            {rows.map((row) => {
               prepareRow(row);
               return (
                 <Tr fontSize="sm" cursor="pointer" _hover={{ bg: 'muted.50' }} {...row.getRowProps()}>
@@ -306,38 +339,53 @@ const Audit = () => {
               aria-label="Skip to start"
               variant="ghost"
               icon={<TfiAngleDoubleLeft />}
-              isDisabled={!canPreviousPage}
-              onClick={() => gotoPage(0)}
+              onClick={() => onSearchHandler(getValues(), 1, pageSize)}
+              isDisabled={pageNumber === 1}
             />
             <IconButton
               aria-label="Go Previous"
               variant="ghost"
               icon={<TfiAngleLeft />}
-              isDisabled={!canPreviousPage}
-              onClick={previousPage}
+              onClick={() => onSearchHandler(getValues(), pageNumber - 1, pageSize)}
+              isDisabled={pageNumber === 1}
             />
             <IconButton
               aria-label="Go Next"
               variant="ghost"
               icon={<TfiAngleRight />}
-              isDisabled={!canNextPage}
-              onClick={nextPage}
+              onClick={() => onSearchHandler(getValues(), pageNumber + 1, pageSize)}
+              isDisabled={pageNumber === totalPages}
             />
             <IconButton
               aria-label="Skip to end"
               variant="ghost"
               icon={<TfiAngleDoubleRight />}
-              isDisabled={!canNextPage}
-              onClick={() => gotoPage(pageCount - 1)}
+              onClick={() => onSearchHandler(getValues(), totalPages, pageSize)}
+              isDisabled={pageNumber === totalPages}
             />
           </HStack>
 
           <Text>
-            Page <strong>{pageIndex + 1} of {pageOptions.length || 1}</strong>
+            Page <strong>{pageNumber}</strong> of <strong>{totalPages}</strong>
           </Text>
 
           <Box h="6"><Divider orientation="vertical" /></Box>
-
+          {/* Rows per page */}
+          <HStack spacing={2}>
+            <Text>Rows:</Text>
+            <Select
+              value={pageSize}
+              onChange={(e) => onSearchHandler(getValues(), 1, Number(e.target.value))}
+              size="sm"
+              w="20"
+            >
+              {[5, 10, 25, 50].map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </Select>
+          </HStack>
           <HStack>
             <Text>Go to page :</Text>
             <Input
@@ -346,14 +394,19 @@ const Audit = () => {
               w="14"
               type="number"
               min={1}
-              max={pageOptions.length}
-              onChange={(e) => {
-                handlePageValidation(e.target.value);
-                const pageNum = e.target.value ? Number(e.target.value) - 1 : 0;
-                gotoPage(pageNum);
+              onChange={(e) => setPageNumber(Number(e.target.value))}
+              onBlur={() => {
+                if (pageNumber >= 1 && pageNumber <= totalPages) {
+                  onSearchHandler(getValues(), pageNumber, pageSize);
+                } else {
+                  setPageNumber(1);
+                }
               }}
+              size="sm"
+              max={totalPages}
             />
           </HStack>
+
         </HStack>
       </TableContainer>
     </VStack>

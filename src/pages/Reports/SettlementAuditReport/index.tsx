@@ -1,6 +1,5 @@
-import { memo, useState, useMemo } from "react";
+import { useEffect, memo, useState, useMemo } from "react";
 import {
-  Box,
   Button,
   FormControl,
   FormErrorMessage,
@@ -9,8 +8,8 @@ import {
   Input,
   Stack,
   useToast,
-  HStack,
-  Select
+  VStack,
+  SimpleGrid,
 } from '@chakra-ui/react';
 import { SettlementAuditReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,10 +28,13 @@ import { ITimezoneOption } from "react-timezone-select";
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { useGetParticipantCurrencyList } from '@hooks/services/participant';
-
+import { type IApiErrorResponse } from "@typescript/services";
+import { getErrorMessage } from "@helpers/errors";
+import { CustomSelect } from '@components/interface';
+import { OptionType } from '@components/interface/CustomSelect';
 
 const settlementAuditReportHelper = new SettlementAuditReportHelper();
-const initialFileName = 'Settlement-Audit-Report';
+const initialFileName = 'SettlementAuditReport';
 
 const SettlementAuditReport = () => {
 
@@ -40,8 +42,8 @@ const SettlementAuditReport = () => {
   const { start, complete } = useLoadingContext();
   const [runButtonState, setRunButtonState] = useState(true);
 
-  // custom hooks 
-  const { data } = useGetParticipantCurrencyList();
+  // custom hooks
+  const { data: currencyList } = useGetParticipantCurrencyList();
   const { data: participantList } = useGetParticipantList();
 
   // Redux
@@ -61,19 +63,25 @@ const SettlementAuditReport = () => {
     trigger,
     handleSubmit,
     getValues,
+    setValue,
     formState: { errors, isValid }
   } = useForm<ISettlementAuditReport>({
     resolver: zodResolver(settlementAuditReportHelper.schema),
     defaultValues: {
-        startDate: moment().format('YYYY-MM-DDTHH:mm'),
-        endDate: moment().format('YYYY-MM-DDTHH:mm'),
-        dfspId: '',
-        currencyId: '',
-        fileType: '',
-        timezoneOffset: ''
+      startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
+      endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
+      dfspId: 'all',
+      currencyId: 'all',
+      fileType: 'xlsx',
+      timezoneOffset: ''
     },
     mode: 'onChange'
   });
+  useEffect(() => {
+    setValue('startDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
+    setValue('endDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+
+  }, [selectedTimezone, setValue]);
 
   /* Handlers */
   const onDownloadChangeHandler = (e: any) => {
@@ -82,26 +90,21 @@ const SettlementAuditReport = () => {
 
     const formData = getValues();
     const fileType = formData.fileType;
-    const currentTimeZone = moment.tz.guess();
 
-    const utcStartDate = moment(formData.startDate)
-      .tz(selectedTimezone?.value || currentTimeZone)
-      .utc()
+    const StartDate = moment.tz(formData.startDate, selectedTimezone?.value)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
-    const utcEndDate = moment(formData.endDate)
-      .tz(selectedTimezone?.value || currentTimeZone)
-      .utc()
+    const EndDate = moment.tz(formData.endDate, selectedTimezone?.value)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const tzOffSet = selectedTimezone?.offset === 0
       ? '0000'
-      : moment().tz(selectedTimezone?.value || currentTimeZone).format('ZZ').replace('+', '');
+      : moment().tz(selectedTimezone?.value).format('ZZ').replace('+', '');
 
     generateSettlementAuditReport({
       ...formData,
-      startDate: utcStartDate,
-      endDate: utcEndDate,
+      startDate: StartDate,
+      endDate: EndDate,
       timezoneOffset: tzOffSet
     })
       .then((res: any) => {
@@ -117,39 +120,76 @@ const SettlementAuditReport = () => {
           });
         }
       })
-      .catch((e) => {
-        console.log(e);
+      .catch((error: IApiErrorResponse) => {
+        toast({
+          position: 'top',
+          description: getErrorMessage(error) || 'Faield to download',
+          status: 'warning',
+          isClosable: true,
+          duration: 3000
+        });
       })
       .finally(() => {
         complete();
+        setRunButtonState(true);
       });
   };
 
 
   return (
-    <Box height="fit" p="4">
-      <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" pb="3">
+    // <Box height="fit" p="4">
+    //   <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" pb="3">
+    //     Settlement Audit Report
+    //   </Heading>
+
+    <VStack align="flex-start" h="full" p="3" mt={10} w="full">
+      <Heading fontSize="2xl" mb={6}>
         Settlement Audit Report
       </Heading>
-      <Stack borderWidth="1px" borderRadius="lg" height="full" p="4" spacing={4}>
-        <HStack alignItems={'flex-start'} spacing={4}>
 
-          <FormControl isInvalid={!isEmpty(errors.currencyId)}>
+      <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
+        {/* --- Filters Section --- 1 per row on mobile, 2 on md, 4 on lg+*/}
+        <SimpleGrid
+          columns={{ base: 1, md: 2, lg: 4 }}
+          spacing={4}
+          w="full"
+        >
+          <FormControl isInvalid={!isEmpty(errors.dfspId)}>
             <FormLabel>DFSP Name</FormLabel>
             <Controller
               name="dfspId"
               control={control}
               render={({ field }) => (
-                <Select {...field} placeholder="Select DFSP">
-                  {participantList?.map((item, index) => (
-                    <option key={index} value={item.participantName}>
-                      {item.description}
-                    </option>
-                  ))}
-                </Select>
+                <CustomSelect
+                  includeAllOption={true}
+                  placeholder="Select DFSP"
+                  options={(participantList ?? []).map(
+                    (item): OptionType => ({
+                      value: item.participantName,
+                      label: item.participantName,
+                    })
+                  )}
+                  value={
+                    field.value
+                      ? field.value === 'all'
+                        ? { value: 'all', label: 'All' }
+                        : {
+                          value: field.value,
+                          label:
+                            participantList?.find(
+                              (p) => p.participantName === field.value
+                            )?.participantName || '',
+                        }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => {
+                    const value = selected?.value || '';
+                    field.onChange(value);
+                  }}
+                />
               )}
             />
-            <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.dfspId?.message}</FormErrorMessage>
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.startDate)}>
@@ -159,11 +199,11 @@ const SettlementAuditReport = () => {
               name="startDate"
               render={({ field: { value, onChange } }) => (
                 <Input
-                    type="datetime-local"
-                    value={value}
-                    onChange={(e) => {
+                  type="datetime-local"
+                  value={value}
+                  onChange={(e) => {
                     onChange(e.target.value);
-                    trigger('endDate');
+                    trigger("endDate");
                   }}
                 />
               )}
@@ -178,11 +218,11 @@ const SettlementAuditReport = () => {
               name="endDate"
               render={({ field: { value, onChange } }) => (
                 <Input
-                    type="datetime-local"
-                    value={value}
-                    onChange={(e) => {
+                  type="datetime-local"
+                  value={value}
+                  onChange={(e) => {
                     onChange(e.target.value);
-                    trigger('startDate');
+                    trigger("startDate");
                   }}
                 />
               )}
@@ -196,43 +236,78 @@ const SettlementAuditReport = () => {
               name="currencyId"
               control={control}
               render={({ field }) => (
-                <Select {...field} placeholder="Select Currency">
-                  {data?.map((item, index) => (
-                    <option key={index} value={item.currency}>
-                      {item.currency}
-                    </option>
-                  ))}
-                </Select>
+                <CustomSelect
+                  maxMenuHeight={300}
+                  isClearable={false}
+                  options={[
+                    { value: 'all', label: 'All' },
+                    ...(currencyList ?? []).map((item) => ({
+                      value: item.currency,
+                      label: item.currency,
+                    })),
+                  ]}
+                  value={
+                    field.value
+                      ? {
+                        value: field.value,
+                        label:
+                          field.value === 'all'
+                            ? 'All'
+                            : currencyList?.find((c) => c.currency === field.value)?.currency || '',
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                  placeholder="Select Currency"
+                />
               )}
             />
             <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
           </FormControl>
-        </HStack>
-        <HStack justifyContent='flex-end'>
+        </SimpleGrid>
 
-          <FormControl width="250px">
+        <Stack
+          direction={{ base: "column", md: "row" }}
+          spacing={4}
+          justify={{ base: "flex-start", md: "flex-end" }}
+          w="full"
+        >
+          <FormControl w={{ base: "100%", sm: "auto", md: "250px" }}>
             <Controller
               control={control}
               name="fileType"
               render={({ field }) => (
-                <Select {...field} placeholder="Choose Format" width="250px">
-                  <option value="xlsx">XLSX</option>
-                  <option value="csv">CSV</option>
-                </Select>
+                <CustomSelect
+                  options={[
+                    { value: 'xlsx', label: 'XLSX' },
+                    { value: 'csv', label: 'CSV' },
+                  ]}
+                  value={
+                    field
+                      ? {
+                        value: field.value,
+                        label: field.value.toUpperCase(),
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                  placeholder="Choose Format"
+                />
               )}
             />
           </FormControl>
+
           <Button
-            colorScheme='blue'
+            colorScheme="blue"
             isDisabled={!isValid || !runButtonState}
             onClick={onDownloadChangeHandler}
+            w={{ base: "100%", sm: "auto" }}
           >
             Download
           </Button>
-        </HStack>
-
+        </Stack>
       </Stack>
-    </Box >
+    </VStack>
   );
 };
 

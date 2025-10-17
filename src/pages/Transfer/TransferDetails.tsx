@@ -21,7 +21,7 @@ import moment from 'moment';
 import { ITimezoneOption } from 'react-timezone-select';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
-import { getRequestErrorMessage } from '@helpers/errors';
+import { getErrorMessage } from '@helpers/errors';
 import { IGetTransferDetails, IApiErrorResponse } from '@typescript/services';
 
 interface IModalProps extends Omit<ModalProps, 'children'> {
@@ -34,6 +34,7 @@ const defaultTransferDetails: IGetTransferDetails = {
     quoteId: '',
     transferState: '',
     transferType: '',
+    subScenario: '',
     currency: '',
     amountType: '',
     quoteAmount: 0,
@@ -81,10 +82,10 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
     try {
       const tfData: IGetTransferDetails = await getTransferDetails(transferId, timezone)
       setData(tfData);
-    } catch (error: unknown) {
+    } catch (error) {
       toast({
         position: 'top',
-        title: getRequestErrorMessage(error as IApiErrorResponse),
+        title: getErrorMessage(error as IApiErrorResponse),
         status: 'error',
         isClosable: true,
         duration: 3000
@@ -98,9 +99,17 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
   }, [transferId, timezone]);
 
   return (
-    <Modal size="6xl" isOpen={isOpen} onClose={onClose}>
+    <Modal size="auto" isOpen={isOpen} onClose={onClose} isCentered>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent
+        w={{ base: "90%", md: "950px" }}
+        maxW="90%"
+        mx="auto"
+        bg="gray.50"
+        borderRadius="lg"
+        overflow="hidden"
+        boxShadow="2xl"
+      >
         <ModalHeader bg="gray.100" borderTop="1px solid" borderColor="gray.200">
           Transfer Details - {transferId}
         </ModalHeader>
@@ -126,6 +135,7 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
                   ['Quote ID', data?.transferDetails.quoteId],
                   ['Transfer State', data?.transferDetails.transferState],
                   ['Transfer Type', data?.transferDetails.transferType],
+                  ['Use Case', data?.transferDetails.subScenario],
                   ['Currency', data?.transferDetails.currency],
                   ['Amount Type', data?.transferDetails.amountType],
                   ['Quote Amount', data?.transferDetails.quoteAmount],
@@ -146,7 +156,7 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
             </Box>
 
             <VStack flex="1" spacing={4} align="stretch">
-        
+
               <Box
                 bg="white"
                 p={6}

@@ -24,6 +24,7 @@ import {
   IconButton,
   Divider,
   Icon,
+  Collapse,
 } from '@chakra-ui/react';
 import { useCallback } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -32,7 +33,8 @@ import { TransferHelper } from '@helpers/form';
 import { omitBy, isEmpty } from 'lodash-es';
 import { useGetUserState } from '@store/hooks';
 import { useLoadingContext } from '@contexts/hooks';
-import { getRequestErrorMessage } from '@helpers/errors';
+import { getErrorMessage } from '@helpers/errors';
+import { CustomSelect } from '@components/interface';
 import { ITransferValues } from '@typescript/form/transfer';
 import {
   useGetAllOtherParticipants,
@@ -43,7 +45,7 @@ import {
 import { getAllTransfers } from '@services/transfer';
 import { IGetTransferData, IApiErrorResponse } from '@typescript/services';
 import moment from 'moment';
-import { usePagination, useSortBy, useTable, Row } from 'react-table';
+import { usePagination, useSortBy, SortByFn, useTable, Row, Column } from 'react-table';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import {
   TfiAngleDoubleLeft,
@@ -81,7 +83,14 @@ const Transfer = () => {
   const [dateRange, setDateRange] = useState<Ranges>('oneDay');
   const [transferData, setTransferData] = useState<IGetTransferData[]>([]);
   const [transferId, setTransferId] = useState<string>('');
-  const [pageNumber, setPageNumber] = useState<String>('1');
+  const { isOpen: isToggle, onToggle } = useDisclosure();
+
+  // Pagination
+  const [pageIndex, setPageIndex] = useState<number>(1); // start from 1
+  const [pageNumber, setPageNumber] = useState<number>(1); // for input
+  const [pageSize, setPageSize] = useState<number>(10); // make it mutable
+
+  const [totalPages, setTotalPages] = useState<number>(1);
 
   // Redux
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
@@ -205,7 +214,7 @@ const Transfer = () => {
   }, [selectedTimezone])
 
   const onFindHandler = useCallback(
-    (values: ITransferValues) => {
+    (values: ITransferValues, currentPage = 1, currentSize = 10) => {
       const currentTimeZone = moment.tz.guess();
 
       values.fromDate = moment
@@ -221,14 +230,16 @@ const Transfer = () => {
       values.timezone = timezone;
 
       start();
-      getAllTransfers(omitBy(values, isEmpty))
+      getAllTransfers(omitBy(values, isEmpty), currentPage, currentSize)  // number of rows per page)
         .then((data) => {
           setTransferData(data.transferInfoList);
+          setTotalPages(Math.ceil(data.totalPage / currentSize));
+          setPageNumber(currentPage);
         })
-        .catch((error) => {
+        .catch((error: IApiErrorResponse) => {
           toast({
             position: 'top',
-            title: getRequestErrorMessage(error as IApiErrorResponse),
+            title: getErrorMessage(error),
             status: 'error',
             isClosable: true,
             duration: 3000
@@ -238,7 +249,7 @@ const Transfer = () => {
           complete();
         });
     },
-    [complete, start, toast]
+    [complete, start, toast, pageIndex, pageSize]
   );
 
   const onCancelHandler = useCallback(() => {
@@ -259,53 +270,88 @@ const Transfer = () => {
   );
 
   //Number Sorting
-  const numberSort = (rowA: Row, rowB: Row) => {
-    if (Number(rowA.values.amount) > Number(rowB.values.amount)) return -1;
-    if (Number(rowB.values.amount) > Number(rowA.values.amount)) return 1;
-  }
+  const numberSort: SortByFn<IGetTransferData> = (rowA, rowB) => {
+    const a = Number(rowA.values.amount);
+    const b = Number(rowB.values.amount);
 
-  const columns = useMemo<
-    { Header: string; accessor: keyof IGetTransferData }[]
-  >(
+    if (a > b) return 1;
+    if (a < b) return -1;
+    return 0;
+  };
+
+  const columns = useMemo<Column<IGetTransferData>[]>(
     () => [
       {
-        Header: 'Transfer ID',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Transfer ID</Text>
+        ),
         accessor: 'transferId', // accessor is the "key" in the data
         disableSortBy: true
       },
       {
-        Header: 'State',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">State</Text>
+        ),
         accessor: 'state'
       },
       {
-        Header: 'Type',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Type</Text>
+        ),
         accessor: 'type',
         disableSortBy: true
       },
       {
-        Header: 'Currency',
-        accessor: 'currency'
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Currency</Text>
+        ),
+        accessor: 'currency',
+        Cell: ({ value }) => (
+          <Text textAlign="center">
+            {value}
+          </Text>
+        ),
       },
       {
-        Header: 'Amount',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Amount</Text>
+        ),
         accessor: 'amount',
-        sortType: numberSort
+        sortType: numberSort,
+        Cell: ({ value }) => (
+          <Text textAlign="right">
+            {value}
+          </Text>
+        ),
       },
       {
-        Header: 'Payer DFSP',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Payer DFSP</Text>
+        ),
         accessor: 'payerDfsp'
       },
       {
-        Header: 'Payee DFSP',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Payee DFSP</Text>
+        ),
         accessor: 'payeeDfsp'
       },
       {
-        Header: 'Settlement Batch',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Settlement Batch</Text>
+        ),
         accessor: 'settlementBatch',
-        disableSortBy: true
+        disableSortBy: true,
+        Cell: ({ value }) => (
+          <Text textAlign="right">
+            {value}
+          </Text>
+        ),
       },
       {
-        Header: 'Date Submitted',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Date Submitted</Text>
+        ),
         accessor: 'submittedOnDate'
       }
     ],
@@ -316,27 +362,16 @@ const Transfer = () => {
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    page,
+    rows, // ✅ use rows instead of page
     prepareRow,
-    canPreviousPage,
-    canNextPage,
-    pageOptions,
-    pageCount,
-    gotoPage,
-    nextPage,
-    previousPage,
-    state: { pageIndex }
   } = useTable(
     {
       columns,
       data: transferData,
-      initialState: {
-        pageIndex: 0,
-        pageSize: 10
-      }
+      manualPagination: true, // ✅ tell react-table we handle pagination
+      pageCount: totalPages,  // ✅ inform how many pages there are
     },
-    useSortBy,
-    usePagination
+    useSortBy
   );
 
   useEffect(() => {
@@ -348,15 +383,30 @@ const Transfer = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handlePageValidation = (value: string) => {
-    if (Number(value) > pageOptions.length) {
-      setPageNumber(pageNumber)
-    } else if (value.startsWith('0')) {
-      setPageNumber('')
-    } else {
-      setPageNumber(value)
-    }
-  }
+  // const handlePageValidation = (value: string) => {
+  //   if (Number(value) > pageOptions.length) {
+  //     setPageNumber(pageNumber)
+  //   } else if (value.startsWith('0')) {
+  //     setPageNumber('')
+  //   } else {
+  //     setPageNumber(value)
+  //   }
+  // }
+
+     const dateRangeOptions = [
+          { value: 'oneDay', label: 'Past 24 Hours' },
+          { value: 'today', label: 'Today' },
+          { value: 'twoDay', label: 'Past 48 Hours' },
+          { value: 'oneWeek', label: 'Past Week' },
+          { value: 'oneMonth', label: 'Past Month' },
+          { value: 'oneYear', label: 'Past Year' },
+          { value: 'custom', label: 'Custom Range' },
+        ];
+
+     const transferTypeOptions = [
+          { value: 'inbound', label: 'Inbound' },
+          { value: 'outbound', label: 'Outbound' },
+        ];
 
   return (
     <Flex justify="center" flexDirection="column" flex={1} p="2">
@@ -370,14 +420,24 @@ const Transfer = () => {
         </Suspense>
       )}
 
-      <Box>
-        <Heading color="trueGray.600" fontSize="2xl">
-          Transfer Overview
-        </Heading>
-      </Box>
+      <VStack align="flex-start" w="full" h="full" p="3" spacing={0} mt={10}>
+        <Heading fontSize="2xl" mb={6}>Transfer Overview</Heading>
+      </VStack>
 
-      <Flex justify="center" flexDirection="row" flex={1} my="4">
-        <Flex flexDirection="column" flex={1} p="3" gap="2">
+      <Flex
+        flexWrap="wrap"
+        w="100%"
+        my="4"
+        gap={{ base: 4, md: 4 }}
+        alignItems="stretch"
+      >
+        <Flex
+          flex={{ base: '1 1 100%', md: '1 1 0' }}
+          flexDirection="column"
+          p={{ base: 3, md: 2 }}
+          gap="2"
+          minW={{ md: 0 }}
+        >
           <FormControl isInvalid={!isEmpty(errors.transferId)}>
             <Input
               type="input"
@@ -388,39 +448,63 @@ const Transfer = () => {
             <FormErrorMessage>{errors.transferId?.message}</FormErrorMessage>
           </FormControl>
 
-          <Select
-            value={dateRange}
-            onChange={(e) => onChangeDateRange(e.target.value as Ranges)}>
-            <option value="oneDay">Past 24 Hours</option>
-            <option value="today">Today</option>
-            <option value="twoDay">Past 48 Hours</option>
-            <option value="oneWeek">Past Week</option>
-            <option value="oneMonth">Past Month</option>
-            <option value="oneYear">Past Year</option>
-            <option value="custom">Custom Range</option>
-          </Select>
-          <Select
-            disabled={isHubUser}
-            value={transferType}
-            onChange={(e) =>
-              onChangeTransferType(e.target.value as TransferType)
-            }>
-            <option value="inbound">Inbound</option>
-            <option value="outbound">Outbound</option>
-          </Select>
+
+           <CustomSelect
+                placeholder="Date Range"
+                options={dateRangeOptions}
+                value={dateRangeOptions.find(option => option.value === dateRange)||null}
+                onChange={(selectedOption) => {
+                    if (selectedOption) {
+                        onChangeDateRange(selectedOption.value as Ranges);
+                    }
+                }}
+            />
+
+        
+           <CustomSelect
+            isDisabled={isHubUser}
+            placeholder="Transfer Type"
+            options={transferTypeOptions.map(option => ({
+                value: option.value,
+                label: option.label
+            }))}
+            value={transferTypeOptions.find(option => option.value === transferType)||null}
+            onChange={(selectedOption) => {
+                if (selectedOption) {
+                    onChangeTransferType(selectedOption.value as TransferType);
+                }
+            }}
+            />
+        
+
           <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
             {(isHubUser || transferType === 'inbound') ? (
-              <Select placeholder="Payer FSP ID"  {...register('payerFspId')}>
-                {participantRes?.data?.participantInfoList.map(
-                  (item, index) => {
-                    return (
-                      <option key={index} value={item.participantName}>
-                        {item.participantName}
-                      </option>
-                    );
+                <Controller
+                    control={control}
+                    name="payerFspId"
+                    render={({ field }) => (
+                <CustomSelect placeholder="Payer FSP ID"
+                isMulti={false}
+                maxMenuHeight={300}
+                isClearable={true}
+                  options={
+                    participantRes?.data?.participantInfoList?.map((item) => ({
+                      value: item.participantName,
+                      label: item.participantName
+                    })) || []
                   }
-                )}
-              </Select>
+                    value={
+                        field.value
+                          ? { value: field.value,
+                              label: field.value }
+                          : null
+                      }
+                      onChange={(selectedOption) => {
+                            field.onChange(selectedOption?.value || '');
+                      }}
+                    />
+                  )}
+              />
             ) : (
               <Input
                 type="input"
@@ -434,23 +518,39 @@ const Transfer = () => {
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.payeeFspId)}>
-            {isHubUser ? (<Select placeholder="Payee FSP ID"  {...register('payeeFspId')}>
-              {participantRes?.data?.participantInfoList.map(
-                (item, index) => {
-                  return (
-                    <option key={index} value={item.participantName}>
-                      {item.participantName}
-                    </option>
-                  );
-                }
-              )}
-            </Select>
+              {isHubUser ? (
+                <Controller
+                  control={control}
+                  name="payeeFspId"
+                  render={({ field }) => (
+                    <CustomSelect
+                      isMulti={false}
+                      maxMenuHeight={300}
+                      isClearable={true}
+                      placeholder="Payee FSP ID"
+                      options={
+                        participantRes?.data?.participantInfoList?.map((item) => ({
+                          value: item.participantName,
+                          label: item.participantName
+                        })) || []
+                      }
+                      value={
+                        field.value
+                          ? { value: field.value, label: field.value }
+                          : null
+                      }
+                      onChange={(selectedOption) => {
+                        field.onChange(selectedOption?.value || '');
+                      }}
+                    />
+                  )}
+                />
             ) :
               transferType === 'inbound' ? (
                 <Input
                   type="input"
                   {...register('payeeFspId')}
-                  value={user.data?.participantName}
+                  value={user.data?.participantName || ''}
                   readOnly
                 />
               ) : (
@@ -462,7 +562,7 @@ const Transfer = () => {
                           {item.participantName}
                         </option>
                       );
-                    }
+                     }
                   )}
                 </Select>
               )}
@@ -471,19 +571,37 @@ const Transfer = () => {
           </FormControl>
         </Flex>
 
-        <Flex flexDirection="column" flex={1} p="3" gap="2">
+        <Flex
+          flex={{ base: '1 1 100%', md: '1 1 0' }}
+          flexDirection="column"
+          p={{ base: 3, md: 2 }}
+          gap="2"
+          minW={{ md: 0 }}
+        >
           <FormControl isInvalid={!isEmpty(errors.transferStateId)}>
-            <Select
-              placeholder="Transfer State"
-              {...register('transferStateId')}>
-              {tranStateRes?.data?.transferStateInfoList.map((item, index) => {
-                return (
-                  <option key={index} value={item.transferStateId}>
-                    {item.transferState}
-                  </option>
-                );
-              })}
-            </Select>
+          <Controller
+              control={control}
+              name="transferStateId"
+              render={({ field }) => (
+                <CustomSelect
+                isMulti={false}
+                maxMenuHeight={300}
+                isClearable={true}
+                placeholder="Transfer State"
+                options={tranStateRes?.data?.transferStateInfoList?.map((item) => ({
+                  value: item.transferStateId,
+                  label: item.transferState
+                })) || []}
+                value={field.value
+                    ? { value: field.value,
+                        label: field.value }
+                    : null}
+                onChange={(selectedOption) => {
+                  field.onChange(selectedOption?.value || '');
+                }}
+                />
+              )}
+            />
             <FormErrorMessage>
               {errors?.transferStateId?.message}
             </FormErrorMessage>
@@ -519,52 +637,98 @@ const Transfer = () => {
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.currencyId)}>
-            <Select placeholder="Select Currency" {...register('currencyId')}>
-              {currencyList?.map((item, index) => (
-                <option key={index} value={item.currency}>
-                  {item.currency}
-                </option>
-              ))}
-            </Select>
+          <Controller
+              control={control}
+              name="currencyId"
+              render={({ field }) => (
+                <CustomSelect
+                isMulti={false}
+                maxMenuHeight={300}
+                isClearable={true}
+                placeholder="Select Currency"
+                options={currencyList?.map((item) => ({
+                  value: item.currency,
+                  label: item.currency
+                })) || []}
+                value={field.value
+                    ? { value: field.value,
+                        label: field.value }
+                    : null}
+                onChange={(selectedOption) => {
+                  field.onChange(selectedOption?.value || '');
+                }}
+                />
+              )}
+            />
             <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.payerIdentifierTypeId)}>
-            <Select
-              placeholder="Payer ID Type"
-              {...register('payerIdentifierTypeId')}>
-              {idTypeRes?.data?.idTypeInfoList.map((item, index) => {
-                return (
-                  <option key={index} value={item.partyIdentifierTypeId}>
-                    {item.name}
-                  </option>
-                );
-              })}
-            </Select>
+          <Controller
+              control={control}
+              name="payerIdentifierTypeId"
+              render={({ field }) => (
+                <CustomSelect
+                isMulti={false}
+                maxMenuHeight={300}
+                isClearable={true}
+                placeholder="Select Payer ID Type"
+                options={idTypeRes?.data?.idTypeInfoList?.map((item) => ({
+                  value: item.partyIdentifierTypeId,
+                  label: item.name
+                })) || []}
+                value={field.value
+                    ? { value: field.value,
+                        label: field.value }
+                    : null}
+                onChange={(selectedOption) => {
+                  field.onChange(selectedOption?.value || '');
+                }}
+                />
+              )}
+            />
             <FormErrorMessage>
               {errors.payerIdentifierTypeId?.message}
             </FormErrorMessage>
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.payeeIdentifierTypeId)}>
-            <Select
-              placeholder="Payee ID Type"
-              {...register('payeeIdentifierTypeId')}>
-              {idTypeRes?.data?.idTypeInfoList.map((item, index) => {
-                return (
-                  <option key={index} value={item.partyIdentifierTypeId}>
-                    {item.name}
-                  </option>
-                );
-              })}
-            </Select>
+          <Controller
+              control={control}
+              name="payeeIdentifierTypeId"
+              render={({ field }) => (
+                <CustomSelect
+                isMulti={false}
+                maxMenuHeight={300}
+                isClearable={true}
+                placeholder="Select Payee ID Type"
+                options={idTypeRes?.data?.idTypeInfoList?.map((item) => ({
+                  value: item.partyIdentifierTypeId,
+                  label: item.name
+                })) || []}
+                value={field.value
+                    ? { value: field.value,
+                        label: field.value }
+                    : null}
+                onChange={(selectedOption) => {
+                  field.onChange(selectedOption?.value || '');
+                }}
+                />
+              )}
+            />
             <FormErrorMessage>
               {errors.payeeIdentifierTypeId?.message}
             </FormErrorMessage>
           </FormControl>
         </Flex>
 
-        <Flex flexDirection="column" flex={1} p="3" gap="2">
+        <Flex
+          flex={{ base: '1 1 100%', md: '1 1 0' }}
+          flexDirection="column"
+          p={{ base: 3, md: 2 }}
+          gap="2"
+          minW={{ md: 0 }}
+        >
           <Box h="40px"></Box>
           <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
             {selectedTZString ?
@@ -629,7 +793,7 @@ const Transfer = () => {
             bg: 'primary',
             opacity: 0.4
           }}
-          onClick={handleSubmit(onFindHandler)}>
+          onClick={handleSubmit((values) => onFindHandler(values, pageIndex, pageSize))}>
           Find Transfer
         </Button>
 
@@ -653,7 +817,7 @@ const Transfer = () => {
                         : column.getSortByToggleProps()
                     )}>
                     <HStack align="center" spacing="2" flex={1}>
-                      <Text flex={1}>{column.render('Header')}</Text>
+                      {column.render('Header')}
                       {column.disableSortBy ? null : (
                         <VStack
                           display="inline-flex"
@@ -690,7 +854,7 @@ const Transfer = () => {
             ))}
           </Thead>
           <Tbody maxH={300} overflowY="auto" {...getTableBodyProps()}>
-            {page.map((row) => {
+            {rows.map((row) => {
               prepareRow(row);
               return (
                 <Tr
@@ -713,40 +877,77 @@ const Transfer = () => {
               aria-label="Skip to start"
               variant="ghost"
               icon={<TfiAngleDoubleLeft />}
-              isDisabled={!canPreviousPage}
-              onClick={() => gotoPage(0)}
+              isDisabled={pageIndex === 1}
+              onClick={() => {
+                setPageIndex(1);
+                handleSubmit((values) => onFindHandler(values, 1, pageSize))();
+              }}
             />
             <IconButton
               aria-label="Go Previous"
               variant="ghost"
               icon={<TfiAngleLeft />}
-              isDisabled={!canPreviousPage}
-              onClick={previousPage}
+              isDisabled={pageIndex === 1}
+              onClick={() => {
+                const newPage = pageIndex - 1;
+                setPageIndex(newPage);
+                handleSubmit((values) => onFindHandler(values, newPage, pageSize))();
+              }}
             />
             <IconButton
               aria-label="Go Next"
               variant="ghost"
               icon={<TfiAngleRight />}
-              isDisabled={!canNextPage}
-              onClick={nextPage}
+              isDisabled={pageIndex === totalPages}
+              onClick={() => {
+                const newPage = pageIndex + 1;
+                setPageIndex(newPage);
+                handleSubmit((values) => onFindHandler(values, newPage, pageSize))();
+              }}
             />
             <IconButton
               aria-label="Skip to end"
               variant="ghost"
               icon={<TfiAngleDoubleRight />}
-              isDisabled={!canNextPage}
-              onClick={() => gotoPage(pageCount - 1)}
+              isDisabled={pageIndex === totalPages}
+              onClick={() => {
+                setPageIndex(totalPages);
+                handleSubmit((values) => onFindHandler(values, totalPages, pageSize))();
+              }}
             />
           </HStack>
           <Text>
             Page{' '}
             <strong>
-              {pageIndex + 1} of {pageOptions.length || 1}
+              {pageIndex} of {totalPages || 1}
             </strong>
           </Text>
           <Box h="6">
             <Divider orientation="vertical" />
           </Box>
+
+          {/* Page size selector */}
+          <HStack spacing={2}>
+            <Text>Rows:</Text>
+            <Select
+              w="20"
+              size="sm"
+              value={pageSize}
+              onChange={(e) => {
+                const newSize = Number(e.target.value);
+                setPageSize(newSize);       // <-- update pageSize state
+                setPageIndex(1);            // reset to first page
+                setPageNumber(1);         // update input
+                handleSubmit(values => onFindHandler(values, 1, newSize))();
+              }}
+            >
+              {[5, 10, 25, 50].map((size) => (
+                <option key={size} value={size}>{size}</option>
+              ))}
+            </Select>
+
+          </HStack>
+
           <HStack>
             <Text> Go to page : </Text>
             <Input
@@ -754,14 +955,17 @@ const Transfer = () => {
               textAlign="center"
               w="14"
               type="number"
-              min={pageIndex + 1}
-              max={pageOptions.length}
-              onChange={(e) => {
-                handlePageValidation(e.target.value)
-                const pageNumber = e.target.value
-                  ? Number(e.target.value) - 1
-                  : 0;
-                gotoPage(pageNumber);
+              min={1}
+              max={totalPages}
+              onChange={(e) => setPageNumber(Number(e.target.value))}
+              onBlur={() => {
+                let newPage = Number(pageNumber);
+                if (!newPage || newPage < 1) newPage = 1;
+                if (newPage > totalPages) newPage = totalPages;
+
+                setPageIndex(newPage);
+                setPageNumber(newPage);
+                handleSubmit(values => onFindHandler(values, newPage, pageSize))();
               }}
             />
           </HStack>

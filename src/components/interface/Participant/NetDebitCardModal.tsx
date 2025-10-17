@@ -50,9 +50,13 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
     }, [isOpen]);
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
+        <Modal isOpen={isOpen} onClose={onClose} isCentered>
             <ModalOverlay />
-            <ModalContent>
+            <ModalContent
+                w={{ base: "90%", md: "500px" }}
+                maxW="90%"                     
+                mx="auto"                      
+            >
                 <form onSubmit={handleFormSubmit}>
                     <ModalHeader textAlign="center">Net Debit Cap</ModalHeader>
                     <ModalCloseButton />

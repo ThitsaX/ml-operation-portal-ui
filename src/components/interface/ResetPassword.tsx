@@ -21,6 +21,8 @@ import { resetPasswordUser } from "@services/participant";
 import { ParticipantHelper } from "@helpers/form";
 import { type IResetPasswordValues } from "@typescript/form";
 import { useEffect } from "react";
+import { type IApiErrorResponse } from "@typescript/services";
+import { getErrorMessage } from "@helpers/errors";
 
 const participantUser = new ParticipantHelper()
 
@@ -78,10 +80,11 @@ export default function ResetPasswordModal({
             onClose();
             onSuccess();
         } catch (error: any) {
+            const err = error as IApiErrorResponse;
             toast({
                 position: "top",
                 status: "error",
-                description: error?.message || "Failed to reset password",
+                description: getErrorMessage(err) || "Failed to reset password",
                 duration: 3000,
                 isClosable: true,
             });
@@ -96,7 +99,11 @@ export default function ResetPasswordModal({
     return (
         <Modal isOpen={isOpen} onClose={handleCancel} isCentered>
             <ModalOverlay />
-            <ModalContent rounded="lg" shadow="xl">
+            <ModalContent rounded="lg" shadow="xl"
+                w={{ base: "90%", md: "500px" }}
+                maxW="90%"
+                mx="auto"
+            >
                 <ModalHeader>Reset Password</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>

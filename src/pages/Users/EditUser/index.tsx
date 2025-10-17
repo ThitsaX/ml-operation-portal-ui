@@ -10,7 +10,7 @@ import {
   VStack
 } from '@chakra-ui/react'
 import { useLoadingContext } from '@contexts/hooks'
-import { getRequestErrorMessage } from '@helpers/errors'
+import { getErrorMessage } from '@helpers/errors'
 import { ParticipantHelper } from '@helpers/form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { modifyParticipantUser } from '@services/participant'
@@ -86,7 +86,7 @@ const EditUser = ({ data, onSave }: IModifyUserProps): JSX.Element => {
         .catch((err: IApiErrorResponse) =>
           toast({
             position: 'top',
-            description: getRequestErrorMessage(err),
+            description: getErrorMessage(err),
             status: 'error',
             isClosable: true,
             duration: 3000

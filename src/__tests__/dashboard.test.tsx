@@ -14,7 +14,8 @@ const mockData = [{
     "ndc": 50000.00,
     "ndcUsed": -0.04,
     "participantSettlementCurrencyId": 8,
-    "participantPositionCurrencyId": 7
+    "participantPositionCurrencyId": 7,
+    "isActive": true
 }];
 
 jest.spyOn(dashboardService, 'getParticipantPositionList').mockResolvedValue(mockData);

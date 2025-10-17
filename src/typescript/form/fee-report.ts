@@ -9,10 +9,12 @@ export interface IFeeReport {
 
 
 export interface ISettlementBankReport {
-  start_date: string
-  end_date: string
+  startDate: string
+  endDate: string
   settlementId: string
   currency: string
+  fileType: string
+  timezoneOffset: string
 }
 
 export interface ISettlementReport {

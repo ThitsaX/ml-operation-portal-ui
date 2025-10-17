@@ -18,8 +18,9 @@ import {
 } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import MultiSelect, { OptionType } from './MultiSelect';
-import { IParticipantOrganization, IParticipantUser,IParticipantUserForm ,IParticipantUserRole } from '@typescript/services';
+import { CustomSelect } from '@components/interface';
+import { OptionType } from '@components/interface/CustomSelect';
+import { IParticipantOrganization, IParticipantUser, IParticipantUserForm, IParticipantUserRole } from '@typescript/services';
 import { UserManagementHelper } from '@helpers/form';
 import { isEmpty } from 'lodash-es';
 import { IoReload } from 'react-icons/io5';
@@ -144,7 +145,11 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside" isCentered>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent
+        w={{ base: "90%", md: "500px" }}
+        maxW="90%"
+        mx="auto"
+      >
         <ModalHeader textAlign="center">{isEdit ? 'Edit User' : 'Add New User'}</ModalHeader>
         <ModalCloseButton />
         <ModalBody pb={10}>
@@ -170,19 +175,32 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
             <FormControl isInvalid={!isEmpty(errors.participantId)} isRequired>
               <HStack>
-                <ChakraSelect
-                  placeholder="Select Organization*"
-                  {...register('participantId')}
-                  onChange={e => handleOrgChange(e.target.value)}
-                  size="md"
-                  width="100%"
-                >
-                  {participantInfoList?.map(org => (
-                    <option key={org.participantId} value={org.participantId}>
-                      {org.participantName}
-                    </option>
-                  ))}
-                </ChakraSelect>
+                <Controller
+                  control={control}
+                  name="participantId"
+                  render={({ field }) => (
+                    <CustomSelect
+                    menuPortalTarget={true}
+                    placeholder="Select Organization*"
+                      options={participantInfoList?.map(org => ({
+                          value: org.participantId,
+                          label: org.participantName })) ?? []}
+                      value={
+                          participantInfoList?.find(org => org.participantId === field.value)
+                            ? {
+                                value: field.value,
+                                label: participantInfoList.find(org => org.participantId === field.value)?.participantName || field.value
+                              }
+                            : null
+                        }
+                      onChange={(selected: OptionType | null) => {
+                        field.onChange(selected ? selected.value : '');
+                        handleOrgChange(selected ? selected.value : '');
+                      }}
+                    />
+                  )}
+                />
+
                 <Button
                   leftIcon={<IoReload />}
                   colorScheme="teal"
@@ -201,7 +219,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                 control={control}
                 name="roleIdList"
                 render={({ field }) => (
-                  <MultiSelect
+                  <CustomSelect
+                    menuPortalTarget={true}
+                    isMulti={true}
                     options={roleList?.map(role => ({ value: role.roleId, label: role.name })) ?? []}
                     value={
                       (roleList ?? [])

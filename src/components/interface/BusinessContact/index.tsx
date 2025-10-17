@@ -25,7 +25,8 @@ import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { removeContact } from '@services/participant';
 import { HeaderCell, Cell } from '../Table';
 import { ConfirmDialog } from '../ConfirmationDialog';
-
+import { type IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from '@helpers/errors';
 
 interface BusinessContactProps {
     participantId: string;
@@ -84,10 +85,10 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
                 onClose();
                 refetch();
             })
-            .catch((err) => {
+            .catch((err: IApiErrorResponse) => {
                 toast({
                     position: 'top',
-                    description: err.default_error_message || 'Something went wrong',
+                    description: getErrorMessage(err) || 'Failed to save contact',
                     status: 'error',
                     duration: 3000,
                     isClosable: true,
@@ -131,10 +132,10 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
                 });
                 refetch();
             })
-            .catch((err) => {
+            .catch((err: IApiErrorResponse) => {
                 toast({
                     position: 'top',
-                    description: err.message || 'Something went wrong',
+                    description: getErrorMessage(err) || 'Failed to delete contact',
                     status: 'error',
                     isClosable: true,
                     duration: 3000

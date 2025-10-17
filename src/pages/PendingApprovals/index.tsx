@@ -33,6 +33,10 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { ITimezoneOption } from 'react-timezone-select';
 import { hasMenuAccess } from '@helpers/permissions';
+import { IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from '@helpers/errors';
+import { CustomSelect } from '@components/interface';
+import { OptionType } from '@components/interface/CustomSelect';
 
 const PendingApprovals = () => {
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
@@ -98,10 +102,10 @@ const PendingApprovals = () => {
         });
         refetch();
       })
-      .catch((error) => {
+      .catch((error: IApiErrorResponse) => {
         toast({
           title: 'Error',
-          description: error?.message || `Failed to ${actionType?.toLowerCase()} request.`,
+          description: getErrorMessage(error) || `Failed to ${actionType?.toLowerCase()} request.`,
           status: 'error',
           duration: 3000,
           isClosable: true,
@@ -112,25 +116,68 @@ const PendingApprovals = () => {
   // Table setup
   const columns = useMemo(() => {
     const baseColumns: Column<IPendingApproval>[] = [
-      { Header: 'Requested Action', accessor: 'requestedAction' },
-      { Header: 'DFSP', accessor: 'participantName' },
-      { Header: 'Currency', accessor: 'currency' },
-      { Header: 'Amount', accessor: 'amount' },
-      { Header: 'Requested By', accessor: 'requestedBy' },
       {
-        Header: 'Requested Date Time',
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Requested Action</Text>
+        ),
+        accessor: 'requestedAction'
+      },
+      {
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm">DFSP</Text>
+        ),
+        accessor: 'participantName'
+      },
+      {
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Currency</Text>
+        ),
+        accessor: 'currency',
+        Cell: ({ value }) => (
+          <Text textAlign="center">
+            {value}
+          </Text>
+        ),
+      },
+      {
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Amount/Percentage</Text>
+        ),
+        accessor: 'amount',
+        Cell: ({ value }: any) => (
+          <Box textAlign={'right'}>
+            {value}
+          </Box>
+        )
+
+      },
+      {
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Requested By</Text>
+        ),
+        accessor: 'requestedBy'
+      },
+      {
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Requested Date Time</Text>
+        ),
         accessor: 'requestedDateTime',
         Cell: ({ value }: any) => formatEpochToTZ(value, selectedTZString, "YYYY-MM-DDTHH:mm:ssZ")
       },
-      { Header: 'Status', accessor: 'action' },
+      {
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Status</Text>
+        ),
+        accessor: 'action'
+      },
     ] as Column<IPendingApproval>[];;
 
-    const statusColumn: Column<IPendingApproval>[] =
+    const statusColumn: Partial<Column<IPendingApproval>>[] =
       filterStatus === 'PENDING' && hasMenuAccess("ModifyApprovalAction")
         ? [
-
           {
-            Header: 'Action',
+            Header: () => <Text fontWeight="bold" fontSize="sm" textTransform="none">Action</Text>,
+            id: 'id',
             disableSortBy: true,
             Cell: ({ row }: any) => (
               <HStack spacing={4}>
@@ -201,28 +248,22 @@ const PendingApprovals = () => {
 
 
   return (
-    <VStack align="flex-start" w="full" p={8} spacing={8}>
-      <Heading size="md">Pending Approvals</Heading>
+
+    <VStack align="flex-start" w="full" h="full" p="3" spacing={4} mt={10}>
+      <Heading fontSize="2xl" mb={6}>Pending Approvals</Heading>
 
       <HStack w="full" justifyContent="space-between">
-        <Select
+        <CustomSelect
           width="200px"
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          size="md"
-          rounded="md"
-          bg="white"
-          borderColor="gray.300"
-          focusBorderColor="blue.500"
-          _hover={{ borderColor: "blue.400" }}
-          _focus={{ boxShadow: "0 0 0 1px #3182CE" }}
+          options={[
+            { value: 'PENDING', label: 'PENDING' },
+            { value: 'APPROVED', label: 'APPROVED' },
+            { value: 'REJECTED', label: 'REJECTED' },
+          ]}
+          value={{ value: filterStatus, label: filterStatus }}
+          onChange={(selectedOption: OptionType | null) => setFilterStatus(selectedOption?.value || 'PENDING')}
+        />
 
-        >
-          <option value="PENDING">PENDING</option>
-          <option value="APPROVED">APPROVED </option>
-          <option value="REJECTED">REJECTED</option>
-
-        </Select>
       </HStack>
 
       {isError && <Text color="red.500">{String(error)}</Text>}
@@ -246,7 +287,7 @@ const PendingApprovals = () => {
                           : column.getSortByToggleProps()
                       )}>
                       <HStack align="center" spacing="2" flex={1}>
-                        <Text flex={1}>{column.render('Header')}</Text>
+                        {column.render('Header')}
                         {column.disableSortBy ? null : (
                           <VStack
                             display="inline-flex"

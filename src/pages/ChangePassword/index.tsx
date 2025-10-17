@@ -6,12 +6,12 @@ import {
   Button,
   InputGroup,
   InputRightElement,
-  Box,
   IconButton,
   FormControl,
   FormLabel,
   FormErrorMessage,
-  useToast
+  useToast,
+  VStack
 } from '@chakra-ui/react'
 import { type IChangePwdValues } from '@typescript/form'
 import { useForm } from 'react-hook-form'
@@ -100,22 +100,45 @@ const ChangePassword = () => {
   }, [])
 
   return (
-    <Flex justify="center" flexDirection="column" flex={1} p="5">
-      <Box mb="8">
-        <Heading color="trueGray.600" fontSize="2xl" textAlign="center">
-          Change Password
-        </Heading>
-      </Box>
+    <VStack
+      align="flex-start"
+      h="full"
+      p={{ base: 3, md: 6, lg: 10 }}
+      mt={10}
+      w="full"
+      spacing={6}
+    >
 
-      <Flex justify="center" flexDirection="column" w="md" p="5" gap="8">
-        <FormControl
-          isInvalid={!isEmpty(formState.errors.oldPassword)}
-          isRequired>
-          <FormLabel>Old Password</FormLabel>
+      <Heading
+        fontSize={"2xl"}
+        mb={6}
+        textAlign={"center"}
+        w="full"
+      >
+        Change Password
+      </Heading>
+
+      <VStack
+        w={{
+          base: "100%", 
+          sm: "90%",         
+          md: "md",           
+          lg: "lg",
+          xl: "xl"
+        }}
+        maxW="full"
+        p={{ base: 4, md: 6, lg: 8 }}
+        spacing={6}
+        mx="auto"
+        align="stretch"
+      >
+        {/* Old Password */}
+        <FormControl isInvalid={!isEmpty(formState.errors.oldPassword)} isRequired>
+          <FormLabel fontSize={{ base: "sm", md: "md" }}>Old Password</FormLabel>
           <InputGroup>
             <Input
-              {...register('oldPassword')}
-              type={showPassword ? 'text' : 'password'}
+              {...register("oldPassword")}
+              type={showPassword ? "text" : "password"}
             />
             <InputRightElement>
               <IconButton
@@ -123,28 +146,22 @@ const ChangePassword = () => {
                 aria-label="Show Password"
                 bg="transparent"
                 rounded="full"
-                _hover={{
-                  bg: 'transparent'
-                }}
-                onClick={() => {
-                  setShowPassword(!showPassword)
-                }}
+                size="sm"
+                _hover={{ bg: "transparent" }}
+                onClick={() => setShowPassword(!showPassword)}
               />
             </InputRightElement>
           </InputGroup>
-          <FormErrorMessage>
-            {formState.errors.oldPassword?.message}
-          </FormErrorMessage>
+          <FormErrorMessage>{formState.errors.oldPassword?.message}</FormErrorMessage>
         </FormControl>
 
-        <FormControl
-          isInvalid={!isEmpty(formState.errors.newPassword)}
-          isRequired>
-          <FormLabel>New Password</FormLabel>
+        {/* New Password */}
+        <FormControl isInvalid={!isEmpty(formState.errors.newPassword)} isRequired>
+          <FormLabel fontSize={{ base: "sm", md: "md" }}>New Password</FormLabel>
           <InputGroup>
             <Input
-              {...register('newPassword')}
-              type={showPassword ? 'text' : 'password'}
+              {...register("newPassword")}
+              type={showPassword ? "text" : "password"}
             />
             <InputRightElement>
               <IconButton
@@ -152,28 +169,22 @@ const ChangePassword = () => {
                 aria-label="Show Password"
                 bg="transparent"
                 rounded="full"
-                _hover={{
-                  bg: 'transparent'
-                }}
-                onClick={() => {
-                  setShowPassword(!showPassword)
-                }}
+                size="sm"
+                _hover={{ bg: "transparent" }}
+                onClick={() => setShowPassword(!showPassword)}
               />
             </InputRightElement>
           </InputGroup>
-          <FormErrorMessage>
-            {formState.errors.newPassword?.message}
-          </FormErrorMessage>
+          <FormErrorMessage>{formState.errors.newPassword?.message}</FormErrorMessage>
         </FormControl>
 
-        <FormControl
-          isInvalid={!isEmpty(formState.errors.confirmPassword)}
-          isRequired>
-          <FormLabel>Confirm Password</FormLabel>
+        {/* Confirm Password */}
+        <FormControl isInvalid={!isEmpty(formState.errors.confirmPassword)} isRequired>
+          <FormLabel fontSize={{ base: "sm", md: "md" }}>Confirm Password</FormLabel>
           <InputGroup>
             <Input
-              {...register('confirmPassword')}
-              type={showPassword ? 'text' : 'password'}
+              {...register("confirmPassword")}
+              type={showPassword ? "text" : "password"}
             />
             <InputRightElement>
               <IconButton
@@ -181,43 +192,43 @@ const ChangePassword = () => {
                 aria-label="Show Password"
                 bg="transparent"
                 rounded="full"
-                _hover={{
-                  bg: 'transparent'
-                }}
-                onClick={() => {
-                  setShowPassword(!showPassword)
-                }}
+                size="sm"
+                _hover={{ bg: "transparent" }}
+                onClick={() => setShowPassword(!showPassword)}
               />
             </InputRightElement>
           </InputGroup>
-          <FormErrorMessage>
-            {formState.errors.confirmPassword?.message}
-          </FormErrorMessage>
+          <FormErrorMessage>{formState.errors.confirmPassword?.message}</FormErrorMessage>
         </FormControl>
 
-        <Flex gap={5} flex={1}>
+        {/* Action Buttons */}
+        <Flex
+          gap={{ base: 3, md: 4 }}
+          flex={1}
+          direction={{ base: "column", sm: "row" }}
+          align="stretch"
+        >
           <Button
             w="full"
             color="white"
             bg="primary"
             isDisabled={!formState.isDirty || !formState.isValid}
-            _hover={{
-              bg: 'primary',
-              opacity: 0.4
-            }}
-            onClick={handleSubmit(onSubmitHandler)}>
+            _hover={{ bg: "primary", opacity: 0.85 }}
+            onClick={handleSubmit(onSubmitHandler)}
+          >
             Submit
           </Button>
 
           <Button
             w="full"
             isDisabled={!formState.isDirty}
-            onClick={onCancelHandler}>
+            onClick={onCancelHandler}
+          >
             Cancel
           </Button>
         </Flex>
-      </Flex>
-    </Flex>
+      </VStack>
+    </VStack >
   )
 }
 

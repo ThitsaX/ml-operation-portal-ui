@@ -1,4 +1,9 @@
-import { Box, Button, FormControl, FormErrorMessage, FormLabel, HStack, Heading, Input, Menu, MenuButton, MenuItem, MenuList, Stack, useToast, Select } from "@chakra-ui/react";
+import {
+  Button, FormControl, FormErrorMessage, FormLabel, HStack, Heading,
+  Input, Stack,
+  VStack, SimpleGrid,
+  useToast
+} from "@chakra-ui/react";
 import { useLoadingContext } from "@contexts/hooks";
 import { SettlementStatementReportHelper } from "@helpers/form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,65 +14,67 @@ import { type ISettlementStatementReport } from '@typescript/form/settlement-det
 
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone'
-import { memo, useState } from 'react'
+import { useMemo, useEffect, memo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { ITimezoneOption } from "react-timezone-select";
 import { useSelector } from "react-redux";
 import { RootState } from "@store";
 import { useGetParticipantCurrencyList } from '@hooks/services';
 import { useGetParticipantList } from '@hooks/services/participant';
+import { type IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from "@helpers/errors";
+import { OptionType } from '@components/interface/CustomSelect';
+import { CustomSelect } from '@components/interface';
 
 const settlementStatementReportHelper = new SettlementStatementReportHelper()
-const initialFileName = 'Settlement-Statement-Report'
+const initialFileName = 'DFSPSettlementStatementReport'
 
 const SettlementStatementReport = () => {
   const { start, complete } = useLoadingContext();
   const toast = useToast();
-  const [settlementModel, setSettlementModel] = useState<string>('');
   const [runButtonState, setRunButtonState] = useState(true);
   const { data: participantList } = useGetParticipantList();
-
 
   // Redux
   const user = useGetUserState()
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
+  const selectedTZString = useMemo(
+    () => (selectedTimezone.value),
+    [selectedTimezone]
+  );
   const { data: currencyList } = useGetParticipantCurrencyList();
+
+  const isHubUser =
+    typeof user.data?.participantName === 'string' &&
+    user.data.participantName.toLowerCase() === 'hub';
 
   const onDownloadChangeHandler = (e: any) => {
     start()
 
-    const fileType = e.target.value
-
     const formData = getValues();
-    const currentTimeZone = moment.tz.guess();
+    const fileType = formData.fileType;
 
-    // Convert to UTC
-    const utcStartDate = moment(formData.startDate)
-      .tz(selectedTimezone?.value || currentTimeZone)
-      .utc()
-      .format();
+    const StartDate = moment.tz(formData.startDate, selectedTimezone?.value)
+      .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
-    const utcEndDate = moment(formData.endDate)
-      .tz(selectedTimezone?.value || currentTimeZone)
-      .utc()
-      .format();
+    const EndDate = moment.tz(formData.endDate, selectedTimezone?.value)
+      .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
-    const selectedTZString = selectedTimezone.value;
     let tzOffSet: string = selectedTimezone.offset === 0
       ? "0000"
       : moment().tz(selectedTZString).format('ZZ').replace('+', '');
 
     generateSettlementStatementReport(user, {
-      startDate: utcStartDate,
-      endDate: utcEndDate,
-      timezoneoffset: tzOffSet,
-      fileType: getValues().fileType,
-      fspId: getValues().fspId,
-      currency: getValues().currency
+      startDate: StartDate,
+      endDate: EndDate,
+      timezoneOffset: tzOffSet,
+      fileType: fileType,
+      fspId: isHubUser ? formData.fspId : user?.data?.participantName,
+      currencyId: formData.currencyId
     })
       .then((res: any) => {
-        if (res?.detail_report_byte?.length > 0) {
-          downloadFile(initialFileName, fileType, res?.detail_report_byte)
+        if (res?.rptByte?.length > 0) {
+          downloadFile(initialFileName, fileType, res?.rptByte)
         } else {
           toast({
             position: 'top',
@@ -77,49 +84,98 @@ const SettlementStatementReport = () => {
             duration: 3000
           })
         }
-      }).catch((e) => {
-        console.log(e)
+      }).catch((error: IApiErrorResponse) => {
+        toast({
+          position: 'top',
+          description: getErrorMessage(error) || 'Faield to download',
+          status: 'warning',
+          isClosable: true,
+          duration: 3000
+        });
       }).finally(() => {
+        setRunButtonState(true);
         complete()
       })
   }
 
-  const { control, trigger, getValues, formState: { errors, isValid } } = useForm<ISettlementStatementReport>({
+  const { control, trigger, setValue, getValues, formState: { errors, isValid } } = useForm<ISettlementStatementReport>({
     resolver: zodResolver(settlementStatementReportHelper.schema),
     defaultValues: {
-      startDate: moment().format('YYYY-MM-DDTHH:mm'),
-      endDate: moment().format('YYYY-MM-DDTHH:mm'),
-      fspId: '',
-      currency: '',
-      settlementId: '',
-      fileType: ''
+      startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
+      endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
+      fspId: 'all',
+      currencyId: 'all',
+      fileType: 'xlsx'
     },
     mode: 'onChange'
   })
 
+  useEffect(() => {
+    setValue('startDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
+    setValue('endDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+
+  }, [selectedTimezone, setValue]);
+
   return (
 
-    <Box height="fit" p="4">
-      <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" pb="3">
+    <VStack align="flex-start" h="full" p="3" mt={10} w="full">
+      <Heading fontSize="2xl" mb={6}>
         Settlement Statement Report
       </Heading>
-      <Stack borderWidth="1px" borderRadius='lg' height="full" p="4">
-        <HStack alignItems={'flex-start'} spacing={4}>
+
+      <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
+        <SimpleGrid
+          columns={{ base: 1, md: 2, lg: 4 }} // 1 per row on mobile, 2 on md, 4 on lg+
+          spacing={4}
+          w="full"
+        >
           <FormControl isInvalid={!isEmpty(errors.fspId)}>
             <FormLabel>DFSP Name</FormLabel>
-            <Controller
-              name="fspId"
-              control={control}
-              render={({ field }) => (
-                <Select {...field} placeholder="Select DFSP">
-                  {participantList?.map((item, index) => (
-                    <option key={index} value={item.participantName}>
-                      {item.description}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            />
+
+            {isHubUser ? (
+              <Controller
+                name="fspId"
+                control={control}
+                render={({ field }) => (
+                  <CustomSelect
+                    includeAllOption={true}
+                    placeholder="Select DFSP"
+                    options={(participantList ?? []).map(
+                      (item): OptionType => ({
+                        value: item.participantName,
+                        label: item.participantName,
+                      })
+                    )}
+                    value={
+                      field.value
+                        ? field.value === 'all'
+                          ? { value: 'all', label: 'All' } // ✅ handle 'All' manually
+                          : {
+                            value: field.value,
+                            label:
+                              participantList?.find(
+                                (p) => p.participantName === field.value
+                              )?.participantName || '',
+                          }
+                        : null
+                    }
+                    onChange={(selected: OptionType | null) => {
+                      const value = selected?.value || '';
+                      field.onChange(value);
+                    }}
+                  />
+
+                )}
+              />
+            ) : (
+              <Input
+                value={user.data?.participantName || ""}
+                readOnly
+                bg="gray.100"
+                _readOnly={{ opacity: 1, cursor: "not-allowed" }}
+              />
+            )}
+
             <FormErrorMessage>{errors.fspId?.message}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!isEmpty(errors.startDate)} pb="1">
@@ -167,46 +223,83 @@ const SettlementStatementReport = () => {
             />
             <FormErrorMessage>{errors.endDate?.message}</FormErrorMessage>
           </FormControl>
-          <FormControl isInvalid={!isEmpty(errors.currency)}>
+          <FormControl isInvalid={!isEmpty(errors.currencyId)}>
             <FormLabel>Currency</FormLabel>
             <Controller
-              name="currency"
+              name="currencyId"
               control={control}
               render={({ field }) => (
-                <Select {...field} placeholder="Select Currency">
-                  {currencyList?.map((item, index) => (
-                    <option key={index} value={item.currency}>
-                      {item.currency}
-                    </option>
-                  ))}
-                </Select>
+                <CustomSelect
+                  maxMenuHeight={300}
+                  isClearable={false}
+                  options={[
+                    { value: 'all', label: 'All' },
+                    ...(currencyList ?? []).map((item) => ({
+                      value: item.currency,
+                      label: item.currency,
+                    })),
+                  ]}
+                  value={
+                    field.value
+                      ? {
+                        value: field.value,
+                        label:
+                          field.value === 'all'
+                            ? 'All'
+                            : currencyList?.find((c) => c.currency === field.value)?.currency || '',
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                  placeholder="Select Currency"
+                />
               )}
             />
-            <FormErrorMessage>{errors.currency?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
           </FormControl>
-        </HStack>
+        </SimpleGrid>
 
-        <HStack justifyContent='flex-end' p={2}>
+        {/* Download Section */}
+        <Stack
+          direction={{ base: "column", md: "row" }}
+          spacing={4}
+          justify={{ base: "flex-start", md: "flex-end" }}
+          w="full">
 
-          <FormControl width="250px">
+          <FormControl w={{ base: "100%", sm: "auto", md: "250px" }}>
             <Controller
               control={control}
               name="fileType"
               render={({ field }) => (
-                <Select {...field} placeholder="Choose Format" width="250px">
-                  <option value="xlsx">XLSX</option>
-                  <option value="csv">CSV</option>
-                </Select>
+                <CustomSelect
+                  options={[
+                    { value: 'xlsx', label: 'XLSX' },
+                    { value: 'csv', label: 'CSV' },
+                  ]}
+                  value={
+                    field
+                      ? {
+                        value: field.value,
+                        label: field.value.toUpperCase(),
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                  placeholder="Choose Format"
+                />
               )}
             />
           </FormControl>
 
-          <Button colorScheme='blue' isDisabled={!isValid || !runButtonState} onClick={onDownloadChangeHandler}>
+          <Button colorScheme='blue'
+            isDisabled={!isValid || !runButtonState}
+            onClick={onDownloadChangeHandler}
+            w={{ base: "100%", sm: "auto" }}>
             Download
           </Button>
-        </HStack>
+        </Stack>
       </Stack>
-    </Box>
+    </VStack >
   );
 };
 

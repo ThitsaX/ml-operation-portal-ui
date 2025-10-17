@@ -12,7 +12,8 @@ export interface IParticipantPositionData {
   ndc: number,
   ndcUsed: number,
   participantSettlementCurrencyId: number,
-  participantPositionCurrencyId: number
+  participantPositionCurrencyId: number,
+  isActive: boolean
 }
 
 export interface IGetAllParticipants {

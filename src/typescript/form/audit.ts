@@ -1,13 +1,14 @@
 export interface IGetAuditByParticipantValues {
   fromDate: string;
   toDate: string;
+  page: number;
+  pageSize: number;
 }
 
 export interface IGetAuditReport {
   fromDate: string;
   toDate: string;
-  participantId: string;
-  action: string;
+  actionId: string;
   userId: string;
   timezoneOffset: string;
   fileType: string;

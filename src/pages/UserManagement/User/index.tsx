@@ -19,7 +19,8 @@ import {
   Divider,
   Switch,
   Toast,
-  useToast
+  useToast,
+  Stack
 } from '@chakra-ui/react';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { usePagination, useSortBy, useTable, Column, CellProps, useGlobalFilter } from 'react-table';
@@ -37,7 +38,8 @@ import { modifyUser, modifyUserStatus } from '@services/participant';
 import {
   type IParticipantUser,
   type IModifyUser,
-  type IParticipantUserForm
+  type IParticipantUserForm,
+  IApiErrorResponse
 } from '@typescript/services';
 import { UserStatus } from '@typescript/form';
 import { useGetOrganizationListByParticipant } from '@hooks/services/participant';
@@ -45,6 +47,10 @@ import { createUser } from '@services/participant';
 import { GrPowerReset } from "react-icons/gr";
 import ResetPasswordModal from '@components/interface/ResetPassword';
 import GlobalFilter from '@components/interface/GlobalFilter';
+import { store } from '@store'
+import { getErrorMessage } from '@helpers/errors';
+import { CustomSelect } from '@components/interface';
+
 const User = () => {
   const [filterStatus, setFilterStatus] = useState('ACTIVE');
   const [filteredUsers, setFilteredUsers] = useState([] as IParticipantUser[]);
@@ -79,10 +85,10 @@ const User = () => {
         isClosable: true,
       });
       await refetch();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         position: 'top',
-        description: error.message || 'Failed to update user status',
+        description: getErrorMessage(error as IApiErrorResponse) || 'Failed to update user status',
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -94,15 +100,21 @@ const User = () => {
   const columns: Column<IParticipantUser>[] = useMemo(() => {
     return [
       {
-        Header: "Email",
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Email</Text>
+        ),
         accessor: "email",
       },
       {
-        Header: "Name",
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Name</Text>
+        ),
         accessor: "name",
       },
       {
-        Header: "Role",
+        Header: () => (
+          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Role</Text>
+        ),
         accessor: "roleList",
         Cell: ({ value }: CellProps<IParticipantUser, string[]>) => {
           if (!value || value.length === 0) return <span>-</span>;
@@ -110,39 +122,57 @@ const User = () => {
         },
       },
       {
-        Header: "Status",
+        Header: () => (
+          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Status</Text>
+        ),
         accessor: "status",
         disableSortBy: true,
+        Cell: ({ value }) => (
+          <Box textAlign="left" px={3}>
+            {value}
+          </Box>
+        ),
       },
       {
-        Header: "Action",
-        disableSortBy: true,
-        Cell: ({ row }: CellProps<IParticipantUser>) => (
-          <HStack spacing={3}>
-            <IconButton
-              icon={<GrPowerReset />}
-              aria-label="Edit"
-              size="md"
-              onClick={() => handleResetClick(row.original)}
-              variant="ghost"
-            />
-            <IconButton
-              icon={<FaRegEdit />}
-              aria-label="Edit"
-              size="md"
-              onClick={() => handleEditClick(row.original)}
-              variant="ghost"
-            />
-            <Switch
-              colorScheme="green"
-              size="sm"
-              isChecked={row.original.status === "ACTIVE"}
-              onChange={e =>
-                toggleStatus(row.original.userId, e.target.checked)
-              }
-            />
-          </HStack>
+        Header: () => (
+          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Action</Text>
         ),
+        id: "id",
+        disableSortBy: true,
+        Cell: ({ row }: CellProps<IParticipantUser>) => {
+          const { user: { data: user } } = store.getState();
+
+          const isDisabled = row.original.userId === user?.userId;
+
+          return (
+            <HStack spacing={3}>
+              <IconButton
+                icon={<GrPowerReset />}
+                aria-label="Edit"
+                size="md"
+                onClick={() => handleResetClick(row.original)}
+                variant="ghost"
+                isDisabled={isDisabled}
+              />
+              <IconButton
+                icon={<FaRegEdit />}
+                aria-label="Edit"
+                size="md"
+                onClick={() => handleEditClick(row.original)}
+                variant="ghost"
+              />
+              <Switch
+                colorScheme="green"
+                size="sm"
+                isChecked={row.original.status === "ACTIVE"}
+                onChange={e =>
+                  toggleStatus(row.original.userId, e.target.checked)
+                }
+                isDisabled={isDisabled}
+              />
+            </HStack>
+          )
+        }
       },
     ];
   }, []);
@@ -228,10 +258,10 @@ const User = () => {
         refetch();
         setIsOpen(false);
       })
-      .catch((error: any) => {
+      .catch((error: IApiErrorResponse) => {
         toast({
           position: 'top',
-          description: error?.error_code || 'Something went wrong',
+          description: getErrorMessage(error) || 'Something went wrong',
           status: 'error',
           duration: 3000,
           isClosable: true,
@@ -248,36 +278,45 @@ const User = () => {
       setPageNumber(value)
     }
   }
+  const statusOptions = [
+      { value: 'All', label: 'All' },
+      { value: 'ACTIVE', label: 'Active' },
+      { value: 'INACTIVE', label: 'Inactive' },
+    ];
 
   return (
-    <VStack w="full" align="flex-start" spacing={6} p={4}>
-      <Heading size="md">User Management</Heading>
 
-      <HStack w="full" justifyContent="space-between">
-        <ChakraSelect
-          width="200px"
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          size="md"
-          rounded="md"
-          bg="white"
-          borderColor="gray.300"
-          focusBorderColor="blue.500"
-          _hover={{ borderColor: "blue.400" }}
-          _focus={{ boxShadow: "0 0 0 1px #3182CE" }}
+    <VStack align="flex-start" w="full" h="full" p="3" spacing={0} mt={10}>
+      <Heading fontSize="2xl" mb={6}>User Management</Heading>
 
-        >
-          <option value="All">All</option>
-          <option value="ACTIVE">Active</option>
-          <option value="INACTIVE">Inactive</option>
+      <Stack
+        w="full"
+        direction={{ base: "column", sm: "row" }}
+        spacing={2}
+        justifyContent="space-between"
+      >
 
-        </ChakraSelect >
+        <Box w={{ base: "full", sm: "200px" }}>
+        <CustomSelect
+          options={statusOptions}
+          value={statusOptions.find(option => option.value === filterStatus) || null}
+          onChange={(selectedOption) => {
+            setFilterStatus(selectedOption?.value || '');
+          }}
+          placeholder="Select status"
+          includeAllOption={false}
+        />
+        </Box>
+        <Button
+          colorScheme="blue"
+          onClick={handleNewClick}
+          w={{ base: "full", sm: "auto" }}>
+          New User
+        </Button>
+      </Stack>
 
-        <Button colorScheme="blue" onClick={() => handleNewClick()}>New User</Button>
-      </HStack>
-
-      <VStack w="full" align="flex-start" spacing={2}>
-        <GlobalFilter globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
+      <VStack w="full" align="flex-start" spacing={2} >
+        <GlobalFilter mt={5} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
 
         <TableContainer
           w="full"
@@ -297,7 +336,7 @@ const User = () => {
                           : column.getSortByToggleProps()
                       )}>
                       <HStack align="center" spacing="2" flex={1}>
-                        <Text flex={1}>{column.render('Header')}</Text>
+                        {column.render('Header')}
                         {column.disableSortBy ? null : (
                           <VStack
                             display="inline-flex"

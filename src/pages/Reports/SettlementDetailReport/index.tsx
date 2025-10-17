@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   FormControl,
   FormErrorMessage,
@@ -9,7 +8,8 @@ import {
   Stack,
   useToast,
   HStack,
-  Select
+  VStack,
+  SimpleGrid
 } from '@chakra-ui/react';
 import { SettlementDetailReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,7 +24,7 @@ import { type ISettlementDetailReport } from '@typescript/form/settlement-detail
 
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone';
-import { memo, useCallback, useState } from "react";
+import { useMemo, memo, useEffect, useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { FaSearch } from "react-icons/fa";
 import { IGetSettlementIds } from "@typescript/services/report";
@@ -33,41 +33,63 @@ import { ITimezoneOption } from "react-timezone-select";
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { useGetParticipantList } from '@hooks/services/participant';
-
+import { type IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from '@helpers/errors';
+import { OptionType } from '@components/interface/CustomSelect';
+import { CustomSelect } from '@components/interface';
 
 const settlementDetailReportHelper = new SettlementDetailReportHelper();
-const initialFileName = 'Settlement-Details-Report';
+const initialFileName = 'DFSPSettlementDetailReport';
 
 const SettlementDetailReport = () => {
   const { start, complete } = useLoadingContext();
   const toast = useToast();
   const [runButtonState, setRunButtonState] = useState(true);
   const [settlementIdOptions, setSettlementIdOptions] = useState<any[]>([]);
-  const [selectedSettlementId, setSelectedSettlementId] = useState<any>();
+
+
+  const [settlementId, setSettlementId] = useState("");
+  const [fspId, setFspId] = useState("");
 
 
   // Redux
   const user = useGetUserState();
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
+
+  const selectedTZString = useMemo(
+    () => (selectedTimezone.value),
+    [selectedTimezone]
+  );
   const { data: participantList } = useGetParticipantList();
+
+  const isHubUser =
+    typeof user.data?.participantName === 'string' &&
+    user.data.participantName.toLowerCase() === 'hub';
 
   const {
     control,
     trigger,
     handleSubmit,
     getValues,
+    setValue,
     formState: { errors, isValid }
   } = useForm<ISettlementDetailReport>({
     resolver: zodResolver(settlementDetailReportHelper.schema),
     defaultValues: {
       fspId: '',
       settlementId: '',
-      fileType: '',
-      startDate: moment().format('YYYY-MM-DDTHH:mm'),
-      endDate: moment().format('YYYY-MM-DDTHH:mm'),
+      fileType: 'xlsx',
+      startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
+      endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
     },
     mode: 'onChange'
   });
+
+  useEffect(() => {
+    setValue('startDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
+    setValue('endDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+
+  }, [selectedTimezone, setValue]);
 
   const onDownloadChangeHandler = (e: any) => {
     start();
@@ -80,10 +102,11 @@ const SettlementDetailReport = () => {
     let tzOffSet: string = selectedTimezone.offset === 0
       ? "0000"
       : moment().tz(selectedTZString).format('ZZ').replace('+', '');
+
     generateSettlementDetailReport({
-        settlementId: getValues().settlementId,
-      fspId: getValues().fspId,
-      fileType: getValues().fileType,
+      settlementId: formData.settlementId,
+      fspId: isHubUser ? formData.fspId : user?.data?.participantName,
+      fileType: fileType,
       timezoneOffset: tzOffSet
     })
       .then((res: any) => {
@@ -99,10 +122,17 @@ const SettlementDetailReport = () => {
           });
         }
       })
-      .catch((e) => {
-        console.log(e);
+      .catch((error: IApiErrorResponse) => {
+        toast({
+          position: 'top',
+          description: getErrorMessage(error) || 'Faield to download',
+          status: 'warning',
+          isClosable: true,
+          duration: 3000
+        });
       })
       .finally(() => {
+        setRunButtonState(true);
         complete();
       });
   };
@@ -112,24 +142,18 @@ const SettlementDetailReport = () => {
     setRunButtonState(false);
 
     const formData = getValues();
-    const currentTimeZone = moment.tz.guess();
 
-    // Convert to UTC
-    const utcStartDate = moment(formData.startDate)
-      .tz(selectedTimezone?.value || currentTimeZone)
-      .utc()
+    const StartDate = moment.tz(formData.startDate, selectedTimezone?.value)
       .format();
 
-    const utcEndDate = moment(formData.endDate)
-      .tz(selectedTimezone?.value || currentTimeZone)
-      .utc()
+    const EndDate = moment.tz(formData.endDate, selectedTimezone?.value)
       .format();
 
     const tzOffSet = selectedTimezone?.offset === 0
       ? '0000'
-      : moment().tz(selectedTimezone?.value || currentTimeZone).format('ZZ').replace('+', '');
+      : moment().tz(selectedTimezone?.value).format('ZZ').replace('+', '');
 
-    getSettlementIds(user, utcStartDate, utcEndDate, tzOffSet)
+    getSettlementIds(user, StartDate, EndDate, tzOffSet)
       .then((data: IGetSettlementIds) => {
         if (data.settlementIdDataList?.length === 0) {
           toast({
@@ -148,8 +172,9 @@ const SettlementDetailReport = () => {
         });
 
         setSettlementIdOptions(options);
-
-        setSelectedSettlementId(null);
+        setSettlementId("");
+        setValue('settlementId', '');
+        setValue('fileType', 'xlsx');
       })
       .finally(() => {
         setRunButtonState(true);
@@ -163,52 +188,91 @@ const SettlementDetailReport = () => {
     [search]
   );
 
+
+
   return (
-    <Box height="fit" p="4">
-      <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" pb="3">
+    <VStack align="flex-start" h="full" p="3" mt={10} w="full">
+      <Heading fontSize="2xl" mb={6}>
         Settlement Detail Report
       </Heading>
-      <Stack borderWidth="1px" borderRadius="lg" height="full" p="2" mb={4}>
-        <HStack alignItems={'flex-start'} p={2} spacing={8}>
+
+      <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
+        {/* --- Filters Section --- // 1 per row on mobile, 2 on md, 4 on lg+*/}
+        <SimpleGrid
+          columns={{ base: 1, md: 2, lg: 4 }}
+          spacing={4}
+          w="full">
 
           <FormControl isInvalid={!isEmpty(errors.fspId)}>
             <FormLabel>DFSP Name</FormLabel>
-            <Controller
-              name="fspId"
-              control={control}
-              render={({ field }) => (
-                <Select {...field} placeholder="Select DFSP">
-                  {participantList?.map((item, index) => (
-                    <option key={index} value={item.participantName}>
-                      {item.description}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            />
+
+            {isHubUser ? (
+              <Controller
+                name="fspId"
+                control={control}
+                render={({ field }) => (
+                  <CustomSelect
+                    isClearable
+                    placeholder="Select DFSP"
+                    options={
+                      (participantList ?? []).map(
+                        (item): OptionType => ({
+                          value: item.participantName,
+                          label: item.participantName,
+                        })
+                      )
+                    }
+                    value={
+                      field.value
+                        ? {
+                          value: field.value,
+                          label:
+                            participantList?.find(
+                              (p) => p.participantName === field.value
+                            )?.participantName || '',
+                        }
+                        : null
+                    }
+                    onChange={(selected: OptionType | null) => {
+                      const value = selected?.value || '';
+                      field.onChange(value);
+                      setFspId(value);
+                    }}
+                  />
+
+                )}
+              />
+            ) : (
+              <Input
+                value={user.data?.participantName || ""}
+                readOnly
+                bg="gray.100"
+                _readOnly={{ opacity: 1, cursor: "not-allowed" }}
+              />
+            )}
+
             <FormErrorMessage>{errors.fspId?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl
-            isInvalid={!isEmpty(errors.startDate)}
-            pb="1">
+          <FormControl isInvalid={!isEmpty(errors.startDate)} pb="1">
             <FormLabel>Start Date</FormLabel>
             <Controller
               control={control}
-              render={({ field: { value, onChange, onBlur } }) => {
-                return (
-                  <Input
-                    value={value}
-                    onChange={(e) => {
-                      onChange(e);
-                      trigger('endDate');
-                    }}
-                    onBlur={onBlur}
-                    type="datetime-local"
-                  />
-                );
-              }}
               name="startDate"
+              render={({ field: { value, onChange, onBlur } }) => (
+                <Input
+                  value={value}
+                  onChange={(e) => {
+                    onChange(e);
+                    trigger("endDate");
+                    setSettlementIdOptions([]);
+                    setSettlementId("");
+                  }}
+                  onBlur={onBlur}
+                  type="datetime-local"
+                  width="100%"
+                />
+              )}
             />
             <FormErrorMessage>{errors.startDate?.message}</FormErrorMessage>
           </FormControl>
@@ -217,85 +281,128 @@ const SettlementDetailReport = () => {
             <FormLabel>End Date</FormLabel>
             <Controller
               control={control}
-              render={({
-                field: { value, onChange, onBlur },
-                fieldState: { error }
-              }) => {
-                return (
-                  <Input
-                    value={value}
-                    onChange={(e) => {
-                      onChange(e);
-                      trigger('startDate');
-                    }}
-                    onBlur={onBlur}
-                    type="datetime-local"
-                  />
-                );
-              }}
               name="endDate"
+              render={({ field: { value, onChange, onBlur } }) => (
+                <Input
+                  value={value}
+                  onChange={(e) => {
+                    onChange(e);
+                    trigger("startDate");
+                    setSettlementIdOptions([]);
+                    setSettlementId("");
+                  }}
+                  onBlur={onBlur}
+                  type="datetime-local"
+                  width="100%"
+                />
+              )}
             />
             <FormErrorMessage>{errors.endDate?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.fspId)} textAlign="right">
-            <Button onClick={handleSubmit(onSearchClick)} isDisabled={!isValid}
-              colorScheme='blue' gap="2"
-              size='md'
-              mt="30px">
+          <FormControl
+            display="flex"
+            justifyContent={{ base: "stretch", md: "flex-end" }}
+            alignItems="flex-end"
+            mb={1}
+          >
+            <Button
+              onClick={handleSubmit(onSearchClick)}
+              isDisabled={!isValid}
+              colorScheme="blue"
+              gap="2"
+              size="md"
+              w={{ base: "100%", md: "auto" }}
+            >
               <FaSearch /> Search
             </Button>
           </FormControl>
-
-        </HStack>
+        </SimpleGrid>
       </Stack>
-      {settlementIdOptions.length > 0 && (<Stack borderWidth="1px" borderRadius="lg" p={4} height="full">
-        <HStack alignItems={'flex-start'} p={2} spacing={4}>
 
-          <FormControl
-            width={{ base: '200px', md: '250px' }}
-            isInvalid={!isEmpty(errors.fspId)}>
-            <FormLabel>Settlement ID</FormLabel>
-            <Controller
-              name="settlementId"
-              control={control}
-              render={({ field }) => (
-                <Select {...field}
-                  onChange={(e) => field.onChange(e.target.value)}
-                  value={field.value || ""} placeholder="Select Settlement ID">
-                  {settlementIdOptions.map((opt, index) => (
-                    <option key={index} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </Select>
-              )}
-            />
-          </FormControl>
+      {settlementIdOptions.length > 0 && (
+        <Stack borderWidth="1px" borderRadius="lg" p={4} w="full" spacing={4}>
 
-        </HStack>
-        <HStack justifyContent='flex-end' p={2}>
+          <HStack
+            spacing={4}
+            align="flex-start"
+            wrap="wrap" // allows stacking on small screens
+          >
+            <FormControl isInvalid={!isEmpty(errors.settlementId)}
+              w={{ base: "100%", sm: "auto", md: "250px" }}>
+              <FormLabel>Settlement ID:</FormLabel>
+              <Controller
+                name="settlementId"
+                control={control}
+                render={({ field }) => (
+                  <CustomSelect
+                    maxMenuHeight={300}
+                    isClearable={true}
+                    options={settlementIdOptions}
+                    value={
+                      field.value
+                        ? {
+                          value: field.value,
+                          label: settlementIdOptions.find((s) => s.value === field.value)?.label || '',
+                        }
+                        : null
+                    }
+                    onChange={(selected: OptionType | null) => {
+                      field.onChange(selected?.value || '');
+                      setSettlementId(selected?.value || '');
+                    }}
+                    placeholder="Select Settlement ID"
+                  />
+                )}
+              />
+            </FormControl>
+          </HStack>
 
-          <FormControl width="250px">
-            <Controller
-              control={control}
-              name="fileType"
-              render={({ field }) => (
-                <Select {...field} placeholder="Choose Format" width="250px">
-                  <option value="xlsx">XLSX</option>
-                  <option value="csv">CSV</option>
-                </Select>
-              )}
-            />
-          </FormControl>
+          {/* FileType + Download */}
+          <Stack
+            direction={{ base: "column", md: "row" }}
+            spacing={{ base: 3, md: 4 }}
+            justify={{ base: "flex-start", md: "flex-end" }}
+            align={{ base: "stretch", md: "center" }}
+            w="full"
+          >
+            <FormControl w={{ base: "100%", md: "250px" }}>
+              <Controller
+                control={control}
+                name="fileType"
+                render={({ field }) => (
+                  <CustomSelect
+                    options={[
+                      { value: 'xlsx', label: 'XLSX' },
+                      { value: 'csv', label: 'CSV' },
+                    ]}
+                    value={
+                      field
+                        ? {
+                          value: field.value,
+                          label: field.value.toUpperCase(),
+                        }
+                        : null
+                    }
+                    onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                    placeholder="Choose Format"
+                  />
+                )}
+              />
+            </FormControl>
 
-          <Button colorScheme='blue' isDisabled={!isValid || !runButtonState} onClick={onDownloadChangeHandler}>
-            Download
-          </Button>
-        </HStack>
-      </Stack>
+            <Button
+              colorScheme="blue"
+              isDisabled={!fspId || !settlementId || !runButtonState}
+              onClick={onDownloadChangeHandler}
+              w={{ base: "100%", md: "auto" }}
+            >
+              Download
+            </Button>
+          </Stack>
+        </Stack>
       )}
-    </Box>
+    </VStack>
   );
 };
 

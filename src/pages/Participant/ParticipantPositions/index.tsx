@@ -42,11 +42,18 @@ import DepositModal from '@components/interface/Participant';
 import WithdrawModal from '@components/interface/Participant/WidthdrawModal';
 import NetDebitCapModal from '@components/interface/Participant/NetDebitCardModal';
 import { syncHubParticipantsToPortal } from '@services/dashboard';
-import { createApprovalRequest } from '@services/participant';
+import { createApprovalRequest, updateParticipantStatus } from '@services/participant';
 import { getParticipantPositionList } from '@services/dashboard';
 import { Badge } from '@chakra-ui/react';
+import { type IApiErrorResponse } from '@typescript/services';
+import { getErrorMessage } from '@helpers/errors';
 
 const ParticipantPositions = () => {
+
+    // Utility function to format numbers with commas
+    const formatNumber = (num: number): string => {
+        return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
 
     const [pageNumber, setPageNumber] = useState<String>('1');
     const [tableData, setTableData] = useState<IParticipantPositionData[]>([]);
@@ -85,9 +92,10 @@ const ParticipantPositions = () => {
             const data = await getParticipantPositionList();
             setParticipantPositionList(data);
         } catch (error: any) {
+            const err = error as IApiErrorResponse;
             toast({
                 title: 'Failed to fetch participant positions',
-                description: error?.message || 'Something went wrong. Please try again.',
+                description: getErrorMessage(err as IApiErrorResponse) || 'Something went wrong. Please try again.',
                 status: 'error',
                 duration: 4000,
                 isClosable: true,
@@ -115,7 +123,9 @@ const ParticipantPositions = () => {
     const columns = useMemo(
         () => [
             {
-                Header: 'DFSP ID',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">DFSP ID</Text>
+                ),
                 accessor: 'participantName',
                 Cell: ({ row }: any) => (
                     <Box
@@ -130,11 +140,15 @@ const ParticipantPositions = () => {
                     </Box>)
             },
             {
-                Header: 'DFSP Name',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">DFSP Name</Text>
+                ),
                 accessor: 'description'
             },
             {
-                Header: 'Currency',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Currency</Text>
+                ),
                 accessor: 'currency',
                 Cell: ({ value }) => (
                     <Text textAlign="center">
@@ -143,25 +157,31 @@ const ParticipantPositions = () => {
                 ),
             },
             {
-                Header: 'Balance',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Balance</Text>
+                ),
                 accessor: 'balance',
                 Cell: ({ row }: any) => (
                     <Box textAlign={'right'}>
-                        {row.original.balance?.toFixed(2)}
+                        {formatNumber(row.original.balance)}
                     </Box>
                 )
             },
             {
-                Header: 'Current Position',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Current Position</Text>
+                ),
                 accessor: 'currentPosition',
                 Cell: ({ row }: { row: Row<IParticipantPositionData> }) => (
                     <Box textAlign={'right'}>
-                        {row.original.currentPosition?.toFixed(2)}
+                        {formatNumber(row.original.currentPosition)}
                     </Box>
                 )
             },
             {
-                Header: 'NDC %',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC %</Text>
+                ),
                 accessor: 'ndcPercent',
                 Cell: ({ value }) => (
                     <Text textAlign="right">
@@ -170,16 +190,20 @@ const ParticipantPositions = () => {
                 ),
             },
             {
-                Header: 'NDC',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC</Text>
+                ),
                 accessor: 'ndc',
                 Cell: ({ value }) => (
                     <Text textAlign="right">
-                        {value}
+                        {formatNumber(value)}
                     </Text>
                 ),
             },
             {
-                Header: 'NDC Used %',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC Used %</Text>
+                ),
                 accessor: 'ndcUsed',
                 Cell: ({ value }) => (
                     <HStack spacing={2} w="full" justifyContent="flex-end">
@@ -198,26 +222,29 @@ const ParticipantPositions = () => {
                 ),
             },
             {
-                Header: 'Enable/Disable',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Enable/Disable</Text>
+                ),
+                id: "isActive",
                 disableSortBy: true,
                 Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
-                    const isEnabled = row.original.ndc > 0;
-                    const id = row.original.participantName;
-
                     return (
                         <Box w="full" display="flex" justifyContent="center" alignItems="center">
                             <Switch
                                 colorScheme="green"
                                 size="sm"
-                                isChecked={isEnabled}
-                                onChange={(e) => toggleStatus(id, e.target.checked)}
+                                isChecked={row.original.isActive}
+                                onChange={(e) => toggleStatus(row.original)}
                             />
                         </Box>
                     );
                 }
             },
             {
-                Header: 'Action',
+                Header: () => (
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Action</Text>
+                ),
+                id: "action",
                 disableSortBy: true,
                 width: 180,
                 minWidth: 200,
@@ -323,9 +350,10 @@ const ParticipantPositions = () => {
 
             if (onSuccess) onSuccess(); // ✅ close modal on success
         } catch (err: any) {
+            const error = err as IApiErrorResponse;
             toast({
                 title: `Failed to ${actionLabel}`,
-                description: err?.message || 'Something went wrong',
+                description: getErrorMessage(error) || 'Something went wrong',
                 status: 'error',
                 duration: 4000,
                 isClosable: true,
@@ -371,10 +399,35 @@ const ParticipantPositions = () => {
     };
 
 
-    const toggleStatus = (id: string | number, newValue: boolean) => {
-        // Example: Send update to API or update local state
-        console.log('Toggle row id:', id, 'New status:', newValue);
-        // ...your logic here
+    const toggleStatus = async (data: IParticipantPositionData) => {
+        const values = {
+            participantCurrencyId: data.participantPositionCurrencyId,
+            participantName: data.participantName,
+            activeStatus: data.isActive ? 'INACTIVE' : 'ACTIVE',
+        };
+
+        try {
+            await updateParticipantStatus(values);
+            toast({
+                title: `Success`,
+                position: 'top',
+                description: `Participant status ${values.activeStatus} updated successfully`,
+                status: 'success',
+                duration: 3000,
+                isClosable: true,
+            });
+            await getPositionList();
+        } catch (error: any) {
+            const err = error as IApiErrorResponse;
+            toast({
+                title: 'Error',
+                position: 'top',
+                description: getErrorMessage(err) || 'Failed to update status.',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+            });
+        }
     };
 
     const {
@@ -405,8 +458,9 @@ const ParticipantPositions = () => {
     );
 
     return (
-        <VStack w="full" align="flex-start" spacing={6} p={4}>
-            <Heading size="md">Participant Positions</Heading>
+
+        <VStack align="flex-start" w="full" h="full" p="3" spacing={0} mt={10}>
+            <Heading fontSize="2xl" mb={6}>Participant Positions</Heading>
 
             <HStack align="center">
                 <Tooltip label='Refresh' bg='white' color='black'>
@@ -444,7 +498,7 @@ const ParticipantPositions = () => {
                                                 : column.getSortByToggleProps()
                                         )}>
                                         <HStack align="center" spacing="2" flex={1}>
-                                            <Text flex={1}>{column.render('Header')}</Text>
+                                            {column.render('Header')}
                                             {column.disableSortBy ? null : (
                                                 <VStack
                                                     display="inline-flex"

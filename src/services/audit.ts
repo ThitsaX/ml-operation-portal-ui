@@ -127,7 +127,7 @@ export const getAllAuditList = async (
     .get<IGetAuditByParticipant>(uri, {
       params: values
     })
-    .then((d) => d.data.auditInfoList)
+    .then((d) => d.data)
     .catch((error: AxiosError<IApiErrorResponse>) => {
       const { code, message, ...rest } = axiosErrorHandler(error);
       if (code && message) {
