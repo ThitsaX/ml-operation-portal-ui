@@ -21,6 +21,7 @@ import { LiquidityHelper } from '@helpers/form';
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { CustomSelect } from '@components/interface';
 import { isEmpty } from 'lodash-es';
 
 interface Props {
@@ -135,15 +136,22 @@ const LiquidityProfileModal: React.FC<Props> = ({
                                 name="currency"
                                 control={control}
                                 render={({ field }) => (
-                                    <Select {...field}
-                                        onChange={(e) => field.onChange(e.target.value)}
-                                        placeholder="Select Currency">
-                                        {data?.map((item, index) => (
-                                            <option key={index} value={item.currency}>
-                                                {item.currency}
-                                            </option>
-                                        ))}
-                                    </Select>
+                                    <CustomSelect
+                                        options={data?.map((item) => ({
+                                            value: item.currency,
+                                            label: item.currency,
+                                        })) ?? []}
+                                        value={ field.value
+                                            ? { value: field.value,
+                                                label: field.value }
+                                            : null
+                                        }
+                                        onChange={(selectedOption) => {
+                                            field.onChange(selectedOption?.value);
+                                        }}
+                                        placeholder="Select Currency"
+                                    />
+
                                 )}
                             />
                             <FormErrorMessage>{errors.currency?.message}</FormErrorMessage>
