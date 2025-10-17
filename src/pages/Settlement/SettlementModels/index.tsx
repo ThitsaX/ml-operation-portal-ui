@@ -63,7 +63,7 @@ const SettlementModels = () => {
         const run = async () => {
             try {
                 setLoading(true);
-                const data = await getSettlementModelList({});
+                const data = await getSettlementModelList();
                 if (ignore) return;
 
                 if (!data || data.length === 0) {
@@ -107,7 +107,7 @@ const SettlementModels = () => {
                 accessor: 'currencyId',
                 Cell: ({
                     value
-                }: CellProps<ISettlementModel, string | undefined>) => (
+                }: CellProps<ISettlementModel, string | undefined | null>) => (
                     <Text>{value ?? 'N/A'}</Text>
                 )
             },

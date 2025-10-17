@@ -1,7 +1,13 @@
 import AxiosRequest, { generateAccessToken, routes } from '@helpers/api'
 import { axiosErrorHandler, getErrorMessageByCode } from '@helpers/errors'
 import { store } from '@store'
-import { type IApiErrorResponse, IFinalizeSettlement, ISettlementModel } from '@typescript/services'
+import { 
+    type IApiErrorResponse, 
+    IFinalizeSettlement,
+    ISettlementWindowState,
+    ISettlementModel,
+    ISettlementState,
+} from '@typescript/services'
 import { type AxiosError } from 'axios'
 import { ISettlementWindow, INetTransferAmount } from '@typescript/services'
 import { 
@@ -9,6 +15,97 @@ import {
     ISettlementWindowCreateForm, 
     IFinalizeSettlementForm,
 } from '@typescript/form/settlements'
+
+
+export const getSettlementWindowStateList = async () => {
+    const {
+        user: { auth }
+    } = store.getState()
+    const uri = routes.getSettlementWindowStateList
+    const accessKey = auth?.accessKey as string
+    const secretKey = auth?.secretKey as string
+    const accessToken = await generateAccessToken({
+        method: 'GET',
+        uri,
+        secret: secretKey
+    })
+    const { axios } = AxiosRequest(accessToken, accessKey)
+    return axios
+        .get<{ settlementWindowStateList: ISettlementWindowState[] }>(uri)
+        .then((d) => d.data.settlementWindowStateList)
+        .catch((error: AxiosError<IApiErrorResponse>) => {
+            const { code, message, ...rest } = axiosErrorHandler(error)
+            if (code && message) {
+                throw {
+                    error_code: code,
+                    description: getErrorMessageByCode(code),
+                    default_error_message: message,
+                    i18n_error_messages: null
+                }
+            }
+            throw rest
+        })
+};
+
+export const getSettlementModelList = async () => {
+    const {
+        user: { auth }
+    } = store.getState()
+    const uri = routes.getSettlementModelList
+    const accessKey = auth?.accessKey as string
+    const secretKey = auth?.secretKey as string
+    const accessToken = await generateAccessToken({
+        method: 'GET',
+        uri,
+        secret: secretKey
+    })
+    const { axios } = AxiosRequest(accessToken, accessKey)
+    return axios
+        .get<{ settlementModels: ISettlementModel[] }>(uri)
+        .then((d) => d.data.settlementModels)
+        .catch((error: AxiosError<IApiErrorResponse>) => {
+            const { code, message, ...rest } = axiosErrorHandler(error)
+            if (code && message) {
+                throw {
+                    error_code: code,
+                    description: getErrorMessageByCode(code),
+                    default_error_message: message,
+                    i18n_error_messages: null
+                }
+            }
+            throw rest
+        })
+};
+
+export const getSettlementStateList = async () => {
+    const {
+        user: { auth }
+    } = store.getState()
+    const uri = routes.getSettlementStateList
+    const accessKey = auth?.accessKey as string
+    const secretKey = auth?.secretKey as string
+    const accessToken = await generateAccessToken({
+        method: 'GET',
+        uri,
+        secret: secretKey
+    })
+    const { axios } = AxiosRequest(accessToken, accessKey)
+    return axios
+        .get<{ settlementStateList: ISettlementState[] }>(uri)
+        .then((d) => d.data.settlementStateList)
+        .catch((error: AxiosError<IApiErrorResponse>) => {
+            const { code, message, ...rest } = axiosErrorHandler(error)
+            if (code && message) {
+                throw {
+                    error_code: code,
+                    description: getErrorMessageByCode(code),
+                    default_error_message: message,
+                    i18n_error_messages: null
+                }
+            }
+            throw rest
+        })
+};
 
 export const getFinalizeSettlementList = async (values: IFinalizeSettlementForm) => {
     const {
@@ -28,39 +125,6 @@ export const getFinalizeSettlementList = async (values: IFinalizeSettlementForm)
             params: values
         })
         .then((d) => d.data.settlementList)
-        .catch((error: AxiosError<IApiErrorResponse>) => {
-            const { code, message, ...rest } = axiosErrorHandler(error)
-            if (code && message) {
-                throw {
-                    error_code: code,
-                    description: getErrorMessageByCode(code),
-                    default_error_message: message,
-                    i18n_error_messages: null
-                }
-            }
-            throw rest
-        })
-}
-
-export const getSettlementModelList = async (values: any) => {
-    const {
-        user: { auth }
-    } = store.getState()
-    const uri = routes.getSettlementModelList
-    const accessKey = auth?.accessKey as string
-    const secretKey = auth?.secretKey as string
-    const accessToken = await generateAccessToken({
-        method: 'GET',
-        uri,
-        secret: secretKey
-    })
-    const { axios } = AxiosRequest(accessToken, accessKey)
-
-    return axios
-        .get<{ settlementModels: ISettlementModel[] }>(uri, {
-            params: values
-        })
-        .then((d) => {console.log(d.data); return d.data.settlementModels})
         .catch((error: AxiosError<IApiErrorResponse>) => {
             const { code, message, ...rest } = axiosErrorHandler(error)
             if (code && message) {
