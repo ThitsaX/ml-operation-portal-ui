@@ -29,8 +29,6 @@ import { useLoadingContext } from '@contexts/hooks';
 import { ITimezoneOption } from 'react-timezone-select';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
-
-import { FaSearch } from "react-icons/fa";
 import { IGetSettlementIds } from "@typescript/services/report";
 import { useGetParticipantCurrencyList } from '@hooks/services';
 import { type IApiErrorResponse } from '@typescript/services';
@@ -190,7 +188,7 @@ const SettlementBankReport = () => {
 
       <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
         <SimpleGrid
-          columns={{ base: 1, md: 3 }}
+          columns={{ base: 1, md: 2, lg: 4 }}
           spacing={4}
           w="full"
         >
@@ -209,7 +207,7 @@ const SettlementBankReport = () => {
                     field.onChange(e);
                     trigger("endDate");
                     setSettlementIdOptions([]);
-                    setSettlementId(""); // also clear selected settlementId
+                    setSettlementId("");
                   }}
                 />
               )}
@@ -232,14 +230,14 @@ const SettlementBankReport = () => {
                     field.onChange(e);
                     trigger("startDate");
                     setSettlementIdOptions([]);
-                    setSettlementId(""); // also clear selected settlementId
+                    setSettlementId("");
                   }}
                 />
               )}
             />
             <FormErrorMessage>{errors.endDate?.message}</FormErrorMessage>
           </FormControl>
-
+          <Box />
           <FormControl
             display="flex"
             justifyContent={{ base: "stretch", md: "flex-end" }}
@@ -254,7 +252,7 @@ const SettlementBankReport = () => {
               size="md"
               w={{ base: "100%", md: "50%" }}
             >
-              <FaSearch /> Search
+              Search
             </Button>
           </FormControl>
 
@@ -263,12 +261,12 @@ const SettlementBankReport = () => {
 
       {settlementIdOptions.length > 0 && (<Stack borderWidth="1px" w="full" borderRadius="lg" p={4} spacing={4}>
         <SimpleGrid
-          columns={{ base: 1, md: 3 }}
+          columns={{ base: 1, md: 2, lg: 4 }}
           spacing={4}
           w="full"
         >
           <FormControl
-            width={{ base: "100%" }}
+            w="100%"
             isInvalid={!isEmpty(errors.settlementId)}
           >
             <FormLabel>Settlement ID:</FormLabel>
@@ -301,7 +299,7 @@ const SettlementBankReport = () => {
           </FormControl>
 
           <FormControl
-            width={{ base: "100%" }}
+            w="100%"
             isInvalid={!isEmpty(errors.currency)}
           >
             <FormLabel>Currency</FormLabel>
@@ -337,47 +335,8 @@ const SettlementBankReport = () => {
             />
             <FormErrorMessage>{errors.currency?.message}</FormErrorMessage>
           </FormControl>
-        </SimpleGrid>
+          <FormControl w="100%" mt={8}>
 
-        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} w="full">
-          <Box />
-          <Box />
-          <Stack direction="row" spacing={4} w="100%">
-            <FormControl>
-              <Controller
-                control={control}
-                name="fileType"
-                render={({ field }) => (
-                  <CustomSelect
-                    options={[
-                      { value: 'xlsx', label: 'XLSX' },
-                      { value: 'pdf', label: 'PDF' },
-                    ]}
-                    value={field ? { value: field.value, label: field.value.toUpperCase() } : null}
-                    onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                    placeholder="Choose Format"
-                  />
-                )}
-              />
-            </FormControl>
-
-            <Button
-              colorScheme="blue"
-              onClick={onDownloadChangeHandler}
-              isDisabled={!settlementId || !runButtonState}
-            >
-              Download
-            </Button>
-          </Stack>
-        </SimpleGrid>
-
-        {/* <Stack
-          direction={{ base: "column", md: "row" }}
-          spacing={4}
-          justify="flex-end"
-          align="flex-end"
-          flexWrap="wrap">
-          <FormControl w={{ base: "100%" }}>
             <Controller
               control={control}
               name="fileType"
@@ -387,30 +346,29 @@ const SettlementBankReport = () => {
                     { value: 'xlsx', label: 'XLSX' },
                     { value: 'pdf', label: 'PDF' },
                   ]}
-                  value={
-                    field
-                      ? {
-                        value: field.value,
-                        label: field.value.toUpperCase(),
-                      }
-                      : null
-                  }
+                  value={field ? { value: field.value, label: field.value.toUpperCase() } : null}
                   onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
                   placeholder="Choose Format"
                 />
               )}
             />
           </FormControl>
-
-          <Button
-            colorScheme="blue"
-            width={{ base: "100%" }}
-            isDisabled={!settlementId || !runButtonState}
-            onClick={onDownloadChangeHandler}
+          <FormControl w="100%"
+            display="flex"
+            justifyContent={{ base: "stretch", md: "flex-end" }}
+            alignItems="flex-end"
+            mt="5px"
           >
-            Download
-          </Button>
-        </Stack> */}
+            <Button
+              colorScheme="blue"
+              onClick={onDownloadChangeHandler}
+              isDisabled={!settlementId || !runButtonState}
+              w={{ base: "100%", md: "50%" }}
+            >
+              Download
+            </Button>
+          </FormControl>
+        </SimpleGrid>
       </Stack>
       )
       }

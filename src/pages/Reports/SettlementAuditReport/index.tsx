@@ -10,6 +10,7 @@ import {
   useToast,
   VStack,
   SimpleGrid,
+  Box
 } from '@chakra-ui/react';
 import { SettlementAuditReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -137,18 +138,12 @@ const SettlementAuditReport = () => {
 
 
   return (
-    // <Box height="fit" p="4">
-    //   <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" pb="3">
-    //     Settlement Audit Report
-    //   </Heading>
-
     <VStack align="flex-start" h="full" p="3" mt={10} w="full">
       <Heading fontSize="2xl" mb={6}>
         Settlement Audit Report
       </Heading>
 
       <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
-        {/* --- Filters Section --- 1 per row on mobile, 2 on md, 4 on lg+*/}
         <SimpleGrid
           columns={{ base: 1, md: 2, lg: 4 }}
           spacing={4}
@@ -266,13 +261,14 @@ const SettlementAuditReport = () => {
           </FormControl>
         </SimpleGrid>
 
-        <Stack
-          direction={{ base: "column", md: "row" }}
+        <SimpleGrid
+          columns={{ base: 1, md: 2, lg: 4 }}
           spacing={4}
-          justify={{ base: "flex-start", md: "flex-end" }}
-          w="full"
-        >
-          <FormControl w={{ base: "100%", sm: "auto", md: "250px" }}>
+          w="full">
+
+          <Box />
+          <Box />
+          <FormControl w="100%">
             <Controller
               control={control}
               name="fileType"
@@ -305,7 +301,7 @@ const SettlementAuditReport = () => {
           >
             Download
           </Button>
-        </Stack>
+        </SimpleGrid>
       </Stack>
     </VStack>
   );

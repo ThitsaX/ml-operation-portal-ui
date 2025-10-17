@@ -5,14 +5,11 @@ import {
     FormErrorMessage,
     FormLabel,
     Heading,
-    HStack,
     Input,
     useToast,
-    Select,
     Stack,
     VStack,
-    SimpleGrid,
-    Flex
+    SimpleGrid
 } from '@chakra-ui/react';
 import { useLoadingContext } from '@contexts/hooks';
 import { AuditReportHelper } from '@helpers/form';
@@ -150,7 +147,7 @@ const AuditReport = () => {
             </Heading>
 
             <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
-                {/* --- Filters Section --- 1 per row on mobile, 2 on md, 4 on lg+*/}
+
                 <SimpleGrid
                     columns={{ base: 1, md: 2, lg: 4 }}
                     spacing={4}
@@ -259,27 +256,27 @@ const AuditReport = () => {
                     </FormControl>
                 </SimpleGrid>
 
-                {/* --- Download Section --- */}
-                <Stack
-                    direction={{ base: "column", md: "row" }}
+                <SimpleGrid
+                    columns={{ base: 1, md: 2, lg: 4 }}
                     spacing={4}
-                    justify={{ base: "flex-start", md: "flex-end" }}
-                    w="full"
-                >
-                    <FormControl w={{ base: "100%", sm: "auto", md: "250px" }}>
+                    w="full">
+
+                    <Box />
+                    <Box />
+                    <FormControl w="100%">
                         <Controller
                             control={control}
                             name="fileType"
                             render={({ field }) => (
                                 <CustomSelect
-                                  options={[
-                                    { value: "xlsx", label: "XLSX" },
-                                    { value: "csv", label: "CSV" }
-                                  ]}
-                                  value={field.value ? { value: field.value, label: field.value === "xlsx" ? "XLSX" : "CSV" } : null}
-                                  onChange={(selectedOption) => {
-                                    field.onChange(selectedOption?.value || '');
-                                  }}
+                                    options={[
+                                        { value: "xlsx", label: "XLSX" },
+                                        { value: "csv", label: "CSV" }
+                                    ]}
+                                    value={field.value ? { value: field.value, label: field.value === "xlsx" ? "XLSX" : "CSV" } : null}
+                                    onChange={(selectedOption) => {
+                                        field.onChange(selectedOption?.value || '');
+                                    }}
                                 />
                             )}
                         />
@@ -293,7 +290,7 @@ const AuditReport = () => {
                     >
                         Download
                     </Button>
-                </Stack>
+                </SimpleGrid>
             </Stack>
         </VStack>
     );
