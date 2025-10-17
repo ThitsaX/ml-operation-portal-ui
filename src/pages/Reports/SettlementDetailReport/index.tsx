@@ -7,7 +7,7 @@ import {
   Input,
   Stack,
   useToast,
-  HStack,
+  Box,
   VStack,
   SimpleGrid
 } from '@chakra-ui/react';
@@ -26,7 +26,6 @@ import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone';
 import { useMemo, memo, useEffect, useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { FaSearch } from "react-icons/fa";
 import { IGetSettlementIds } from "@typescript/services/report";
 import { useLoadingContext } from "@contexts/hooks";
 import { ITimezoneOption } from "react-timezone-select";
@@ -197,7 +196,6 @@ const SettlementDetailReport = () => {
       </Heading>
 
       <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
-        {/* --- Filters Section --- // 1 per row on mobile, 2 on md, 4 on lg+*/}
         <SimpleGrid
           columns={{ base: 1, md: 2, lg: 4 }}
           spacing={4}
@@ -312,9 +310,9 @@ const SettlementDetailReport = () => {
               colorScheme="blue"
               gap="2"
               size="md"
-              w={{ base: "100%", md: "auto" }}
+              w={{ base: "100%", md: "50%" }}
             >
-              <FaSearch /> Search
+              Search
             </Button>
           </FormControl>
         </SimpleGrid>
@@ -323,13 +321,13 @@ const SettlementDetailReport = () => {
       {settlementIdOptions.length > 0 && (
         <Stack borderWidth="1px" borderRadius="lg" p={4} w="full" spacing={4}>
 
-          <HStack
+          <SimpleGrid
+            columns={{ base: 1, md: 2, lg: 4 }}
             spacing={4}
-            align="flex-start"
-            wrap="wrap" // allows stacking on small screens
+            w="full"
           >
             <FormControl isInvalid={!isEmpty(errors.settlementId)}
-              w={{ base: "100%", sm: "auto", md: "250px" }}>
+              w={{ base: "100%" }}>
               <FormLabel>Settlement ID:</FormLabel>
               <Controller
                 name="settlementId"
@@ -356,17 +354,9 @@ const SettlementDetailReport = () => {
                 )}
               />
             </FormControl>
-          </HStack>
+            <Box />
 
-          {/* FileType + Download */}
-          <Stack
-            direction={{ base: "column", md: "row" }}
-            spacing={{ base: 3, md: 4 }}
-            justify={{ base: "flex-start", md: "flex-end" }}
-            align={{ base: "stretch", md: "center" }}
-            w="full"
-          >
-            <FormControl w={{ base: "100%", md: "250px" }}>
+            <FormControl w="100%" mt={8}>
               <Controller
                 control={control}
                 name="fileType"
@@ -390,16 +380,22 @@ const SettlementDetailReport = () => {
                 )}
               />
             </FormControl>
-
-            <Button
-              colorScheme="blue"
-              isDisabled={!fspId || !settlementId || !runButtonState}
-              onClick={onDownloadChangeHandler}
-              w={{ base: "100%", md: "auto" }}
+            <FormControl w="100%"
+              display="flex"
+              justifyContent={{ base: "stretch", md: "flex-end" }}
+              alignItems="flex-end"
+              mt="5px"
             >
-              Download
-            </Button>
-          </Stack>
+              <Button
+                flex={{ base: '1', md: '0 0 50%' }}
+                colorScheme="blue"
+                isDisabled={!fspId || !settlementId || !runButtonState}
+                onClick={onDownloadChangeHandler}
+              >
+                Download
+              </Button>
+            </FormControl>
+          </SimpleGrid>
         </Stack>
       )}
     </VStack>

@@ -2,7 +2,8 @@ import {
   Button, FormControl, FormErrorMessage, FormLabel, HStack, Heading,
   Input, Stack,
   VStack, SimpleGrid,
-  useToast
+  useToast,
+  Box
 } from "@chakra-ui/react";
 import { useLoadingContext } from "@contexts/hooks";
 import { SettlementStatementReportHelper } from "@helpers/form";
@@ -125,7 +126,7 @@ const SettlementStatementReport = () => {
 
       <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
         <SimpleGrid
-          columns={{ base: 1, md: 2, lg: 4 }} // 1 per row on mobile, 2 on md, 4 on lg+
+          columns={{ base: 1, md: 2, lg: 4 }}
           spacing={4}
           w="full"
         >
@@ -149,7 +150,7 @@ const SettlementStatementReport = () => {
                     value={
                       field.value
                         ? field.value === 'all'
-                          ? { value: 'all', label: 'All' } // ✅ handle 'All' manually
+                          ? { value: 'all', label: 'All' }
                           : {
                             value: field.value,
                             label:
@@ -259,14 +260,14 @@ const SettlementStatementReport = () => {
           </FormControl>
         </SimpleGrid>
 
-        {/* Download Section */}
-        <Stack
-          direction={{ base: "column", md: "row" }}
+        <SimpleGrid
+          columns={{ base: 1, md: 2, lg: 4 }}
           spacing={4}
-          justify={{ base: "flex-start", md: "flex-end" }}
           w="full">
 
-          <FormControl w={{ base: "100%", sm: "auto", md: "250px" }}>
+          <Box />
+          <Box />
+          <FormControl w="100%">
             <Controller
               control={control}
               name="fileType"
@@ -297,7 +298,7 @@ const SettlementStatementReport = () => {
             w={{ base: "100%", sm: "auto" }}>
             Download
           </Button>
-        </Stack>
+        </SimpleGrid>
       </Stack>
     </VStack >
   );
