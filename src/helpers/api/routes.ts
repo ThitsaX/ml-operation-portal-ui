@@ -77,7 +77,7 @@ export const privateRoutes = {
 
   getActionList: '/secured/getActionListByUser',
   getMadeByList: '/secured/getParticipantUserListByParticipant',
-  getAuditList: '/secured/getAuditList',
+  getAuditListByParticipant: '/secured/getAuditListByParticipant',
   getParticipantList: '/secured/getParticipantList',
   getParticipantContactList: '/secured/getParticipantContactList',
 

@@ -47,6 +47,7 @@ import { getParticipantPositionList } from '@services/dashboard';
 import { Badge } from '@chakra-ui/react';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
+import { hasMenuAccess } from '@helpers/permissions';
 
 const ParticipantPositions = () => {
 
@@ -122,7 +123,8 @@ const ParticipantPositions = () => {
 
 
     const columns = useMemo(
-        () => [
+        () => {
+            const baseColumns = [
             {
                 Header: () => (
                     <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">DFSP ID</Text>
@@ -151,7 +153,7 @@ const ParticipantPositions = () => {
                     <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Currency</Text>
                 ),
                 accessor: 'currency',
-                Cell: ({ value }) => (
+                Cell: ({ value }: any) => (
                     <Text textAlign="center">
                         {value}
                     </Text>
@@ -184,7 +186,7 @@ const ParticipantPositions = () => {
                     <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC %</Text>
                 ),
                 accessor: 'ndcPercent',
-                Cell: ({ value }) => (
+                Cell: ({ value }: any) => (
                     <Text textAlign="right">
                         {value}
                     </Text>
@@ -195,7 +197,7 @@ const ParticipantPositions = () => {
                     <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC</Text>
                 ),
                 accessor: 'ndc',
-                Cell: ({ value }) => (
+                Cell: ({ value }: any) => (
                     <Text textAlign="right">
                         {formatNumber(value)}
                     </Text>
@@ -206,7 +208,7 @@ const ParticipantPositions = () => {
                     <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC Used %</Text>
                 ),
                 accessor: 'ndcUsed',
-                Cell: ({ value }) => (
+                Cell: ({ value }: any) => (
                     <HStack spacing={2} w="full" justifyContent="flex-end">
                         <Box
                             w="10px"
@@ -234,14 +236,16 @@ const ParticipantPositions = () => {
                             <Switch
                                 colorScheme="green"
                                 size="sm"
+                                isDisabled={!hasMenuAccess("UpdateParticipantStatus")}
                                 isChecked={row.original.isActive}
                                 onChange={(e) => toggleStatus(row.original)}
                             />
                         </Box>
                     );
                 }
-            },
-            {
+            }];
+
+            const actionColumn = hasMenuAccess("CreateApprovalRequest") ? [{
                 Header: () => (
                     <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Action</Text>
                 ),
@@ -306,8 +310,10 @@ const ParticipantPositions = () => {
                         </MenuList>
                     </Menu>
                 ),
-            },
-        ],
+            }] : [];
+
+            return [...baseColumns, ...actionColumn];
+        },
         []
     ) as Column<IParticipantPositionData>[];
 

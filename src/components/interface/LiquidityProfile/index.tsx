@@ -34,6 +34,7 @@ import { useRef } from 'react';
 import { Cell } from '../Table';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
+import { hasMenuAccess } from '@helpers/permissions';
 
 const defaultForm: ILiquidityProfile = {
     participantId: '',
@@ -174,16 +175,18 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                 <Text fontSize="lg" fontWeight="bold" lineHeight="1.2">
                     Liquidity Profile
                 </Text>
-                <Button colorScheme="blue" size="md" onClick={() => {
-                    setForm({
-                        ...defaultForm,
-                        participantId: participantId
-                    });
-                    setIsEdit(false);
-                    onOpen()
-                }}>
-                    Add
-                </Button>
+                {hasMenuAccess("CreateLiquidityProfile") && (
+                    <Button colorScheme="blue" size="md" onClick={() => {
+                        setForm({
+                            ...defaultForm,
+                            participantId: participantId
+                        });
+                        setIsEdit(false);
+                        onOpen()
+                    }}>
+                        Add
+                    </Button>
+                )}
             </HStack>
 
             <LiquidityProfileModal
@@ -211,15 +214,17 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                             <Th textAlign="center" border={`1px solid ${borderColor}`} px={4} py={3} fontSize="sm" fontWeight="semibold">
                                 Currency
                             </Th>
-                            <Th textAlign="center" border={`1px solid ${borderColor}`} px={4} py={3} fontSize="sm" fontWeight="semibold"                         >
-                                Action
-                            </Th>
+                            {(hasMenuAccess("CreateLiquidityProfile") || hasMenuAccess("ModifyLiquidityProfile") || hasMenuAccess("RemoveLiquidityProfile")) && (
+                                <Th textAlign="center" border={`1px solid ${borderColor}`} px={4} py={3} fontSize="sm" fontWeight="semibold">
+                                    Action
+                                </Th>
+                            )}
                         </Tr>
                     </Thead>
                     <Tbody>
                         {data?.length === 0 && !isLoading && (
                             <Tr>
-                                <Cell colSpan={6}>No Liquidity found</Cell>
+                                <Cell colSpan={(hasMenuAccess("CreateLiquidityProfile") || hasMenuAccess("ModifyLiquidityProfile") || hasMenuAccess("RemoveLiquidityProfile")) ? 5 : 4}>No Liquidity found</Cell>
                             </Tr>
                         )}
                         {data?.map((item, idx) => (
@@ -236,31 +241,37 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                                 <Td border={`1px solid ${borderColor}`} px={4} py={2} textAlign="center">
                                     {item.currency}
                                 </Td>
-                                <Td border={`1px solid ${borderColor}`} px={4} py={2}>
-                                    <HStack spacing={3} justify="center">
-                                        <Tooltip label='Edit Liquidity Profile' bg='white' color='black'>
-                                            <IconButton
-                                                icon={<FiEdit2 />}
-                                                aria-label="Edit"
-                                                variant="ghost"
-                                                size="md"
-                                                onClick={() => handleEdit(item)}
-                                            />
-                                        </Tooltip>
+                                {(hasMenuAccess("CreateLiquidityProfile") || hasMenuAccess("ModifyLiquidityProfile") || hasMenuAccess("RemoveLiquidityProfile")) && (
+                                    <Td border={`1px solid ${borderColor}`} px={4} py={2}>
+                                        <HStack spacing={3} justify="center">
+                                            {hasMenuAccess("ModifyLiquidityProfile") && (
+                                                <Tooltip label='Edit Liquidity Profile' bg='white' color='black'>
+                                                    <IconButton
+                                                        icon={<FiEdit2 />}
+                                                        aria-label="Edit"
+                                                        variant="ghost"
+                                                        size="md"
+                                                        onClick={() => handleEdit(item)}
+                                                    />
+                                                </Tooltip>
+                                            )}
 
-                                        <Tooltip label='Delete Liquidity Profile' bg='white' color='black'>
-                                            <IconButton
-                                                icon={<FiTrash2 />}
-                                                aria-label="Delete"
-                                                variant="ghost"
-                                                size="md"
-                                                onClick={() =>
-                                                    handleDeleteClick(item)
-                                                }
-                                            />
-                                        </Tooltip>
-                                    </HStack>
-                                </Td>
+                                            {hasMenuAccess("RemoveLiquidityProfile") && (
+                                                <Tooltip label='Delete Liquidity Profile' bg='white' color='black'>
+                                                    <IconButton
+                                                        icon={<FiTrash2 />}
+                                                        aria-label="Delete"
+                                                        variant="ghost"
+                                                        size="md"
+                                                        onClick={() =>
+                                                            handleDeleteClick(item)
+                                                        }
+                                                    />
+                                                </Tooltip>
+                                            )}
+                                        </HStack>
+                                    </Td>
+                                )}
                             </Tr>
                         ))}
                     </Tbody>
