@@ -108,17 +108,18 @@ const ParticipantPositions = () => {
     }, [selectedTimezone, stringTimezone])
 
     const getValueColor = (num: number): string => {
-        if (num >= 40) {
-            return "red.500";      // NDC usage at 40% or above
-        }
         if (num > 0) {
-            return "green.500";    // DFSP can use more than NDC (+ve)
+            return "green.500";
         }
-        if (num < 0 && num >= -39) {
-            return "blue.500";     // NDC usage below 40% (-1 to -39)
+        if (num <= -40) {
+            return "red.500";
         }
-        return "";
+        if (num < 0 && num > -40) {
+            return "blue.500";
+        }
+        return "gray.500";
     };
+
 
     const columns = useMemo(
         () => [
