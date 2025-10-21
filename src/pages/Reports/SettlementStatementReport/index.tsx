@@ -120,7 +120,7 @@ const SettlementStatementReport = () => {
   return (
 
     <VStack align="flex-start" h="full" p="3" mt={10} w="full">
-      <Heading fontSize="2xl" mb={6}>
+      <Heading fontSize="2xl" fontWeight="bold" mb={6}>
         Settlement Statement Report
       </Heading>
 

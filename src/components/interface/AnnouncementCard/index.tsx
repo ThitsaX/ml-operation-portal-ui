@@ -23,10 +23,10 @@ const AnnouncementCard = ({ onClick, ...props }: IAnnouncementCardProps) => {
     >
       <VStack align="flex-start" spacing="2">
         <Box>
-          <Heading fontSize="xl" noOfLines={1}>
+          <Heading fontSize="xl" fontWeight="bold" noOfLines={1}>
             {title}
           </Heading>
-          <Text fontWeight="medium" color="muted.500" fontSize="sm">
+          <Text fontWeight="normal" color="muted.500" fontSize="xs">
             {date}
           </Text>
         </Box>

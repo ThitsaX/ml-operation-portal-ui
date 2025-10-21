@@ -1,4 +1,5 @@
 import {
+    Box,
     Button,
     HStack,
     IconButton,
@@ -159,9 +160,18 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
 
 
     return (
+        <Box
+            width="100%"
+            p={4}
+            bg="white"
+            border="1px solid"
+            borderColor="gray.200"
+            rounded="md"
+            mb={6}
+        >
         <VStack align="flex-start" spacing={4} w="full">
-            <HStack justify="space-between" w="full">
-                <Text fontSize="lg" fontWeight="bold">
+            <HStack justify="space-between" align="center" w="full">
+                <Text fontSize="lg" fontWeight="bold" lineHeight="1.2">
                     Liquidity Profile
                 </Text>
                 <Button colorScheme="blue" size="md" onClick={() => {
@@ -174,15 +184,16 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                 }}>
                     Add
                 </Button>
-                <LiquidityProfileModal
-                    isOpen={isOpen}
-                    onClose={onClose}
-                    onSave={handleSave}
-                    form={form}
-                    setForm={setForm}
-                    isEdit={isEdit}
-                />
             </HStack>
+
+            <LiquidityProfileModal
+                isOpen={isOpen}
+                onClose={onClose}
+                onSave={handleSave}
+                form={form}
+                setForm={setForm}
+                isEdit={isEdit}
+            />
 
             <TableContainer border={`1px solid ${borderColor}`} borderRadius="sm" w="full">
                 <Table variant="unstyled">
@@ -282,6 +293,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                 </AlertDialogOverlay>
             </AlertDialog>
         </VStack>
+        </Box>
     );
 };
 

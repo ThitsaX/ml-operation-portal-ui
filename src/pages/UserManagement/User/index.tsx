@@ -101,19 +101,19 @@ const User = () => {
     return [
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Email</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Email</Text>
         ),
         accessor: "email",
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Name</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Name</Text>
         ),
         accessor: "name",
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Role</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Role</Text>
         ),
         accessor: "roleList",
         Cell: ({ value }: CellProps<IParticipantUser, string[]>) => {
@@ -123,7 +123,7 @@ const User = () => {
       },
       {
         Header: () => (
-          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Status</Text>
+          <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">Status</Text>
         ),
         accessor: "status",
         disableSortBy: true,
@@ -135,7 +135,7 @@ const User = () => {
       },
       {
         Header: () => (
-          <Text fontWeight="bold" fontSize="sm" textTransform="capitalize">Action</Text>
+          <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">Action</Text>
         ),
         id: "id",
         disableSortBy: true,
@@ -287,7 +287,7 @@ const User = () => {
   return (
 
     <VStack align="flex-start" w="full" h="full" p="3" spacing={0} mt={10}>
-      <Heading fontSize="2xl" mb={6}>User Management</Heading>
+      <Heading fontSize="2xl" fontWeight="bold" mb={6}>User Management</Heading>
 
       <Stack
         w="full"

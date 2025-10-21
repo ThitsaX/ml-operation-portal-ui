@@ -118,19 +118,19 @@ const PendingApprovals = () => {
     const baseColumns: Column<IPendingApproval>[] = [
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Requested Action</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Requested Action</Text>
         ),
         accessor: 'requestedAction'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm">DFSP</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm">DFSP</Text>
         ),
         accessor: 'participantName'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Currency</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Currency</Text>
         ),
         accessor: 'currency',
         Cell: ({ value }) => (
@@ -141,7 +141,7 @@ const PendingApprovals = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Amount/Percentage</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Amount/Percentage</Text>
         ),
         accessor: 'amount',
         Cell: ({ value }: any) => (
@@ -153,20 +153,20 @@ const PendingApprovals = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Requested By</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Requested By</Text>
         ),
         accessor: 'requestedBy'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Requested Date Time</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Requested Date Time</Text>
         ),
         accessor: 'requestedDateTime',
         Cell: ({ value }: any) => formatEpochToTZ(value, selectedTZString, "YYYY-MM-DDTHH:mm:ssZ")
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Status</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Status</Text>
         ),
         accessor: 'action'
       },
@@ -176,7 +176,7 @@ const PendingApprovals = () => {
       filterStatus === 'PENDING' && hasMenuAccess("ModifyApprovalAction")
         ? [
           {
-            Header: () => <Text fontWeight="bold" fontSize="sm" textTransform="none">Action</Text>,
+            Header: () => <Text fontWeight="semibold" fontSize="sm" textTransform="none">Action</Text>,
             id: 'id',
             disableSortBy: true,
             Cell: ({ row }: any) => (
@@ -250,7 +250,7 @@ const PendingApprovals = () => {
   return (
 
     <VStack align="flex-start" w="full" h="full" p="3" spacing={4} mt={10}>
-      <Heading fontSize="2xl" mb={6}>Pending Approvals</Heading>
+      <Heading fontSize="2xl" fontWeight="bold" mb={6}>Pending Approvals</Heading>
 
       <HStack w="full" justifyContent="space-between">
         <CustomSelect

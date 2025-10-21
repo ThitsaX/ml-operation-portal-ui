@@ -133,19 +133,19 @@ const Audit = () => {
     () => [
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Date</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Date</Text>
         ),
         accessor: 'date'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Action</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Action</Text>
         ),
         accessor: 'action'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Made By</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Made By</Text>
         ), accessor: 'madeBy'
       },
     ],
@@ -177,7 +177,7 @@ const Audit = () => {
       spacing={4}
       mt={10}
     >
-      <Heading fontSize="2xl" mb={6}>Audit</Heading>
+      <Heading fontSize="2xl" fontWeight="bold" mb={6}>Audit</Heading>
 
       {/* Search Filters */}
       <Stack
