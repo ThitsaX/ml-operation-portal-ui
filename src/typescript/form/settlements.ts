@@ -21,7 +21,7 @@ export interface IFinalizeSettlementForm {
 export interface ISettlementScheduleForm {
     settlementModelId?: string, // id should available during modifying but not during creating new schedule. 
     name: string,
-    jobName: string,
+    jobName?: string,
     description: string,
     cronExpression: string,
     zoneId: string, // "+06:00"
