@@ -62,11 +62,20 @@ const SideBarAccordion = ({
         >
           <AccordionItem borderTopWidth={0} borderBottomWidth="0px !important">
             <Tooltip label={collapsed ? label : ''} placement="right" hasArrow>
-              <AccordionButton rounded="lg" _hover={{ bg: 'muted.50' }} onClick={handleClick}>
+              <AccordionButton 
+                rounded="lg" 
+                fontWeight="medium"
+                transition="all 0.15s ease"
+                _hover={{ 
+                  bg: 'gray.100',
+                  color: 'gray.900'
+                }} 
+                onClick={handleClick}
+              >
                 <Box as="span" flex="1" textAlign="left">
                   <HStack spacing={collapsed ? 0 : 2} justify={collapsed ? "center" : "flex-start"}>
-                    {icon && <>{icon}</>}
-                    {!collapsed && <Text>{label}</Text>}
+                    {icon && <Box fontSize="lg">{icon}</Box>}
+                    {!collapsed && <Text fontSize="sm">{label}</Text>}
                   </HStack>
                 </Box>
                 {!collapsed && <AccordionIcon />}

@@ -136,7 +136,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
       borderColor="gray.200"
       rounded="md"
     >
-      <Heading fontSize="lg" mb={4}>
+      <Heading fontSize="lg" fontWeight="bold" mb={4}>
         Organization Profile
       </Heading>
 
@@ -144,45 +144,45 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
 
         <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
           <FormControl isInvalid={!isEmpty(errors.description)}>
-            <FormLabel>Description</FormLabel>
+            <FormLabel fontSize="sm" fontWeight="semibold">Description</FormLabel>
             <Controller
               name="description"
               control={control}
               render={({ field }) => (
-                <Input {...field} value={field.value ?? ''} />
+                <Input {...field} value={field.value ?? ''} fontSize="md" />
               )}
             />
-            <FormErrorMessage>{errors.description?.message}</FormErrorMessage>
+            <FormErrorMessage fontSize="xs">{errors.description?.message}</FormErrorMessage>
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.address)}>
-            <FormLabel fontSize="sm">Address</FormLabel>
+            <FormLabel fontSize="sm" fontWeight="semibold">Address</FormLabel>
             <Input
               type="input"
               {...register('address')}
-              fontSize="sm"
+              fontSize="md"
             />
-            <FormErrorMessage>{errors.address?.message}</FormErrorMessage>
+            <FormErrorMessage fontSize="xs">{errors.address?.message}</FormErrorMessage>
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.mobile)}>
-            <FormLabel fontSize="sm">Contact Number</FormLabel>
+            <FormLabel fontSize="sm" fontWeight="semibold">Contact Number</FormLabel>
             <Input
               type="input"
               {...register('mobile')}
-              fontSize="sm"
+              fontSize="md"
             />
-            <FormErrorMessage>{errors.mobile?.message}</FormErrorMessage>
+            <FormErrorMessage fontSize="xs">{errors.mobile?.message}</FormErrorMessage>
           </FormControl>
         </Stack>
 
         <Flex direction={{ base: 'column', md: 'row' }} gap={4} align="flex-end">
           <FormControl>
-            <FormLabel fontSize="sm">Logo</FormLabel>
+            <FormLabel fontSize="sm" fontWeight="semibold">Logo</FormLabel>
             <Input
               type="file"
               accept="image/*"
-              fontSize="sm"
+              fontSize="md"
               pt={1}
               onChange={handleFileChange}
             />

@@ -46,15 +46,38 @@ const SideBarItem = (props: SideBarItemProps) => {
         w="100%"
         borderRadius="md"
         textDecoration="none"
-        color="gray.600"
+        color="gray.700"
         rounded="lg"
         alignSelf="stretch"
-        _hover={{ bgColor: 'muted.50' }}
-        _activeLink={{ bgColor: 'primary', color: 'white' }}
+        fontWeight="medium"
+        transition="all 0.15s ease"
+        _hover={{ 
+          bgColor: 'gray.100',
+          color: 'gray.900',
+          transform: 'translateX(2px)'
+        }}
+        _activeLink={{ 
+          bgColor: 'primary', 
+          color: 'white !important',
+          fontWeight: 'semibold',
+          '& *': {
+            color: 'white !important'
+          }
+        }}
+        sx={{
+          '&.active': {
+            bgColor: 'primary',
+            color: 'white',
+            fontWeight: 'semibold',
+            '& *': {
+              color: 'white'
+            }
+          }
+        }}
       >
         <HStack spacing={collapsed ? 0 : 2}>
-          {icon && <Box>{icon}</Box>}
-          {!collapsed && <Text color="gray.800">{label}</Text>}
+          {icon && <Box fontSize="lg">{icon}</Box>}
+          {!collapsed && <Text fontSize="sm">{label}</Text>}
         </HStack>
       </Link>
     </Tooltip>

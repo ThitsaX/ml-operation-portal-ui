@@ -23,7 +23,7 @@ const Home = () => {
 
   return (
     <VStack align="flex-start" w="full" h="full" p="3" spacing={0} mt={10}>
-      <Heading fontSize="2xl" mb={6}>Home</Heading>
+      <Heading fontSize="2xl" fontWeight="bold" mb={6}>Home</Heading>
 
       <VStack
         align="flex-start"
@@ -38,7 +38,7 @@ const Home = () => {
         spacing={2}
         mb={8}
       >
-        <Heading as="h2" fontSize="xl" color="black.200">
+        <Heading as="h2" fontSize="xl" fontWeight="bold" color="black.200">
           Welcome to the Operation Portal!
         </Heading>
         <Text fontSize="md" color="gray.700">
@@ -50,6 +50,7 @@ const Home = () => {
       <Heading
         as="h3"
         fontSize="lg"
+        fontWeight="bold"
         mb={8}
         alignSelf="flex-start"
         color="black.600"

@@ -9,5 +9,5 @@ export const Cell = ({ borderColor, ...props }: any) => (
 
 
 export const HeaderCell = ({ borderColor, ...props }: any) => (
-    <Th border={`1px solid ${borderColor}`} px={4} py={3} fontSize="sm" fontWeight="semibold" textAlign="center" {...props} />
+    <Th border={`1px solid ${borderColor}`} px={4} py={3} fontSize="sm" fontWeight="semibold" textAlign="center" textTransform="capitalize" {...props} />
 );

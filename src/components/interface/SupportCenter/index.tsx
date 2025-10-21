@@ -40,13 +40,13 @@ export const SupportCard = ({
             bg="gray.50"
             align="center"
         >
-            <Box fontSize="4xl" color="orange.600">
+            <Box fontSize="3xl" color="orange.600">
                 {icon}
             </Box>
             <Text fontWeight="bold" fontSize="lg">
                 {title}
             </Text>
-            <Text fontWeight="bold" textAlign="center">
+            <Text fontWeight="medium" fontSize="md" textAlign="center">
                 {description}
             </Text>
             <ActionComponent

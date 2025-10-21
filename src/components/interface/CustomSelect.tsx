@@ -81,7 +81,8 @@ const handleChange = (
         }),
         placeholder: (base) => ({
           ...base,
-          fontSize: '14px',
+          fontSize: '0.875rem',
+          fontWeight: 400,
           pointerEvents: 'none',
           lineHeight: '1',
         }),

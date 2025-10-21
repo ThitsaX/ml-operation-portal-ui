@@ -11,8 +11,8 @@ const ParticipantPositionDetails = () => {
     const { participantId } = location.state || {};
 
     return (
-        <VStack w="full" align="flex-start" spacing={6} p={4}>
-            <Heading size="md">Participant Positions</Heading>
+        <VStack align="flex-start" w="full" h="full" p="3" spacing={6} mt={10}>
+            <Heading fontSize="2xl" fontWeight="bold" mb={6}>Participant Positions</Heading>
 
             <OrganizationProfile participantId={participantId} />
             <BusinessContact participantId={participantId} />

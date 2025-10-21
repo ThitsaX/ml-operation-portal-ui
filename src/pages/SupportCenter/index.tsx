@@ -62,7 +62,7 @@ const SupportCenter = () => {
 
   return (
     <VStack align="flex-start" w="full" h="full" p="3" mt={10}>
-      <Heading fontSize="2xl" mb={6}>Support Center</Heading>
+      <Heading fontSize="2xl" fontWeight="bold" mb={6}>Support Center</Heading>
 
       <Flex w="full" wrap="wrap" justify="center" gap={40}>
         <SupportCard

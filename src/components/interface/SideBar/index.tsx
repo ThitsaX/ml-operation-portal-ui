@@ -46,7 +46,7 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
           <Box textAlign="center">
             <Box
               as="div"
-              fontSize="sm"
+              fontSize="xs"
               fontWeight="bold"
               color="teal.700"
               letterSpacing="widest"
@@ -221,14 +221,14 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
       {/* FOOTER */}
       {!collapsed && (
         <Box px={4} py={3}>
-          <Box fontSize="0.9em" color="#666">
+          <Box fontSize="xs" fontWeight="medium" color="gray.600">
             Powered by{' '}
-            <Link href="https://www.thitsaworks.com/" isExternal fontWeight="bold">
+            <Link href="https://www.thitsaworks.com/" isExternal fontWeight="semibold" color="teal.600">
               ThitsaWorks
             </Link>
           </Box>
-          <Box fontSize="0.8em" color="#999" mt="2px">
-            version1
+          <Box fontSize="2xs" fontWeight="normal" color="#999" mt="2px">
+            v1.0.0
           </Box>
         </Box>
       )}

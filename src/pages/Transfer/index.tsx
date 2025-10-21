@@ -283,27 +283,27 @@ const Transfer = () => {
     () => [
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Transfer ID</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Transfer ID</Text>
         ),
         accessor: 'transferId', // accessor is the "key" in the data
         disableSortBy: true
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">State</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">State</Text>
         ),
         accessor: 'state'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Type</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Type</Text>
         ),
         accessor: 'type',
         disableSortBy: true
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Currency</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Currency</Text>
         ),
         accessor: 'currency',
         Cell: ({ value }) => (
@@ -314,7 +314,7 @@ const Transfer = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Amount</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Amount</Text>
         ),
         accessor: 'amount',
         sortType: numberSort,
@@ -326,19 +326,19 @@ const Transfer = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Payer DFSP</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Payer DFSP</Text>
         ),
         accessor: 'payerDfsp'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Payee DFSP</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Payee DFSP</Text>
         ),
         accessor: 'payeeDfsp'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Settlement Batch</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Settlement Batch</Text>
         ),
         accessor: 'settlementBatch',
         disableSortBy: true,
@@ -350,7 +350,7 @@ const Transfer = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Date Submitted</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Date Submitted</Text>
         ),
         accessor: 'submittedOnDate'
       }
@@ -421,7 +421,7 @@ const Transfer = () => {
       )}
 
       <VStack align="flex-start" w="full" h="full" p="3" spacing={0} mt={10}>
-        <Heading fontSize="2xl" mb={6}>Transfer Overview</Heading>
+        <Heading fontSize="2xl" fontWeight="bold" mb={6}>Transfer Overview</Heading>
       </VStack>
 
       <Flex
