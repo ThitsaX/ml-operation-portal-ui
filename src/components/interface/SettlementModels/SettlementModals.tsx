@@ -41,12 +41,12 @@ interface SettlementModalProps {
 
 const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, settlementModel, onUpdated }) => {
   const toast = useToast();
-
   // which row (key) are we about to delete?
   const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
   const { isOpen: isConfirmOpen, onOpen: openConfirm, onClose: closeConfirm } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement | null>(null);
-
+  
+  const MODEL_CODE = 'DFN';
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
   type Day = typeof days[number];
   const DOW_MAP: Record<Day, string> = { Mon:'MON', Tue:'TUE', Wed:'WED', Thu:'THU', Fri:'FRI', Sat:'SAT', Sun:'SUN' };
@@ -86,7 +86,37 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     const sign = m[1], hh = String(+m[2]).padStart(2, '0'), mm = String(m[3] ?? '00').padStart(2, '0');
     return `${sign}${hh}:${mm}`;
   };
+  const tzNameForOffset = (offset: string) =>
+    tzOptions.find(z => z.off === offset)?.tz || 'UTC';
 
+  const humanDays = (days: Day[]) => {
+    const set = new Set(days);
+    if (set.size === 7) return 'Daily';
+    if (set.size === 5 && !set.has('Sat') && !set.has('Sun')) return 'Weekdays';
+    if (set.size === 2 && set.has('Sat') && set.has('Sun')) return 'Weekends';
+    return days.join('_');
+  };
+
+  const nameForKey = (key: string, setOverride?: Set<Day>) => {
+    const { time, zoneId } = splitKey(key);
+    const set = setOverride ?? matrix[key] ?? new Set<Day>();
+    const days = Array.from(set);
+    const label = humanDays(days);
+    return `${MODEL_CODE}_${label}_${time}_${zoneId}`;
+  };
+
+  const descriptionForKey = (key: string, cron: string | null, setOverride?: Set<Day>) => {
+    const { time, zoneId } = splitKey(key);
+    const tzName = tzNameForOffset(zoneId);
+    const set = setOverride ?? matrix[key] ?? new Set<Day>();
+    const days = Array.from(set);
+    const when = humanDays(days);
+    const model = settlementModel.name || 'Settlement Model';
+
+    const base = `Run for ${model} at ${time} (${zoneId} ${tzName})`;
+    const repeat = when ? ` every ${when}` : '';
+    return `${base}${repeat}`;
+  };
 
   const getOffsetForZone = (timeZone: string): string => {
 
@@ -198,11 +228,14 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
   const persistRow = async (key: string, nextSet?: Set<Day>) => {
     const { cron, zoneId } = buildCronForKey(key, nextSet);
     const { time } = splitKey(key);
+    
+    const schedulerName = nameForKey(key, nextSet);
+    const schedulerDesc  = descriptionForKey(key, cron, nextSet);
+
     const payload: ISettlementScheduleForm = {
       settlementModelId: settlementModel.settlementModelId,
-      name: jobKeyFor(key),
-      // jobName: jobKeyFor(key),
-      description: DEFAULT_DESC,
+      name: schedulerName,
+      description: schedulerDesc,
       cronExpression: cron ?? '',
       zoneId
     };
@@ -574,9 +607,9 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                                     size="sm"
                                     w="80px"
                                   >
-                                    {['00', '30'].map((m) => (
-                                      <option key={m} value={m}>{m}</option>
-                                    ))}
+                                      {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0')).map((m) => (
+                                        <option key={m} value={m}>{m}</option>
+                                      ))}
                                   </Select>
                           
                                   <Select
