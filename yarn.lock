@@ -3192,6 +3192,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@chakra-ui/icons@npm:^2.2.4":
+  version: 2.2.6
+  resolution: "@chakra-ui/icons@npm:2.2.6"
+  peerDependencies:
+    "@chakra-ui/react": ">=2.0.0"
+    react: ">=18"
+  checksum: dfc009a2f896c4746ddd8db4e20744482fe9e49f0a3cd0d667902483a57cadb0e2b4ebf6403c7cc2ed5fe4c4a43fbdfbd12be4ee1c5f5abcace81a273cf8cf10
+  languageName: node
+  linkType: hard
+
 "@chakra-ui/image@npm:2.0.15":
   version: 2.0.15
   resolution: "@chakra-ui/image@npm:2.0.15"
@@ -11600,6 +11610,7 @@ __metadata:
     "@babel/preset-react": ^7.27.1
     "@babel/preset-typescript": ^7.27.1
     "@chakra-ui/cli": ^2.3.0
+    "@chakra-ui/icons": ^2.2.4
     "@chakra-ui/react": ^2.5.5
     "@commitlint/cli": ^17.4.2
     "@commitlint/config-conventional": ^17.4.2

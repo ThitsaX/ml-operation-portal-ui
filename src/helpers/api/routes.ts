@@ -18,12 +18,18 @@ export const privateRoutes = {
 
   getSettlementWindowStateList: '/secured/getSettlementWindowStateList',
   getSettlementModelList: '/secured/getSettlementModelList',
+  modifySettlementModel: '/secured/modifySettlementModel',
   getSettlementStateList: '/secured/getSettlementStateList',
   getSettlementList: '/secured/getSettlementList',
   getSettlementWindowsList: '/secured/getSettlementWindowsList',
   closeSettlementWindow: '/secured/closeSettlementWindow',
   createSettlement: '/secured/createSettlement',
   finalizeSettlement: '/secured/finalizeSettlement',
+
+  getSettlementSchedulerList: '/secured/getSettlementSchedulerList',
+  createSettlementScheduler: '/secured/createSettlementScheduler',
+  modifySettlementScheduler: '/secured/modifySettlementScheduler',
+  removeSettlementScheduler: '/secured/removeSettlementScheduler',
 
   getNetTransferAmountByWindowId: '/secured/getNetTransferAmountByWindowId',
   getNetTransferAmountBySettlementId: '/secured/getNetTransferAmountBySettlementId',

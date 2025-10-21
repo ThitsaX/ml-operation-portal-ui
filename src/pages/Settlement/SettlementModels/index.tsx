@@ -45,12 +45,33 @@ const SettlementModels = () => {
     const [error, setError] = useState<string | null>(null);
 
     const [isOpen, setIsOpen] = useState(false);
+    const [settlementModelToEdit, setSettlementModelToEdit] = useState<ISettlementModel | undefined>(undefined);
+
     const [pageNumber, setPageNumber] = useState<string>('1');
 
     const toast = useToast();
     const handleEditClick = useCallback((rowItem: ISettlementModel) => {
+        if (!rowItem) {
+            toast({
+                position: 'top',
+                description: 'Settlement model not found or missing ID.',
+                status: 'warning',
+                isClosable: true,
+                duration: 3000
+            });
+            return;
+            }
+        setSettlementModelToEdit(rowItem);
         setIsOpen(true);
     }, []);
+
+    const applyModelPatch = (updated: ISettlementModel) => {
+      setModels((prev) =>
+        prev.map((m) =>
+          m.settlementModelId === updated.settlementModelId ? { ...m, ...updated } : m
+        )
+      );
+    };
 
     const toggleStatus = (id: string | number, newValue: boolean) => {
         // Example: Send update to API or update local state
@@ -311,8 +332,17 @@ const SettlementModels = () => {
                     </HStack>
                 </HStack>
             </TableContainer>
-
-            <SettlementModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
+            {settlementModelToEdit && (
+                <SettlementModal 
+                    settlementModel={settlementModelToEdit} 
+                    isOpen={isOpen} 
+                    onClose={() => {
+                        setSettlementModelToEdit(undefined);
+                        setIsOpen(false)
+                    }} 
+                    onUpdated={applyModelPatch}
+                />
+        )   }
         </VStack>
     );
 };
