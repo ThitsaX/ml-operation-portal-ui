@@ -5,6 +5,7 @@ export interface IGetAuditByParticipant {
 }
 
 export interface AuditInfo {
+  auditId: string;
   date: string;
   action: string;
   madeBy: number;

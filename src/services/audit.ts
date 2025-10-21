@@ -114,7 +114,7 @@ export const getAllAuditList = async (
   const {
     user: { auth }
   } = store.getState();
-  const uri = routes.getAuditList;
+  const uri = routes.getAuditListByParticipant;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
   const accessToken = await generateAccessToken({
