@@ -50,6 +50,7 @@ import GlobalFilter from '@components/interface/GlobalFilter';
 import { store } from '@store'
 import { getErrorMessage } from '@helpers/errors';
 import { CustomSelect } from '@components/interface';
+import { hasMenuAccess } from '@helpers/permissions';
 
 const User = () => {
   const [filterStatus, setFilterStatus] = useState('ACTIVE');
@@ -141,18 +142,17 @@ const User = () => {
         disableSortBy: true,
         Cell: ({ row }: CellProps<IParticipantUser>) => {
           const { user: { data: user } } = store.getState();
-
-          const isDisabled = row.original.userId === user?.userId;
+          const isSelfUser = row.original.userId === user?.userId;
 
           return (
             <HStack spacing={3}>
               <IconButton
                 icon={<GrPowerReset />}
-                aria-label="Edit"
+                aria-label="Reset Password"
                 size="md"
                 onClick={() => handleResetClick(row.original)}
                 variant="ghost"
-                isDisabled={isDisabled}
+                isDisabled={isSelfUser}
               />
               <IconButton
                 icon={<FaRegEdit />}
@@ -160,6 +160,7 @@ const User = () => {
                 size="md"
                 onClick={() => handleEditClick(row.original)}
                 variant="ghost"
+                isDisabled={!hasMenuAccess("ModifyUser")}
               />
               <Switch
                 colorScheme="green"
@@ -168,7 +169,7 @@ const User = () => {
                 onChange={e =>
                   toggleStatus(row.original.userId, e.target.checked)
                 }
-                isDisabled={isDisabled}
+                isDisabled={isSelfUser || !hasMenuAccess("ModifyUserStatus")}
               />
             </HStack>
           )
@@ -307,12 +308,14 @@ const User = () => {
           includeAllOption={false}
         />
         </Box>
-        <Button
-          colorScheme="blue"
-          onClick={handleNewClick}
-          w={{ base: "full", sm: "auto" }}>
-          New User
-        </Button>
+        {hasMenuAccess("CreateUser") && (
+          <Button
+            colorScheme="blue"
+            onClick={handleNewClick}
+            w={{ base: "full", sm: "auto" }}>
+            New User
+          </Button>
+        )}
       </Stack>
 
       <VStack w="full" align="flex-start" spacing={2} >
