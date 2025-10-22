@@ -1,5 +1,5 @@
 import React from 'react';
-import Select, { SingleValue, MultiValue } from 'react-select';
+import Select, { SingleValue, MultiValue, MenuPlacement } from 'react-select';
 
 export type OptionType = {
   value: string;
@@ -14,6 +14,7 @@ interface BaseProps {
   includeAllOption?: boolean;
   isClearable?: boolean;
   isDisabled?: boolean;
+  menuPlacement?: MenuPlacement; // 'auto' | 'top' | 'bottom'
   menuPortalTarget?: boolean;
 }
 
@@ -43,6 +44,7 @@ const CustomSelect: React.FC<UnifiedSelectProps> = (props) => {
     includeAllOption = false,
     isClearable = false,
     isDisabled = false,
+    menuPlacement = 'auto',
     menuPortalTarget = false, 
   } = props;
 
@@ -69,6 +71,7 @@ const handleChange = (
       placeholder={placeholder || 'Select...'}
       isClearable={isClearable}
       isDisabled={isDisabled} 
+      menuPlacement={menuPlacement}
       menuPortalTarget={menuPortalTarget ? document.body : undefined} 
       closeMenuOnScroll={false}
       menuShouldBlockScroll={true}

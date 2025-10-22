@@ -17,7 +17,8 @@ import {
     Select as ChakraSelect,
     Icon,
     Divider,
-    useToast
+    useToast,
+    Stack
 } from '@chakra-ui/react';
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
@@ -190,9 +191,10 @@ const SettlementModels = () => {
     };
 
     return (
-        <VStack w="full" align="flex-start" spacing={6} p={4}>
-            <Heading size="lg">Settlement Models</Heading>
-
+    <VStack align="flex-start" w="full" h="full" p="3" mt={10}>
+      <Stack>
+        <Heading fontSize="2xl">Settlement Models</Heading>
+      </Stack>
             <TableContainer
                 w="full"
                 borderWidth={1}
