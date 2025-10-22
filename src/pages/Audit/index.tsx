@@ -23,6 +23,16 @@ import {
   Icon,
   Select,
   SimpleGrid,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  ModalFooter,
+  useDisclosure,
+  Spinner,
+  Code,
 } from '@chakra-ui/react';
 import {
   TfiAngleDoubleLeft,
@@ -33,7 +43,9 @@ import {
 import { AuditHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useGetAllAudit } from '@hooks/services';
-import { IGetAuditByParticipantValues, IGetAuditByParticipant } from '@typescript/form';
+import { getAuditDetailById } from '@services/audit';
+import { IGetAuditByParticipantValues } from '@typescript/form';
+import { AuditInfo } from '@typescript/services';
 import moment from 'moment';
 import { useCallback, useEffect, useState, useMemo } from 'react';
 import {
@@ -49,7 +61,7 @@ import { RootState } from '@store';
 import { ITimezoneOption } from 'react-timezone-select';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import { FaSearch } from "react-icons/fa";
-import GlobalFilter from '@components/interface/GlobalFilter';
+import { IoSearchOutline, IoCloseOutline } from "react-icons/io5";
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 
@@ -57,11 +69,23 @@ const auditHelper = new AuditHelper();
 
 const Audit = () => {
   const toast = useToast();
-  const [tableData, setTableData] = useState<IGetAuditByParticipant[]>([]);
+  const [tableData, setTableData] = useState<AuditInfo[]>([]);
 
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [columnSearchVisible, setColumnSearchVisible] = useState<{ [key: string]: boolean }>({
+    action: false,
+    madeBy: false
+  });
+  const [columnSearchValues, setColumnSearchValues] = useState<{ [key: string]: string }>({
+    action: '',
+    madeBy: ''
+  });
+  const [selectedAuditId, setSelectedAuditId] = useState<string | null>(null);
+  const [auditDetail, setAuditDetail] = useState<any>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+  const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure();
 
 
   // Selected timezone
@@ -128,8 +152,73 @@ const Audit = () => {
     },
     [mutateAsync, pageSize, selectedTZString, toast]
   );
+
+  const handleRowClick = async (auditId: string) => {
+    setSelectedAuditId(auditId);
+    setIsLoadingDetail(true);
+    onDetailOpen();
+
+    try {
+      const detail = await getAuditDetailById(auditId);
+      setAuditDetail(detail);
+    } catch (error) {
+      toast({
+        position: 'top',
+        description: getErrorMessage(error as IApiErrorResponse) || 'Failed to fetch audit details',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoadingDetail(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    onDetailClose();
+    setAuditDetail(null);
+    setSelectedAuditId(null);
+  };
+  const toggleColumnSearch = (columnId: string) => {
+    setColumnSearchVisible(prev => ({
+      ...prev,
+      [columnId]: !prev[columnId]
+    }));
+    if (columnSearchVisible[columnId]) {
+      setColumnSearchValues(prev => ({
+        ...prev,
+        [columnId]: ''
+      }));
+    }
+  };
+
+  const handleColumnSearch = (columnId: string, value: string) => {
+    setColumnSearchValues(prev => ({
+      ...prev,
+      [columnId]: value
+    }));
+  };
+
+  const filteredTableData = useMemo(() => {
+    let filtered = tableData;
+
+    if (columnSearchValues.action) {
+      filtered = filtered.filter(row =>
+        String(row.action || '').toLowerCase().includes(columnSearchValues.action.toLowerCase())
+      );
+    }
+
+    if (columnSearchValues.madeBy) {
+      filtered = filtered.filter(row =>
+        String(row.madeBy || '').toLowerCase().includes(columnSearchValues.madeBy.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [tableData, columnSearchValues]);
+
   // Pagination + Search + Sort
-  const columns = useMemo<Column<IGetAuditByParticipant>[]>(
+  const columns = useMemo<Column<AuditInfo>[]>(
     () => [
       {
         Header: () => (
@@ -139,17 +228,94 @@ const Audit = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Action</Text>
+          <HStack justify="space-between" w="full" spacing={1}>
+            <Box flex={1} position="relative" onClick={(e) => e.stopPropagation()}>
+              {columnSearchVisible.action ? (
+                <Input
+                  placeholder="Search action..."
+                  size="sm"
+                  value={columnSearchValues.action}
+                  onChange={(e) => handleColumnSearch('action', e.target.value)}
+                  autoFocus
+                  variant="unstyled"
+                  px={0}
+                  fontWeight="normal"
+                  fontSize="sm"
+                  _placeholder={{ color: 'gray.400', fontWeight: 'normal' }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">Action</Text>
+              )}
+            </Box>
+            <IconButton
+              aria-label="Search action"
+              icon={columnSearchVisible.action ? <IoCloseOutline size={16} /> : <IoSearchOutline size={16} />}
+              size="xs"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleColumnSearch('action');
+              }}
+              minW="auto"
+              flexShrink={0}
+            />
+          </HStack>
         ),
-        accessor: 'action'
+        accessor: 'action',
+        disableSortBy: columnSearchVisible.action,
+        Cell: ({ value }: any) => (
+          <Text>
+            {value}
+          </Text>
+        )
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Made By</Text>
-        ), accessor: 'madeBy'
+          <HStack justify="space-between" w="full" spacing={1}>
+            <Box flex={1} position="relative" onClick={(e) => e.stopPropagation()}>
+              {columnSearchVisible.madeBy ? (
+                <Input
+                  placeholder="Search made by..."
+                  size="sm"
+                  value={columnSearchValues.madeBy}
+                  onChange={(e) => handleColumnSearch('madeBy', e.target.value)}
+                  autoFocus
+                  variant="unstyled"
+                  px={0}
+                  fontWeight="normal"
+                  fontSize="sm"
+                  _placeholder={{ color: 'gray.400', fontWeight: 'normal' }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">Made By</Text>
+              )}
+            </Box>
+            <IconButton
+              aria-label="Search made by"
+              icon={columnSearchVisible.madeBy ? <IoCloseOutline size={16} /> : <IoSearchOutline size={16} />}
+              size="xs"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleColumnSearch('madeBy');
+              }}
+              minW="auto"
+              flexShrink={0}
+            />
+          </HStack>
+        ),
+        accessor: 'madeBy',
+        disableSortBy: columnSearchVisible.madeBy,
+        Cell: ({ value }: any) => (
+          <Text>
+            {value}
+          </Text>
+        )
       },
     ],
-    []
+    [columnSearchVisible, columnSearchValues]
   );
 
   const {
@@ -161,7 +327,7 @@ const Audit = () => {
   } = useTable(
     {
       columns,
-      data: tableData,
+      data: filteredTableData,
       manualPagination: true,
       pageCount: totalPages,
     },
@@ -249,8 +415,6 @@ const Audit = () => {
 
 
       <Stack w="full" align="flex-start" spacing={2}>
-        <GlobalFilter globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
-
         {/* Table */}
         <TableContainer mt={2} w="full" borderWidth={1} borderColor="gray.100" rounded="lg">
           <Table variant="simple">
@@ -302,12 +466,20 @@ const Audit = () => {
               {rows.map((row) => {
                 prepareRow(row);
                 return (
-                  <Tr fontSize="sm" cursor="pointer" _hover={{ bg: 'muted.50' }} {...row.getRowProps()}>
+                  <Tr
+                    fontSize="sm"
+                    cursor="pointer"
+                    _hover={{ bg: 'muted.50' }}
+                    {...row.getRowProps()}
+                    onClick={() => handleRowClick(row.original.auditId)}
+                  >
                     {row.cells.map((cell) => (
                       <Td {...cell.getCellProps()}>
-                        {isNumber(cell.value)
-                          ? moment.unix(cell.value).tz(selectedTZString).format('DD/MM/YYYY hh:mm:ss A')
-                          : cell.value}
+                        {cell.column.id === 'action' || cell.column.id === 'madeBy'
+                          ? cell.render('Cell')
+                          : isNumber(cell.value)
+                            ? moment.unix(cell.value).tz(selectedTZString).format('DD/MM/YYYY hh:mm:ss A')
+                            : cell.value}
                       </Td>
                     ))}
                   </Tr>
@@ -394,6 +566,104 @@ const Audit = () => {
           </HStack>
         </TableContainer>
       </Stack>
+
+      {/* Audit Detail Modal */}
+      <Modal isOpen={isDetailOpen} onClose={handleCloseModal} size="3xl" scrollBehavior="inside" isCentered>
+        <ModalOverlay />
+        <ModalContent
+          w={{ base: "90%", md: "500px" }}
+          maxW="90%"
+          mx="auto">
+          <ModalHeader borderBottom="1px solid" borderColor="gray.200">
+            Audit Details
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody maxH="70vh" overflowY="auto" bg="gray.50" p={6}>
+            {isLoadingDetail ? (
+              <VStack py={8} spacing={4}>
+                <Spinner size="xl" color="blue.500" />
+                <Text color="gray.600">Loading audit details...</Text>
+              </VStack>
+            ) : auditDetail ? (
+              <VStack spacing={5} align="stretch">
+                <Box
+                  bg="white"
+                  p={5}
+                  border="1px solid"
+                  borderColor="gray.200"
+                  borderRadius="md"
+                  boxShadow="sm"
+                >
+                  <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3}>
+                    Request
+                  </Text>
+                  <Code
+                    p={4}
+                    borderRadius="md"
+                    w="full"
+                    display="block"
+                    whiteSpace="pre-wrap"
+                    fontSize="sm"
+                    maxH="250px"
+                    overflowY="auto"
+                    bg="gray.50"
+                    color="gray.800"
+                    border="1px solid"
+                    borderColor="gray.300"
+                  >
+                    {auditDetail.inputInfo
+                      ? (typeof auditDetail.inputInfo === 'string'
+                        ? auditDetail.inputInfo
+                        : JSON.stringify(auditDetail.inputInfo, null, 2))
+                      : 'No input information available'}
+                  </Code>
+                </Box>
+                <Box
+                  bg="white"
+                  p={5}
+                  border="1px solid"
+                  borderColor="gray.200"
+                  borderRadius="md"
+                  boxShadow="sm"
+                >
+                  <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3}>
+                    Response
+                  </Text>
+                  <Code
+                    p={4}
+                    borderRadius="md"
+                    w="full"
+                    display="block"
+                    whiteSpace="pre-wrap"
+                    fontSize="sm"
+                    maxH="250px"
+                    overflowY="auto"
+                    bg="gray.50"
+                    color="gray.800"
+                    border="1px solid"
+                    borderColor="gray.300"
+                  >
+                    {auditDetail.outputInfo
+                      ? (typeof auditDetail.outputInfo === 'string'
+                        ? auditDetail.outputInfo
+                        : JSON.stringify(auditDetail.outputInfo, null, 2))
+                      : 'No output information available'}
+                  </Code>
+                </Box>
+              </VStack>
+            ) : (
+              <Text color="gray.600" textAlign="center" py={8}>
+                No details available
+              </Text>
+            )}
+          </ModalBody>
+          <ModalFooter bg="gray.100" borderTop="1px solid" borderColor="gray.200">
+            <Button colorScheme="blue" onClick={handleCloseModal}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </VStack>
   );
 };
