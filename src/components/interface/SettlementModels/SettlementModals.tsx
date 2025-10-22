@@ -140,9 +140,42 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     [rows, matrix]
   );
 
+  const COMMON_TZS = [
+    'UTC',
+    'Europe/London',
+    'Europe/Paris',
+    'Europe/Berlin',
+    'Europe/Madrid',
+    'Europe/Rome',
+    'Africa/Johannesburg',
+    'Africa/Nairobi',
+    'America/New_York',
+    'America/Chicago',
+    'America/Denver',
+    'America/Los_Angeles',
+    'America/Sao_Paulo',
+    'America/Mexico_City',
+    'Asia/Dubai',
+    'Asia/Kolkata',
+    'Asia/Bangkok',
+    'Asia/Jakarta',
+    'Asia/Shanghai',
+    'Asia/Tokyo',
+    'Asia/Seoul',
+    'Australia/Sydney',
+    'Pacific/Auckland',
+  ];
+
   const getZones = (): string[] => {
-      const zones = Intl.supportedValuesOf('timeZone') as string[];
-      return zones;
+    const anyIntl = Intl as any;
+    if (typeof anyIntl?.supportedValuesOf === 'function') {
+      try {
+        const zones = anyIntl.supportedValuesOf('timeZone') as string[];
+        if (Array.isArray(zones) && zones.length) return zones;
+      } catch {}
+    }
+    // Fallback if API missing or throws
+    return COMMON_TZS;
   };
 
   const makeKey = (time: string, offset: string) => `${time}|${offset}`;
