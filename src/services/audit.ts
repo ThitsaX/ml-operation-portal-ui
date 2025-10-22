@@ -1,7 +1,7 @@
 import AxiosRequest, { generateAccessToken, routes } from '@helpers/api';
 import { axiosErrorHandler, getErrorMessageByCode } from '@helpers/errors';
 import { store } from '@store';
-import { IGetAuditByParticipantValues } from '@typescript/form';
+import { IGetAuditByParticipantValues, type IAuditDetail } from '@typescript/form';
 import {
   IGetAuditByParticipant,
   IGetMadeBy,
@@ -139,4 +139,31 @@ export const getAllAuditList = async (
       }
       throw rest;
     });
+};
+
+export const getAuditDetailById = async (auditId: string) => {
+
+  const {
+    user: { auth }
+  } = store.getState();
+
+  const uri = routes.getAuditDetailById;
+  const accessKey = auth?.accessKey as string;
+  const secretKey = auth?.secretKey as string;
+
+  const accessToken = await generateAccessToken({
+    method: 'GET',
+    uri,
+    secret: secretKey
+  });
+
+  const { axios } = AxiosRequest(accessToken, accessKey);
+
+  return await axios
+    .get<IAuditDetail>(uri, {
+      params: {
+        auditId,
+      }
+    })
+    .then((d) => d.data);
 };

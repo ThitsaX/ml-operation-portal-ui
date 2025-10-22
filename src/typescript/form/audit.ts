@@ -19,3 +19,9 @@ export interface IGetAuditByParticipant {
   action: string;
   madeBy: number;
 }
+
+export interface IAuditDetail{
+  auditId: string;
+  inputInfo: string;
+  outputInfo: string;
+}
