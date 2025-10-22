@@ -14,6 +14,9 @@ import {
     ISettlementWindowForm, 
     ISettlementWindowCreateForm, 
     IFinalizeSettlementForm,
+    ISettlementScheduleForm,
+    ISettlementScheduleModifyForm,
+    ISettlementScheduleRemoveForm,
 } from '@typescript/form/settlements'
 
 
@@ -172,6 +175,171 @@ export const getSettlementWindowsList = async (values: ISettlementWindowForm) =>
         })
 }
 
+export const modifySettlementModel = async (data: {
+    settlementModelId: string;
+    name: string;
+    modelType: string;
+    currencyID: string;   // backend expects string, can be ''
+    active: boolean;
+    autoCloseWindow: boolean;
+}) => {
+    const {
+        user: { auth }
+    } = store.getState();
+    const uri = routes.modifySettlementModel;
+    const accessKey = auth?.accessKey as string;
+    const secretKey = auth?.secretKey as string;
+
+    const accessToken = await generateAccessToken({
+        method: 'POST',
+        uri,
+        secret: secretKey,
+        payload: data
+    });
+    const { axios } = AxiosRequest(accessToken, accessKey);
+    return axios
+        .post<{ is_modified: true }>(uri, data)
+        .then((d) => d.data)
+        .catch((error: AxiosError<IApiErrorResponse>) => {
+            const { code, message, ...rest } = axiosErrorHandler(error);
+            if (code && message) {
+                throw {
+                    error_code: code,
+                    description: getErrorMessageByCode(code),
+                    default_error_message: message,
+                    i18n_error_messages: null
+                };
+            }
+            throw rest;
+        });
+};
+
+export const getSettlementSchedulerList = async(settlementModelId: string) => {
+    const {
+        user: { auth }
+    } = store.getState()
+    const uri = routes.getSettlementSchedulerList
+    const accessKey = auth?.accessKey as string
+    const secretKey = auth?.secretKey as string
+    const accessToken = await generateAccessToken({
+        method: 'GET',
+        uri,
+        secret: secretKey
+    })
+    const { axios } = AxiosRequest(accessToken, accessKey)
+    return axios
+        .get<{ settlementSchedulerList: any[] }>(uri, {
+            params: {
+                settlementModelId: settlementModelId
+            }
+        })
+        .then((d) => d.data)
+        .catch((error: AxiosError<IApiErrorResponse>) => {
+            const { code, message, ...rest } = axiosErrorHandler(error)
+            if (code && message) {
+                throw {
+                    error_code: code,
+                    description: getErrorMessageByCode(code),
+                    default_error_message: message,
+                    i18n_error_messages: null
+                }
+            }
+            throw rest
+        })
+}
+
+export const createSettlementScheduler = async (data: ISettlementScheduleForm) => {
+    const {
+        user: { auth }
+    } = store.getState()
+    const uri = routes.createSettlementScheduler
+    const accessKey = auth?.accessKey as string
+    const secretKey = auth?.secretKey as string
+    const accessToken = await generateAccessToken({
+        method: 'POST',
+        uri,
+        secret: secretKey,
+        payload: data
+    })
+    const { axios } = AxiosRequest(accessToken, accessKey)
+    return axios
+        .post<{ is_created: true }>(uri, data)
+        .then((d) => d.data)
+        .catch((error: AxiosError<IApiErrorResponse>) => {
+            const { code, message, ...rest } = axiosErrorHandler(error)
+            if (code && message) {
+                throw {
+                    error_code: code,
+                    description: getErrorMessageByCode(code),
+                    default_error_message: message,
+                    i18n_error_messages: null
+                }
+            }
+            throw rest
+        })
+}
+
+export const modifySettlementScheduler = async (data: ISettlementScheduleModifyForm) => {
+    const {
+        user: { auth }
+    } = store.getState();
+    const uri = routes.modifySettlementScheduler
+    const accessKey = auth?.accessKey as string;
+    const secretKey = auth?.secretKey as string;
+    const accessToken = await generateAccessToken({
+        method: 'POST',
+        uri,
+        secret: secretKey,
+        payload: data
+    });
+    const { axios } = AxiosRequest(accessToken, accessKey);
+    return axios
+        .post<{ is_modified: true }>(uri, data)
+        .then((d) => d.data)
+        .catch((error: AxiosError<IApiErrorResponse>) => {
+            const { code, message, ...rest } = axiosErrorHandler(error);
+            if (code && message) {
+                throw {
+                    error_code: code,
+                    description: getErrorMessageByCode(code),
+                    default_error_message: message,
+                    i18n_error_messages: null
+                };
+            }
+            throw rest;
+        });
+};
+
+export const removeSettlementScheduler = async (data: ISettlementScheduleRemoveForm ) => {
+    const {
+        user: { auth }
+    } = store.getState();
+    const uri = routes.removeSettlementScheduler
+    const accessKey = auth?.accessKey as string;
+    const secretKey = auth?.secretKey as string;
+    const accessToken = await generateAccessToken({
+        method: 'POST',
+        uri,
+        secret: secretKey,
+        payload: data,
+    });
+    const { axios } = AxiosRequest(accessToken, accessKey);
+    return axios
+        .post<{ is_removed: true }>(uri, data)
+        .then((d) => d.data)
+        .catch((error: AxiosError<IApiErrorResponse>) => {
+            const { code, message, ...rest } = axiosErrorHandler(error);
+            if (code && message) {
+                throw {
+                    error_code: code,
+                    description: getErrorMessageByCode(code),
+                    default_error_message: message,
+                    i18n_error_messages: null
+                };
+            }
+            throw rest;
+        });
+};
 export const getNetTransferAmountByWindow = async (settlementWindowId: string) => {
     const {
         user: { auth }

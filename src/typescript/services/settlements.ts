@@ -15,6 +15,16 @@ export interface ISettlementModel {
     type: string;
 }
 
+export interface ISettlementScheduler {
+    schedulerConfigId: string,
+    name: string,
+    jobName: string,
+    cronExpression: string,
+    description: string,
+    zoneId: string,
+    active: boolean
+}
+
 export interface ISettlementState {
     settlementStateId: string;
     enumeration: string;
