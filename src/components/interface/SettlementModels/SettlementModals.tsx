@@ -34,6 +34,7 @@ import {
 } from '@services/settlements';
 import { ISettlementScheduleForm } from '@typescript/form/settlements';
 import { ISettlementModel } from '@typescript/services';
+import { allTimezones, useTimezoneSelect } from 'react-timezone-select';
 interface SettlementModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -78,8 +79,6 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     const sign = m[1], hh = String(+m[2]).padStart(2, '0'), mm = String(m[3] ?? '00').padStart(2, '0');
     return `${sign}${hh}:${mm}`;
   };
-  const tzNameForOffset = (offset: string) =>
-    tzOptions.find(z => z.off === offset)?.tz || 'UTC';
 
   const humanDays = (days: Day[]) => {
     const set = new Set(days);
@@ -109,19 +108,17 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     return `${base}${repeat}`;
   };
 
+  // helper: turn IANA -> current numeric offset like "+07:00"
   const getOffsetForZone = (timeZone: string): string => {
-
     const fmt = new Intl.DateTimeFormat('en-US', {
       timeZone,
       timeZoneName: 'shortOffset',
-      hour: '2-digit', minute: '2-digit'
+      hour: '2-digit', minute: '2-digit',
     });
-    const parts = fmt.formatToParts(new Date());
-    const offPart = parts.find(p => p.type === 'timeZoneName')?.value ?? '';
-    const norm = normalizeOffset(offPart.replace('GMT', '').replace('UTC', ''));
-    if (norm) return norm;
-
-    return '+00:00';
+    const off = fmt.formatToParts(new Date()).find(p => p.type === 'timeZoneName')?.value ?? '';
+    const m = off.replace('GMT', '').replace('UTC', '').match(/([+-])(\d{1,2})(?::?(\d{2}))?/);
+    const sign = m?.[1] ?? '+', hh = String(Number(m?.[2] ?? '0')).padStart(2, '0'), mm = String(m?.[3] ?? '00').padStart(2, '0');
+    return `${sign}${hh}:${mm}`;
   };
 
   const currentOffset = useMemo(() => getOffsetForZone(selectedTz), [selectedTz]);
@@ -156,6 +153,14 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     'Australia/Sydney',
     'Pacific/Auckland',
   ];
+  
+  const { options: rtsOptions } = useTimezoneSelect({
+    labelStyle: 'original',
+    timezones: allTimezones,
+  });
+
+  const stripLeadingGMT = (s: string) =>
+    s.replace(/^\(GMT[+\-−]\d{1,2}:\d{2}\)\s*/i, '');
 
   const getZones = (): string[] => {
     const anyIntl = Intl as any;
@@ -197,13 +202,19 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     setAutoCloseWindow(!!settlementModel.autoCloseWindow);
   }, [settlementModel?.autoCloseWindow]);
 
-  const tzOptions = useMemo(() => {
-    const list = getZones();
-    return list.map((tz) => {
-      const off = getOffsetForZone(tz);
-      return { tz, off, label: `(${off} ${tz})` };
-    });
-  }, []);
+  const tzOptions: OptionType[] = useMemo(
+    () =>
+      rtsOptions.map(o => {
+        const iana = String(o.value);
+        const offset = getOffsetForZone(iana); 
+        const clean = stripLeadingGMT(String(o.label));
+        return {
+          value: iana,                      
+          label: `(GMT${offset}) ${clean}`, 
+        };
+      }),
+    [rtsOptions]
+  );
 
   useEffect(() => {
     if (!isOpen || !settlementModel) return;
@@ -367,7 +378,6 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
 
     const key = makeKey(time, currentOffset, selectedTz);
     if (rows.includes(key)) {
-      const lbl = tzOptions.find(z => z.off === currentOffset)?.tz ?? currentOffset;
       toast({ status: 'info', title: 'Duplicate row', description: `${nameForKey(key)} (Same Timezone) already exists.` });
       return;
     }
@@ -458,7 +468,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
         const zid = String(it?.zoneId ?? '+00:00');
 
         const tzFromName = parseTzFromName(it?.name);
-        const tz = tzFromName || (tzOptions.find(z => z.off === zid)?.tz) || 'UTC';
+        const tz = tzFromName || (tzOptions.find(z => (z as any).offset === currentOffset)?.label) || 'UTC';
         if (!ex) continue;
         
         const p = parseQuartzCron(ex);
@@ -654,12 +664,8 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                           </Thead>
                           <Tbody>
                             {rows.slice().sort().map((key) => {
-                              const { time, zoneId } = splitKey(key);
-                              
-                              const labelTz = tzOptions.find(z => z.off === zoneId)?.tz;
-                              
-                              const display = labelTz ? `${time} ${zoneId} ${labelTz}` : `${time} (${zoneId})`;
-
+                              const { time, zoneId, tz } = splitKey(key);
+                              const display = `${time} (${zoneId} ${tz})`;
                               return (
                                 <Tr key={key}>
                                   <Td bg="green.50" fontWeight="semibold" textAlign="center">{display}</Td>
@@ -714,17 +720,13 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
 
                                   {/* Timezone (region) */}
                                   <Box flex="1" maxW="60%">
-                                    <CustomSelect
-                                      options={TZ_OPTS}
-                                      value={(() => {
-                                        const match = TZ_OPTS.find(o => o.value === selectedTz);
-                                        return match ?? null;
-                                      })()}
-                                      onChange={(opt: OptionType | null) => setSelectedTz((opt?.value as string) || 'UTC')}
-                                      isClearable={false}
-                                      maxMenuHeight={300}
-                                      menuPlacement='top'
-                                    />
+                              <CustomSelect
+                                options={tzOptions}
+                                value={tzOptions.find(z => z.value === selectedTz) ?? null}
+                                onChange={(opt) => setSelectedTz(opt?.value ?? 'UTC')}
+                                maxMenuHeight={300}
+                                menuPlacement='top'            
+                              />
                                   </Box>
 
                                   <Button ml="auto" colorScheme="green" onClick={addRow}>ADD</Button>
