@@ -21,7 +21,10 @@ import {
   Table, Thead, Tr, Th, Td, Tbody,
   Checkbox
 } from '@chakra-ui/react';
-import { CheckCircleIcon, CloseIcon } from '@chakra-ui/icons';
+import { CloseIcon } from '@chakra-ui/icons';
+import { CustomSelect } from '@components/interface';
+import type { OptionType } from '@components/interface/CustomSelect';
+
 import { 
   createSettlementScheduler, 
   getSettlementSchedulerList, 
@@ -31,7 +34,6 @@ import {
 } from '@services/settlements';
 import { ISettlementScheduleForm } from '@typescript/form/settlements';
 import { ISettlementModel } from '@typescript/services';
-
 interface SettlementModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -52,16 +54,6 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
   const DOW_MAP: Record<Day, string> = { Mon:'MON', Tue:'TUE', Wed:'WED', Thu:'THU', Fri:'FRI', Sat:'SAT', Sun:'SUN' };
   const REV_DOW_MAP: Record<string, Day> = { MON:'Mon', TUE:'Tue', WED:'Wed', THU:'Thu', FRI:'Fri', SAT:'Sat', SUN:'Sun' };
 
-  const DEFAULT_NAME = 'Settlement Window Scheduler';
-  const DEFAULT_DESC = 'Auto-close settlement windows';
-
-  const jobKeyFor = (key: string) => {
-    const { time, zoneId } = splitKey(key);
-    console.log(time, zoneId)
-    // Make job unique across (time + offset)
-    return `settlement-window-${settlementModel.settlementModelId}-${time.replace(':','')}-${zoneId.replace(':','')}`;
-  };
-
   const [rows, setRows] = useState<string[]>([]);
   const [matrix, setMatrix] = useState<Record<string, Set<Day>>>({
     // Example Format
@@ -70,8 +62,8 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     // '10:00': new Set<Day>(['Mon', 'Wed', 'Sat']),
   })
   
-  const [newHour, setNewHour] = useState('09');
-  const [newMinute, setNewMinute] = useState('00');
+  const [newHour, setNewHour] = useState<string>('09');
+  const [newMinute, setNewMinute] = useState<string>('00');
   const [selectedTz, setSelectedTz] = useState<string>(() => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -98,22 +90,21 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
   };
 
   const nameForKey = (key: string, setOverride?: Set<Day>) => {
-    const { time, zoneId } = splitKey(key);
+    const { time, zoneId, tz } = splitKey(key);
     const set = setOverride ?? matrix[key] ?? new Set<Day>();
     const days = Array.from(set);
     const label = humanDays(days);
-    return `${MODEL_CODE}_${label}_${time}_${zoneId}`;
+    return `${MODEL_CODE}_${label}_${time}_${zoneId}_${tz}`;
   };
 
   const descriptionForKey = (key: string, cron: string | null, setOverride?: Set<Day>) => {
-    const { time, zoneId } = splitKey(key);
-    const tzName = tzNameForOffset(zoneId);
+    const { time, zoneId, tz } = splitKey(key);
     const set = setOverride ?? matrix[key] ?? new Set<Day>();
     const days = Array.from(set);
     const when = humanDays(days);
     const model = settlementModel.name || 'Settlement Model';
 
-    const base = `Run for ${model} at ${time} (${zoneId} ${tzName})`;
+    const base = `Run for ${model} at ${time} (${zoneId} ${tz})`;
     const repeat = when ? ` every ${when}` : '';
     return `${base}${repeat}`;
   };
@@ -178,10 +169,28 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     return COMMON_TZS;
   };
 
-  const makeKey = (time: string, offset: string) => `${time}|${offset}`;
+  const HOUR_OPTS: OptionType[] =
+    Array.from({ length: 24 }, (_, i) => {
+      const v = String(i).padStart(2, '0');
+      return { value: v, label: v };
+    });
+
+  // minutes: 00–59
+  const MIN_OPTS: OptionType[] =
+    Array.from({ length: 60 }, (_, i) => {
+      const v = String(i).padStart(2, '0');
+      return { value: v, label: v };
+    });
+
+  const TZ_OPTS: OptionType[] = getZones().map((tz) => {
+    const off = getOffsetForZone(tz); // returns "+HH:MM"
+    return { value: tz, label: `(${off} ${tz})` };
+  });
+
+  const makeKey = (time: string, offset: string, tz: string) => `${time}|${offset}|${tz}`;
   const splitKey = (key: string) => {
-    const [time, zoneId] = key.split('|');
-    return { time, zoneId };
+    const [time, zoneId, tz] = key.split('|');
+    return { time, zoneId, tz };
   };
 
   useEffect(() => {
@@ -260,7 +269,6 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
   
   const persistRow = async (key: string, nextSet?: Set<Day>) => {
     const { cron, zoneId } = buildCronForKey(key, nextSet);
-    const { time } = splitKey(key);
     
     const schedulerName = nameForKey(key, nextSet);
     const schedulerDesc  = descriptionForKey(key, cron, nextSet);
@@ -285,7 +293,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
         if (!rowIdMap[key]) { // New Row
           await createSettlementScheduler(payload);
           await refreshSchedules(); 
-          toast({ status: 'success', title: 'Created', description: `${key} saved.` });
+          toast({ status: 'success', title: 'Created', description: `${nameForKey(key)} saved.` });
         } else {
           await modifySettlementScheduler({
             ...payload,
@@ -293,7 +301,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
             schedulerConfigId: rowIdMap[key] as string
           });
           await refreshSchedules();
-          toast({ status: 'success', title: 'Updated', description: `${key} updated.` });
+          toast({ status: 'success', title: 'Updated', description: `${nameForKey(key)} updated.` });
         }
       } else {
         const sid = rowIdMap[key];
@@ -302,8 +310,37 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
             settlementModelId: settlementModel.settlementModelId,
             schedulerConfigId: sid 
           });
-          await refreshSchedules();
-          toast({ status: 'info', title: 'Removed', description: `${time} cleared.` });
+          const { hasActive } = await refreshSchedules();
+          toast({ status: 'info', title: 'Removed', description: `${nameForKey(key)} cleared.` });
+
+          if (!hasActive && (autoCloseWindow || settlementModel.autoCloseWindow)) {
+            try {
+              await modifySettlementModel({
+                settlementModelId: settlementModel.settlementModelId,
+                name: settlementModel.name,
+                modelType: settlementModel.type,
+                currencyID: (settlementModel.currencyId ?? ''),
+                active: true,
+                autoCloseWindow: false
+              });
+              setAutoCloseWindow(false);
+              onUpdated?.({ ...settlementModel, autoCloseWindow: false });
+              settlementModel.autoCloseWindow = false; // keep local copy in sync
+
+              toast({
+                status: 'info',
+                title: 'Auto-close disabled',
+                description: 'No schedules remain for this model.'
+              });
+            } catch (e: any) {
+              // If disabling fails, just inform; user still has no schedules.
+              toast({
+                status: 'warning',
+                title: 'Could not disable auto-close',
+                description: e?.default_error_message || e?.description || 'Please try again.'
+              });
+            }
+          }
         }
       }
     } catch (e: any) {
@@ -328,10 +365,10 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       return;
     }
 
-    const key = makeKey(time, currentOffset);
+    const key = makeKey(time, currentOffset, selectedTz);
     if (rows.includes(key)) {
       const lbl = tzOptions.find(z => z.off === currentOffset)?.tz ?? currentOffset;
-      toast({ status: 'info', title: 'Duplicate row', description: `${time} ${currentOffset} ${lbl} (Same Timezone) already exists.` });
+      toast({ status: 'info', title: 'Duplicate row', description: `${nameForKey(key)} (Same Timezone) already exists.` });
       return;
     }
 
@@ -350,8 +387,28 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       const sid = rowIdMap[key];
       if (sid) {
         await removeSettlementScheduler({ settlementModelId: settlementModel.settlementModelId, schedulerConfigId: sid } as any);
-        await refreshSchedules();
-        toast({ status: 'info', title: 'Deleted', description: `${key} removed.` });
+        toast({ status: 'info', title: 'Deleted', description: `${nameForKey(key)} removed.` });
+
+        const { hasActive } = await refreshSchedules();
+        if (!hasActive && (autoCloseWindow || settlementModel.autoCloseWindow)) {
+          try {
+            await modifySettlementModel({
+              settlementModelId: settlementModel.settlementModelId,
+              name: settlementModel.name,
+              modelType: settlementModel.type,
+              currencyID: settlementModel.currencyId ?? '',
+              active: true,
+              autoCloseWindow: false
+            });
+            setAutoCloseWindow(false);
+            onUpdated?.({ ...settlementModel, autoCloseWindow: false });
+            settlementModel.autoCloseWindow = false;
+
+            toast({ status: 'info', title: 'Auto-close disabled', description: 'No schedules remain for this model.' });
+          } catch (e: any) {
+            toast({ status: 'warning', title: 'Could not disable auto-close', description: e?.default_error_message || e?.description || 'Please try again.' });
+          }
+        }
       }else {
         // just local ui remove row
         setRows(r => r.filter(k => k !== key));
@@ -379,7 +436,14 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     openConfirm();
   };
 
-  const refreshSchedules = async () => {
+  const parseTzFromName = (name?: string): string | null => {
+    if (!name) return null;
+    const m = name.match(/_(\d{2}:\d{2})_([+-]\d{2}:\d{2})_(.+)$/);
+    if (!m) return null;
+    return m[3];
+  };
+
+  const refreshSchedules = async (): Promise<{ hasActive: boolean }> => {
     const resp = await getSettlementSchedulerList(settlementModel.settlementModelId);
     const objList: any[] = Array.isArray(resp?.settlementSchedulerList) ? resp.settlementSchedulerList : [];
 
@@ -393,13 +457,15 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
         const ex = it?.cronExpression as string | undefined;
         const zid = String(it?.zoneId ?? '+00:00');
 
+        const tzFromName = parseTzFromName(it?.name);
+        const tz = tzFromName || (tzOptions.find(z => z.off === zid)?.tz) || 'UTC';
         if (!ex) continue;
         
         const p = parseQuartzCron(ex);
         
         if (!p) continue;
         
-        const key = makeKey(p.time, zid);
+        const key = makeKey(p.time, zid, tz);
         nextRows.add(key);
         
         if (!nextMatrix[key]){
@@ -417,6 +483,8 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     setRows(Array.from(nextRows).sort((a, b) => a.localeCompare(b)));
     setMatrix(nextMatrix);
     setRowIdMap(nextIds);
+
+    return { hasActive: Array.from(nextRows).length > 0 };
   };
 
   const parseQuartzCron = (expr: string) => {
@@ -590,7 +658,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                               
                               const labelTz = tzOptions.find(z => z.off === zoneId)?.tz;
                               
-                              const display = labelTz ? `${time} (${zoneId} ${labelTz})` : `${time} (${zoneId})`;
+                              const display = labelTz ? `${time} ${zoneId} ${labelTz}` : `${time} (${zoneId})`;
 
                               return (
                                 <Tr key={key}>
@@ -619,44 +687,47 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                             })}
 
                             <Tr>
-                              <Td bg="gray.100" fontWeight="semibold" textAlign="center">Select Hr</Td>
+                              <Td bg="gray.100" fontWeight="semibold" textAlign="center">Select Time</Td>
 
                               <Td colSpan={days.length + 1}>
                                 <HStack spacing={3}>
-                                  <Select
-                                    value={newHour}
-                                    onChange={(e) => setNewHour(e.target.value)}
-                                    size="sm"
-                                    w="80px"
-                                  >
-                                    {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')).map((h) => (
-                                      <option key={h} value={h}>{h}</option>
-                                    ))}
-                                  </Select>
+                                  <Box w="100px">
+                                    <CustomSelect
+                                      options={HOUR_OPTS}
+                                      value={{ value: newHour, label: newHour }}
+                                      onChange={(opt: OptionType | null) => setNewHour((opt?.value as string) || '00')}
+                                      maxMenuHeight={300}
+                                      menuPlacement='top'        
+                                    />
+                                  </Box>
 
-                                  <Select
-                                    value={newMinute}
-                                    onChange={(e) => setNewMinute(e.target.value)}
-                                    size="sm"
-                                    w="80px"
-                                  >
-                                      {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0')).map((m) => (
-                                        <option key={m} value={m}>{m}</option>
-                                      ))}
-                                  </Select>
-                          
-                                  <Select
-                                    value={selectedTz}
-                                    onChange={(e) => setSelectedTz(e.target.value)}
-                                    flex="1"
-                                    maxW="60%"
-                                    size="sm"
-                                  >
-                                    {tzOptions.map(opt => (
-                                      <option key={opt.tz} value={opt.tz}>{opt.label}</option>
-                                    ))}
-                                  </Select>
-                                <Button ml="auto" colorScheme="green" onClick={addRow}>ADD</Button>
+                                  {/* Minute */}
+                                  <Box w="100px">
+                                    <CustomSelect
+                                      options={MIN_OPTS}
+                                      value={{ value: newMinute, label: newMinute }}
+                                      onChange={(opt: OptionType | null) => setNewMinute((opt?.value as string) || '00')}
+                                      maxMenuHeight={300}
+                                      menuPlacement='top'            
+                                    />
+                                  </Box>
+
+                                  {/* Timezone (region) */}
+                                  <Box flex="1" maxW="60%">
+                                    <CustomSelect
+                                      options={TZ_OPTS}
+                                      value={(() => {
+                                        const match = TZ_OPTS.find(o => o.value === selectedTz);
+                                        return match ?? null;
+                                      })()}
+                                      onChange={(opt: OptionType | null) => setSelectedTz((opt?.value as string) || 'UTC')}
+                                      isClearable={false}
+                                      maxMenuHeight={300}
+                                      menuPlacement='top'
+                                    />
+                                  </Box>
+
+                                  <Button ml="auto" colorScheme="green" onClick={addRow}>ADD</Button>
                                 </HStack>
                               </Td>
                             </Tr>
@@ -686,9 +757,15 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                       </AlertDialogHeader>
 
                       <AlertDialogBody>
-                        {pendingDeleteKey
-                          ? `Are you sure you want to delete ${pendingDeleteKey}? This action cannot be undone.`
-                          : 'Are you sure you want to delete this schedule?'}
+                        {pendingDeleteKey ? (
+                          <>
+                            Are you sure you want to delete <b>{nameForKey(pendingDeleteKey)}</b>?
+                            <br />
+                            This action cannot be undone.
+                          </>
+                        ) : (
+                          'Are you sure you want to delete this schedule?'
+                        )}
                       </AlertDialogBody>
 
                       <AlertDialogFooter>
