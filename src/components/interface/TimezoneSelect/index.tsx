@@ -35,7 +35,6 @@ const TimezoneSelect = ({ onChange, value, ...rest }: ITimezoneSelectProps) => {
 
   return (
     <CustomSelect
-      maxMenuHeight={300}
       isMulti={false}
       placeholder="Select Timezone"
       options={
