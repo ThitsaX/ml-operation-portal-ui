@@ -64,6 +64,7 @@ import { FaSearch } from "react-icons/fa";
 import { IoSearchOutline, IoCloseOutline } from "react-icons/io5";
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
+import { JsonViewer } from '@components/interface/JsonViewer';
 
 const auditHelper = new AuditHelper();
 
@@ -567,23 +568,32 @@ const Audit = () => {
         </TableContainer>
       </Stack>
 
-      {/* Audit Detail Modal */}
+      {/* Audit Detail Modal - Updated with beautified JSON display */}
       <Modal isOpen={isDetailOpen} onClose={handleCloseModal} size="3xl" scrollBehavior="inside" isCentered>
         <ModalOverlay />
         <ModalContent
-          w={{ base: "90%", md: "500px" }}
+          w={{ base: "90%", md: "600px" }}
+          minW={{ base: "auto", md: "600px" }}
           maxW="90%"
           mx="auto">
           <ModalHeader borderBottom="1px solid" borderColor="gray.200">
             Audit Details
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody maxH="70vh" overflowY="auto" bg="gray.50" p={6}>
+          <ModalBody maxH="70vh" minH="400px" overflowY="auto" bg="gray.50" p={6}>
             {isLoadingDetail ? (
-              <VStack py={8} spacing={4}>
-                <Spinner size="xl" color="blue.500" />
-                <Text color="gray.600">Loading audit details...</Text>
-              </VStack>
+              <Box
+                h="400px"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                w="100%"
+              >
+                <VStack spacing={4} align="center">
+                  <Spinner size="xl" color="blue.500" />
+                  <Text color="gray.600">Loading audit details...</Text>
+                </VStack>
+              </Box>
             ) : auditDetail ? (
               <VStack spacing={5} align="stretch">
                 <Box
@@ -597,26 +607,7 @@ const Audit = () => {
                   <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3}>
                     Request
                   </Text>
-                  <Code
-                    p={4}
-                    borderRadius="md"
-                    w="full"
-                    display="block"
-                    whiteSpace="pre-wrap"
-                    fontSize="sm"
-                    maxH="250px"
-                    overflowY="auto"
-                    bg="gray.50"
-                    color="gray.800"
-                    border="1px solid"
-                    borderColor="gray.300"
-                  >
-                    {auditDetail.inputInfo
-                      ? (typeof auditDetail.inputInfo === 'string'
-                        ? auditDetail.inputInfo
-                        : JSON.stringify(auditDetail.inputInfo, null, 2))
-                      : 'No input information available'}
-                  </Code>
+                  <JsonViewer value={auditDetail.inputInfo} />
                 </Box>
                 <Box
                   bg="white"
@@ -629,26 +620,7 @@ const Audit = () => {
                   <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3}>
                     Response
                   </Text>
-                  <Code
-                    p={4}
-                    borderRadius="md"
-                    w="full"
-                    display="block"
-                    whiteSpace="pre-wrap"
-                    fontSize="sm"
-                    maxH="250px"
-                    overflowY="auto"
-                    bg="gray.50"
-                    color="gray.800"
-                    border="1px solid"
-                    borderColor="gray.300"
-                  >
-                    {auditDetail.outputInfo
-                      ? (typeof auditDetail.outputInfo === 'string'
-                        ? auditDetail.outputInfo
-                        : JSON.stringify(auditDetail.outputInfo, null, 2))
-                      : 'No output information available'}
-                  </Code>
+                  <JsonViewer value={auditDetail.outputInfo} />
                 </Box>
               </VStack>
             ) : (
