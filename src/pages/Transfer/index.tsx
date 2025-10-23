@@ -21,6 +21,8 @@ import {
   HStack,
   Text,
   VStack,
+  Stack,
+  SimpleGrid,
   IconButton,
   Divider,
   Icon,
@@ -393,20 +395,20 @@ const Transfer = () => {
   //   }
   // }
 
-     const dateRangeOptions = [
-          { value: 'oneDay', label: 'Past 24 Hours' },
-          { value: 'today', label: 'Today' },
-          { value: 'twoDay', label: 'Past 48 Hours' },
-          { value: 'oneWeek', label: 'Past Week' },
-          { value: 'oneMonth', label: 'Past Month' },
-          { value: 'oneYear', label: 'Past Year' },
-          { value: 'custom', label: 'Custom Range' },
-        ];
+  const dateRangeOptions = [
+    { value: 'oneDay', label: 'Past 24 Hours' },
+    { value: 'today', label: 'Today' },
+    { value: 'twoDay', label: 'Past 48 Hours' },
+    { value: 'oneWeek', label: 'Past Week' },
+    { value: 'oneMonth', label: 'Past Month' },
+    { value: 'oneYear', label: 'Past Year' },
+    { value: 'custom', label: 'Custom Range' },
+  ];
 
-     const transferTypeOptions = [
-          { value: 'inbound', label: 'Inbound' },
-          { value: 'outbound', label: 'Outbound' },
-        ];
+  const transferTypeOptions = [
+    { value: 'inbound', label: 'Inbound' },
+    { value: 'outbound', label: 'Outbound' },
+  ];
 
   return (
     <Flex justify="center" flexDirection="column" flex={1} p="2">
@@ -420,23 +422,15 @@ const Transfer = () => {
         </Suspense>
       )}
 
-      <VStack align="flex-start" w="full" h="full" p="3" spacing={0} mt={10}>
+      <VStack align="flex-start" w="full" h="full" py="2" px="1" mt={9}>
         <Heading fontSize="2xl" fontWeight="bold" mb={6}>Transfer Overview</Heading>
       </VStack>
 
-      <Flex
-        flexWrap="wrap"
-        w="100%"
-        my="4"
-        gap={{ base: 4, md: 4 }}
-        alignItems="stretch"
-      >
-        <Flex
-          flex={{ base: '1 1 100%', md: '1 1 0' }}
-          flexDirection="column"
-          p={{ base: 3, md: 2 }}
-          gap="2"
-          minW={{ md: 0 }}
+      <Stack py="2" px="1" spacing={0} w="full">
+        <SimpleGrid
+          columns={{ base: 1, md: 3, lg: 3 }}
+          spacing={2}
+          w="full"
         >
           <FormControl isInvalid={!isEmpty(errors.transferId)}>
             <Input
@@ -448,157 +442,29 @@ const Transfer = () => {
             <FormErrorMessage>{errors.transferId?.message}</FormErrorMessage>
           </FormControl>
 
-
-           <CustomSelect
-                placeholder="Date Range"
-                options={dateRangeOptions}
-                value={dateRangeOptions.find(option => option.value === dateRange)||null}
-                onChange={(selectedOption) => {
-                    if (selectedOption) {
-                        onChangeDateRange(selectedOption.value as Ranges);
-                    }
-                }}
-            />
-
-        
-           <CustomSelect
-            isDisabled={isHubUser}
-            placeholder="Transfer Type"
-            options={transferTypeOptions.map(option => ({
-                value: option.value,
-                label: option.label
-            }))}
-            value={transferTypeOptions.find(option => option.value === transferType)||null}
-            onChange={(selectedOption) => {
-                if (selectedOption) {
-                    onChangeTransferType(selectedOption.value as TransferType);
-                }
-            }}
-            />
-        
-
-          <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
-            {(isHubUser || transferType === 'inbound') ? (
-                <Controller
-                    control={control}
-                    name="payerFspId"
-                    render={({ field }) => (
-                <CustomSelect placeholder="Payer FSP ID"
-                isMulti={false}
-                maxMenuHeight={300}
-                isClearable={true}
-                  options={
-                    participantRes?.data?.participantInfoList?.map((item) => ({
-                      value: item.participantName,
-                      label: item.participantName
-                    })) || []
-                  }
-                    value={
-                        field.value
-                          ? { value: field.value,
-                              label: field.value }
-                          : null
-                      }
-                      onChange={(selectedOption) => {
-                            field.onChange(selectedOption?.value || '');
-                      }}
-                    />
-                  )}
-              />
-            ) : (
-              <Input
-                type="input"
-                {...register('payerFspId')}
-                value={user.data?.participantName}
-                readOnly
-              />
-            )}
-
-            <FormErrorMessage>{errors.payerFspId?.message}</FormErrorMessage>
-          </FormControl>
-
-          <FormControl isInvalid={!isEmpty(errors.payeeFspId)}>
-              {isHubUser ? (
-                <Controller
-                  control={control}
-                  name="payeeFspId"
-                  render={({ field }) => (
-                    <CustomSelect
-                      isMulti={false}
-                      maxMenuHeight={300}
-                      isClearable={true}
-                      placeholder="Payee FSP ID"
-                      options={
-                        participantRes?.data?.participantInfoList?.map((item) => ({
-                          value: item.participantName,
-                          label: item.participantName
-                        })) || []
-                      }
-                      value={
-                        field.value
-                          ? { value: field.value, label: field.value }
-                          : null
-                      }
-                      onChange={(selectedOption) => {
-                        field.onChange(selectedOption?.value || '');
-                      }}
-                    />
-                  )}
-                />
-            ) :
-              transferType === 'inbound' ? (
-                <Input
-                  type="input"
-                  {...register('payeeFspId')}
-                  value={user.data?.participantName || ''}
-                  readOnly
-                />
-              ) : (
-                <Select placeholder="Payee FSP ID"  {...register('payeeFspId')}>
-                  {participantRes?.data?.participantInfoList.map(
-                    (item, index) => {
-                      return (
-                        <option key={index} value={item.participantName}>
-                          {item.participantName}
-                        </option>
-                      );
-                     }
-                  )}
-                </Select>
-              )}
-
-            <FormErrorMessage>{errors.payeeFspId?.message}</FormErrorMessage>
-          </FormControl>
-        </Flex>
-
-        <Flex
-          flex={{ base: '1 1 100%', md: '1 1 0' }}
-          flexDirection="column"
-          p={{ base: 3, md: 2 }}
-          gap="2"
-          minW={{ md: 0 }}
-        >
           <FormControl isInvalid={!isEmpty(errors.transferStateId)}>
-          <Controller
+            <Controller
               control={control}
               name="transferStateId"
               render={({ field }) => (
                 <CustomSelect
-                isMulti={false}
-                maxMenuHeight={300}
-                isClearable={true}
-                placeholder="Transfer State"
-                options={tranStateRes?.data?.transferStateInfoList?.map((item) => ({
-                  value: item.transferStateId,
-                  label: item.transferState
-                })) || []}
-                value={field.value
-                    ? { value: field.value,
-                        label: field.value }
+                  isMulti={false}
+                  maxMenuHeight={300}
+                  isClearable={true}
+                  placeholder="Transfer State"
+                  options={tranStateRes?.data?.transferStateInfoList?.map((item) => ({
+                    value: item.transferStateId,
+                    label: item.transferState
+                  })) || []}
+                  value={field.value
+                    ? {
+                      value: field.value,
+                      label: field.value
+                    }
                     : null}
-                onChange={(selectedOption) => {
-                  field.onChange(selectedOption?.value || '');
-                }}
+                  onChange={(selectedOption) => {
+                    field.onChange(selectedOption?.value || '');
+                  }}
                 />
               )}
             />
@@ -607,6 +473,18 @@ const Transfer = () => {
             </FormErrorMessage>
           </FormControl>
 
+          <Box display={{ base: "none", md: "block" }} />
+
+          <CustomSelect
+            placeholder="Date Range"
+            options={dateRangeOptions}
+            value={dateRangeOptions.find(option => option.value === dateRange) || null}
+            onChange={(selectedOption) => {
+              if (selectedOption) {
+                onChangeDateRange(selectedOption.value as Ranges);
+              }
+            }}
+          />
 
           <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
             {selectedTZString ?
@@ -636,100 +514,6 @@ const Transfer = () => {
             <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.currencyId)}>
-          <Controller
-              control={control}
-              name="currencyId"
-              render={({ field }) => (
-                <CustomSelect
-                isMulti={false}
-                maxMenuHeight={300}
-                isClearable={true}
-                placeholder="Select Currency"
-                options={currencyList?.map((item) => ({
-                  value: item.currency,
-                  label: item.currency
-                })) || []}
-                value={field.value
-                    ? { value: field.value,
-                        label: field.value }
-                    : null}
-                onChange={(selectedOption) => {
-                  field.onChange(selectedOption?.value || '');
-                }}
-                />
-              )}
-            />
-            <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
-          </FormControl>
-
-          <FormControl isInvalid={!isEmpty(errors.payerIdentifierTypeId)}>
-          <Controller
-              control={control}
-              name="payerIdentifierTypeId"
-              render={({ field }) => (
-                <CustomSelect
-                isMulti={false}
-                maxMenuHeight={300}
-                isClearable={true}
-                placeholder="Select Payer ID Type"
-                options={idTypeRes?.data?.idTypeInfoList?.map((item) => ({
-                  value: item.partyIdentifierTypeId,
-                  label: item.name
-                })) || []}
-                value={field.value
-                    ? { value: field.value,
-                        label: field.value }
-                    : null}
-                onChange={(selectedOption) => {
-                  field.onChange(selectedOption?.value || '');
-                }}
-                />
-              )}
-            />
-            <FormErrorMessage>
-              {errors.payerIdentifierTypeId?.message}
-            </FormErrorMessage>
-          </FormControl>
-
-          <FormControl isInvalid={!isEmpty(errors.payeeIdentifierTypeId)}>
-          <Controller
-              control={control}
-              name="payeeIdentifierTypeId"
-              render={({ field }) => (
-                <CustomSelect
-                isMulti={false}
-                maxMenuHeight={300}
-                isClearable={true}
-                placeholder="Select Payee ID Type"
-                options={idTypeRes?.data?.idTypeInfoList?.map((item) => ({
-                  value: item.partyIdentifierTypeId,
-                  label: item.name
-                })) || []}
-                value={field.value
-                    ? { value: field.value,
-                        label: field.value }
-                    : null}
-                onChange={(selectedOption) => {
-                  field.onChange(selectedOption?.value || '');
-                }}
-                />
-              )}
-            />
-            <FormErrorMessage>
-              {errors.payeeIdentifierTypeId?.message}
-            </FormErrorMessage>
-          </FormControl>
-        </Flex>
-
-        <Flex
-          flex={{ base: '1 1 100%', md: '1 1 0' }}
-          flexDirection="column"
-          p={{ base: 3, md: 2 }}
-          gap="2"
-          minW={{ md: 0 }}
-        >
-          <Box h="40px"></Box>
           <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
             {selectedTZString ?
               <Controller
@@ -759,7 +543,126 @@ const Transfer = () => {
               : <p>Loading</p>}
             <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
           </FormControl>
-          <Box h="40px"></Box>
+
+          <CustomSelect
+            isDisabled={isHubUser}
+            placeholder="Transfer Type"
+            options={transferTypeOptions.map(option => ({
+              value: option.value,
+              label: option.label
+            }))}
+            value={transferTypeOptions.find(option => option.value === transferType) || null}
+            onChange={(selectedOption) => {
+              if (selectedOption) {
+                onChangeTransferType(selectedOption.value as TransferType);
+              }
+            }}
+          />
+
+          <FormControl isInvalid={!isEmpty(errors.currencyId)}>
+            <Controller
+              control={control}
+              name="currencyId"
+              render={({ field }) => (
+                <CustomSelect
+                  isMulti={false}
+                  maxMenuHeight={300}
+                  isClearable={true}
+                  placeholder="Select Currency"
+                  options={currencyList?.map((item) => ({
+                    value: item.currency,
+                    label: item.currency
+                  })) || []}
+                  value={field.value
+                    ? {
+                      value: field.value,
+                      label: field.value
+                    }
+                    : null}
+                  onChange={(selectedOption) => {
+                    field.onChange(selectedOption?.value || '');
+                  }}
+                />
+              )}
+            />
+            <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
+          </FormControl>
+
+          <Box display={{ base: "none", md: "block" }} />
+
+          <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
+            {(isHubUser || transferType === 'inbound') ? (
+              <Controller
+                control={control}
+                name="payerFspId"
+                render={({ field }) => (
+                  <CustomSelect placeholder="Payer FSP ID"
+                    isMulti={false}
+                    maxMenuHeight={300}
+                    isClearable={true}
+                    options={
+                      participantRes?.data?.participantInfoList?.map((item) => ({
+                        value: item.participantName,
+                        label: item.participantName
+                      })) || []
+                    }
+                    value={
+                      field.value
+                        ? {
+                          value: field.value,
+                          label: field.value
+                        }
+                        : null
+                    }
+                    onChange={(selectedOption) => {
+                      field.onChange(selectedOption?.value || '');
+                    }}
+                  />
+                )}
+              />
+            ) : (
+              <Input
+                type="input"
+                {...register('payerFspId')}
+                value={user.data?.participantName}
+                readOnly
+              />
+            )}
+
+            <FormErrorMessage>{errors.payerFspId?.message}</FormErrorMessage>
+          </FormControl>
+
+          <FormControl isInvalid={!isEmpty(errors.payerIdentifierTypeId)}>
+            <Controller
+              control={control}
+              name="payerIdentifierTypeId"
+              render={({ field }) => (
+                <CustomSelect
+                  isMulti={false}
+                  maxMenuHeight={300}
+                  isClearable={true}
+                  placeholder="Select Payer ID Type"
+                  options={idTypeRes?.data?.idTypeInfoList?.map((item) => ({
+                    value: item.partyIdentifierTypeId,
+                    label: item.name
+                  })) || []}
+                  value={field.value
+                    ? {
+                      value: field.value,
+                      label: field.value
+                    }
+                    : null}
+                  onChange={(selectedOption) => {
+                    field.onChange(selectedOption?.value || '');
+                  }}
+                />
+              )}
+            />
+            <FormErrorMessage>
+              {errors.payerIdentifierTypeId?.message}
+            </FormErrorMessage>
+          </FormControl>
+
           <FormControl isInvalid={!isEmpty(errors.payerIdentifierValue)}>
             <Input
               type="input"
@@ -770,6 +673,91 @@ const Transfer = () => {
               {errors.payerIdentifierValue?.message}
             </FormErrorMessage>
           </FormControl>
+
+          <FormControl isInvalid={!isEmpty(errors.payeeFspId)}>
+            {isHubUser ? (
+              <Controller
+                control={control}
+                name="payeeFspId"
+                render={({ field }) => (
+                  <CustomSelect
+                    isMulti={false}
+                    maxMenuHeight={300}
+                    isClearable={true}
+                    placeholder="Payee FSP ID"
+                    options={
+                      participantRes?.data?.participantInfoList?.map((item) => ({
+                        value: item.participantName,
+                        label: item.participantName
+                      })) || []
+                    }
+                    value={
+                      field.value
+                        ? { value: field.value, label: field.value }
+                        : null
+                    }
+                    onChange={(selectedOption) => {
+                      field.onChange(selectedOption?.value || '');
+                    }}
+                  />
+                )}
+              />
+            ) :
+              transferType === 'inbound' ? (
+                <Input
+                  type="input"
+                  {...register('payeeFspId')}
+                  value={user.data?.participantName || ''}
+                  readOnly
+                />
+              ) : (
+                <Select placeholder="Payee FSP ID"  {...register('payeeFspId')}>
+                  {participantRes?.data?.participantInfoList.map(
+                    (item, index) => {
+                      return (
+                        <option key={index} value={item.participantName}>
+                          {item.participantName}
+                        </option>
+                      );
+                    }
+                  )}
+                </Select>
+              )}
+
+            <FormErrorMessage>{errors.payeeFspId?.message}</FormErrorMessage>
+          </FormControl>
+
+          <FormControl isInvalid={!isEmpty(errors.payeeIdentifierTypeId)}>
+            <Controller
+              control={control}
+              name="payeeIdentifierTypeId"
+              render={({ field }) => (
+                <CustomSelect
+                  isMulti={false}
+                  maxMenuHeight={300}
+                  isClearable={true}
+                  placeholder="Select Payee ID Type"
+                  options={idTypeRes?.data?.idTypeInfoList?.map((item) => ({
+                    value: item.partyIdentifierTypeId,
+                    label: item.name
+                  })) || []}
+                  value={field.value
+                    ? {
+                      value: field.value,
+                      label: field.value
+                    }
+                    : null}
+                  onChange={(selectedOption) => {
+                    field.onChange(selectedOption?.value || '');
+                  }}
+                />
+              )}
+            />
+            <FormErrorMessage>
+              {errors.payeeIdentifierTypeId?.message}
+            </FormErrorMessage>
+          </FormControl>
+
           <FormControl isInvalid={!isEmpty(errors.payeeIdentifierValue)}>
             <Input
               type="input"
@@ -780,10 +768,11 @@ const Transfer = () => {
               {errors.payeeIdentifierValue?.message}
             </FormErrorMessage>
           </FormControl>
-        </Flex>
-      </Flex>
 
-      <Flex justify="flex-end" flex={1} gap={5}>
+        </SimpleGrid>
+      </Stack>
+
+      <Flex justify="flex-end" align="center" px={1} pt={4} pb={2} gap={4}>
         <Button onClick={onCancelHandler}>Clear Filter</Button>
 
         <Button
