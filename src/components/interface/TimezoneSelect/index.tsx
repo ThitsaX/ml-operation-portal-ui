@@ -52,7 +52,6 @@ const TimezoneSelect = ({ onChange, value, ...rest }: ITimezoneSelectProps) => {
         setSelectedTimezone(selected?.value || null);
         onChange(parseTimezone(selected?.value || ''));
       }}
-      {...rest}
     />
   );
 };
