@@ -449,13 +449,13 @@ const FinalizeSettlement = () => {
     ];
 
     return (
-        <Box>
-            <Box w="full" h="full" p="3"  mt={10}>
+        <VStack align="flex-start" h="full" p="3" mt={10} w="full">
+
                 <Heading fontSize="2xl" fontWeight="bold" mb={6}>
                     Finalize Settlement
                 </Heading>
-                <Stack borderWidth="1px" borderRadius="lg" height="full" p="4" spacing={4}>
-                    <HStack spacing={4} align="start">
+                <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
+                    <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4} w="full">
                         <VStack flex={1} spacing={4}>
                             <CustomSelect
                                 options={dateRangeOptions}
@@ -564,7 +564,7 @@ const FinalizeSettlement = () => {
                                 <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
                             </FormControl>
                         </VStack>
-                    </HStack>
+                    </SimpleGrid>
 
                     <HStack justifyContent='flex-end'>
                         <Button colorScheme='gray' variant='outline' onClick={onClearHandler}>
@@ -716,7 +716,7 @@ const FinalizeSettlement = () => {
                         </HStack>
                     </HStack>
                 </TableContainer>
-            </Box>
+
 
             <Modal isOpen={isFinalizeOpen} onClose={onFinalizeClose} isCentered size="lg">
                 <ModalOverlay />
@@ -821,7 +821,7 @@ const FinalizeSettlement = () => {
                     </ModalFooter>
                 </ModalContent>
             </Modal>
-        </Box >
+       </VStack>
     );
 };
 
