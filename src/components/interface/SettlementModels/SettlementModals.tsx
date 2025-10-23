@@ -54,6 +54,26 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
   type Day = typeof days[number];
   const DOW_MAP: Record<Day, string> = { Mon:'MON', Tue:'TUE', Wed:'WED', Thu:'THU', Fri:'FRI', Sat:'SAT', Sun:'SUN' };
   const REV_DOW_MAP: Record<string, Day> = { MON:'Mon', TUE:'Tue', WED:'Wed', THU:'Thu', FRI:'Fri', SAT:'Sat', SUN:'Sun' };
+  
+  
+  const [serverMatrix, setServerMatrix] = useState<Record<string, Set<Day>>>({});
+  const setsEqual = (a?: Set<Day>, b?: Set<Day>) => {
+    if (!a && !b) return true;
+    if (!a || !b) return false;
+    if (a.size !== b.size) return false;
+    for (const x of a) if (!b.has(x)) return false;
+    return true;
+  };
+  const getRowSet = (m: Record<string, Set<Day>>, key: string) => m[key] ?? new Set<Day>();
+
+  const canUpdate = (key: string) => {
+    const ui = getRowSet(matrix, key);
+    const sv = getRowSet(serverMatrix, key);
+    const hasId = !!rowIdMap[key];
+    if (!hasId) return ui.size > 0;           
+    if (ui.size === 0 && sv.size > 0) return true; 
+    return !setsEqual(ui, sv);                
+  };
 
   const [rows, setRows] = useState<string[]>([]);
   const [matrix, setMatrix] = useState<Record<string, Set<Day>>>({
@@ -73,12 +93,6 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
   const [rowIdMap, setRowIdMap] = useState<Record<string, string | undefined>>({});
   
   const normalizeTime = (h: string, m: string) => `${h.padStart(2, '0')}:${m.padStart(2, '0')}`
-  const normalizeOffset = (s: string): string | null => {
-    const m = s.match(/([+-])(\d{1,2})(?::?(\d{2}))?/);
-    if (!m) return null;
-    const sign = m[1], hh = String(+m[2]).padStart(2, '0'), mm = String(m[3] ?? '00').padStart(2, '0');
-    return `${sign}${hh}:${mm}`;
-  };
 
   const humanDays = (days: Day[]) => {
     const set = new Set(days);
@@ -164,7 +178,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
 
   const getZones = (): string[] => {
     const anyIntl = Intl as any;
-    if (typeof anyIntl?.supportedValuesOf === 'function') {
+    if (typeof anyIntl?.supportedValuesOf === 'function') { // fix yarn build failure 
       try {
         const zones = anyIntl.supportedValuesOf('timeZone') as string[];
         if (Array.isArray(zones) && zones.length) return zones;
@@ -277,12 +291,11 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       });
     }
   };
-  
-  const persistRow = async (key: string, nextSet?: Set<Day>) => {
-    const { cron, zoneId } = buildCronForKey(key, nextSet);
-    
-    const schedulerName = nameForKey(key, nextSet);
-    const schedulerDesc  = descriptionForKey(key, cron, nextSet);
+  const saveRow = async (key: string) => {
+    const set = matrix[key] ?? new Set<Day>();
+    const { cron, zoneId } = buildCronForKey(key, set);
+    const schedulerName = nameForKey(key, set);
+    const schedulerDesc = descriptionForKey(key, cron, set);
 
     const payload: ISettlementScheduleForm = {
       settlementModelId: settlementModel.settlementModelId,
@@ -297,29 +310,16 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
 
     try {
       setIsSubmitting(true);
-      
       await ensureAutoCloseEnabled();
 
-      if (cron) {
-        if (!rowIdMap[key]) { // New Row
-          await createSettlementScheduler(payload);
-          await refreshSchedules(); 
-          toast({ status: 'success', title: 'Created', description: `${nameForKey(key)} saved.` });
-        } else {
-          await modifySettlementScheduler({
-            ...payload,
-            active: true,
-            schedulerConfigId: rowIdMap[key] as string
-          });
-          await refreshSchedules();
-          toast({ status: 'success', title: 'Updated', description: `${nameForKey(key)} updated.` });
-        }
-      } else {
-        const sid = rowIdMap[key];
-        if (sid) {
-          await removeSettlementScheduler({ 
+      const hasId = !!rowIdMap[key];
+
+      if (set.size === 0) {
+        // delete?
+        if (hasId) {
+          await removeSettlementScheduler({
             settlementModelId: settlementModel.settlementModelId,
-            schedulerConfigId: sid 
+            schedulerConfigId: rowIdMap[key] as string
           });
           const { hasActive } = await refreshSchedules();
           toast({ status: 'info', title: 'Removed', description: `${nameForKey(key)} cleared.` });
@@ -330,34 +330,43 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                 settlementModelId: settlementModel.settlementModelId,
                 name: settlementModel.name,
                 modelType: settlementModel.type,
-                currencyID: (settlementModel.currencyId ?? ''),
+                currencyID: settlementModel.currencyId ?? '',
                 active: true,
                 autoCloseWindow: false
               });
               setAutoCloseWindow(false);
               onUpdated?.({ ...settlementModel, autoCloseWindow: false });
-              settlementModel.autoCloseWindow = false; // keep local copy in sync
-
-              toast({
-                status: 'info',
-                title: 'Auto-close disabled',
-                description: 'No schedules remain for this model.'
-              });
-            } catch (e: any) {
-              // If disabling fails, just inform; user still has no schedules.
-              toast({
-                status: 'warning',
-                title: 'Could not disable auto-close',
-                description: e?.default_error_message || e?.description || 'Please try again.'
-              });
-            }
+              settlementModel.autoCloseWindow = false;
+              toast({ status: 'info', title: 'Auto-close disabled', description: 'No schedules remain for this model.' });
+            } catch { }
           }
+        } else {
+          setRows(r => r.filter(k => k !== key));
+          setMatrix(m => {
+            const clone = { ...m }; delete clone[key]; return clone;
+          });
         }
+        return;
       }
+
+      // create or modify
+      if (!hasId) {
+        await createSettlementScheduler(payload);
+        await refreshSchedules();
+        toast({ status: 'success', title: 'Created', description: `${nameForKey(key)} saved.` });
+      } else {
+        await modifySettlementScheduler({
+          ...payload,
+          active: true,
+          schedulerConfigId: rowIdMap[key] as string
+        });
+        await refreshSchedules();
+        toast({ status: 'success', title: 'Updated', description: `${nameForKey(key)} updated.` });
+      }
+
     } catch (e: any) {
       const msg = e?.default_error_message || e?.description || 'Failed to save schedule.';
       toast({ status: 'error', title: 'Error', description: String(msg) });
-      await refreshSchedules();
     } finally {
       setIsSubmitting(false);
     }
@@ -463,39 +472,36 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
 
     if (objList.length) {
       for (const it of objList) {
-        
         const ex = it?.cronExpression as string | undefined;
         const zid = String(it?.zoneId ?? '+00:00');
-
         const tzFromName = parseTzFromName(it?.name);
-        const tz = tzFromName || (tzOptions.find(z => (z as any).offset === currentOffset)?.label) || 'UTC';
+        const tz = tzFromName || selectedTz || 'UTC';
+
         if (!ex) continue;
-        
+
         const p = parseQuartzCron(ex);
-        
+
         if (!p) continue;
-        
+
         const key = makeKey(p.time, zid, tz);
+
         nextRows.add(key);
-        
-        if (!nextMatrix[key]){
-          nextMatrix[key] = new Set<Day>();
-        }
-        
+
+        if (!nextMatrix[key]) nextMatrix[key] = new Set<Day>();
         p.dayList.forEach((d) => nextMatrix[key].add(d));
-        
-        if (it?.schedulerConfigId) {
-          nextIds[key] = String(it.schedulerConfigId);
-        }
+        if (it?.schedulerConfigId) nextIds[key] = String(it.schedulerConfigId);
       }
     }
 
-    setRows(Array.from(nextRows).sort((a, b) => a.localeCompare(b)));
-    setMatrix(nextMatrix);
+    const rowsArr = Array.from(nextRows).sort((a, b) => a.localeCompare(b));
+    setRows(rowsArr);
+    setMatrix(nextMatrix);       // UI mirrors server after refresh
+    setServerMatrix(nextMatrix); // snapshot for compare
     setRowIdMap(nextIds);
 
-    return { hasActive: Array.from(nextRows).length > 0 };
+    return { hasActive: rowsArr.length > 0 };
   };
+
 
   const parseQuartzCron = (expr: string) => {
     // expected: 0 mm HH ? * DOW[,DOW...]
@@ -524,13 +530,12 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
   };
 
   const toggleCell = async (key: string, day: Day) => {
-    const prevSet = matrix[key] ?? new Set<Day>();
-    const newSet = new Set<Day>(prevSet);
-    if (newSet.has(day)) newSet.delete(day); else newSet.add(day);
-
-    setMatrix((prev) => ({ ...prev, [key]: newSet }));
-
-    await persistRow(key, newSet);
+    setMatrix(prev => {
+      const prevSet = prev[key] ?? new Set<Day>();
+      const next = new Set(prevSet);
+      next.has(day) ? next.delete(day) : next.add(day);
+      return { ...prev, [key]: next };
+    });
   };
 
   const mustAddScheduleNow = autoCloseWindow && !hasAnyActiveSchedule;
@@ -684,9 +689,26 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                                     );
                                   })}
                                   <Td textAlign="center">
-                                    <Button size="sm" colorScheme="red" variant="solid" onClick={() => requestDeleteRow(key)} leftIcon={<CloseIcon boxSize={2.5} />}>
-                                      DELETE
-                                    </Button>
+                                    <HStack justify="center" spacing={2}>
+                                      <Button
+                                        size="sm"
+                                        colorScheme="blue"
+                                        onClick={() => saveRow(key)}
+                                        isDisabled={!canUpdate(key) || isSubmitting}
+                                      >
+                                        UPDATE
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        colorScheme="red"
+                                        variant="solid"
+                                        onClick={() => requestDeleteRow(key)}
+                                        leftIcon={<CloseIcon boxSize={2.5} />}
+                                        isDisabled={isSubmitting}
+                                      >
+                                        DELETE
+                                      </Button>
+                                    </HStack>
                                   </Td>
                                 </Tr>
                               );
