@@ -713,18 +713,25 @@ const SettlementWindows = () => {
                 </Stack>
 
                 <Flex justify="flex-end" flex={1} gap={5} mt={6} >
-                    <Select
+                    <CustomSelect
                         placeholder="Choose Settlement Model"
-                        value={settlementModel}
-                        onChange={(e) => setSettlementModel(e.target.value)}
-                        width="250px"
-                    >
-                        {modelList?.map(({ name }, index) => (
-                            <option key={index} value={name}>
-                                {name}
-                            </option>
-                        ))}
-                    </Select>
+                        isClearable={true}
+                        options={[
+                            { value: '', label: 'Choose Settlement Model' },
+                            ...(modelList ?? []).map((item) => ({
+                                value: item.name,
+                                label: item.name
+                            })),
+                        ]}
+                        value={settlementModel ? {
+                            value: settlementModel,
+                            label: settlementModel
+                        } : null}
+                        onChange={(selectedOption) => {
+                            setSettlementModel(selectedOption ? selectedOption.value : '');
+                        }}
+                           width="250px"
+                    />
                     <Button
                         isDisabled={ settlementModel === '' || selectedRowIds.length < 1 }
                         color="white"
