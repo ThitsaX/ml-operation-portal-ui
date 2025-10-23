@@ -570,13 +570,19 @@ const SettlementWindows = () => {
     ];
 
     return (
-        <Box>
-            <Box height="fit" w="full" h="full" p="3"  mt={10}>
-                  <Heading fontSize="2xl" fontWeight="bold" mb={6}>
-                    Settlement Windows
-                </Heading>
-                <Stack borderWidth="1px" borderRadius="lg" height="full" p="4" spacing={4}>
-                    <HStack spacing={4} align="start">
+        <VStack align="flex-start" h="full" p="3" mt={10} w="full">
+
+         <Heading fontSize="2xl" fontWeight="bold" mb={6}>
+            Settlement Windows
+            </Heading>
+             <Stack
+                w="100%"
+                my="4"
+                gap={{ base: 4, md: 4 }}
+                alignItems="stretch">
+            <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
+                <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4} w="full">
+
                         <VStack flex={1} spacing={4}>
 
                             <CustomSelect
@@ -616,7 +622,6 @@ const SettlementWindows = () => {
 
                         <VStack flex={1} spacing={4}>
                             <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
-                                {/* <FormLabel fontSize="sm">Start Date</FormLabel> */}
                                 {selectedTZString ?
                                     <Controller
                                         control={control}
@@ -665,7 +670,6 @@ const SettlementWindows = () => {
 
                         <VStack flex={1} spacing={4}>
                             <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
-                                {/* <FormLabel fontSize="sm">End Date</FormLabel> */}
                                 {selectedTZString ?
                                     <Controller
                                         control={control}
@@ -689,8 +693,7 @@ const SettlementWindows = () => {
                                 <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
                             </FormControl>
                         </VStack>
-                    </HStack>
-
+                </SimpleGrid>
                     <HStack justifyContent='flex-end'>
                         <Button colorScheme='gray' variant='outline' onClick={onClearHandler}>
                             Clear Filters
@@ -866,7 +869,7 @@ const SettlementWindows = () => {
                         </HStack>
                     </HStack>
                 </TableContainer>
-            </Box>
+            </Stack>
 
             <Modal isOpen={isMoveOnOpen} onClose={onMoveOnClose} isCentered>
                 <ModalOverlay />
@@ -927,7 +930,7 @@ const SettlementWindows = () => {
                                     <Text fontSize="md">
                                         {
                                             (
-                                                selectedWindow?.createdDate ? 
+                                                selectedWindow?.createdDate ?
                                                 moment(selectedWindow.createdDate).tz(selectedTZString).format('YYYY-MM-DD HH:mm')
                                                 :
                                                 ""
@@ -940,7 +943,7 @@ const SettlementWindows = () => {
                                     <Text fontSize="md">
                                         {
                                             selectedWindow?.state !== 'OPEN' && (
-                                                selectedWindow?.changedDate ? 
+                                                selectedWindow?.changedDate ?
                                                 moment(selectedWindow.changedDate).tz(selectedTZString).format('YYYY-MM-DD HH:mm')
                                                 :
                                                 ""
@@ -981,7 +984,8 @@ const SettlementWindows = () => {
                     </ModalFooter>
                 </ModalContent>
             </Modal>
-        </Box>
+
+        </VStack>
     );
 };
 
