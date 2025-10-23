@@ -31,7 +31,7 @@ import { ILiquidityProfile } from '@typescript/services/participant';
 import { createLiquidityProfile, modifyLiquidityProfile, removeLiquidityProfile } from '@services/participant';
 import { useGetUserState } from '@store/hooks';
 import { useRef } from 'react';
-import { Cell } from '../Table';
+import { Cell, HeaderCell } from '../Table';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 import { hasMenuAccess } from '@helpers/permissions';
@@ -202,46 +202,34 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                 <Table variant="unstyled">
                     <Thead bg={headerBg}>
                         <Tr>
-                            <Th textAlign="center" border={`1px solid ${borderColor}`} px={4} py={3} fontSize="sm" fontWeight="semibold"                            >
-                                Bank Name
-                            </Th>
-                            <Th textAlign="center" border={`1px solid ${borderColor}`} px={4} py={3} fontSize="sm" fontWeight="semibold">
-                                Account Name
-                            </Th>
-                            <Th textAlign="center" border={`1px solid ${borderColor}`} px={4} py={3} fontSize="sm" fontWeight="semibold">
-                                Account Number
-                            </Th>
-                            <Th textAlign="center" border={`1px solid ${borderColor}`} px={4} py={3} fontSize="sm" fontWeight="semibold">
-                                Currency
-                            </Th>
-                            {(hasMenuAccess("CreateLiquidityProfile") || hasMenuAccess("ModifyLiquidityProfile") || hasMenuAccess("RemoveLiquidityProfile")) && (
-                                <Th textAlign="center" border={`1px solid ${borderColor}`} px={4} py={3} fontSize="sm" fontWeight="semibold">
+                            <HeaderCell borderColor={borderColor}>Bank Name</HeaderCell>
+                            <HeaderCell borderColor={borderColor}>Account Name</HeaderCell>
+                            <HeaderCell borderColor={borderColor}>Account Number</HeaderCell>
+                            <HeaderCell borderColor={borderColor}>Currency</HeaderCell>
+                            {(hasMenuAccess("ModifyLiquidityProfile") || hasMenuAccess("RemoveLiquidityProfile")) && (
+                                <HeaderCell borderColor={borderColor}>
                                     Action
-                                </Th>
+                                </HeaderCell>
                             )}
                         </Tr>
                     </Thead>
                     <Tbody>
                         {data?.length === 0 && !isLoading && (
                             <Tr>
-                                <Cell colSpan={(hasMenuAccess("CreateLiquidityProfile") || hasMenuAccess("ModifyLiquidityProfile") || hasMenuAccess("RemoveLiquidityProfile")) ? 5 : 4}>No Liquidity found</Cell>
+                                <Cell colSpan={(hasMenuAccess("ModifyLiquidityProfile") || hasMenuAccess("RemoveLiquidityProfile")) ? 5 : 4}>No Liquidity found</Cell>
                             </Tr>
                         )}
                         {data?.map((item, idx) => (
                             <Tr key={idx}>
-                                <Td border={`1px solid ${borderColor}`} px={4} py={2} textAlign="center">
-                                    {item.bankName}
-                                </Td>
-                                <Td border={`1px solid ${borderColor}`} px={4} py={2} textAlign="center">
-                                    {item.accountName}
-                                </Td>
-                                <Td border={`1px solid ${borderColor}`} px={4} py={2} textAlign="center">
-                                    {item.accountNumber}
-                                </Td>
-                                <Td border={`1px solid ${borderColor}`} px={4} py={2} textAlign="center">
-                                    {item.currency}
-                                </Td>
-                                {(hasMenuAccess("CreateLiquidityProfile") || hasMenuAccess("ModifyLiquidityProfile") || hasMenuAccess("RemoveLiquidityProfile")) && (
+                                <Cell borderColor={borderColor}>{item.bankName}</Cell>
+                                
+                                <Cell borderColor={borderColor}>{item.accountName}</Cell>
+                                
+                                <Cell borderColor={borderColor}>{item.accountNumber}</Cell>
+                                
+                                <Cell borderColor={borderColor}>{item.currency}</Cell>
+
+                                {( hasMenuAccess("ModifyLiquidityProfile") || hasMenuAccess("RemoveLiquidityProfile")) && (
                                     <Td border={`1px solid ${borderColor}`} px={4} py={2}>
                                         <HStack spacing={3} justify="center">
                                             {hasMenuAccess("ModifyLiquidityProfile") && (
