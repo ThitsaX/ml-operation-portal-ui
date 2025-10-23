@@ -63,6 +63,7 @@ import {
     getNetTransferAmountBySettlement
 } from '@services/settlements';
 import { useLocation } from "react-router-dom";
+import CustomSelect from '@components/interface/CustomSelect';
 
 
 const finalizeSettlementHelper = new FinalizeSettlementHelper();
@@ -125,7 +126,7 @@ const FinalizeSettlement = () => {
         if (values.currency === '') {
             delete values.currency;
         }
-        
+
         start();
 
         getFinalizeSettlementList(values)
@@ -186,7 +187,7 @@ const FinalizeSettlement = () => {
                 isClosable: true,
                 duration: 3000
             });
-            
+
             setNetTransferAmount(null);
         })
         .finally(() => {
@@ -437,36 +438,55 @@ const FinalizeSettlement = () => {
             setPageNumber(value)
         }
     }
+    const dateRangeOptions = [
+        { value: 'oneDay', label: 'Past 24 Hours' },
+        { value: 'today', label: 'Today' },
+        { value: 'twoDay', label: 'Past 48 Hours' },
+        { value: 'oneWeek', label: 'Past Week' },
+        { value: 'oneMonth', label: 'Past Month' },
+        { value: 'oneYear', label: 'Past Year' },
+        { value: 'custom', label: 'Custom Range' },
+    ];
 
     return (
         <Box>
-            <Box height="fit" p="4">
-                <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" p="3">
+            <Box w="full" h="full" p="3"  mt={10}>
+                <Heading fontSize="2xl" fontWeight="bold" mb={6}>
                     Finalize Settlement
                 </Heading>
                 <Stack borderWidth="1px" borderRadius="lg" height="full" p="4" spacing={4}>
                     <HStack spacing={4} align="start">
                         <VStack flex={1} spacing={4}>
-                            <Select value={dateRange} onChange={(e) => onChangeDateRange(e.target.value as Ranges)}>
-                                <option value="oneDay">Past 24 Hours</option>
-                                <option value="today">Today</option>
-                                <option value="twoDay">Past 48 Hours</option>
-                                <option value="oneWeek">Past Week</option>
-                                <option value="oneMonth">Past Month</option>
-                                <option value="oneYear">Past Year</option>
-                                <option value="custom">Custom Range</option>
-                            </Select>
+                            <CustomSelect
+                                options={dateRangeOptions}
+                                 value={dateRangeOptions.find(option => option.value === dateRange)||null}
+                                onChange={(selectedOption) => {
+                                    if (selectedOption) {
+                                        onChangeDateRange(selectedOption.value as Ranges);
+                                    }
+                                }}
+                            />
 
-                            <Select
-                                placeholder="Select State"
-                                { ...register('state') }
-                            >
-                                {stateList?.map(({ settlementStateId, enumeration }, index) => (
-                                    <option key={index} value={settlementStateId}>
-                                        {enumeration}
-                                    </option>
-                                ))}
-                            </Select>
+                        <Controller
+                            control={control}
+                            name="state"
+                            render={({ field }) => (
+                                <CustomSelect
+                                placeholder="All State"
+                                    options={ stateList ? stateList.map(({ settlementStateId, enumeration }) => ({
+                                        value: settlementStateId,
+                                        label: enumeration
+                                    })) : [] }
+                                    value={field.value ? {
+                                        value: field.value,
+                                        label: field.value
+                                    } : null}
+                                    onChange={(selectedOption) => {
+                                        field.onChange(selectedOption ? selectedOption.value : '');
+                                    }}
+                                />
+                            )}
+                        />
                         </VStack>
 
                         <VStack flex={1} spacing={4}>
@@ -494,16 +514,28 @@ const FinalizeSettlement = () => {
                                 <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
                             </FormControl>
 
-                            <Select
-                                placeholder="Select Currency"
-                                { ...register('currency') }
-                            >
-                                {currencyList?.map((item, index) => (
-                                    <option key={index} value={item.currency}>
-                                        {item.currency}
-                                    </option>
-                                ))}
-                            </Select>
+                            <Controller
+                                control={control}
+                                name="currency"
+                                render={({ field }) => (
+                                    <CustomSelect
+                                        placeholder="All Currency"
+                                        options={[
+                                            ...(currencyList ?? []).map((item) => ({
+                                            value: item.currency,
+                                            label: item.currency,
+                                            })),
+                                        ]}
+                                        value={field.value ? {
+                                            value: field.value,
+                                            label: field.value
+                                        } : null}
+                                        onChange={(selectedOption) => {
+                                            field.onChange(selectedOption ? selectedOption.value : '');
+                                        }}
+                                    />
+                                )}
+                            />
                         </VStack>
 
                         <VStack flex={1} spacing={4}>

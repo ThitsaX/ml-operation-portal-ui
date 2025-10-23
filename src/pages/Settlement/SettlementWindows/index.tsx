@@ -50,14 +50,15 @@ import { ITimezoneOption } from 'react-timezone-select';
 import { useSelector } from 'react-redux';
 
 import { RootState } from '@store';
+import { CustomSelect } from '@components/interface';
 import { Ranges } from '@typescript/pages';
 import { usePagination, useSortBy, useTable, Column } from 'react-table';
 import { ISettlementWindow, INetTransferAmount, INetTransferDetail } from '@typescript/services';
 
-import { 
-    getSettlementWindowsList, 
-    getNetTransferAmountByWindow, 
-    createSettlementWindow 
+import {
+    getSettlementWindowsList,
+    getNetTransferAmountByWindow,
+    createSettlementWindow
 } from '@services/settlements';
 // import { ISettlementWindows } from '@typescript/services';
 import { useLoadingContext } from '@contexts/hooks';
@@ -65,7 +66,7 @@ import { Checkbox } from "@chakra-ui/react";
 import { closeSettlementWindow } from "@services/settlements";
 
 import { useGetParticipantCurrencyList } from '@hooks/services/participant';
-import { 
+import {
     useGetSettlementWindowStateList,
     useGetSettlementModelList,
 } from '@hooks/services/settlements';
@@ -140,7 +141,7 @@ const SettlementWindows = () => {
         if (values.currency === '') {
             delete values.currency;
         }
-        
+
         start();
 
         getSettlementWindowsList(values)
@@ -201,15 +202,15 @@ const SettlementWindows = () => {
                 isClosable: true,
                 duration: 3000
             });
-            
+
             setNetTransferAmount(null);
         })
         .finally(() => {
             complete();
         });
-        
+
         onDetailOpen();
-            
+
     }, [start, toast, complete, onDetailOpen]);
 
 
@@ -223,7 +224,7 @@ const SettlementWindows = () => {
         if (!selectedWindow) {
             return;
         }
-        
+
         const data = {
             settlementWindowId: selectedWindow.settlementWindowId,
             state: 'CLOSED',
@@ -239,7 +240,7 @@ const SettlementWindows = () => {
                 isClosable: true,
                 duration: 3000
             });
-           
+
             // Refresh the list after closing
             onSearchHandler(getValues());
         })
@@ -268,7 +269,7 @@ const SettlementWindows = () => {
         if (selectedRowIds.length < 1) {
             return;
         }
-        
+
         const formData: ISettlementWindowCreateForm = {
             settlementModel: settlementModel,
             reason: "Create settlement via Operation Portal",
@@ -558,36 +559,59 @@ const SettlementWindows = () => {
             setPageNumber(value)
         }
     }
+    const dateRangeOptions = [
+        { value: 'oneDay', label: 'Past 24 Hours' },
+        { value: 'today', label: 'Today' },
+        { value: 'twoDay', label: 'Past 48 Hours' },
+        { value: 'oneWeek', label: 'Past Week' },
+        { value: 'oneMonth', label: 'Past Month' },
+        { value: 'oneYear', label: 'Past Year' },
+        { value: 'custom', label: 'Custom Range' },
+    ];
 
     return (
         <Box>
-            <Box height="fit" p="4">
-                <Heading color="trueGray.600" fontSize="1.5em" textAlign="left" p="3">
+            <Box height="fit" w="full" h="full" p="3"  mt={10}>
+                  <Heading fontSize="2xl" fontWeight="bold" mb={6}>
                     Settlement Windows
                 </Heading>
                 <Stack borderWidth="1px" borderRadius="lg" height="full" p="4" spacing={4}>
                     <HStack spacing={4} align="start">
                         <VStack flex={1} spacing={4}>
-                            <Select value={dateRange} onChange={(e) => onChangeDateRange(e.target.value as Ranges)}>
-                                <option value="oneDay">Past 24 Hours</option>
-                                <option value="today">Today</option>
-                                <option value="twoDay">Past 48 Hours</option>
-                                <option value="oneWeek">Past Week</option>
-                                <option value="oneMonth">Past Month</option>
-                                <option value="oneYear">Past Year</option>
-                                <option value="custom">Custom Range</option>
-                            </Select>
 
-                            <Select
-                                placeholder="Select State"
-                                { ...register('state') }
-                            >
-                                {stateList?.map(({ settlementWindowStateId, enumeration }, index) => (
-                                    <option key={index} value={settlementWindowStateId}>
-                                        {enumeration}
-                                    </option>
-                                ))}
-                            </Select>
+                            <CustomSelect
+                                options={dateRangeOptions}
+                                 value={dateRangeOptions.find(option => option.value === dateRange)||null}
+                                onChange={(selectedOption) => {
+                                    if (selectedOption) {
+                                        onChangeDateRange(selectedOption.value as Ranges);
+                                    }
+                                }}
+                            />
+
+                            <Controller
+                                control={control}
+                                name="state"
+                                render={({ field }) => (
+                                    <CustomSelect
+                                        placeholder="All State"
+                                        options={
+                                            stateList?.map((item) => ({
+                                            value: item.settlementWindowStateId,
+                                            label: item.enumeration,
+                                            })) ?? []
+                                        }
+                                        value={field.value ? {
+                                            value: field.value,
+                                            label: field.value
+                                        } : null}
+                                        onChange={(selectedOption) => {
+                                            field.onChange(selectedOption ? selectedOption.value : '');
+                                        }}
+                                    />
+                                )}
+                            />
+
                         </VStack>
 
                         <VStack flex={1} spacing={4}>
@@ -615,16 +639,28 @@ const SettlementWindows = () => {
                                 <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
                             </FormControl>
 
-                            <Select
-                                placeholder="Select Currency"
-                                { ...register('currency') }
-                            >
-                                {currencyList?.map((item, index) => (
-                                    <option key={index} value={item.currency}>
-                                        {item.currency}
-                                    </option>
-                                ))}
-                            </Select>
+                             <Controller
+                                control={control}
+                                name="currency"
+                                render={({ field }) => (
+                                    <CustomSelect
+                                        placeholder="All Currency"
+                                        options={[
+                                            ...(currencyList ?? []).map((item) => ({
+                                            value: item.currency,
+                                            label: item.currency,
+                                            })),
+                                        ]}
+                                        value={field.value ? {
+                                            value: field.value,
+                                            label: field.value
+                                        } : null}
+                                        onChange={(selectedOption) => {
+                                            field.onChange(selectedOption ? selectedOption.value : '');
+                                        }}
+                                    />
+                                )}
+                            />
                         </VStack>
 
                         <VStack flex={1} spacing={4}>
