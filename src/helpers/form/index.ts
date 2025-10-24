@@ -387,20 +387,10 @@ export class OrganizationHelper extends FormHelper {
     return z.object({
       participantId: z.string().optional(),
       participantName: z.string().optional(),
-      description: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Description is required'),
-      address: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Address is required'),
-      mobile: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Mobile is required'),
+      description: z.string().optional(),
+      address: z.string().optional(),
+      mobile: z.string().optional(),
       logoFileType: z.string().nullable().optional(),
-
       logo: z.string().optional(),
       createdDate: z.number().optional(),
     });
