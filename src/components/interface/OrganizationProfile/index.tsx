@@ -65,6 +65,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
         .catch((err: IApiErrorResponse) => {
           toast({
             title: 'Error',
+            position: 'top',
             description: getErrorMessage(err) || 'Failed to load organization profile.',
             status: 'error',
             duration: 3000,
@@ -105,6 +106,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
       await modifyParticipant(values);
       toast({
         title: 'Profile updated',
+        position: 'top',
         description: 'Organization profile updated successfully.',
         status: 'success',
         duration: 3000,
@@ -116,6 +118,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
       const err = error as IApiErrorResponse;
       toast({
         title: 'Update failed',
+        position: 'top',
         description: getErrorMessage(err) || 'Failed to update organization profile.',
         status: 'error',
         duration: 3000,
