@@ -72,6 +72,7 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
         action
             .then(() => {
                 toast({
+                    title: 'Success',
                     position: 'top',
                     description: isEdit ? 'Contact updated successfully' : 'Contact created successfully',
                     status: 'success',

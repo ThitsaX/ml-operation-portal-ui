@@ -61,10 +61,12 @@ import { RootState } from '@store';
 import { ITimezoneOption } from 'react-timezone-select';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import { FaSearch } from "react-icons/fa";
-import { IoSearchOutline, IoCloseOutline } from "react-icons/io5";
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 import { JsonViewer } from '@components/interface/JsonViewer';
+import { OptionType } from '@components/interface/CustomSelect';
+import { CustomSelect } from '@components/interface';
+import { useGetActionList, useGetMadeByList } from '@hooks/services';
 
 const auditHelper = new AuditHelper();
 
@@ -75,14 +77,6 @@ const Audit = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-  const [columnSearchVisible, setColumnSearchVisible] = useState<{ [key: string]: boolean }>({
-    action: false,
-    madeBy: false
-  });
-  const [columnSearchValues, setColumnSearchValues] = useState<{ [key: string]: string }>({
-    action: '',
-    madeBy: ''
-  });
   const [selectedAuditId, setSelectedAuditId] = useState<string | null>(null);
   const [auditDetail, setAuditDetail] = useState<any>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
@@ -97,6 +91,9 @@ const Audit = () => {
   const selectedTZString = useMemo(() => selectedTimezone.value, [selectedTimezone]);
 
   /* React Query */
+
+  const { data: userList } = useGetMadeByList();
+  const { data: actionList } = useGetActionList();
 
   const { data, mutateAsync } = useGetAllAudit();
 
@@ -118,6 +115,8 @@ const Audit = () => {
     defaultValues: {
       fromDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
       toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
+      actionId: '',
+      userId: '',
     },
     resolver: zodResolver(auditHelper.schema),
     mode: 'onChange',
@@ -132,7 +131,11 @@ const Audit = () => {
     async (values: IGetAuditByParticipantValues, page = 1, size = pageSize) => {
       const fromDate = moment.tz(values.fromDate, selectedTZString).utc().format();
       const toDate = moment.tz(values.toDate, selectedTZString).utc().format();
-      const payload = { fromDate, toDate, page, pageSize: size };
+      const actionId = values.actionId;
+      const userId = values.userId;
+      console.log('Searching with values:', { fromDate, toDate, actionId, userId, page, size });
+
+      const payload = { fromDate, toDate, actionId, userId, page, pageSize: size };
 
       try {
         const response = await mutateAsync(payload);
@@ -180,43 +183,6 @@ const Audit = () => {
     setAuditDetail(null);
     setSelectedAuditId(null);
   };
-  const toggleColumnSearch = (columnId: string) => {
-    setColumnSearchVisible(prev => ({
-      ...prev,
-      [columnId]: !prev[columnId]
-    }));
-    if (columnSearchVisible[columnId]) {
-      setColumnSearchValues(prev => ({
-        ...prev,
-        [columnId]: ''
-      }));
-    }
-  };
-
-  const handleColumnSearch = (columnId: string, value: string) => {
-    setColumnSearchValues(prev => ({
-      ...prev,
-      [columnId]: value
-    }));
-  };
-
-  const filteredTableData = useMemo(() => {
-    let filtered = tableData;
-
-    if (columnSearchValues.action) {
-      filtered = filtered.filter(row =>
-        String(row.action || '').toLowerCase().includes(columnSearchValues.action.toLowerCase())
-      );
-    }
-
-    if (columnSearchValues.madeBy) {
-      filtered = filtered.filter(row =>
-        String(row.madeBy || '').toLowerCase().includes(columnSearchValues.madeBy.toLowerCase())
-      );
-    }
-
-    return filtered;
-  }, [tableData, columnSearchValues]);
 
   // Pagination + Search + Sort
   const columns = useMemo<Column<AuditInfo>[]>(
@@ -229,94 +195,18 @@ const Audit = () => {
       },
       {
         Header: () => (
-          <HStack justify="space-between" w="full" spacing={1}>
-            <Box flex={1} position="relative" onClick={(e) => e.stopPropagation()}>
-              {columnSearchVisible.action ? (
-                <Input
-                  placeholder="Search action..."
-                  size="sm"
-                  value={columnSearchValues.action}
-                  onChange={(e) => handleColumnSearch('action', e.target.value)}
-                  autoFocus
-                  variant="unstyled"
-                  px={0}
-                  fontWeight="normal"
-                  fontSize="sm"
-                  _placeholder={{ color: 'gray.400', fontWeight: 'normal' }}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              ) : (
-                <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">Action</Text>
-              )}
-            </Box>
-            <IconButton
-              aria-label="Search action"
-              icon={columnSearchVisible.action ? <IoCloseOutline size={16} /> : <IoSearchOutline size={16} />}
-              size="xs"
-              variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleColumnSearch('action');
-              }}
-              minW="auto"
-              flexShrink={0}
-            />
-          </HStack>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Action</Text>
         ),
         accessor: 'action',
-        disableSortBy: columnSearchVisible.action,
-        Cell: ({ value }: any) => (
-          <Text>
-            {value}
-          </Text>
-        )
       },
       {
         Header: () => (
-          <HStack justify="space-between" w="full" spacing={1}>
-            <Box flex={1} position="relative" onClick={(e) => e.stopPropagation()}>
-              {columnSearchVisible.madeBy ? (
-                <Input
-                  placeholder="Search made by..."
-                  size="sm"
-                  value={columnSearchValues.madeBy}
-                  onChange={(e) => handleColumnSearch('madeBy', e.target.value)}
-                  autoFocus
-                  variant="unstyled"
-                  px={0}
-                  fontWeight="normal"
-                  fontSize="sm"
-                  _placeholder={{ color: 'gray.400', fontWeight: 'normal' }}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              ) : (
-                <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">Made By</Text>
-              )}
-            </Box>
-            <IconButton
-              aria-label="Search made by"
-              icon={columnSearchVisible.madeBy ? <IoCloseOutline size={16} /> : <IoSearchOutline size={16} />}
-              size="xs"
-              variant="ghost"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleColumnSearch('madeBy');
-              }}
-              minW="auto"
-              flexShrink={0}
-            />
-          </HStack>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Made By</Text>
         ),
         accessor: 'madeBy',
-        disableSortBy: columnSearchVisible.madeBy,
-        Cell: ({ value }: any) => (
-          <Text>
-            {value}
-          </Text>
-        )
       },
     ],
-    [columnSearchVisible, columnSearchValues]
+    []
   );
 
   const {
@@ -328,7 +218,7 @@ const Audit = () => {
   } = useTable(
     {
       columns,
-      data: filteredTableData,
+      data: tableData,
       manualPagination: true,
       pageCount: totalPages,
     },
@@ -395,10 +285,78 @@ const Audit = () => {
             <FormErrorMessage position="absolute" bottom="-20px">{errors.toDate?.message}</FormErrorMessage>
           </FormControl>
 
+          <FormControl>
+            <FormLabel>Action</FormLabel>
+            <Controller
+              control={control}
+              name="actionId"
+              render={({ field }) => (
+                <CustomSelect
+                  maxMenuHeight={300}
+                  isClearable={true}
+                  options={
+                    (actionList ?? []).map((item) => ({
+                      value: item.actionId,
+                      label: item.actionName,
+                    }))
+                  }
+                  value={
+                    field.value
+                      ? {
+                        value: field.value,
+                        label:
+                          actionList?.find((a) => a.actionId === field.value)
+                            ?.actionName || '',
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                  placeholder="All"
+                />
+              )}
+            />
+          </FormControl>
+
+          <FormControl>
+            <FormLabel>Made By</FormLabel>
+            <Controller
+              control={control}
+              name="userId"
+              render={({ field }) => (
+                <CustomSelect
+                  maxMenuHeight={300}
+                  isClearable={true}
+                  options={
+                    (userList ?? []).map((item) => ({
+                      value: item.userId,
+                      label: item.email,
+                    }))
+                  }
+                  value={
+                    field.value
+                      ? {
+                        value: field.value,
+                        label:
+                          userList?.find((a) => a.userId === field.value)
+                            ?.email || '',
+                      }
+                      : null
+                  }
+                  onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
+                  placeholder="All"
+                />
+              )}
+            />
+          </FormControl>
+
+          <Box display={{ base: "none", md: "block" }} />
+          <Box display={{ base: "none", md: "block" }} />
+          <Box display={{ base: "none", md: "block" }} />
           <FormControl
             isInvalid={!isEmpty(errors.fromDate)}
             display="flex"
             alignItems="flex-end"
+            justifyContent={{ base: "stretch", md: "flex-end" }}
           >
             <Button
               onClick={handleSubmit((values) => onSearchHandler(values, 1, pageSize))}

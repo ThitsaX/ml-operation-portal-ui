@@ -82,6 +82,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
         action
             .then(() => {
                 toast({
+                    title: 'Success',
                     position: 'top',
                     description: isEdit ? 'Liquidity Profile updated successfully' : 'Liquidity Profile created successfully',
                     status: 'success',
@@ -117,6 +118,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
         })
             .then(() => {
                 toast({
+                    title: 'Success',
                     position: 'top',
                     description: 'Liquidity Profile deleted successfully',
                     status: 'success',
