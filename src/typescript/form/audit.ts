@@ -1,6 +1,8 @@
 export interface IGetAuditByParticipantValues {
   fromDate: string;
   toDate: string;
+  actionId: string;
+  userId: string;
   page: number;
   pageSize: number;
 }

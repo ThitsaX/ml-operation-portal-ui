@@ -328,6 +328,8 @@ export class AuditHelper extends FormHelper {
       .object({
         fromDate: z.string({ required_error: 'Required' }),
         toDate: z.string({ required_error: 'Required' }),
+        actionId: z.string().optional(),
+        userId: z.string().optional(),
       })
       .refine((value) => value.fromDate < value.toDate, {
         message: 'Should be less than to date',
