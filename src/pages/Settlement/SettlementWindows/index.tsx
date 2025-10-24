@@ -581,9 +581,7 @@ const SettlementWindows = () => {
                 gap={{ base: 4, md: 4 }}
                 alignItems="stretch">
             <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
-                <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4} w="full">
-
-                        <VStack flex={1} spacing={4}>
+                    <SimpleGrid columns={{ base: 1, md: 3, }} spacing={4} w="full">
 
                             <CustomSelect
                                 options={dateRangeOptions}
@@ -595,33 +593,8 @@ const SettlementWindows = () => {
                                 }}
                             />
 
-                            <Controller
-                                control={control}
-                                name="state"
-                                render={({ field }) => (
-                                    <CustomSelect
-                                        placeholder="All State"
-                                        options={
-                                            stateList?.map((item) => ({
-                                            value: item.settlementWindowStateId,
-                                            label: item.enumeration,
-                                            })) ?? []
-                                        }
-                                        value={field.value ? {
-                                            value: field.value,
-                                            label: field.value
-                                        } : null}
-                                        onChange={(selectedOption) => {
-                                            field.onChange(selectedOption ? selectedOption.value : '');
-                                        }}
-                                    />
-                                )}
-                            />
-
-                        </VStack>
-
-                        <VStack flex={1} spacing={4}>
                             <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
+                            {/* <FormLabel fontSize="sm">Start Date</FormLabel> */}
                                 {selectedTZString ?
                                     <Controller
                                         control={control}
@@ -636,6 +609,10 @@ const SettlementWindows = () => {
                                                         trigger('fromDate')
                                                         onChange(date);
                                                     }}
+                                                _disabled={{
+                                                    cursor: 'not-allowed',
+                                                    opacity: 1
+                                                }}
                                                 />
                                             );
                                         }}
@@ -643,6 +620,58 @@ const SettlementWindows = () => {
                                     /> : <p>Loading</p>}
                                 <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
                             </FormControl>
+
+                            <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
+                            {/* <FormLabel fontSize="sm">End Date</FormLabel> */}
+                                {selectedTZString ?
+                                    <Controller
+                                        control={control}
+                                        render={({ field: { value, onChange } }) => {
+                                            return (
+                                                <Input
+                                                    disabled={dateRange !== 'custom' ? true : false}
+                                                    type="datetime-local"
+                                                    value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
+                                                    onChange={(event) => {
+                                                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
+                                                        trigger('toDate')
+                                                        onChange(date);
+                                                    }}
+                                                _disabled={{
+                                                    cursor: 'not-allowed',
+                                                    opacity: 1
+                                                }}
+                                                />
+                                            );
+                                        }}
+                                        name="toDate"
+                                    />
+                                    : <p>Loading</p>}
+                                <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
+                            </FormControl>
+
+                        <Controller
+                            control={control}
+                            name="state"
+                            render={({ field }) => (
+                                <CustomSelect
+                                    placeholder="All State"
+                                    options={
+                                        stateList?.map((item) => ({
+                                            value: item.settlementWindowStateId,
+                                            label: item.enumeration,
+                                        })) ?? []
+                                    }
+                                    value={field.value ? {
+                                        value: field.value,
+                                        label: field.value
+                                    } : null}
+                                    onChange={(selectedOption) => {
+                                        field.onChange(selectedOption ? selectedOption.value : '');
+                                    }}
+                                />
+                            )}
+                        />
 
                              <Controller
                                 control={control}
@@ -666,36 +695,22 @@ const SettlementWindows = () => {
                                     />
                                 )}
                             />
-                        </VStack>
 
-                        <VStack flex={1} spacing={4}>
-                            <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
-                                {selectedTZString ?
-                                    <Controller
-                                        control={control}
-                                        render={({ field: { value, onChange } }) => {
-                                            return (
-                                                <Input
-                                                    disabled={dateRange !== 'custom' ? true : false}
-                                                    type="datetime-local"
-                                                    value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
-                                                    onChange={(event) => {
-                                                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
-                                                        trigger('toDate')
-                                                        onChange(date);
-                                                    }}
-                                                />
-                                            );
-                                        }}
-                                        name="toDate"
-                                    />
-                                    : <p>Loading</p>}
-                                <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
-                            </FormControl>
-                        </VStack>
-                </SimpleGrid>
-                    <HStack justifyContent='flex-end'>
-                        <Button colorScheme='gray' variant='outline' onClick={onClearHandler}>
+                        <Box />
+                        <Box display={{ base: "none", md: "block" }}/>
+                        <Box display={{ base: "none", md: "block" }}/>
+                        <FormControl
+                            display="flex"
+                            justifyContent={{ base: "stretch", md: "flex-end" }}
+                            alignItems="flex-end"
+                            gap={5}
+                            mb={1}
+                        >
+                            <Button colorScheme='gray' variant='outline' onClick={onClearHandler}
+                                gap="2"
+                                size="md"
+                                w={{ base: "100%", md: "50%" }}
+                            >
                             Clear Filters
                         </Button>
                         <Button
@@ -705,11 +720,13 @@ const SettlementWindows = () => {
                                 bg: 'primary',
                                 opacity: 0.4
                             }}
+                                w={{ base: "100%", md: "50%" }}
                             onClick={handleSubmit(onSearchHandler)}>
 
                             Find
                         </Button>
-                    </HStack>
+                        </FormControl>
+                    </SimpleGrid>
                 </Stack>
 
                 <Flex justify="flex-end" flex={1} gap={5} mt={6} >
@@ -763,7 +780,7 @@ const SettlementWindows = () => {
                                                     : column.getSortByToggleProps()
                                             )}>
                                             <HStack align="center" spacing="2" flex={1}>
-                                                <Text flex={1}>{column.render('Header')}</Text>
+                                               {column.render('Header')}
                                                 {column.disableSortBy ? null : (
                                                     <VStack
                                                         display="inline-flex"
