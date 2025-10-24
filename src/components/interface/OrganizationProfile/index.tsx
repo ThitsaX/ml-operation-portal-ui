@@ -28,13 +28,23 @@ interface OrganizationProfileProps {
   participantId: string;
 }
 
+const defaultFormValues: IParticipantProfile = {
+  participantId: '',
+  participantName: '',
+  description: '',
+  address: '',
+  mobile: '',
+  logo: '',
+  logoFileType: '',
+};
+
 const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId }) => {
 
   const toast = useToast();
   const [preview, setPreview] = useState<string | null>(null);
   const [fileType, setFileType] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(true);
 
   const organizationHelper = new OrganizationHelper();
 
@@ -47,33 +57,43 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
     setValue,
     reset,
   } = useForm<IParticipantProfile>({
-    defaultValues: undefined,
+    defaultValues: defaultFormValues,
     resolver: zodResolver(organizationHelper.schema),
     mode: 'onChange',
+  });
+
+  const mapProfileToFormValues = (profile: Partial<IParticipantProfile>): IParticipantProfile => ({
+    participantId: profile.participantId ?? '',
+    participantName: profile.participantName ?? '',
+    description: profile.description ?? '',
+    address: profile.address ?? '',
+    mobile: profile.mobile ?? '',
+    logo: profile.logo ?? '',
+    logoFileType: profile.logoFileType ?? '',
   });
 
   useEffect(() => {
     if (participantId) {
       getParticipantProfile(participantId)
         .then(profileData => {
-          if (profileData) {
-            reset(profileData);
-            setFileType(profileData.logoFileType);
-            setPreview(profileData.logo);
-          }
+          if (!profileData) return;
+          const profileForForm = mapProfileToFormValues(profileData);
+          reset(profileForForm);
+          setFileType(profileForForm.logoFileType);
+
+          setPreview(profileForForm.logo);
+          setValue('logo', profileForForm.logo, { shouldDirty: false });
+          setValue('logoFileType', profileForForm.logoFileType, { shouldDirty: false });
         })
-        .catch((err: IApiErrorResponse) => {
+        .catch(err => {
           toast({
             title: 'Error',
-            position: 'top',
-            description: getErrorMessage(err) || 'Failed to load organization profile.',
+            description: getErrorMessage(err) || 'Failed to load profile',
             status: 'error',
-            duration: 3000,
-            isClosable: true,
           });
-        });
+        }).finally(() => setIsLoading(false));
     }
-  }, [participantId, reset, toast]);
+  }, [participantId, reset, setValue, toast]);
 
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,7 +163,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
         Organization Profile
       </Heading>
 
-      <VStack spacing={4} align="stretch">
+      <VStack spacing={4} align="stretch" opacity={isLoading ? 0.5 : 1} pointerEvents={isLoading ? 'none' : 'auto'}>
 
         <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
           <FormControl isInvalid={!isEmpty(errors.description)}>
@@ -152,7 +172,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
               name="description"
               control={control}
               render={({ field }) => (
-                <Input {...field} value={field.value ?? ''} fontSize="md" />
+                <Input {...field} fontSize="md" />
               )}
             />
             <FormErrorMessage fontSize="xs">{errors.description?.message}</FormErrorMessage>
@@ -160,20 +180,24 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
 
           <FormControl isInvalid={!isEmpty(errors.address)}>
             <FormLabel fontSize="sm" fontWeight="semibold">Address</FormLabel>
-            <Input
-              type="input"
-              {...register('address')}
-              fontSize="md"
+            <Controller
+              name='address'
+              control={control}
+              render={({ field }) => (
+                <Input {...field} fontSize="md" />
+              )}
             />
             <FormErrorMessage fontSize="xs">{errors.address?.message}</FormErrorMessage>
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.mobile)}>
             <FormLabel fontSize="sm" fontWeight="semibold">Contact Number</FormLabel>
-            <Input
-              type="input"
-              {...register('mobile')}
-              fontSize="md"
+            <Controller
+              name='mobile'
+              control={control}
+              render={({ field }) => (
+                <Input {...field} fontSize="md" />
+              )}
             />
             <FormErrorMessage fontSize="xs">{errors.mobile?.message}</FormErrorMessage>
           </FormControl>
