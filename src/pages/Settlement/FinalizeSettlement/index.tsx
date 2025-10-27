@@ -29,7 +29,8 @@ import {
     ModalContent,
     ModalFooter,
     ModalCloseButton,
-    SimpleGrid
+    SimpleGrid,
+    Flex
 } from '@chakra-ui/react';
 import { FinalizeSettlementHelper } from '@helpers/form';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
@@ -454,9 +455,8 @@ const FinalizeSettlement = () => {
                 <Heading fontSize="2xl" fontWeight="bold" mb={6}>
                     Finalize Settlement
                 </Heading>
-                <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
-                    <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={4} w="full">
-                        <VStack flex={1} spacing={4}>
+            <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
+                    <SimpleGrid columns={{ base: 1, md: 3, lg: 4 }} spacing={4} w="full">
                             <CustomSelect
                                 options={dateRangeOptions}
                                  value={dateRangeOptions.find(option => option.value === dateRange)||null}
@@ -466,6 +466,64 @@ const FinalizeSettlement = () => {
                                     }
                                 }}
                             />
+
+                            <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
+                                {/* <FormLabel fontSize="sm">Start Date</FormLabel> */}
+                                {selectedTZString ?
+                                    <Controller
+                                        control={control}
+                                        render={({ field: { value, onChange } }) => {
+                                            return (
+                                                <Input
+                                                    disabled={dateRange !== 'custom' ? true : false}
+                                                    type="datetime-local"
+                                                    value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
+                                                    onChange={(event) => {
+                                                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
+                                                        trigger('fromDate')
+                                                        onChange(date);
+                                                    }}
+                                               _disabled={{
+                                                cursor: 'not-allowed',
+                                                opacity: 1
+                                                }}
+                                                />
+                                            );
+                                        }}
+                                        name="fromDate"
+                                    /> : <p>Loading</p>}
+                                <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
+                            </FormControl>
+
+                            <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
+                                {/* <FormLabel fontSize="sm">End Date</FormLabel> */}
+                                {selectedTZString ?
+                                    <Controller
+                                        control={control}
+                                        render={({ field: { value, onChange } }) => {
+                                            return (
+                                                <Input
+                                                    disabled={dateRange !== 'custom' ? true : false}
+                                                    type="datetime-local"
+                                                    value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
+                                                    onChange={(event) => {
+                                                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
+                                                        trigger('toDate')
+                                                        onChange(date);
+                                                    }}
+                                                _disabled={{
+                                                    cursor: 'not-allowed',
+                                                    opacity: 1
+                                                }}
+                                                />
+                                            );
+                                        }}
+                                        name="toDate"
+                                    />
+                                    : <p>Loading</p>}
+                                <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
+                            </FormControl>
+                            <Box display={{ base: "none", md: "block" }}/>
 
                         <Controller
                             control={control}
@@ -487,32 +545,6 @@ const FinalizeSettlement = () => {
                                 />
                             )}
                         />
-                        </VStack>
-
-                        <VStack flex={1} spacing={4}>
-                            <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
-                                {/* <FormLabel fontSize="sm">Start Date</FormLabel> */}
-                                {selectedTZString ?
-                                    <Controller
-                                        control={control}
-                                        render={({ field: { value, onChange } }) => {
-                                            return (
-                                                <Input
-                                                    disabled={dateRange !== 'custom' ? true : false}
-                                                    type="datetime-local"
-                                                    value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
-                                                    onChange={(event) => {
-                                                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
-                                                        trigger('fromDate')
-                                                        onChange(date);
-                                                    }}
-                                                />
-                                            );
-                                        }}
-                                        name="fromDate"
-                                    /> : <p>Loading</p>}
-                                <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
-                            </FormControl>
 
                             <Controller
                                 control={control}
@@ -536,43 +568,23 @@ const FinalizeSettlement = () => {
                                     />
                                 )}
                             />
-                        </VStack>
 
-                        <VStack flex={1} spacing={4}>
-                            <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
-                                {/* <FormLabel fontSize="sm">End Date</FormLabel> */}
-                                {selectedTZString ?
-                                    <Controller
-                                        control={control}
-                                        render={({ field: { value, onChange } }) => {
-                                            return (
-                                                <Input
-                                                    disabled={dateRange !== 'custom' ? true : false}
-                                                    type="datetime-local"
-                                                    value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
-                                                    onChange={(event) => {
-                                                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
-                                                        trigger('toDate')
-                                                        onChange(date);
-                                                    }}
-                                                />
-                                            );
-                                        }}
-                                        name="toDate"
-                                    />
-                                    : <p>Loading</p>}
-                                <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
-                            </FormControl>
-                        </VStack>
-                    </SimpleGrid>
-
-                    <HStack justifyContent='flex-end'>
-                        <Button colorScheme='gray' variant='outline' onClick={onClearHandler}>
+                        <Box />
+                        <Box display={{ base: "none", md: "block" }}/>
+                        <Box display={{ base: "none", md: "block" }}/>
+                        <Box display={{ base: "none", md: "block" }}/>
+                        <Box display={{ base: "none", md: "block" }}/>
+                       <FormControl display="flex" justifyContent={{ base: "stretch", md: "flex-end" }}alignItems="flex-end"
+                            gap={5}
+                            mb={1}
+                        >
+                            <Button fontSize="sm" minW="min-content" w={{ base: "100%" ,md:"50%"}} onClick={onClearHandler}>
                             Clear Filters
                         </Button>
                         <Button
                             color="white"
                             bg="primary"
+                            w={{ base: "100%", md: "50%" }}
                             _hover={{
                                 bg: 'primary',
                                 opacity: 0.4
@@ -581,7 +593,8 @@ const FinalizeSettlement = () => {
 
                             Find
                         </Button>
-                    </HStack>
+                        </FormControl>
+                      </SimpleGrid>
                 </Stack>
 
                 <TableContainer
@@ -602,7 +615,7 @@ const FinalizeSettlement = () => {
                                                     : column.getSortByToggleProps()
                                             )}>
                                             <HStack align="center" spacing="2" flex={1}>
-                                                <Text flex={1}>{column.render('Header')}</Text>
+                                                <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{column.render('Header')}</Text>
                                                 {column.disableSortBy ? null : (
                                                     <VStack
                                                         display="inline-flex"
