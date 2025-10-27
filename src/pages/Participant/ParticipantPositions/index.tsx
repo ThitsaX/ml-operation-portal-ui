@@ -125,125 +125,125 @@ const ParticipantPositions = () => {
     const columns = useMemo(
         () => {
             const baseColumns = [
-            {
-                Header: () => (
-                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">DFSP ID</Text>
-                ),
-                accessor: 'participantName',
-                Cell: ({ row }: any) => (
-                    <Box
-                        textAlign={'center'}
-                        color="blue.600"
-                        fontWeight="bold"
-                        cursor="pointer"
-                        _hover={{ textDecoration: 'underline' }}
-                        onClick={() => handleClick(row.original.participantName, row.original.participantId)}
-                    >
-                        {row.original.participantName}
-                    </Box>)
-            },
-            {
-                Header: () => (
-                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">DFSP Name</Text>
-                ),
-                accessor: 'description'
-            },
-            {
-                Header: () => (
-                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Currency</Text>
-                ),
-                accessor: 'currency',
-                Cell: ({ value }: any) => (
-                    <Text textAlign="center">
-                        {value}
-                    </Text>
-                ),
-            },
-            {
-                Header: () => (
-                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Balance</Text>
-                ),
-                accessor: 'balance',
-                Cell: ({ row }: any) => (
-                    <Box textAlign={'right'}>
-                        {formatNumber(row.original.balance)}
-                    </Box>
-                )
-            },
-            {
-                Header: () => (
-                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Current Position</Text>
-                ),
-                accessor: 'currentPosition',
-                Cell: ({ row }: { row: Row<IParticipantPositionData> }) => (
-                    <Box textAlign={'right'}>
-                        {formatNumber(row.original.currentPosition)}
-                    </Box>
-                )
-            },
-            {
-                Header: () => (
-                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC %</Text>
-                ),
-                accessor: 'ndcPercent',
-                Cell: ({ value }: any) => (
-                    <Text textAlign="right">
-                        {value}
-                    </Text>
-                ),
-            },
-            {
-                Header: () => (
-                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC</Text>
-                ),
-                accessor: 'ndc',
-                Cell: ({ value }: any) => (
-                    <Text textAlign="right">
-                        {formatNumber(value)}
-                    </Text>
-                ),
-            },
-            {
-                Header: () => (
-                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC Used %</Text>
-                ),
-                accessor: 'ndcUsed',
-                Cell: ({ value }: any) => (
-                    <HStack spacing={2} w="full" justifyContent="flex-end">
+                {
+                    Header: () => (
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">DFSP ID</Text>
+                    ),
+                    accessor: 'participantName',
+                    Cell: ({ row }: any) => (
                         <Box
-                            w="10px"
-                            h="10px"
-                            borderRadius="full"
-                            bg={getValueColor(Number(value))}
-                        />
-                        <Box textAlign="right">
-                            <Text fontSize="sm">
-                                {value}
-                            </Text>
+                            textAlign={'center'}
+                            color="blue.600"
+                            fontWeight="bold"
+                            cursor="pointer"
+                            _hover={{ textDecoration: 'underline' }}
+                            onClick={() => handleClick(row.original.participantName, row.original.participantId)}
+                        >
+                            {row.original.participantName}
+                        </Box>)
+                },
+                {
+                    Header: () => (
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">DFSP Name</Text>
+                    ),
+                    accessor: 'description'
+                },
+                {
+                    Header: () => (
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Currency</Text>
+                    ),
+                    accessor: 'currency',
+                    Cell: ({ value }: any) => (
+                        <Text textAlign="center">
+                            {value}
+                        </Text>
+                    ),
+                },
+                {
+                    Header: () => (
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Balance</Text>
+                    ),
+                    accessor: 'balance',
+                    Cell: ({ row }: any) => (
+                        <Box textAlign={'right'}>
+                            {formatNumber(row.original.balance)}
                         </Box>
-                    </HStack>
-                ),
-            },
-            {
-                Header: () => (
-                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Enable/Disable</Text>
-                ),
-                id: "isActive",
-                disableSortBy: true,
-                Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
-                    return (
-                        <Box w="full" display="flex" justifyContent="center" alignItems="center">
-                            <Switch
-                                colorScheme="green"
-                                size="sm"
-                                isDisabled={!hasMenuAccess("UpdateParticipantStatus")}
-                                isChecked={row.original.isActive}
-                                onChange={(e) => toggleStatus(row.original)}
+                    )
+                },
+                {
+                    Header: () => (
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Current Position</Text>
+                    ),
+                    accessor: 'currentPosition',
+                    Cell: ({ row }: { row: Row<IParticipantPositionData> }) => (
+                        <Box textAlign={'right'}>
+                            {formatNumber(row.original.currentPosition)}
+                        </Box>
+                    )
+                },
+                {
+                    Header: () => (
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC %</Text>
+                    ),
+                    accessor: 'ndcPercent',
+                    Cell: ({ value }: any) => (
+                        <Text textAlign="right">
+                            {value}
+                        </Text>
+                    ),
+                },
+                {
+                    Header: () => (
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC</Text>
+                    ),
+                    accessor: 'ndc',
+                    Cell: ({ value }: any) => (
+                        <Text textAlign="right">
+                            {formatNumber(value)}
+                        </Text>
+                    ),
+                },
+                {
+                    Header: () => (
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC Used %</Text>
+                    ),
+                    accessor: 'ndcUsed',
+                    Cell: ({ value }: any) => (
+                        <HStack spacing={2} w="full" justifyContent="flex-end">
+                            <Box
+                                w="10px"
+                                h="10px"
+                                borderRadius="full"
+                                bg={getValueColor(Number(value))}
                             />
-                        </Box>
-                    );
-                }
-            }];
+                            <Box textAlign="right">
+                                <Text fontSize="sm">
+                                    {value}
+                                </Text>
+                            </Box>
+                        </HStack>
+                    ),
+                },
+                {
+                    Header: () => (
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Enable/Disable</Text>
+                    ),
+                    id: "isActive",
+                    disableSortBy: true,
+                    Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
+                        return (
+                            <Box w="full" display="flex" justifyContent="center" alignItems="center">
+                                <Switch
+                                    colorScheme="green"
+                                    size="sm"
+                                    isDisabled={!hasMenuAccess("UpdateParticipantStatus")}
+                                    isChecked={row.original.isActive}
+                                    onChange={(e) => toggleStatus(row.original)}
+                                />
+                            </Box>
+                        );
+                    }
+                }];
 
             const actionColumn = hasMenuAccess("CreateApprovalRequest") ? [{
                 Header: () => (
@@ -488,141 +488,142 @@ const ParticipantPositions = () => {
                 </Text>
             </HStack>
 
-            <TableContainer
-                w="full"
-                borderWidth={1}
-                borderColor="gray.100"
-                rounded="lg">
-                <Table variant="simple" {...getTableProps()}>
-                    <Thead bg="gray.100">
-                        {headerGroups.map((headerGroup) => (
-                            <Tr {...headerGroup.getHeaderGroupProps()}>
-                                {headerGroup.headers.map((column) => (
-                                    <Th px={3}
-                                        {...column.getHeaderProps(
-                                            column.disableSortBy
-                                                ? undefined
-                                                : column.getSortByToggleProps()
-                                        )}>
-                                        <HStack align="center" spacing="2" flex={1}>
-                                            {column.render('Header')}
-                                            {column.disableSortBy ? null : (
-                                                <VStack
-                                                    display="inline-flex"
-                                                    align="center"
-                                                    spacing={0}>
-                                                    <Icon
-                                                        as={IoChevronUp}
-                                                        size={12}
-                                                        color={
-                                                            !column.isSorted
-                                                                ? 'gray.400'
-                                                                : !column.isSortedDesc
-                                                                    ? 'gray.700'
-                                                                    : 'gray.400'
-                                                        }
-                                                    />
-                                                    <Icon
-                                                        as={IoChevronDown}
-                                                        size={12}
-                                                        color={
-                                                            !column.isSorted
-                                                                ? 'gray.400'
-                                                                : column.isSortedDesc
-                                                                    ? 'gray.700'
-                                                                    : 'gray.400'
-                                                        }
-                                                    />
-                                                </VStack>
-                                            )}
-                                        </HStack>
-                                    </Th>
-                                ))}
-                            </Tr>
-                        ))}
-                    </Thead>
-                    <Tbody maxH={300} overflowY="auto" {...getTableBodyProps()}>
-                        {page.map((row) => {
-                            prepareRow(row);
-                            return (
-                                <Tr
-                                    fontSize="sm"
-                                    cursor="pointer"
-                                    _hover={{ bg: 'muted.50' }}
-                                    {...row.getRowProps()}
-                                >
-                                    {row.cells.map((cell) => (
-                                        <Td {...cell.getCellProps()}
-                                            py={2}   // ✅ reduce row height
-                                            px={3}>{cell.render('Cell')}</Td>
+            <VStack w="full" align="flex-start" spacing={2} >
+                <TableContainer
+                    w="full"
+                    borderWidth={1}
+                    borderColor="gray.100"
+                    rounded="lg">
+                    <Table variant="simple" {...getTableProps()}>
+                        <Thead bg="gray.100">
+                            {headerGroups.map((headerGroup) => (
+                                <Tr {...headerGroup.getHeaderGroupProps()}>
+                                    {headerGroup.headers.map((column) => (
+                                        <Th px={3}
+                                            {...column.getHeaderProps(
+                                                column.disableSortBy
+                                                    ? undefined
+                                                    : column.getSortByToggleProps()
+                                            )}>
+                                            <HStack align="center" spacing="2" flex={1}>
+                                                {column.render('Header')}
+                                                {column.disableSortBy ? null : (
+                                                    <VStack
+                                                        display="inline-flex"
+                                                        align="center"
+                                                        spacing={0}>
+                                                        <Icon
+                                                            as={IoChevronUp}
+                                                            size={12}
+                                                            color={
+                                                                !column.isSorted
+                                                                    ? 'gray.400'
+                                                                    : !column.isSortedDesc
+                                                                        ? 'gray.700'
+                                                                        : 'gray.400'
+                                                            }
+                                                        />
+                                                        <Icon
+                                                            as={IoChevronDown}
+                                                            size={12}
+                                                            color={
+                                                                !column.isSorted
+                                                                    ? 'gray.400'
+                                                                    : column.isSortedDesc
+                                                                        ? 'gray.700'
+                                                                        : 'gray.400'
+                                                            }
+                                                        />
+                                                    </VStack>
+                                                )}
+                                            </HStack>
+                                        </Th>
                                     ))}
                                 </Tr>
-                            );
-                        })}
-                    </Tbody>
-                </Table>
+                            ))}
+                        </Thead>
+                        <Tbody maxH={300} overflowY="auto" {...getTableBodyProps()}>
+                            {page.map((row) => {
+                                prepareRow(row);
+                                return (
+                                    <Tr
+                                        fontSize="sm"
+                                        cursor="pointer"
+                                        _hover={{ bg: 'muted.50' }}
+                                        {...row.getRowProps()}
+                                    >
+                                        {row.cells.map((cell) => (
+                                            <Td {...cell.getCellProps()}
+                                                py={2}   // ✅ reduce row height
+                                                px={3}>{cell.render('Cell')}</Td>
+                                        ))}
+                                    </Tr>
+                                );
+                            })}
+                        </Tbody>
+                    </Table>
 
-                <HStack px="6" py="2">
-                    <HStack flex={2}>
-                        <IconButton
-                            aria-label="Skip to start"
-                            variant="ghost"
-                            icon={<TfiAngleDoubleLeft />}
-                            isDisabled={!canPreviousPage}
-                            onClick={() => gotoPage(0)}
-                        />
-                        <IconButton
-                            aria-label="Go Previous"
-                            variant="ghost"
-                            icon={<TfiAngleLeft />}
-                            isDisabled={!canPreviousPage}
-                            onClick={previousPage}
-                        />
-                        <IconButton
-                            aria-label="Go Next"
-                            variant="ghost"
-                            icon={<TfiAngleRight />}
-                            isDisabled={!canNextPage}
-                            onClick={nextPage}
-                        />
-                        <IconButton
-                            aria-label="Skip to end"
-                            variant="ghost"
-                            icon={<TfiAngleDoubleRight />}
-                            isDisabled={!canNextPage}
-                            onClick={() => gotoPage(pageCount - 1)}
-                        />
+                    <HStack px="6" py="2">
+                        <HStack flex={2}>
+                            <IconButton
+                                aria-label="Skip to start"
+                                variant="ghost"
+                                icon={<TfiAngleDoubleLeft />}
+                                isDisabled={!canPreviousPage}
+                                onClick={() => gotoPage(0)}
+                            />
+                            <IconButton
+                                aria-label="Go Previous"
+                                variant="ghost"
+                                icon={<TfiAngleLeft />}
+                                isDisabled={!canPreviousPage}
+                                onClick={previousPage}
+                            />
+                            <IconButton
+                                aria-label="Go Next"
+                                variant="ghost"
+                                icon={<TfiAngleRight />}
+                                isDisabled={!canNextPage}
+                                onClick={nextPage}
+                            />
+                            <IconButton
+                                aria-label="Skip to end"
+                                variant="ghost"
+                                icon={<TfiAngleDoubleRight />}
+                                isDisabled={!canNextPage}
+                                onClick={() => gotoPage(pageCount - 1)}
+                            />
+                        </HStack>
+                        <Text>
+                            Page{' '}
+                            <strong>
+                                {pageIndex + 1} of {pageOptions.length || 1}
+                            </strong>
+                        </Text>
+                        <Box h="6">
+                            <Divider orientation="vertical" />
+                        </Box>
+                        <HStack>
+                            <Text> Go to page : </Text>
+                            <Input
+                                value={pageNumber ? Number(pageNumber) : ''}
+                                textAlign="center"
+                                w="14"
+                                type="number"
+                                min={pageIndex + 1}
+                                max={pageOptions.length}
+                                onChange={(e) => {
+                                    handlePageValidation(e.target.value)
+                                    const pageNumber = e.target.value
+                                        ? Number(e.target.value) - 1
+                                        : 0;
+                                    gotoPage(pageNumber);
+                                }}
+                            />
+                        </HStack>
                     </HStack>
-                    <Text>
-                        Page{' '}
-                        <strong>
-                            {pageIndex + 1} of {pageOptions.length || 1}
-                        </strong>
-                    </Text>
-                    <Box h="6">
-                        <Divider orientation="vertical" />
-                    </Box>
-                    <HStack>
-                        <Text> Go to page : </Text>
-                        <Input
-                            value={pageNumber ? Number(pageNumber) : ''}
-                            textAlign="center"
-                            w="14"
-                            type="number"
-                            min={pageIndex + 1}
-                            max={pageOptions.length}
-                            onChange={(e) => {
-                                handlePageValidation(e.target.value)
-                                const pageNumber = e.target.value
-                                    ? Number(e.target.value) - 1
-                                    : 0;
-                                gotoPage(pageNumber);
-                            }}
-                        />
-                    </HStack>
-                </HStack>
-            </TableContainer>
-
+                </TableContainer>
+            </VStack>
             {/* Modals */}
 
             <DepositModal isOpen={isDepositOpen} onClose={onDepositClose} onSubmit={handleDeposit} />

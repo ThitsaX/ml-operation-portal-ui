@@ -119,7 +119,16 @@ const User = () => {
         accessor: "roleList",
         Cell: ({ value }: CellProps<IParticipantUser, string[]>) => {
           if (!value || value.length === 0) return <span>-</span>;
-          return <span>{value.join(", ")}</span>;
+          return (
+            <Box
+              maxW="200px"             
+              whiteSpace="normal"      
+              wordBreak="break-word" 
+              overflowWrap="break-word"
+            >
+              {value.join(", ")}
+            </Box>
+          );
         },
       },
       {
@@ -280,10 +289,10 @@ const User = () => {
     }
   }
   const statusOptions = [
-      { value: 'All', label: 'All' },
-      { value: 'ACTIVE', label: 'Active' },
-      { value: 'INACTIVE', label: 'Inactive' },
-    ];
+    { value: 'All', label: 'All' },
+    { value: 'ACTIVE', label: 'Active' },
+    { value: 'INACTIVE', label: 'Inactive' },
+  ];
 
   return (
 
@@ -298,15 +307,15 @@ const User = () => {
       >
 
         <Box w={{ base: "full", sm: "200px" }}>
-        <CustomSelect
-          options={statusOptions}
-          value={statusOptions.find(option => option.value === filterStatus) || null}
-          onChange={(selectedOption) => {
-            setFilterStatus(selectedOption?.value || '');
-          }}
-          placeholder="Select status"
-          includeAllOption={false}
-        />
+          <CustomSelect
+            options={statusOptions}
+            value={statusOptions.find(option => option.value === filterStatus) || null}
+            onChange={(selectedOption) => {
+              setFilterStatus(selectedOption?.value || '');
+            }}
+            placeholder="Select status"
+            includeAllOption={false}
+          />
         </Box>
         {hasMenuAccess("CreateUser") && (
           <Button
