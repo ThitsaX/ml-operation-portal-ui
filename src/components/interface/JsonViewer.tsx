@@ -58,7 +58,7 @@ export const JsonViewer: React.FC<JsonViewerProps> = ({
         collapsed={collapsed}
         enableClipboard={false}
         displayDataTypes={false}
-        style={{ ...style, paddingTop: "32px" }}
+        style={{ ...style, paddingTop: "32px",wordBreak: "break-word", whiteSpace: "pre-wrap" }}
       />
     </Box>
   );
