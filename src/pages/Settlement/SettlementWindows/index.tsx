@@ -696,16 +696,23 @@ const SettlementWindows = () => {
                                     />
                                 )}
                             />
-                            </SimpleGrid>
 
-                     <Flex justify="flex-end" align="center" px={1} pt={4} pb={2} gap={4} direction={{ base: "column", md: "row" }} >
-                            <Button  w={{ base: "100%", md: "120px" }} onClick={onClearHandler}>
+                        <Box />
+                        <Box display={{ base: "none", md: "block" }}/>
+                        <Box display={{ base: "none", md: "block" }}/>
+                        <Box display={{ base: "none", md: "block" }}/>
+                        <Box display={{ base: "none", md: "block" }}/>
+                        <FormControl display="flex" justifyContent={{ base: "stretch", md: "flex-end" }}alignItems="flex-end"
+                            gap={2}
+                            mb={1}
+                        >
+                          <Button  minW="min-content" w={{ base: "100%", md: "50%"   }} onClick={onClearHandler}>
                             Clear Filters
                         </Button>
                         <Button
                             color="white"
                             bg="primary"
-                            w={{ base: "100%", md: "120px" }}
+                            w={{ base: "100%", md: "50%" }}
                             _hover={{
                                 bg: 'primary',
                                 opacity: 0.4
@@ -715,7 +722,8 @@ const SettlementWindows = () => {
 
                             Find
                         </Button>
-                         </Flex>
+                        </FormControl>
+                      </SimpleGrid>
                 </Stack>
 
                 <Flex justify="flex-end" flex={1} gap={5} mt={6} >
