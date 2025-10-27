@@ -29,7 +29,8 @@ import {
     ModalContent,
     ModalFooter,
     ModalCloseButton,
-    SimpleGrid
+    SimpleGrid,
+    Flex
 } from '@chakra-ui/react';
 import { FinalizeSettlementHelper } from '@helpers/form';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
@@ -454,8 +455,8 @@ const FinalizeSettlement = () => {
                 <Heading fontSize="2xl" fontWeight="bold" mb={6}>
                     Finalize Settlement
                 </Heading>
-                <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
-                    <SimpleGrid columns={{ base: 1, md: 3, }} spacing={4} w="full">
+            <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
+                    <SimpleGrid columns={{ base: 1, md: 3, lg: 4 }} spacing={4} w="full">
                             <CustomSelect
                                 options={dateRangeOptions}
                                  value={dateRangeOptions.find(option => option.value === dateRange)||null}
@@ -522,6 +523,7 @@ const FinalizeSettlement = () => {
                                     : <p>Loading</p>}
                                 <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
                             </FormControl>
+                            <Box display={{ base: "none", md: "block" }}/>
 
                         <Controller
                             control={control}
@@ -566,39 +568,25 @@ const FinalizeSettlement = () => {
                                     />
                                 )}
                             />
+                           </SimpleGrid>
 
-
-                        <Box />
-                        <Box display={{ base: "none", md: "block" }}/>
-                        <Box display={{ base: "none", md: "block" }}/>
-                        <FormControl
-                            display="flex"
-                            justifyContent={{ base: "stretch", md: "flex-end" }}
-                            alignItems="flex-end"
-                            gap={5}
-                            mb={1}
-                        >
-                        <Button colorScheme='gray' variant='outline' onClick={onClearHandler}
-                                gap="2"
-                                size="md"
-                                w={{ base: "100%", md: "50%" }}
-                        >
+                     <Flex justify="flex-end" align="center" px={1} pt={4} pb={2} gap={4} direction={{ base: "column", md: "row" }} >
+                            <Button w={{ base: "100%", md: "120px" }} onClick={onClearHandler}>
                             Clear Filters
                         </Button>
                         <Button
                             color="white"
                             bg="primary"
+                            w={{ base: "100%", md: "120px" }}
                             _hover={{
                                 bg: 'primary',
                                 opacity: 0.4
                             }}
-                        w={{ base: "100%", md: "50%" }}
                             onClick={handleSubmit(onSearchHandler)}>
 
                             Find
                         </Button>
-                        </FormControl>
-                  </SimpleGrid>
+                       </Flex>
                 </Stack>
 
                 <TableContainer
@@ -619,7 +607,7 @@ const FinalizeSettlement = () => {
                                                     : column.getSortByToggleProps()
                                             )}>
                                             <HStack align="center" spacing="2" flex={1}>
-                                                {column.render('Header')}
+                                                <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{column.render('Header')}</Text>
                                                 {column.disableSortBy ? null : (
                                                     <VStack
                                                         display="inline-flex"
