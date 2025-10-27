@@ -22,7 +22,7 @@ const Home = () => {
 
 
   return (
-    <VStack align="flex-start" w="full" h="full" p="3" spacing={2} mt={10}>
+    <VStack align="flex-start" w="full" h="full" p="3" spacing={4} mt={10}>
       <Heading fontSize="2xl" fontWeight="bold" mb={6}>Home</Heading>
 
       <VStack

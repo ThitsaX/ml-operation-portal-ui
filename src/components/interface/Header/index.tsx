@@ -117,7 +117,7 @@ const Header = () => {
           size="md"
           textAlign="center"
           w="full">
-          {data?.participantName || 'Operation Portal'}
+          Operation Portal
         </Heading>
       </Flex>
       {data != null ? (

@@ -586,7 +586,13 @@ const Audit = () => {
                   <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3}>
                     Response
                   </Text>
-                  <JsonViewer value={auditDetail.outputInfo} />
+                  {auditDetail.outputInfo ? (<JsonViewer value={auditDetail.outputInfo} />)
+                    : (<JsonViewer
+                      value={{
+                        exception: auditDetail.exceptionInfo
+                      }}
+                    />)
+                  }
                 </Box>
               </VStack>
             ) : (
