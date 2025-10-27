@@ -706,7 +706,7 @@ const SettlementWindows = () => {
                             gap={2}
                             mb={1}
                         >
-                          <Button  minW="min-content" w={{ base: "100%", md: "50%"   }} onClick={onClearHandler}>
+                          <Button fontSize="sm" minW="min-content" w={{ base: "100%", md: "50%"   }} onClick={onClearHandler}>
                             Clear Filters
                         </Button>
                         <Button

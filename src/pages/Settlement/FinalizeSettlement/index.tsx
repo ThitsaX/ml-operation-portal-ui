@@ -578,7 +578,7 @@ const FinalizeSettlement = () => {
                             gap={5}
                             mb={1}
                         >
-                            <Button  minW="min-content" w={{ base: "100%" ,md:"55%"}} onClick={onClearHandler}>
+                            <Button fontSize="sm" minW="min-content" w={{ base: "100%" ,md:"50%"}} onClick={onClearHandler}>
                             Clear Filters
                         </Button>
                         <Button
