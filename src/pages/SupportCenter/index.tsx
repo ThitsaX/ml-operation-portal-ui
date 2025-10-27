@@ -50,7 +50,7 @@ const SupportCenter = () => {
       onDetailOpen();
     } catch (err) {
       toast({
-        title: 'Error fetching contact list',
+        position: 'top',
         description: getErrorMessage(err as IApiErrorResponse),
         status: 'error',
         duration: 3000,

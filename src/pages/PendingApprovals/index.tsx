@@ -96,6 +96,7 @@ const PendingApprovals = () => {
       .then(() => {
         toast({
           title: `${actionType}`,
+          position: 'top',
           description: `${row.requestedBy}'s request ${actionType?.toLowerCase()}.`,
           status: 'success',
           duration: 3000,
@@ -106,6 +107,7 @@ const PendingApprovals = () => {
       .catch((error: IApiErrorResponse) => {
         toast({
           title: 'Error',
+          position: 'top',
           description: getErrorMessage(error) || `Failed to ${actionType?.toLowerCase()} request.`,
           status: 'error',
           duration: 3000,

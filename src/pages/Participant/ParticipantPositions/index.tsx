@@ -96,6 +96,7 @@ const ParticipantPositions = () => {
             const err = error as IApiErrorResponse;
             toast({
                 title: 'Failed to fetch participant positions',
+                position: 'top',
                 description: getErrorMessage(err as IApiErrorResponse) || 'Something went wrong. Please try again.',
                 status: 'error',
                 duration: 4000,
@@ -348,6 +349,7 @@ const ParticipantPositions = () => {
             const res = await createApprovalRequest(data);
             toast({
                 title: `${actionLabel} request created`,
+                position: 'top',
                 description: `Amount: ${data.amount} ${data.currency}`,
                 status: 'success',
                 duration: 4000,
@@ -355,11 +357,12 @@ const ParticipantPositions = () => {
             });
             console.log('Approval Request Created:', res);
 
-            if (onSuccess) onSuccess(); // ✅ close modal on success
+            if (onSuccess) onSuccess();
         } catch (err: any) {
             const error = err as IApiErrorResponse;
             toast({
                 title: `Failed to ${actionLabel}`,
+                position: 'top',
                 description: getErrorMessage(error) || 'Something went wrong',
                 status: 'error',
                 duration: 4000,
