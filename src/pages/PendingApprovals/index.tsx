@@ -26,7 +26,7 @@ import { IPendingApproval, PendingApprovalStatus } from '@typescript/services/pe
 import { modifyApprovalAction } from '@services/pending-approvals'
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 
-import { usePagination, useSortBy, useTable, Column } from 'react-table';
+import { usePagination, useSortBy, useTable, Column ,useGlobalFilter } from 'react-table';
 import { ConfirmDialog } from '../../components/interface/ConfirmationDialog';
 import { formatEpochToTZ } from '@helpers/dateHelper';
 import { useSelector } from 'react-redux';
@@ -37,6 +37,7 @@ import { IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 import { CustomSelect } from '@components/interface';
 import { OptionType } from '@components/interface/CustomSelect';
+import GlobalFilter from '@components/interface/GlobalFilter';
 
 const PendingApprovals = () => {
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
@@ -222,7 +223,8 @@ const PendingApprovals = () => {
     gotoPage,
     nextPage,
     previousPage,
-    state: { pageIndex }
+    state: { pageIndex ,globalFilter},
+    setGlobalFilter,
   } = useTable(
     {
       columns,
@@ -232,6 +234,7 @@ const PendingApprovals = () => {
         pageSize: 10
       }
     },
+    useGlobalFilter,
     useSortBy,
     usePagination
   );
@@ -266,6 +269,8 @@ const PendingApprovals = () => {
 
       </HStack>
 
+      <VStack w="full" align="flex-start" spacing={2} >
+      <GlobalFilter mt={5} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
       {isError && <Text color="red.500">{String(error)}</Text>}
 
       {!isError && (
@@ -402,7 +407,7 @@ const PendingApprovals = () => {
           </HStack>
         </TableContainer>
       )}
-
+    </VStack>
       <ConfirmDialog
         isOpen={isDialogOpen}
         title={actionType === PendingApprovalStatus.APPROVED ? "Approve Request" : "Reject Request"}
