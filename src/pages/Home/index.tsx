@@ -22,7 +22,7 @@ const Home = () => {
 
 
   return (
-    <VStack align="flex-start" w="full" h="full" p="3" spacing={0} mt={10}>
+    <VStack align="flex-start" w="full" h="full" p="3" spacing={2} mt={10}>
       <Heading fontSize="2xl" fontWeight="bold" mb={6}>Home</Heading>
 
       <VStack
@@ -33,7 +33,6 @@ const Home = () => {
         px={4}
         py={3}
         mt={2}
-        bg="gray.50"
         w="full"
         spacing={2}
         mb={8}
@@ -57,7 +56,6 @@ const Home = () => {
       >
         Latest Announcement
       </Heading>
-      <Box h={2} />
 
       <VStack align="flex-start" bg="white" w="full" spacing={2} mb={8}>
         {announcements.map((announcement: any, index: number) => (

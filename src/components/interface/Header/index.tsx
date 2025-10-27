@@ -32,6 +32,7 @@ import { useSelector } from 'react-redux';
 import { AppMode } from '@store/features/app';
 import TimezoneSelect from '../TimezoneSelect';
 import { isObject } from 'lodash';
+import { MdLogout, MdLockOutline } from 'react-icons/md';
 
 const Header = () => {
   // Navigation
@@ -170,6 +171,7 @@ const Header = () => {
                     colorScheme="muted"
                     w="100%"
                     justifyContent="flex-start"
+                    leftIcon={<MdLockOutline size={18} />}
                     onClick={handleChangePassword}>
                     Change Password
                   </Button>
@@ -180,6 +182,7 @@ const Header = () => {
                     colorScheme="red"
                     w="100%"
                     justifyContent="flex-start"
+                    leftIcon={<MdLogout size={18} />}
                     onClick={logout}>
                     Logout
                   </Button>
