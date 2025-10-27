@@ -328,6 +328,8 @@ export class AuditHelper extends FormHelper {
       .object({
         fromDate: z.string({ required_error: 'Required' }),
         toDate: z.string({ required_error: 'Required' }),
+        actionId: z.string().optional(),
+        userId: z.string().optional(),
       })
       .refine((value) => value.fromDate < value.toDate, {
         message: 'Should be less than to date',
@@ -387,20 +389,10 @@ export class OrganizationHelper extends FormHelper {
     return z.object({
       participantId: z.string().optional(),
       participantName: z.string().optional(),
-      description: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Description is required'),
-      address: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Address is required'),
-      mobile: z
-        .string({ required_error: 'Required' })
-        .trim()
-        .min(1, 'Mobile is required'),
+      description: z.string().optional(),
+      address: z.string().optional(),
+      mobile: z.string().optional(),
       logoFileType: z.string().nullable().optional(),
-
       logo: z.string().optional(),
       createdDate: z.number().optional(),
     });
