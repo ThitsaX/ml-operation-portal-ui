@@ -32,11 +32,13 @@ const SideBarAccordion = ({
 
   const { data } = useGetUserState();
   const [menuList, setMenuList] = useState<number[]>([]);
+  const [accordionIndex, setAccordionIndex] = useState<number | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (data?.accessMenuList) {
       setMenuList(data.accessMenuList);
+      setAccordionIndex(null);
     }
   }, [data]);
 
@@ -51,11 +53,21 @@ const SideBarAccordion = ({
     }
   };
 
+  const handleAccordionChange = (index: number | number[] | undefined) => {
+    if (typeof index === 'number') {
+      setAccordionIndex(accordionIndex === index ? null : index);
+    } else {
+      setAccordionIndex(null);
+    }
+  };
+
+
   return (
     <>
       {checkMenuIds() && (
         <Accordion
-          defaultIndex={[0]}
+          index={accordionIndex ?? undefined}
+          onChange={handleAccordionChange}
           allowToggle
           alignSelf="stretch"
           {...props}
