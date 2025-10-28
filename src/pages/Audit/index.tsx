@@ -67,6 +67,7 @@ import { JsonViewer } from '@components/interface/JsonViewer';
 import { OptionType } from '@components/interface/CustomSelect';
 import { CustomSelect } from '@components/interface';
 import { useGetActionList, useGetMadeByList } from '@hooks/services';
+import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 
 const auditHelper = new AuditHelper();
 
@@ -133,7 +134,7 @@ const Audit = () => {
       const toDate = moment.tz(values.toDate, selectedTZString).utc().format();
       const actionId = values.actionId;
       const userId = values.userId;
-      
+
       const payload = { fromDate, toDate, actionId, userId, page, pageSize: size };
 
       try {
@@ -261,8 +262,7 @@ const Audit = () => {
               control={control}
               name="fromDate"
               render={({ field: { value, onChange } }) => (
-                <Input
-                  type="datetime-local"
+                <CustomDateTimePicker
                   value={value}
                   onChange={(e) => {
                     onChange(e.target.value);
@@ -280,8 +280,7 @@ const Audit = () => {
               control={control}
               name="toDate"
               render={({ field: { value, onChange } }) => (
-                <Input
-                  type="datetime-local"
+                <CustomDateTimePicker
                   value={value}
                   onChange={(e) => {
                     onChange(e.target.value);
