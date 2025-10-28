@@ -133,12 +133,20 @@ const Audit = () => {
       const toDate = moment.tz(values.toDate, selectedTZString).utc().format();
       const actionId = values.actionId;
       const userId = values.userId;
-      console.log('Searching with values:', { fromDate, toDate, actionId, userId, page, size });
-
+      
       const payload = { fromDate, toDate, actionId, userId, page, pageSize: size };
 
       try {
         const response = await mutateAsync(payload);
+        if (!response?.auditInfoList?.length) {
+          toast({
+            position: 'top',
+            description: 'No data found',
+            status: 'warning',
+            isClosable: true,
+            duration: 3000,
+          });
+        }
         setTableData(response.auditInfoList || []);
         setTotalPages(response.totalPages || 1);
         setPageNumber(page);
@@ -578,7 +586,13 @@ const Audit = () => {
                   <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3}>
                     Response
                   </Text>
-                  <JsonViewer value={auditDetail.outputInfo} />
+                  {auditDetail.outputInfo ? (<JsonViewer value={auditDetail.outputInfo} />)
+                    : (<JsonViewer
+                      value={{
+                        exception: auditDetail.exceptionInfo
+                      }}
+                    />)
+                  }
                 </Box>
               </VStack>
             ) : (

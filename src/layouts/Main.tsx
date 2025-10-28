@@ -6,7 +6,7 @@ import { useCallback, useDeferredValue, useEffect, useState } from 'react';
 
 const DEFAULT_WIDTH = 260;
 const COLLAPSED_WIDTH = 64;
-const HEADER_HEIGHT = '64px';
+const HEADER_HEIGHT = '48px';
 
 function Main() {
   const navigate = useNavigate();
