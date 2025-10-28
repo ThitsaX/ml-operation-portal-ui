@@ -71,7 +71,8 @@ import {
     useGetSettlementModelList,
 } from '@hooks/services/settlements';
 import { useNavigate } from "react-router-dom";
-
+import { hasMenuAccess } from '@helpers/permissions';
+import { getErrorMessage } from '@helpers/errors';
 
 const SettlementWindows = () => {
     const { start, complete } = useLoadingContext();
@@ -172,7 +173,7 @@ const SettlementWindows = () => {
                 } else {
                     toast({
                         position: 'top',
-                        description: err.default_error_message || "Internal error",
+                        description: getErrorMessage(err) || "Internal error",
                         status: 'error',
                         isClosable: true,
                         duration: 3000
@@ -197,7 +198,7 @@ const SettlementWindows = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: err.default_error_message || 'Cannot retrieve net transfer amount',
+                description: getErrorMessage(err) || 'Cannot retrieve net transfer amount',
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -247,7 +248,7 @@ const SettlementWindows = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: err.default_error_message || 'Failed to close Settlement Window',
+                description: getErrorMessage(err) || 'Failed to close Settlement Window',
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -292,7 +293,7 @@ const SettlementWindows = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: err.default_error_message || 'Failed to create settlement',
+                description: getErrorMessage(err) || 'Failed to create settlement',
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -313,7 +314,8 @@ const SettlementWindows = () => {
     };
 
 
-    const columns = useMemo<Column<ISettlementWindow>[]>(() => [
+    const columns = useMemo<Column<ISettlementWindow>[]>(() => {
+            const baseColumns: Column<ISettlementWindow>[] = [
         {
             id: "selection",
             Header: () => (
@@ -396,32 +398,38 @@ const SettlementWindows = () => {
                     <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DD HH:mm')}</Text>
                 );
             },
-        },
-        {
-            Header: 'Action',
-            disableSortBy: true,
-            Cell: ({ row }: any) => {
-                if (row.original.state === 'OPEN') {
-                    return (
-                        <HStack spacing={4}>
-                            <Button
-                                size="sm"
-                                colorScheme="green"
-                                variant="solid"
-                                onClick={() => handleClose(row.original)}>
-                                Close Window
-                            </Button>
-                        </HStack>
-                    );
-                }
+        }];
 
-                return <></>;
-            }
+        const actionColumn = hasMenuAccess("CloseSettlementWindows")
+                ? [
+                    {
+                        Header: 'Action',
+                        id: 'action',
+                        disableSortBy: true,
+                        Cell: ({ row }: any) => {
+                            if (row.original.state === 'OPEN') {
+                                return (
+                                    <HStack spacing={4}>
+                                        <Button
+                                            size="sm"
+                                            colorScheme="green"
+                                            variant="solid"
+                                            onClick={() => handleClose(row.original)}>
+                                            Close Window
+                                        </Button>
+                                    </HStack>
+                                );
+                            }
 
-        },
-    ],
-        [settlementWindows, selectedRowIds, selectedTZString]
-    );
+                            return <></>;
+                        }
+                    } as Column<ISettlementWindow>,
+                    ]
+                : []
+
+            return [...baseColumns, ...actionColumn];
+        }, [settlementWindows, selectedRowIds, selectedTZString]);
+
 
     const {
         getTableProps,
@@ -746,6 +754,7 @@ const SettlementWindows = () => {
                         }}
                            width="250px"
                     />
+                    {hasMenuAccess('CreateSettlement') && (
                     <Button
                         isDisabled={ settlementModel === '' || selectedRowIds.length < 1 }
                         color="white"
@@ -756,7 +765,7 @@ const SettlementWindows = () => {
                         }}
                         onClick={createSettlement}>
                         Create Settlement
-                    </Button>
+                    </Button>)}
                 </Flex>
 
                 <TableContainer
