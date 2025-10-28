@@ -39,6 +39,7 @@ import {
 import SettlementModal from '@components/interface/SettlementModels/SettlementModals';
 import { ISettlementModel } from '@typescript/services';
 import { getSettlementModelList } from '@services/settlements';
+import { hasMenuAccess } from '@helpers/permissions';
 
 const SettlementModels = () => {
     const [models, setModels] = useState<ISettlementModel[]>([]);
@@ -114,8 +115,8 @@ const SettlementModels = () => {
         };
     }, [toast]);
 
-    const columns = useMemo<Column<ISettlementModel>[]>(
-        () => [
+    const columns = useMemo<Column<ISettlementModel>[]>(() => {
+        const baseColumns: Column<ISettlementModel>[] = [
             {
                 Header: 'Model Name',
                 accessor: 'name'
@@ -133,23 +134,27 @@ const SettlementModels = () => {
                     <Text>{value ?? 'N/A'}</Text>
                 )
             },
-            {
-                Header: 'Action',
-                disableSortBy: true,
-                Cell: ({ row }: { row: Row<ISettlementModel> }) => (
-                    <HStack spacing={3}>
-                        <Button
-                            colorScheme="blue"
-                            size="md"
-                            onClick={() => handleEditClick(row.original)}>
-                            Edit
-                        </Button>
-                    </HStack>
-                )
-            }
-        ],
-        [handleEditClick]
-    );
+        ];
+
+        const actionColumn = hasMenuAccess("ModifySettlementModel")
+            ? [
+                {
+                    Header: 'Action',
+                    id: 'action',
+                    disableSortBy: true,
+                    Cell: ({ row }: { row: Row<ISettlementModel> }) => (
+                        <HStack spacing={3}>
+                            <Button colorScheme="blue" size="md" onClick={() => handleEditClick(row.original)}>
+                                Edit
+                            </Button>
+                        </HStack>
+                    ),
+                } as Column<ISettlementModel>,
+            ]
+            : []
+
+        return [...baseColumns, ...actionColumn];
+    }, [handleEditClick]);
 
     const data = useMemo<ISettlementModel[]>(
         () => (models && models.length ? models : []),
@@ -191,10 +196,10 @@ const SettlementModels = () => {
     };
 
     return (
-    <VStack align="flex-start" w="full" h="full" p="3" mt={10}>
-      <Stack>
-        <Heading fontSize="2xl">Settlement Models</Heading>
-      </Stack>
+        <VStack align="flex-start" w="full" h="full" p="3" mt={10}>
+            <Stack>
+                <Heading fontSize="2xl" fontWeight="bold" mb={6}>Settlement Models</Heading>
+            </Stack>
             <TableContainer
                 w="full"
                 borderWidth={1}
@@ -217,7 +222,7 @@ const SettlementModels = () => {
                                             align="center"
                                             spacing="2"
                                             flex={1}>
-                                            <Text flex={1}>
+                                            <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">
                                                 {column.render('Header')}
                                             </Text>
                                             {column.disableSortBy ? null : (

@@ -63,7 +63,8 @@ import {
 } from '@services/settlements';
 import { useLocation } from "react-router-dom";
 import CustomSelect from '@components/interface/CustomSelect';
-
+import { hasMenuAccess } from '@helpers/permissions';
+import { getErrorMessage } from '@helpers/errors';
 
 const finalizeSettlementHelper = new FinalizeSettlementHelper();
 
@@ -181,7 +182,7 @@ const FinalizeSettlement = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: err.default_error_message || 'Cannot retrieve net transfer amount',
+                description: getErrorMessage(err) || 'Cannot retrieve net transfer amount',
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -225,7 +226,7 @@ const FinalizeSettlement = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: err.default_error_message || 'Failed to finalize the settlement',
+                description: getErrorMessage(err) || 'Failed to finalize the settlement',
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -237,7 +238,8 @@ const FinalizeSettlement = () => {
         });
     }
 
-    const columns = useMemo<Column<IFinalizeSettlement>[]>(() => [
+    const columns = useMemo<Column<IFinalizeSettlement>[]>(() => {
+                const baseColumns: Column<IFinalizeSettlement>[] = [
         {
             Header: 'Settlement ID',
             accessor: 'settlementId',
@@ -281,30 +283,38 @@ const FinalizeSettlement = () => {
             Cell: ({ value }) => (
                 <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DD HH:mm')}</Text>
             )
-        },
-        {
-            Header: 'Action',
-            disableSortBy: true,
-            Cell: ({ row }: any) => {
-                if (!['SETTLED', 'ABORTED'].includes(row.original.state)) {
-                    return (
-                        <HStack spacing={4}>
-                            <Button
-                                size="sm"
-                                colorScheme="green"
-                                variant="solid"
-                                onClick={() => handleFinalize(row.original)}>
-                                Finalize
-                            </Button>
-                        </HStack>
-                    );
-                }
+        }];
 
-                return <></>;
-            }
-        },
-    ], [finalizeSettlements, selectedTZString]);
+            const actionColumn = hasMenuAccess("FinalizeSettlement")
+                            ? [
+                                {
+                                    Header: 'Action',
+                                    id: 'action',
+                                    disableSortBy: true,
+                                    Cell: ({ row }: any) => {
+                                        if (!['SETTLED', 'ABORTED'].includes(row.original.state)) {
+                                            return (
+                                                <HStack spacing={4}>
+                                                    <Button
+                                                        size="sm"
+                                                        colorScheme="green"
+                                                        variant="solid"
+                                                        onClick={() => handleFinalize(row.original)}>
+                                                        Finalize
+                                                    </Button>
+                                                </HStack>
+                                            );
+                                        }
 
+                                        return <></>;
+                                    }
+                                } as Column<IFinalizeSettlement>,
+                                ]
+                            : []
+        
+            return [...baseColumns, ...actionColumn];
+    }, [finalizeSettlements, selectedTZString]);
+        
 
     const {
         getTableProps,
