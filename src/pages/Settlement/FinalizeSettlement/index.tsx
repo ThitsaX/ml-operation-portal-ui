@@ -6,7 +6,6 @@ import {
     Heading,
     HStack,
     Input,
-    Select,
     Stack,
     useToast,
     Table,
@@ -30,7 +29,6 @@ import {
     ModalFooter,
     ModalCloseButton,
     SimpleGrid,
-    Flex
 } from '@chakra-ui/react';
 import { FinalizeSettlementHelper } from '@helpers/form';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
@@ -337,7 +335,6 @@ const FinalizeSettlement = () => {
 
     const {
         control,
-        register,
         getValues,
         setValue,
         trigger,
@@ -530,11 +527,14 @@ const FinalizeSettlement = () => {
                             name="state"
                             render={({ field }) => (
                                 <CustomSelect
-                                placeholder="All State"
-                                    options={ stateList ? stateList.map(({ settlementStateId, enumeration }) => ({
-                                        value: settlementStateId,
-                                        label: enumeration
-                                    })) : [] }
+                                    placeholder="All States"
+                                    isClearable={true}
+                                    options={ 
+                                        stateList?.map(({ settlementStateId, enumeration }) => ({
+                                            value: settlementStateId,
+                                            label: enumeration
+                                        })) ?? []
+                                    }
                                     value={field.value ? {
                                         value: field.value,
                                         label: field.value
@@ -552,12 +552,13 @@ const FinalizeSettlement = () => {
                                 render={({ field }) => (
                                     <CustomSelect
                                         placeholder="All Currency"
-                                        options={[
-                                            ...(currencyList ?? []).map((item) => ({
-                                            value: item.currency,
-                                            label: item.currency,
-                                            })),
-                                        ]}
+                                        isClearable={true}
+                                        options={
+                                            currencyList?.map((item) => ({
+                                                value: item.currency,
+                                                label: item.currency,
+                                            })) ?? []
+                                        }
                                         value={field.value ? {
                                             value: field.value,
                                             label: field.value

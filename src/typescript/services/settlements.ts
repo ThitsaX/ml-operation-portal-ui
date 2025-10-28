@@ -8,6 +8,7 @@ export interface ISettlementModel {
     currencyId: string | null;
     isActive: boolean;
     autoCloseWindow: boolean;
+    manualCloseWindow: boolean;
     requireLiquidityCheck: boolean;
     autoPositionReset: boolean;
     adjustPosition: boolean;
