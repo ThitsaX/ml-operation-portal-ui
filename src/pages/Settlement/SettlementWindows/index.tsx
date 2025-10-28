@@ -6,7 +6,6 @@ import {
     Heading,
     HStack,
     Input,
-    Select,
     Stack,
     useToast,
     Table,
@@ -398,6 +397,7 @@ const SettlementWindows = () => {
                     <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DD HH:mm')}</Text>
                 );
             },
+
         }];
 
         const actionColumn = hasMenuAccess("CloseSettlementWindows")
@@ -407,10 +407,17 @@ const SettlementWindows = () => {
                         id: 'action',
                         disableSortBy: true,
                         Cell: ({ row }: any) => {
+                            let canCloseManual = true;
+                            if (modelList && modelList.length > 0) {
+                                canCloseManual = modelList[0].manualCloseWindow;
+                            }
+
                             if (row.original.state === 'OPEN') {
                                 return (
                                     <HStack spacing={4}>
                                         <Button
+                                            isDisabled={!canCloseManual}
+                                            title={ !canCloseManual ? "Disabled due to not allowing manual closing" : "" }
                                             size="sm"
                                             colorScheme="green"
                                             variant="solid"
@@ -466,7 +473,6 @@ const SettlementWindows = () => {
         trigger,
         reset,
         handleSubmit,
-        register,
         formState: { errors }
     } = useForm<ISettlementWindowForm>({
         resolver: zodResolver(schema),
@@ -524,7 +530,6 @@ const SettlementWindows = () => {
                 case 'custom':
                     setDateRange(range);
                     return;
-                    break;
             }
 
             setDateRange(range);
@@ -664,7 +669,8 @@ const SettlementWindows = () => {
                             name="state"
                             render={({ field }) => (
                                 <CustomSelect
-                                    placeholder="All State"
+                                    placeholder="All States"
+                                    isClearable={true}
                                     options={
                                         stateList?.map((item) => ({
                                             value: item.settlementWindowStateId,
@@ -687,13 +693,14 @@ const SettlementWindows = () => {
                                 name="currency"
                                 render={({ field }) => (
                                     <CustomSelect
-                                        placeholder="All Currency"
-                                        options={[
-                                            ...(currencyList ?? []).map((item) => ({
+                                        placeholder="All Currencies"
+                                        isClearable={true}
+                                        options={
+                                            currencyList?.map((item) => ({
                                             value: item.currency,
                                             label: item.currency,
-                                            })),
-                                        ]}
+                                            })) ?? []
+                                        }
                                         value={field.value ? {
                                             value: field.value,
                                             label: field.value
@@ -731,20 +738,20 @@ const SettlementWindows = () => {
                             Find
                         </Button>
                         </FormControl>
-                      </SimpleGrid>
+                    </SimpleGrid>
                 </Stack>
 
                 <Flex justify="flex-end" flex={1} gap={5} mt={6} >
                     <CustomSelect
                         placeholder="Choose Settlement Model"
                         isClearable={true}
-                        options={[
-                            { value: '', label: 'Choose Settlement Model' },
-                            ...(modelList ?? []).map((item) => ({
+                        width={"16em"}
+                        options={
+                            modelList?.map((item) => ({
                                 value: item.name,
                                 label: item.name
-                            })),
-                        ]}
+                            })) ?? []
+                        }
                         value={settlementModel ? {
                             value: settlementModel,
                             label: settlementModel
@@ -752,7 +759,6 @@ const SettlementWindows = () => {
                         onChange={(selectedOption) => {
                             setSettlementModel(selectedOption ? selectedOption.value : '');
                         }}
-                           width="250px"
                     />
                     {hasMenuAccess('CreateSettlement') && (
                     <Button
