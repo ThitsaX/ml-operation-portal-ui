@@ -6,7 +6,6 @@ import {
   Button,
   Box,
   FormControl,
-  FormLabel,
   FormErrorMessage,
   useToast,
   Select,
@@ -26,7 +25,6 @@ import {
   IconButton,
   Divider,
   Icon,
-  Collapse,
 } from '@chakra-ui/react';
 import { useCallback } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -47,7 +45,7 @@ import {
 import { getAllTransfers } from '@services/transfer';
 import { IGetTransferData, IApiErrorResponse } from '@typescript/services';
 import moment from 'moment';
-import { usePagination, useSortBy, SortByFn, useTable, Row, Column } from 'react-table';
+import { useSortBy, SortByFn, useTable, Column } from 'react-table';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import {
   TfiAngleDoubleLeft,
@@ -85,12 +83,11 @@ const Transfer = () => {
   const [dateRange, setDateRange] = useState<Ranges>('oneDay');
   const [transferData, setTransferData] = useState<IGetTransferData[]>([]);
   const [transferId, setTransferId] = useState<string>('');
-  const { isOpen: isToggle, onToggle } = useDisclosure();
 
   // Pagination
-  const [pageIndex, setPageIndex] = useState<number>(1); // start from 1
-  const [pageNumber, setPageNumber] = useState<number>(1); // for input
-  const [pageSize, setPageSize] = useState<number>(10); // make it mutable
+  const [pageIndex, setPageIndex] = useState<number>(1);
+  const [pageNumber, setPageNumber] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   const [totalPages, setTotalPages] = useState<number>(1);
 
@@ -237,6 +234,7 @@ const Transfer = () => {
           setTransferData(data.transferInfoList);
           setTotalPages(Math.ceil(data.totalPage / currentSize));
           setPageNumber(currentPage);
+          setPageIndex(currentPage);
         })
         .catch((error: IApiErrorResponse) => {
           toast({
@@ -287,7 +285,7 @@ const Transfer = () => {
         Header: () => (
           <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Transfer ID</Text>
         ),
-        accessor: 'transferId', // accessor is the "key" in the data
+        accessor: 'transferId',
         disableSortBy: true
       },
       {
@@ -295,13 +293,6 @@ const Transfer = () => {
           <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">State</Text>
         ),
         accessor: 'state'
-      },
-      {
-        Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Type</Text>
-        ),
-        accessor: 'type',
-        disableSortBy: true
       },
       {
         Header: () => (
@@ -316,34 +307,27 @@ const Transfer = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Amount</Text>
-        ),
-        accessor: 'amount',
-        sortType: numberSort,
-        Cell: ({ value }) => (
-          <Text textAlign="right">
-            {value}
-          </Text>
-        ),
-      },
-      {
-        Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Payer DFSP</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Payer DFSP ID</Text>
         ),
         accessor: 'payerDfsp'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Payee DFSP</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Payee DFSP ID</Text>
         ),
         accessor: 'payeeDfsp'
       },
+          {
+        Header: () => (
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Window ID</Text>
+        ),
+        accessor: 'windowId'
+      },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Settlement Batch</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Settlement ID</Text>
         ),
         accessor: 'settlementBatch',
-        disableSortBy: true,
         Cell: ({ value }) => (
           <Text textAlign="right">
             {value}
@@ -352,7 +336,7 @@ const Transfer = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Date Submitted</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Submitted Date</Text>
         ),
         accessor: 'submittedOnDate'
       }
@@ -364,14 +348,14 @@ const Transfer = () => {
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    rows, // ✅ use rows instead of page
+    rows,
     prepareRow,
   } = useTable(
     {
       columns,
       data: transferData,
-      manualPagination: true, // ✅ tell react-table we handle pagination
-      pageCount: totalPages,  // ✅ inform how many pages there are
+      manualPagination: true,
+      pageCount: totalPages,
     },
     useSortBy
   );
@@ -385,15 +369,6 @@ const Transfer = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // const handlePageValidation = (value: string) => {
-  //   if (Number(value) > pageOptions.length) {
-  //     setPageNumber(pageNumber)
-  //   } else if (value.startsWith('0')) {
-  //     setPageNumber('')
-  //   } else {
-  //     setPageNumber(value)
-  //   }
-  // }
 
   const dateRangeOptions = [
     { value: 'oneDay', label: 'Past 24 Hours' },
@@ -782,7 +757,7 @@ const Transfer = () => {
             bg: 'primary',
             opacity: 0.4
           }}
-          onClick={handleSubmit((values) => onFindHandler(values, pageIndex, pageSize))}>
+          onClick={handleSubmit((values) => onFindHandler(values, 1, pageSize))}>
           Find Transfer
         </Button>
 
@@ -924,9 +899,9 @@ const Transfer = () => {
               value={pageSize}
               onChange={(e) => {
                 const newSize = Number(e.target.value);
-                setPageSize(newSize);       // <-- update pageSize state
-                setPageIndex(1);            // reset to first page
-                setPageNumber(1);         // update input
+                setPageSize(newSize);      
+                setPageIndex(1);            
+                setPageNumber(1);         
                 handleSubmit(values => onFindHandler(values, 1, newSize))();
               }}
             >

@@ -34,6 +34,7 @@ export interface IGetTransferData {
   amount: number;
   payerDfsp: string;
   payeeDfsp: string;
+  windowId: string;
   settlementBatch: string;
   submittedOnDate: string;
 }
