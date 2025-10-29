@@ -4330,6 +4330,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@date-fns/tz@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "@date-fns/tz@npm:1.4.1"
+  checksum: eceefcd68d3fc4f2fa07bdea5a22b05b0075850434cdcc765cea78995bb60cfe72d63c50e925188a1841af8d0a76a16d7d4f139d57d1c16ee03b30b2017a8d2d
+  languageName: node
+  linkType: hard
+
 "@emnapi/core@npm:^1.4.3":
   version: 1.4.5
   resolution: "@emnapi/core@npm:1.4.5"
@@ -7635,6 +7642,20 @@ __metadata:
     whatwg-mimetype: ^4.0.0
     whatwg-url: ^14.0.0
   checksum: 5c40568c31b02641a70204ff233bc4e42d33717485d074244a98661e5f2a1e80e38fe05a5755dfaf2ee549f2ab509d6a3af2a85f4b2ad2c984e5d176695eaf46
+  languageName: node
+  linkType: hard
+
+"date-fns-jalali@npm:^4.1.0-0":
+  version: 4.1.0-0
+  resolution: "date-fns-jalali@npm:4.1.0-0"
+  checksum: cde80e4a87bfd96458ff1edfd5af5fed7ed6e04dd48574ed64d376e37e7689ddee1a7c5a6685f4b93cf3432eac73c51acd786504070a6973a140c5f15163ca39
+  languageName: node
+  linkType: hard
+
+"date-fns@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "date-fns@npm:4.1.0"
+  checksum: fb681b242cccabed45494468f64282a7d375ea970e0adbcc5dcc92dcb7aba49b2081c2c9739d41bf71ce89ed68dd73bebfe06ca35129490704775d091895710b
   languageName: node
   linkType: hard
 
@@ -11735,6 +11756,7 @@ __metadata:
     "@vitejs/plugin-react": ^3.1.0
     axios: ^1.3.2
     babel-jest: ^30.0.5
+    date-fns: ^4.1.0
     eslint: ^8.0.1
     eslint-config-react-app: ^7.0.1
     eslint-plugin-unused-imports: ^2.0.0
@@ -11749,6 +11771,7 @@ __metadata:
     moment-timezone: ^0.5.40
     re-resizable: ^6.9.9
     react: ^18.2.0
+    react-day-picker: ^9.11.1
     react-dom: ^18.2.0
     react-hook-form: ^7.43.0
     react-i18next: ^12.1.5
@@ -12222,6 +12245,19 @@ __metadata:
   peerDependencies:
     react: ^15.3.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
   checksum: 7db6110027a51458b1a46109d2b63dd822825f483c71afef7c0c0a671f3b1aa155049dbd8651c9d536ffac83601f8823b7c3f8916b4f4ee5c3cb7647a85cce4e
+  languageName: node
+  linkType: hard
+
+"react-day-picker@npm:^9.11.1":
+  version: 9.11.1
+  resolution: "react-day-picker@npm:9.11.1"
+  dependencies:
+    "@date-fns/tz": ^1.4.1
+    date-fns: ^4.1.0
+    date-fns-jalali: ^4.1.0-0
+  peerDependencies:
+    react: ">=16.8.0"
+  checksum: 26c97c5232422c1198f016e7d55e5d85c08de4b985f45b358691770ed90cd2925c76b52f3574c720d2b5d14aeb9ef2e791bc565a7345b09e33f69ff7c5c72342
   languageName: node
   linkType: hard
 
