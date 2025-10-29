@@ -7,9 +7,10 @@ import {
     ISettlementWindowState,
     ISettlementModel,
     ISettlementState,
+    ISettlementWindow, 
+    INetTransferAmount
 } from '@typescript/services'
 import { type AxiosError } from 'axios'
-import { ISettlementWindow, INetTransferAmount } from '@typescript/services'
 import { 
     ISettlementWindowForm, 
     ISettlementWindowCreateForm, 
