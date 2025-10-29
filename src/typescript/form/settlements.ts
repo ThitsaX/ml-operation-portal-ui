@@ -23,7 +23,6 @@ export interface ISettlementScheduleForm {
     name: string,
     description: string,
     cronExpression: string,
-    zoneId: string, // "+06:00"
 } 
 
 export interface ISettlementScheduleModifyForm extends ISettlementScheduleForm {
@@ -34,4 +33,15 @@ export interface ISettlementScheduleModifyForm extends ISettlementScheduleForm {
 export interface ISettlementScheduleRemoveForm{
   schedulerConfigId: string;
   settlementModelId: string,
+}
+
+export interface IModifySettlementModelPayload {
+  settlementModelId: string;
+  name: string;
+  modelType: string;
+  currencyID: string;
+  active: boolean;
+  autoCloseWindow?: boolean;
+  manualCloseWindow?: boolean; 
+  zoneId?: string;             
 }
