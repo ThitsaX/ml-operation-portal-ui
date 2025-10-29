@@ -265,10 +265,10 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
 
     const byOffset = tzOptionsFull.find(opt => opt.offset === (settlementModel.zoneId || ''));
     if (byOffset) {
-      setSelectedTz(byOffset.value);  
-      setSavedTz(byOffset.value);  
+      setSelectedTz(byOffset.value);
+      setSavedTz(byOffset.value);
     } else {
-      
+
       setSavedTz(selectedTz);
     }
 
