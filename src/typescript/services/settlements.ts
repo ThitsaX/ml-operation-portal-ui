@@ -9,7 +9,6 @@ export interface ISettlementModel {
     isActive: boolean;
     manualCloseWindow: boolean;
     autoCloseWindow: boolean;
-    manualCloseWindow: boolean;
     requireLiquidityCheck: boolean;
     autoPositionReset: boolean;
     adjustPosition: boolean;
