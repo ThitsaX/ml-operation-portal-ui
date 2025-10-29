@@ -12,7 +12,7 @@ import {
   Stack,
   Flex,
   FormErrorMessage,
-
+  FormHelperText
 } from '@chakra-ui/react';
 import { Controller, useForm } from 'react-hook-form';
 import { IParticipantProfile } from '@typescript/services';
@@ -98,26 +98,56 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setFileType(file.type);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result?.toString();
-        const base64String = result?.split(',')[1] ?? null;
+    if (!file) return;
 
-        setPreview(base64String);
-        setValue('logo', base64String ?? '', {
-          shouldValidate: true,
-          shouldDirty: true
-        });
-        setValue('logoFileType', file.type, {
-          shouldValidate: true,
-          shouldDirty: true
-        });
-      };
-      reader.readAsDataURL(file);
+    const ALLOWED_TYPES = ['image/png', 'image/jpeg'];
+    const MAX_FILE_SIZE = 1 * 1024 * 1024;
+
+    if (!ALLOWED_TYPES.includes(file.type.toLowerCase())) {
+      toast({
+        title: 'Invalid file type',
+        description: `Only PNG and JPEG formats are allowed. File: ${file.name}`,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+        position: 'top',
+      });
+      e.target.value = '';
+      return;
     }
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast({
+        title: 'File too large',
+        description: `Please upload an image smaller than 1MB. File: ${file.name}`,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+        position: 'top',
+      });
+      e.target.value = '';
+      return;
+    }
+
+    setFileType(file.type);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result?.toString();
+      const base64String = result?.split(',')[1] ?? null;
+
+      setPreview(base64String);
+      setValue('logo', base64String ?? '', {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      setValue('logoFileType', file.type, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    };
+    reader.readAsDataURL(file);
   };
+
 
 
   const organizationHandler = async (values: IParticipantProfile) => {
@@ -208,11 +238,14 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
             <FormLabel fontSize="sm" fontWeight="semibold">Logo</FormLabel>
             <Input
               type="file"
-              accept="image/*"
+              accept=".png, .jpeg"
               fontSize="md"
               pt={1}
               onChange={handleFileChange}
             />
+            <FormHelperText id="logo-helper-text">
+              Accepted formats: PNG, JPEG. Max size: 1MB.
+            </FormHelperText>
             {/* Hidden inputs to store base64 and fileType in react-hook-form */}
             <input type="hidden" {...register('logo')} />
             <input type="hidden" {...register('logoFileType')} />
@@ -224,6 +257,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
               borderColor="gray.300"
               borderRadius="md"
               p={1}
+              margin={1}
               bg="gray.50"
               height="60px"
               width="100px"
