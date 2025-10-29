@@ -313,11 +313,31 @@ const Transfer = () => {
       },
       {
         Header: () => (
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Payer DFSP Name</Text>
+        ),
+        accessor: 'payerDfspName',
+        Cell: ({ value }) => <Text maxW="200px"             
+              whiteSpace="normal"
+              wordBreak="break-word" 
+              overflowWrap="break-word">{value}</Text>
+      },
+      {
+        Header: () => (
           <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Payee DFSP ID</Text>
         ),
         accessor: 'payeeDfsp'
       },
-          {
+      {
+        Header: () => (
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Payee DFSP Name</Text>
+        ),
+        accessor: 'payeeDfspName',
+        Cell: ({ value }) => <Text maxW="200px"             
+              whiteSpace="normal"
+              wordBreak="break-word" 
+              overflowWrap="break-word">{value}</Text>
+      },
+      {
         Header: () => (
           <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Window ID</Text>
         ),
