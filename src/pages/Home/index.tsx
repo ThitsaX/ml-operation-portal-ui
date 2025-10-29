@@ -14,11 +14,11 @@ const Home = () => {
   const { data: announcements = [] } = useGetAllAnnouncement();
 
 function changeDateMonthFormat(timestamp: number) {
-    return moment.utc(timestamp * 1000).format('MMM');
+    return moment(timestamp * 1000).format('MMM');
   }
 
   function changeDateDayFormat(timestamp: number) {
-    return moment.utc(timestamp * 1000).format('DD');
+    return moment(timestamp * 1000).format('DD');
   }
 
 

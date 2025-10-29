@@ -40,7 +40,7 @@ const Auth = () => {
     useState<AnnouncementInfo>()
 
   const formatTimestamp = (timestamp: number) => {
-    return moment.utc(timestamp * 1000).format('YYYY-MM-DD HH:mm:ss')
+    return moment(timestamp * 1000).format('YYYY-MM-DD HH:mm:ss')
   }
 
   /* Handlers */
