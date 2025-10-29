@@ -7,6 +7,7 @@ export interface ISettlementModel {
     name: string;
     currencyId: string | null;
     isActive: boolean;
+    manualCloseWindow: boolean;
     autoCloseWindow: boolean;
     manualCloseWindow: boolean;
     requireLiquidityCheck: boolean;
@@ -14,6 +15,7 @@ export interface ISettlementModel {
     adjustPosition: boolean;
     schedulerConfigIds: [];
     type: string;
+    zoneId: string;
 }
 
 export interface ISettlementScheduler {
