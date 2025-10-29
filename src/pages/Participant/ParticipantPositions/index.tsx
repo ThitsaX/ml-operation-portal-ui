@@ -44,17 +44,12 @@ import NetDebitCapModal from '@components/interface/Participant/NetDebitCardModa
 import { syncHubParticipantsToPortal } from '@services/dashboard';
 import { createApprovalRequest, updateParticipantStatus } from '@services/participant';
 import { getParticipantPositionList } from '@services/dashboard';
-import { Badge } from '@chakra-ui/react';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 import { hasMenuAccess } from '@helpers/permissions';
+import { formatNumberWithCommas } from '@utils';
 
 const ParticipantPositions = () => {
-
-    // Utility function to format numbers with commas
-    const formatNumber = (num: number): string => {
-        return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    };
 
     const [pageNumber, setPageNumber] = useState<String>('1');
     const [tableData, setTableData] = useState<IParticipantPositionData[]>([]);
@@ -167,7 +162,7 @@ const ParticipantPositions = () => {
                     accessor: 'balance',
                     Cell: ({ row }: any) => (
                         <Box textAlign={'right'}>
-                            {formatNumber(row.original.balance)}
+                            {formatNumberWithCommas(row.original.balance)}
                         </Box>
                     )
                 },
@@ -178,7 +173,7 @@ const ParticipantPositions = () => {
                     accessor: 'currentPosition',
                     Cell: ({ row }: { row: Row<IParticipantPositionData> }) => (
                         <Box textAlign={'right'}>
-                            {formatNumber(row.original.currentPosition)}
+                            {formatNumberWithCommas(row.original.currentPosition)}
                         </Box>
                     )
                 },
@@ -200,7 +195,7 @@ const ParticipantPositions = () => {
                     accessor: 'ndc',
                     Cell: ({ value }: any) => (
                         <Text textAlign="right">
-                            {formatNumber(value)}
+                            {formatNumberWithCommas(value)}
                         </Text>
                     ),
                 },
@@ -355,7 +350,6 @@ const ParticipantPositions = () => {
                 duration: 4000,
                 isClosable: true,
             });
-            console.log('Approval Request Created:', res);
 
             if (onSuccess) onSuccess();
         } catch (err: any) {
@@ -368,7 +362,6 @@ const ParticipantPositions = () => {
                 duration: 4000,
                 isClosable: true,
             });
-            console.error('Error creating approval request:', err);
         }
     };
 
@@ -557,7 +550,7 @@ const ParticipantPositions = () => {
                                     >
                                         {row.cells.map((cell) => (
                                             <Td {...cell.getCellProps()}
-                                                py={2}   // ✅ reduce row height
+                                                py={2}
                                                 px={3}>{cell.render('Cell')}</Td>
                                         ))}
                                     </Tr>

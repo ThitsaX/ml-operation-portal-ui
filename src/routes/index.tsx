@@ -4,7 +4,6 @@ import { Auth, Main } from '@layouts';
 /* Pages */
 import ErrorPage from '@pages/ErrorPage';
 import Login from '@pages/Login';
-import CompanyInfo from '@pages/CompanyInfo';
 import ChangePassword from '@pages/ChangePassword';
 import { SettlementStatementReport, SettlementSummaryReport } from '@pages/Reports';
 import SettlementBankReport from '@pages/Reports/SettlementBankReport';
@@ -186,15 +185,6 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedMenuId="support_center">
             <SupportCenter />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: "company-informations",
-        caseSensitive: true,
-        element: (
-          <ProtectedRoute allowedMenuId="home">
-            <CompanyInfo />
           </ProtectedRoute>
         ),
       },
