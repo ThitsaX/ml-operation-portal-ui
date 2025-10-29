@@ -7,7 +7,6 @@ import {
   Input,
   Stack,
   useToast,
-  HStack,
   VStack,
   SimpleGrid
 } from '@chakra-ui/react';

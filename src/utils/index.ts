@@ -43,3 +43,13 @@ export function thousandSeparator({
 
   return amount.replace(thousandSeparatorRegex, delimiter)
 }
+
+export const formatNumberWithCommas = (
+  value: number | string | null | undefined,
+  options: Intl.NumberFormatOptions = { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+): string => {
+  const num = Number(value);
+  if (value === null || value === undefined || isNaN(num)) return '-';
+
+  return num.toLocaleString('en-US', options);
+};

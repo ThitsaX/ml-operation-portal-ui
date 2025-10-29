@@ -14,11 +14,9 @@ import {
   VStack,
   Heading,
   Text,
-  Select as ChakraSelect,
   Icon,
   Divider,
   Switch,
-  Toast,
   useToast,
   Stack
 } from '@chakra-ui/react';
@@ -76,8 +74,6 @@ const User = () => {
     const newStatus = checked ? UserStatus.ACTIVE : UserStatus.INACTIVE;
     try {
       await modifyUserStatus(userId, newStatus);
-
-
       toast({
         position: 'top',
         description: 'User status updated successfully',

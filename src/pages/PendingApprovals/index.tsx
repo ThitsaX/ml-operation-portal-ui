@@ -16,7 +16,6 @@ import {
   Box,
   Divider,
   Icon,
-  Select
 } from '@chakra-ui/react';
 import { useEffect, useMemo, useState } from 'react';
 import { FiCheckCircle, FiXCircle } from 'react-icons/fi';
@@ -56,7 +55,6 @@ const PendingApprovals = () => {
   });
 
   // State
-  const [tableData, setTableData] = useState<IPendingApproval[]>([]);
   const [pageNumber, setPageNumber] = useState<String>('1');
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);

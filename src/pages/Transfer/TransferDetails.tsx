@@ -23,6 +23,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { getErrorMessage } from '@helpers/errors';
 import { IGetTransferDetails, IApiErrorResponse } from '@typescript/services';
+import { Spinner } from '@chakra-ui/react';
 
 interface IModalProps extends Omit<ModalProps, 'children'> {
   transferId: string;
@@ -67,6 +68,7 @@ const defaultTransferDetails: IGetTransferDetails = {
 const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
 
   const [data, setData] = useState<IGetTransferDetails>(defaultTransferDetails);
+  const [loading, setLoading] = useState(false);
 
   //  Redux
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
@@ -79,6 +81,7 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
   const timezone = moment.tz(selectedTZString).format('ZZ')
 
   const getTfData = useCallback(async () => {
+    setLoading(true);
     try {
       const tfData: IGetTransferDetails = await getTransferDetails(transferId, timezone)
       setData(tfData);
@@ -90,6 +93,8 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
         isClosable: true,
         duration: 3000
       });
+    } finally {
+      setLoading(false);
     }
   }, [transferId, timezone]);
 
@@ -115,49 +120,24 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody maxH="70vh" overflowY="auto" bg="gray.50">
-          <Flex direction="row" gap={6} wrap="wrap">
-
+          {loading ? (
             <Box
-              flex="1"
-              bg="white"
-              p={6}
-              border="2px solid"
-              borderColor="gray.200"
-              borderRadius="lg"
-              boxShadow="sm"
+              h="400px"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              w="100%"
             >
-              <Text fontWeight="bold" fontSize="lg" mb={4}>
-                General Information:
-              </Text>
-              <VStack spacing={2} align="start">
-                {[
-                  ['Transfer ID', data?.transferDetails.transferId],
-                  ['Quote ID', data?.transferDetails.quoteId],
-                  ['Transfer State', data?.transferDetails.transferState],
-                  ['Transfer Type', data?.transferDetails.transferType],
-                  ['Use Case', data?.transferDetails.subScenario],
-                  ['Currency', data?.transferDetails.currency],
-                  ['Amount Type', data?.transferDetails.amountType],
-                  ['Quote Amount', data?.transferDetails.quoteAmount],
-                  ['Transfer Amount', data?.transferDetails.transferAmount],
-                  ['Payee Receive Amount', data?.transferDetails.payeeReceivedAmount],
-                  ['Payee DFSP Fee', data?.transferDetails.payeeDfspFeeAmount],
-                  ['Payee DFSP Commission', data?.transferDetails.payeeDfspCommissionAmount],
-                  ['Submitted Date', data?.transferDetails.submittedOnDate],
-                  ['Window ID', data?.transferDetails.windowId],
-                  ['Settlement ID', data?.transferDetails.settlementId],
-                ].map(([label, value]) => (
-                  <HStack key={label} align="start">
-                    <Text minW="200px" fontWeight="bold">{label}:</Text>
-                    <Text>{value ?? '-'}</Text>
-                  </HStack>
-                ))}
+              <VStack spacing={4} align="center">
+                <Spinner size="xl" color="blue.500" />
+                <Text color="gray.600">Loading transfer details...</Text>
               </VStack>
             </Box>
-
-            <VStack flex="1" spacing={4} align="stretch">
+          ) : (
+            <Flex direction="row" gap={6} wrap="wrap">
 
               <Box
+                flex="1"
                 bg="white"
                 p={6}
                 border="2px solid"
@@ -166,53 +146,92 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
                 boxShadow="sm"
               >
                 <Text fontWeight="bold" fontSize="lg" mb={4}>
-                  Payer Information:
+                  General Information:
                 </Text>
                 <VStack spacing={2} align="start">
-                  <Text><b>ID Type:</b> {data?.payerInformation.idType}</Text>
-                  <Text><b>ID Value:</b> {data?.payerInformation.idValue}</Text>
-                  <Text><b>DFSP ID:</b> {data?.payerInformation.dfspId}</Text>
-                  <Text><b>Name:</b> {data?.payerInformation.name}</Text>
+                  {[
+                    ['Transfer ID', data?.transferDetails.transferId],
+                    ['Quote ID', data?.transferDetails.quoteId],
+                    ['Transfer State', data?.transferDetails.transferState],
+                    ['Transfer Type', data?.transferDetails.transferType],
+                    ['Use Case', data?.transferDetails.subScenario],
+                    ['Currency', data?.transferDetails.currency],
+                    ['Amount Type', data?.transferDetails.amountType],
+                    ['Quote Amount', data?.transferDetails.quoteAmount],
+                    ['Transfer Amount', data?.transferDetails.transferAmount],
+                    ['Payee Receive Amount', data?.transferDetails.payeeReceivedAmount],
+                    ['Payee DFSP Fee', data?.transferDetails.payeeDfspFeeAmount],
+                    ['Payee DFSP Commission', data?.transferDetails.payeeDfspCommissionAmount],
+                    ['Submitted Date', data?.transferDetails.submittedOnDate],
+                    ['Window ID', data?.transferDetails.windowId],
+                    ['Settlement ID', data?.transferDetails.settlementId],
+                  ].map(([label, value]) => (
+                    <HStack key={label} align="start">
+                      <Text minW="200px" fontWeight="bold">{label}:</Text>
+                      <Text>{value ?? '-'}</Text>
+                    </HStack>
+                  ))}
                 </VStack>
               </Box>
 
-              <Box
-                bg="white"
-                p={6}
-                border="2px solid"
-                borderColor="gray.200"
-                borderRadius="lg"
-                boxShadow="sm"
-              >
-                <Text fontWeight="bold" fontSize="lg" mb={4}>
-                  Payee Information:
-                </Text>
-                <VStack spacing={2} align="start">
-                  <Text><b>ID Type:</b> {data?.payeeInformation.idType}</Text>
-                  <Text><b>ID Value:</b> {data?.payeeInformation.idValue}</Text>
-                  <Text><b>DFSP ID:</b> {data?.payeeInformation.dfspId}</Text>
-                  <Text><b>Name:</b> {data?.payeeInformation.name}</Text>
-                </VStack>
-              </Box>
+              <VStack flex="1" spacing={4} align="stretch">
 
-              <Box
-                bg="white"
-                p={6}
-                border="2px solid"
-                borderColor="gray.200"
-                borderRadius="lg"
-                boxShadow="sm"
-              >
-                <Text fontWeight="bold" fontSize="lg" mb={4}>
-                  Error Information:
-                </Text>
-                <VStack spacing={2} align="start">
-                  <Text><b>Error Code:</b> {data?.errorInformation?.errorCode || '-'}</Text>
-                  <Text><b>Error Description:</b> {data?.errorInformation?.errorDescription || '-'}</Text>
-                </VStack>
-              </Box>
-            </VStack>
-          </Flex>
+                <Box
+                  bg="white"
+                  p={6}
+                  border="2px solid"
+                  borderColor="gray.200"
+                  borderRadius="lg"
+                  boxShadow="sm"
+                >
+                  <Text fontWeight="bold" fontSize="lg" mb={4}>
+                    Payer Information:
+                  </Text>
+                  <VStack spacing={2} align="start">
+                    <Text><b>ID Type:</b> {data?.payerInformation.idType}</Text>
+                    <Text><b>ID Value:</b> {data?.payerInformation.idValue}</Text>
+                    <Text><b>DFSP ID:</b> {data?.payerInformation.dfspId}</Text>
+                    <Text><b>Name:</b> {data?.payerInformation.name}</Text>
+                  </VStack>
+                </Box>
+
+                <Box
+                  bg="white"
+                  p={6}
+                  border="2px solid"
+                  borderColor="gray.200"
+                  borderRadius="lg"
+                  boxShadow="sm"
+                >
+                  <Text fontWeight="bold" fontSize="lg" mb={4}>
+                    Payee Information:
+                  </Text>
+                  <VStack spacing={2} align="start">
+                    <Text><b>ID Type:</b> {data?.payeeInformation.idType}</Text>
+                    <Text><b>ID Value:</b> {data?.payeeInformation.idValue}</Text>
+                    <Text><b>DFSP ID:</b> {data?.payeeInformation.dfspId}</Text>
+                    <Text><b>Name:</b> {data?.payeeInformation.name}</Text>
+                  </VStack>
+                </Box>
+
+                <Box
+                  bg="white"
+                  p={6}
+                  border="2px solid"
+                  borderColor="gray.200"
+                  borderRadius="lg"
+                  boxShadow="sm"
+                >
+                  <Text fontWeight="bold" fontSize="lg" mb={4}>
+                    Error Information:
+                  </Text>
+                  <VStack spacing={2} align="start">
+                    <Text><b>Error Code:</b> {data?.errorInformation?.errorCode || '-'}</Text>
+                    <Text><b>Error Description:</b> {data?.errorInformation?.errorDescription || '-'}</Text>
+                  </VStack>
+                </Box>
+              </VStack>
+            </Flex>)}
         </ModalBody>
         <ModalFooter bg="gray.100" borderTop="1px solid" borderColor="gray.200">
           <Button colorScheme="blue" onClick={onClose}>

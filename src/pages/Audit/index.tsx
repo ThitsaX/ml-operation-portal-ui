@@ -32,7 +32,6 @@ import {
   ModalFooter,
   useDisclosure,
   Spinner,
-  Code,
 } from '@chakra-ui/react';
 import {
   TfiAngleDoubleLeft,

@@ -78,39 +78,6 @@ export class ParticipantHelper extends FormHelper {
   }
 }
 
-export class CompanyInfoHelper extends FormHelper {
-  get schema() {
-    return z.object({
-      participant_id: z.string().optional(),
-      dfsp_code: z.string().optional(),
-      name: z.string().optional(),
-      address: z.string({ required_error: 'Required' }),
-      mobile: z.string({ required_error: 'Required' }),
-
-      business_contatct_id: z.string().optional(),
-      business_contatct_name: z.string().optional(),
-      business_contatct_title: z.string().optional(),
-      business_contatct_email: z.string().optional(),
-      business_contatct_mobile: z.string().optional(),
-
-      technical_contatct_id: z.string().optional(),
-      technical_contatct_name: z.string().optional(),
-      technical_contatct_title: z.string().optional(),
-      technical_contatct_email: z.string().optional(),
-      technical_contatct_mobile: z.string().optional(),
-
-      extra_property_list: z.array(
-        z.object({
-          extra_property_id: z.string().optional(),
-          property_key: z.string().optional(),
-          label: z.string().optional(),
-          property_value: z.string().optional()
-        })
-      )
-    });
-  }
-}
-
 export class UserManagementHelper extends FormHelper {
   get schema() {
     return z.object({
