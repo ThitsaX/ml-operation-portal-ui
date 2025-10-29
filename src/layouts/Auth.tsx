@@ -21,6 +21,7 @@ import { type AnnouncementInfo } from '@typescript/services'
 import { isEmpty } from 'lodash-es'
 import { useCallback, useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
+import moment from 'moment'
 
 const Auth = () => {
   const navigate = useNavigate()
@@ -37,6 +38,10 @@ const Auth = () => {
   /* State */
   const [currentAnnouncement, setCurrentAnnouncement] =
     useState<AnnouncementInfo>()
+
+  const formatTimestamp = (timestamp: number) => {
+    return moment(timestamp * 1000).format('YYYY-MM-DD HH:mm:ss')
+  }
 
   /* Handlers */
   const onClickAnnouncementCard = useCallback(
@@ -91,10 +96,12 @@ const Auth = () => {
 
           <Carousel
             data={data?.map((announcement) => {
+              const formattedDate = formatTimestamp(announcement.date);
               return (
                 <AnnouncementCard
                   key={announcement.id}
                   {...announcement}
+                  date={formattedDate}
                   onClick={onClickAnnouncementCard}
                 />
               )
