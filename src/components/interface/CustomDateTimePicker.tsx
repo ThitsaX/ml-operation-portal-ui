@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   Popover,
   PopoverTrigger,
@@ -32,11 +32,31 @@ type OptionType = {
   value: string;
 };
 
-// --- START: Dynamic Year Options Hook ---
-const YEAR_RANGE = 20; // Show 0 years before/after selected
+// Constants
 
+const TIME_OPTIONS = {
+  hours: Array.from({ length: 12 }, (_, i) => ({
+    label: (i + 1).toString(),
+    value: (i + 1).toString(),
+  })),
+  minutes: Array.from({ length: 60 }, (_, i) => ({
+    label: String(i).padStart(2, "0"),
+    value: i.toString(),
+  })),
+  ampm: [
+    { label: "AM", value: "AM" },
+    { label: "PM", value: "PM" },
+  ],
+  months: Array.from({ length: 12 }, (_, i) => ({
+    label: format(new Date(2020, i), "MMMM"),
+    value: i.toString(),
+  })),
+};
+
+// Custom Hook for Dynamic Years
+const YEAR_RANGE = 20; // Show 0 years before/after selected
 const useDynamicYearOptions = (selectedYear?: number) => {
-  const [yearOffset, setYearOffset] = useState(0); // allows scrolling dynamically
+  const [yearOffset, setYearOffset] = useState(0);
 
   const years = useMemo(() => {
     const currentYear = selectedYear || new Date().getFullYear();
@@ -48,242 +68,165 @@ const useDynamicYearOptions = (selectedYear?: number) => {
     }));
   }, [selectedYear, yearOffset]);
 
-  const scrollYears = (direction: "up" | "down") => {
-    setYearOffset((prev) => prev + (direction === "up" ? -1 : 1));
-  };
-
-  // Reset offset when selectedYear changes (e.g., when the value prop changes)
-  useEffect(() => {
-      setYearOffset(0);
-  }, [selectedYear]);
-
-  return { years, scrollYears };
+  useEffect(() => setYearOffset(0), [selectedYear]);
+  return { years };
 };
-// --- END: Dynamic Year Options Hook ---
 
+// Date Formatting Utilities
+const formatForDateTimeLocal = (date: Date): string => {
+  const pad = (num: number) => String(num).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+const formatForDisplay = (date: Date): string => {
+  return format(date, "yyyy-MM-dd hh:mm a");
+};
 
 export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const inputSize = useBreakpointValue({ base: "sm", md: "md" });
 
-  const initialDate = useMemo<Date | null>(() =>
-    value ? new Date(value) : null,
-    [value]
-  );
-
+  // Date State Management
+  const initialDate = useMemo(() => value ? new Date(value) : null, [value]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(initialDate);
   const [month, setMonth] = useState<Date>(initialDate || new Date());
 
-  // Sync like <input type="datetime-local">
+  // Sync with external value changes
   useEffect(() => {
     setSelectedDate(initialDate);
     if (initialDate) setMonth(initialDate);
   }, [initialDate]);
 
-  const inputSize = useBreakpointValue({ base: "sm", md: "md" });
+  // Dynamic Year Options
+  const currentYear = selectedDate?.getFullYear() || new Date().getFullYear();
+  const { years: yearOptions } = useDynamicYearOptions(currentYear);
 
-  const formatForDateTimeLocal = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day}T${hours}:${minutes}`; // Note: Changed space to 'T' for proper datetime-local format
-  };
-
-  const formatForDisplay = (date: Date): string => {
-    return format(date, "yyyy-MM-dd hh:mm a");
-  };
-
-  const emitChange = (date: Date | null) => {
+  // Event Handlers
+  const emitChange = useCallback((date: Date | null) => {
     setSelectedDate(date);
-    if (date) {
-      const browserFormattedString = formatForDateTimeLocal(date);
-      onChange({ target: { value: browserFormattedString } });
-    } else {
-      onChange({ target: { value: "" } });
-    }
-  };
+    onChange({
+      target: { value: date ? formatForDateTimeLocal(date) : "" }
+    });
+  }, [onChange]);
 
-  // Clear button handler
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setSelectedDate(null);
     setMonth(new Date());
-    onChange({ target: { value: "" } });
-  };
+    emitChange(null);
+  }, [emitChange]);
 
-  // Today button handler
-  const handleToday = () => {
+  const handleToday = useCallback(() => {
     const today = new Date();
     setSelectedDate(today);
     setMonth(today);
     emitChange(today);
-  };
+  }, [emitChange]);
 
-  const handleDaySelect = (day?: Date | null) => {
+  const handleDaySelect = useCallback((day?: Date | null) => {
     if (!day) return;
-    if (!selectedDate) {
-      const now = new Date();
-      const updated = new Date(day);
-      updated.setHours(now.getHours(), now.getMinutes());
-      emitChange(updated);
-    } else {
-      const updated = new Date(day);
+
+    const updated = new Date(day);
+    if (selectedDate) {
       updated.setHours(selectedDate.getHours(), selectedDate.getMinutes());
-      emitChange(updated);
-    }
-  };
-
-  const handleTimeChange = (hour: number, minute: number) => {
-    if (!selectedDate) {
-      const updated = new Date();
-      updated.setHours(hour, minute);
-      emitChange(updated);
     } else {
-      const updated = new Date(selectedDate);
-      updated.setHours(hour, minute);
-      emitChange(updated);
+      const now = new Date();
+      updated.setHours(now.getHours(), now.getMinutes());
     }
-  };
+    emitChange(updated);
+  }, [selectedDate, emitChange]);
 
-  const monthOptions = useMemo(
-    () =>
-      Array.from({ length: 12 }, (_, i) => ({
-        label: format(new Date(2020, i), "MMMM"),
-        value: i.toString(),
-      })),
-    []
-  );
+  const handleTimeChange = useCallback((hour: number, minute: number) => {
+    const updated = selectedDate ? new Date(selectedDate) : new Date();
+    updated.setHours(hour, minute);
+    emitChange(updated);
+  }, [selectedDate, emitChange]);
 
-  // --- START: Dynamic Year Hook Integration ---
-  const currentYear = selectedDate?.getFullYear() || new Date().getFullYear();
-  const { years: yearOptions, scrollYears } = useDynamicYearOptions(currentYear);
-  // --- END: Dynamic Year Hook Integration ---
+  // Selection Handlers
+  const handleMonthChange = useCallback((val: OptionType | null) => {
+    if (!val || !selectedDate) return;
 
-  const hourOptions = useMemo(
-    () =>
-      Array.from({ length: 12 }, (_, i) => {
-        const hour = i + 1;
-        return { label: hour.toString(), value: hour.toString() };
-      }),
-    []
-  );
-
-  const minuteOptions = useMemo(
-    () =>
-      Array.from({ length: 60 }, (_, i) => ({
-        label: String(i).padStart(2, "0"),
-        value: i.toString(),
-      })),
-    []
-  );
-
-  const amPmOptions = useMemo<OptionType[]>(
-    () => [
-      { label: "AM", value: "AM" },
-      { label: "PM", value: "PM" },
-    ],
-    []
-  );
-
-  const selectedMonth = monthOptions.find(
-    (opt) => opt.value === month.getMonth().toString()
-  );
-
-  // Find the currently selected year in the dynamic options
-  const selectedYearOption = yearOptions.find(
-    (opt) => opt.value === month.getFullYear().toString()
-  );
-
-
-  const currentHours = selectedDate
-    ? selectedDate.getHours()
-    : new Date().getHours();
-
-  const selectedHour = hourOptions.find((opt) => {
-    const displayHour = currentHours % 12 || 12;
-    return opt.value === displayHour.toString();
-  });
-
-  const selectedMinute = minuteOptions.find(
-    (opt) =>
-      opt.value ===
-      (selectedDate
-        ? selectedDate.getMinutes()
-        : new Date().getMinutes()
-      ).toString()
-  );
-
-  const selectedAmPm = amPmOptions.find(
-    (opt) => opt.value === (currentHours >= 12 ? "PM" : "AM")
-  );
-
-  const handleMonthChange = (val: OptionType | null) => {
-    if (!val) return;
     const newMonth = Number(val.value);
-    const updatedMonth = new Date(month.getFullYear(), newMonth, 1);
-    setMonth(updatedMonth);
-    if (selectedDate) {
-      const updatedDate = new Date(selectedDate);
-      updatedDate.setMonth(newMonth);
-      if (updatedDate.getMonth() !== newMonth) updatedDate.setDate(0);
-      emitChange(updatedDate);
-    }
-  };
+    const updatedDate = new Date(selectedDate);
+    updatedDate.setMonth(newMonth);
+    if (updatedDate.getMonth() !== newMonth) updatedDate.setDate(0);
 
-  const handleYearChange = (val: OptionType | null) => {
-    if (!val) return;
+    setMonth(new Date(updatedDate.getFullYear(), newMonth, 1));
+    emitChange(updatedDate);
+  }, [selectedDate, emitChange]);
+
+  const handleYearChange = useCallback((val: OptionType | null) => {
+    if (!val || !selectedDate) return;
+
     const newYear = Number(val.value);
-    const updatedMonth = new Date(newYear, month.getMonth(), 1);
-    setMonth(updatedMonth);
-    if (selectedDate) {
-      const updatedDate = new Date(selectedDate);
-      updatedDate.setFullYear(newYear);
-      emitChange(updatedDate);
-    }
-  };
+    const updatedDate = new Date(selectedDate);
+    updatedDate.setFullYear(newYear);
 
-  const handleHourChange = (val: OptionType | null) => {
+    setMonth(new Date(newYear, month.getMonth(), 1));
+    emitChange(updatedDate);
+  }, [selectedDate, month, emitChange]);
+
+  const handleHourChange = useCallback((val: OptionType | null) => {
     if (!val) return;
+
     const newHour12 = Number(val.value);
-    const currentAmPm = selectedAmPm?.value || "AM";
-    let newHour24;
-    if (currentAmPm === "AM") newHour24 = newHour12 === 12 ? 0 : newHour12;
-    else newHour24 = newHour12 === 12 ? 12 : newHour12 + 12;
-    handleTimeChange(newHour24, selectedDate ? selectedDate.getMinutes() : 0);
-  };
+    const currentAmPm = getSelectedAmPm();
+    const newHour24 = convert12to24(newHour12, currentAmPm);
 
-  const handleMinuteChange = (val: OptionType | null) => {
-    if (val)
-      handleTimeChange(
-        selectedDate ? selectedDate.getHours() : new Date().getHours(),
-        Number(val.value)
-      );
-  };
+    handleTimeChange(newHour24, selectedDate?.getMinutes() || 0);
+  }, [selectedDate, handleTimeChange]);
 
-  const handleAmPmChange = (val: OptionType | null) => {
+  const handleMinuteChange = useCallback((val: OptionType | null) => {
     if (!val) return;
-    const currentHour12 = currentHours % 12 || 12;
-    const newAmPm = val.value;
-    let newHour24;
-    if (newAmPm === "AM") newHour24 = currentHour12 === 12 ? 0 : currentHour12;
-    else newHour24 = currentHour12 === 12 ? 12 : currentHour12 + 12;
-    handleTimeChange(newHour24, selectedDate ? selectedDate.getMinutes() : 0);
+    handleTimeChange(selectedDate?.getHours() || new Date().getHours(), Number(val.value));
+  }, [selectedDate, handleTimeChange]);
+
+  const handleAmPmChange = useCallback((val: OptionType | null) => {
+    if (!val) return;
+
+    const currentHour12 = getCurrentHours12();
+    const newHour24 = convert12to24(currentHour12, val.value);
+
+    handleTimeChange(newHour24, selectedDate?.getMinutes() || 0);
+  }, [selectedDate, handleTimeChange]);
+
+  // Helper Functions
+  const getCurrentHours12 = () => {
+    const currentHours = selectedDate?.getHours() || new Date().getHours();
+    return currentHours % 12 || 12;
   };
+
+  const getSelectedAmPm = () => {
+    const currentHours = selectedDate?.getHours() || new Date().getHours();
+    return currentHours >= 12 ? "PM" : "AM";
+  };
+
+  const convert12to24 = (hour12: number, ampm: string) => {
+    if (ampm === "AM") return hour12 === 12 ? 0 : hour12;
+    return hour12 === 12 ? 12 : hour12 + 12;
+  };
+
+  // Selected Values
+  const selectedValues = useMemo(() => ({
+    month: TIME_OPTIONS.months.find(opt => opt.value === month.getMonth().toString()),
+    year: yearOptions.find(opt => opt.value === month.getFullYear().toString()),
+    hour: TIME_OPTIONS.hours.find(opt => opt.value === getCurrentHours12().toString()),
+    minute: TIME_OPTIONS.minutes.find(opt =>
+      opt.value === (selectedDate?.getMinutes() || new Date().getMinutes()).toString()
+    ),
+    ampm: TIME_OPTIONS.ampm.find(opt => opt.value === getSelectedAmPm()),
+  }), [selectedDate, month, yearOptions]);
 
   const displayValue = selectedDate ? formatForDisplay(selectedDate) : "";
 
-  // Get the min and max year from the dynamic options for DayPicker range
-  const minYear = yearOptions.length > 0 ? Number(yearOptions[0].value) : new Date().getFullYear() - YEAR_RANGE;
-  const maxYear = yearOptions.length > 0 ? Number(yearOptions[yearOptions.length - 1].value) : new Date().getFullYear() + YEAR_RANGE;
-
+  // DayPicker Range
+  const [minYear, maxYear] = useMemo((): [number, number] => {
+    const first = yearOptions[0] ? Number(yearOptions[0].value) : new Date().getFullYear() - YEAR_RANGE;
+    const last = yearOptions[yearOptions.length - 1] ? Number(yearOptions[yearOptions.length - 1].value) : new Date().getFullYear() + YEAR_RANGE;
+    return [first, last];
+  }, [yearOptions]);
 
   return (
-    <Popover
-      isOpen={isOpen}
-      onClose={() => setIsOpen(false)}
-      placement="bottom-start"
-//       closeOnBlur={true}
-    >
+    <Popover isOpen={isOpen} onClose={() => setIsOpen(false)} placement="bottom-start">
       <PopoverTrigger>
         <Box w="full">
           <InputGroup size={inputSize}>
@@ -311,83 +254,75 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
         </Box>
       </PopoverTrigger>
 
-      <PopoverContent
-        p={1}
-        maxW="100%"
-        borderRadius="md"
-        className="date-time-popover"
-      >
+      <PopoverContent p={1} maxW="100%" borderRadius="md" className="date-time-popover">
         <VStack spacing={1} w="full">
+          {/* Month/Year Selectors */}
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="full" alignItems="center">
             <CustomSelect
-              options={monthOptions}
-              value={selectedMonth ?? null}
+              options={TIME_OPTIONS.months}
+              value={selectedValues.month ?? null}
               onChange={handleMonthChange}
               width="100%"
               maxMenuHeight={200}
-              menuPortalTarget={true}
+              menuPortalTarget
               size="sm"
             />
-            {/* --- START: Modified CustomSelect for Dynamic Years --- */}
             <CustomSelect
               options={yearOptions}
-              value={selectedYearOption ?? null}
+              value={selectedValues.year ?? null}
               onChange={handleYearChange}
               width="100%"
               maxMenuHeight={200}
-              menuPortalTarget={true}
+              menuPortalTarget
               size="sm"
             />
           </SimpleGrid>
 
+          {/* Day Picker */}
+          <DayPicker
+            mode="single"
+            selected={selectedDate || undefined}
+            onSelect={handleDaySelect}
+            month={month}
+            onMonthChange={setMonth}
+            startMonth={new Date(minYear, 0)}
+            endMonth={new Date(maxYear, 11)}
+            showOutsideDays
+            captionLayout="label"
+          />
 
-            <DayPicker
-              mode="single"
-              selected={selectedDate || undefined}
-              onSelect={handleDaySelect}
-              month={month}
-              onMonthChange={setMonth}
-              startMonth={new Date(minYear, 0)}
-              endMonth={new Date(maxYear, 11)}
-              showOutsideDays
-              captionLayout="label"
-            />
-
-
-          <Text
-            fontSize="sm"
-            fontWeight="semibold"
-            textAlign={{ base: "center", sm: "left" }}
-          >
+          {/* Time Selectors */}
+          <Text fontSize="sm" fontWeight="semibold" textAlign={{ base: "center", sm: "left" }}>
             Time
           </Text>
-          <SimpleGrid columns={{ base: 3, md: 3 }} spacing={1} w="full">
+          <SimpleGrid columns={3} spacing={1} w="full">
             <CustomSelect
-              options={hourOptions}
-              value={selectedHour ?? null}
+              options={TIME_OPTIONS.hours}
+              value={selectedValues.hour ?? null}
               onChange={handleHourChange}
               width="100%"
               maxMenuHeight={200}
-            size="sm"
+              size="sm"
             />
             <CustomSelect
-              options={minuteOptions}
-              value={selectedMinute ?? null}
+              options={TIME_OPTIONS.minutes}
+              value={selectedValues.minute ?? null}
               onChange={handleMinuteChange}
               width="100%"
               maxMenuHeight={200}
-                size="sm"
+              size="sm"
             />
             <CustomSelect
-              options={amPmOptions}
-              value={selectedAmPm ?? null}
+              options={TIME_OPTIONS.ampm}
+              value={selectedValues.ampm ?? null}
               onChange={handleAmPmChange}
               width="100%"
               maxMenuHeight={200}
-                size="sm"
+              size="sm"
             />
           </SimpleGrid>
 
+          {/* Action Buttons */}
           <HStack spacing={4} w="full" justify="center">
             <Text
               onClick={handleToday}
@@ -396,7 +331,6 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               cursor="pointer"
               fontWeight="medium"
               _hover={{ textDecoration: "underline" }}
-              textAlign="center"
             >
               Today
             </Text>
@@ -407,7 +341,6 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               cursor="pointer"
               fontWeight="medium"
               _hover={{ textDecoration: "underline" }}
-              textAlign="center"
             >
               Clear
             </Text>
