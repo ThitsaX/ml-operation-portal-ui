@@ -415,7 +415,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       toast({ status: 'info', title: 'Duplicate row', description: `${time} already exists.` });
       return;
     }
-    setRows(r => [...r, key].sort());
+    setRows(r => [...r, key]);
     setMatrix(m => ({ ...m, [key]: new Set<Day>() }));
   };
 
@@ -506,7 +506,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       }
     }
 
-    const rowsArr = Array.from(nextRows).sort((a, b) => a.localeCompare(b));
+    const rowsArr = Array.from(nextRows);
     setRows(rowsArr);
     setMatrix(nextMatrix);
     setServerMatrix(nextMatrix);
@@ -833,7 +833,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {rows.slice().sort().map((key) => {
+                    {rows.slice().map((key) => {
                       return (
                         <Tr key={key}>
                           <Td bg={rowActiveMap[key] ? 'green.50' : 'gray.100'} fontWeight="semibold" textAlign="center">
