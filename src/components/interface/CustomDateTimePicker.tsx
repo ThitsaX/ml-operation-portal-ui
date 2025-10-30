@@ -11,14 +11,16 @@ import {
   VStack,
   useBreakpointValue,
   Text,
-  SimpleGrid
+  SimpleGrid,
+  Button,
+  HStack
 } from "@chakra-ui/react";
 import { DayPicker } from "react-day-picker";
-import { CalendarIcon } from "@chakra-ui/icons";
+import { CalendarIcon, CloseIcon } from "@chakra-ui/icons";
 import { format } from "date-fns";
 import "react-day-picker/style.css";
 import CustomSelect from "./CustomSelect";
-
+import "./try.css";
 
 interface Props {
   value?: string | Date;
@@ -41,24 +43,13 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(initialDate);
   const [month, setMonth] = useState<Date>(initialDate || new Date());
 
-  //  Sync like <input type="datetime-local">
+  // Sync like <input type="datetime-local">
   useEffect(() => {
     setSelectedDate(initialDate);
     if (initialDate) setMonth(initialDate);
   }, [initialDate]);
 
   const inputSize = useBreakpointValue({ base: "sm", md: "md" });
-
-  const pickerWidth = useBreakpointValue({
-    base: "95vw",
-    sm: "340px",
-    md: "360px",
-  });
-
-  const pickerHeight = useBreakpointValue({
-    base: "280px",
-    sm: "300px",
-  });
 
   const formatForDateTimeLocal = (date: Date): string => {
     const year = date.getFullYear();
@@ -81,6 +72,21 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
     } else {
       onChange({ target: { value: "" } });
     }
+  };
+
+  // Clear button handler
+  const handleClear = () => {
+    setSelectedDate(null);
+    setMonth(new Date());
+    onChange({ target: { value: "" } });
+  };
+
+  // Today button handler
+  const handleToday = () => {
+    const today = new Date();
+    setSelectedDate(today);
+    setMonth(today);
+    emitChange(today);
   };
 
   const handleDaySelect = (day?: Date | null) => {
@@ -119,8 +125,9 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
   );
 
   const yearOptions = useMemo(() => {
-    const start = 2000;
-    const end = 2030;
+    const currentYear = new Date().getFullYear();
+    const start = currentYear - 30;
+    const end = currentYear + 30;
     return Array.from({ length: end - start + 1 }, (_, i) => ({
       label: (start + i).toString(),
       value: (start + i).toString(),
@@ -235,7 +242,6 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
     handleTimeChange(newHour24, selectedDate ? selectedDate.getMinutes() : 0);
   };
 
-
   const displayValue = selectedDate ? format(selectedDate, "yyyy-MM-dd hh:mm a") : "";
 
   return (
@@ -254,6 +260,7 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               cursor="pointer"
               onClick={() => setIsOpen(!isOpen)}
               className="date-time-input"
+              placeholder="Select date and time"
             />
             <InputRightElement>
               <IconButton
@@ -272,20 +279,20 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
       </PopoverTrigger>
 
       <PopoverContent
-        p={3}
-        w={pickerWidth}
+        p={1}
         maxW="100%"
         borderRadius="md"
         className="date-time-popover"
       >
-        <VStack spacing={3} w="full">
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="full">
+        <VStack spacing={1} w="full">
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="full" alignItems="center">
             <CustomSelect
               options={monthOptions}
               value={selectedMonth ?? null}
               onChange={handleMonthChange}
               width="85%"
               maxMenuHeight={200}
+              menuPortalTarget={document.body}
             />
             <CustomSelect
               options={yearOptions}
@@ -293,13 +300,12 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               onChange={handleYearChange}
               width="85%"
               maxMenuHeight={200}
+              menuPortalTarget={document.body}
             />
           </SimpleGrid>
 
           <Box
             w="full"
-            className="calendar-container"
-            maxHeight={pickerHeight}
             overflow="auto"
           >
             <DayPicker
@@ -308,11 +314,10 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               onSelect={handleDaySelect}
               month={month}
               onMonthChange={setMonth}
-              className="custom-day-picker"
-              startMonth={new Date(2000, 0)}
-              endMonth={new Date(2030, 11)}
-              captionLayout="dropdown-buttons"
+              startMonth={new Date(Number(yearOptions[0]?.value) || new Date().getFullYear() - 30, 0)}
+              endMonth={new Date(Number(yearOptions[yearOptions.length - 1]?.value) || new Date().getFullYear() + 30, 11)}
               showOutsideDays
+              captionLayout="label"
             />
           </Box>
 
@@ -323,7 +328,6 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
           >
             Time
           </Text>
-
           <SimpleGrid columns={{ base: 3, md: 3 }} spacing={1} w="full">
             <CustomSelect
               options={hourOptions}
@@ -347,6 +351,31 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               maxMenuHeight={200}
             />
           </SimpleGrid>
+
+          <HStack spacing={4} w="full" justify="center">
+            <Text
+              onClick={handleToday}
+              color="blue.500"
+              fontSize="xs"
+              cursor="pointer"
+              fontWeight="medium"
+              _hover={{ textDecoration: "underline" }}
+              textAlign="center"
+            >
+              Today
+            </Text>
+            <Text
+              onClick={handleClear}
+              color="blue.500"
+              fontSize="xs"
+              cursor="pointer"
+              fontWeight="medium"
+              _hover={{ textDecoration: "underline" }}
+              textAlign="center"
+            >
+              Clear
+            </Text>
+          </HStack>
         </VStack>
       </PopoverContent>
     </Popover>

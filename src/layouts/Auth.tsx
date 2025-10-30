@@ -39,8 +39,10 @@ const Auth = () => {
   const [currentAnnouncement, setCurrentAnnouncement] =
     useState<AnnouncementInfo>()
 
-  const formatTimestamp = (timestamp: number) => {
-    return moment(timestamp * 1000).format('YYYY-MM-DD HH:mm:ss')
+  const formatTimestamp = (timestamp: number | string) => {
+    const raw = typeof timestamp === 'string' ? Number(timestamp) : timestamp;
+    const ms = raw * 1000;
+    return moment(ms).format('YYYY-MM-DD HH:mm:ss');
   }
 
   /* Handlers */

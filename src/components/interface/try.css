@@ -1,0 +1,37 @@
+
+.rdp-day {
+  width: 1.3rem; /* ↓ Smaller size for compactness */
+  height: 1.3rem;
+  font-size: 0.6rem; /* ↓ Smaller text */
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+  margin: 0;
+  padding:0;
+}
+
+/* Table setup — force fixed grid */
+.rdp-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed; /* ✅ 7 equal columns */
+  display: table !important; /* ✅ override flex display */
+  padding:0;
+  margin:0;
+}
+
+#popover-content-:rd:{
+    max-width: 280px !important;
+}
+
+/*.chakra-popover__content date-time-popover{
+    max-width: 280px !important;
+}*/
+
+.rdp-day_button{
+    padding:0;
+    margin:0;
+}
+
