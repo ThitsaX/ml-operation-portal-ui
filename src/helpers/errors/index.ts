@@ -35,13 +35,14 @@ export const getRequestErrorMessage = (
   return error?.default_error_message
 }
 
-export const getErrorMessage = (
-  error: IApiErrorResponse | null,
-) => {
-  const message = `${error?.default_error_message ?? ''}: ${error?.error_code ?? ''} ${error?.description ?? ''}`;
+export const getErrorMessage = (error: IApiErrorResponse | null) => {
+  if (!error) return "An unexpected error occurred";
+  const { error_code, description, default_error_message } = error;
+  const messageBody = description?.trim() || default_error_message || "An unknown error occurred";
+  const message = error_code ? `${error_code}: ${messageBody}` : messageBody;
+  return message;
+};
 
-  return message
-}
 
 export interface IAxiosErrorHandlerReturn {
   code: string | null

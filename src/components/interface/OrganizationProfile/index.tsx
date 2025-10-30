@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Button,
@@ -12,7 +12,8 @@ import {
   Stack,
   Flex,
   FormErrorMessage,
-  FormHelperText
+  FormHelperText,
+  IconButton
 } from '@chakra-ui/react';
 import { Controller, useForm } from 'react-hook-form';
 import { IParticipantProfile } from '@typescript/services';
@@ -23,6 +24,7 @@ import { isEmpty } from 'lodash-es'
 import { getParticipantProfile } from '@services/participant';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
+import { RxCrossCircled } from "react-icons/rx";
 
 interface OrganizationProfileProps {
   participantId: string;
@@ -45,6 +47,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
   const [fileType, setFileType] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const organizationHelper = new OrganizationHelper();
 
@@ -148,7 +151,13 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
     reader.readAsDataURL(file);
   };
 
-
+  const clearLogo = () => {
+    setPreview(null);
+    setFileType(null);
+    setValue('logo', '', { shouldDirty: true, shouldValidate: true });
+    setValue('logoFileType', '', { shouldDirty: true, shouldValidate: true });
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const organizationHandler = async (values: IParticipantProfile) => {
     setIsSubmitting(true);
@@ -237,6 +246,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
           <FormControl>
             <FormLabel fontSize="sm" fontWeight="semibold">Logo</FormLabel>
             <Input
+              ref={fileInputRef}
               type="file"
               accept=".png, .jpeg"
               fontSize="md"
@@ -253,6 +263,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
 
           {preview && (
             <Box
+              position="relative"
               border="1px solid"
               borderColor="gray.300"
               borderRadius="md"
@@ -270,6 +281,16 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
                 alt="Logo Preview"
                 maxHeight="50px"
                 objectFit="contain"
+              />
+              <IconButton
+                aria-label="Remove logo"
+                icon={<RxCrossCircled size={16} />}
+                size="sm"
+                position="absolute" top="-18px" right="-19px"
+                variant="ghost"
+                color="red.500"
+                _hover={{ color: 'red.700', bg: 'transparent' }}
+                onClick={clearLogo}
               />
             </Box>
           )}
