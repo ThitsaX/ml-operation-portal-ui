@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { passwordRegex } from '@helpers';
 
 export class FormHelper { }
 
@@ -6,20 +7,27 @@ export class AuthHelper extends FormHelper {
   get loginSchema() {
     return z.object({
       email: z.string({ required_error: 'Required' }).email('invalid-email'),
-      password: z.string({ required_error: 'Required' })
+      password: z.string({ required_error: 'Required' }).min(6, 'Password must be at least 6 characters long')
     });
   }
 
   get passwordChangeSchema(): any {
+    const newPasswordSchema = z
+      .string({ required_error: 'Password is required' })
+      .regex(
+        passwordRegex,
+        'Password must be at least 6 characters long and include one uppercase letter, one lowercase letter, one number, and one special character'
+      );
+
     return z
       .object({
         oldPassword: z.string({ required_error: 'Required' }),
-        newPassword: z.string({ required_error: 'Required' }),
+        newPassword: newPasswordSchema,
         confirmPassword: z.string({ required_error: 'Required' })
       })
       .refine((data) => data.newPassword === data.confirmPassword, {
         message: 'password-not-match',
-        path: ['confirm_password']
+        path: ['confirmPassword']
       });
   }
 }
@@ -65,10 +73,17 @@ export class ParticipantHelper extends FormHelper {
   }
 
   get resetPasswordSchema() {
+    const newPasswordSchema = z
+      .string({ required_error: 'Password is required' })
+      .regex(
+        passwordRegex,
+        'Password must be at least 6 characters long and include one uppercase letter, one lowercase letter, one number, and one special character'
+      );
+
     return z
       .object({
         email: z.string({ required_error: 'Required' }).email('invalid-email'),
-        newPassword: z.string({ required_error: 'Required' }),
+        newPassword: newPasswordSchema,
         confirmPassword: z.string({ required_error: 'Required' })
       })
       .refine((data) => data.newPassword === data.confirmPassword, {
