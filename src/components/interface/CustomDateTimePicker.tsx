@@ -32,6 +32,36 @@ type OptionType = {
   value: string;
 };
 
+// --- START: Dynamic Year Options Hook ---
+const YEAR_RANGE = 20; // Show 0 years before/after selected
+
+const useDynamicYearOptions = (selectedYear?: number) => {
+  const [yearOffset, setYearOffset] = useState(0); // allows scrolling dynamically
+
+  const years = useMemo(() => {
+    const currentYear = selectedYear || new Date().getFullYear();
+    const start = currentYear - YEAR_RANGE + yearOffset;
+    const end = currentYear + YEAR_RANGE + yearOffset;
+    return Array.from({ length: end - start + 1 }, (_, i) => ({
+      label: (start + i).toString(),
+      value: (start + i).toString(),
+    }));
+  }, [selectedYear, yearOffset]);
+
+  const scrollYears = (direction: "up" | "down") => {
+    setYearOffset((prev) => prev + (direction === "up" ? -1 : 1));
+  };
+
+  // Reset offset when selectedYear changes (e.g., when the value prop changes)
+  useEffect(() => {
+      setYearOffset(0);
+  }, [selectedYear]);
+
+  return { years, scrollYears };
+};
+// --- END: Dynamic Year Options Hook ---
+
+
 export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -57,7 +87,7 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
     const day = String(date.getDate()).padStart(2, "0");
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day}  ${hours}:${minutes} `;
+    return `${year}-${month}-${day}T${hours}:${minutes}`; // Note: Changed space to 'T' for proper datetime-local format
   };
 
   const formatForDisplay = (date: Date): string => {
@@ -124,15 +154,10 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
     []
   );
 
-  const yearOptions = useMemo(() => {
-    const currentYear = new Date().getFullYear();
-    const start = currentYear - 30;
-    const end = currentYear + 30;
-    return Array.from({ length: end - start + 1 }, (_, i) => ({
-      label: (start + i).toString(),
-      value: (start + i).toString(),
-    }));
-  }, []);
+  // --- START: Dynamic Year Hook Integration ---
+  const currentYear = selectedDate?.getFullYear() || new Date().getFullYear();
+  const { years: yearOptions, scrollYears } = useDynamicYearOptions(currentYear);
+  // --- END: Dynamic Year Hook Integration ---
 
   const hourOptions = useMemo(
     () =>
@@ -163,9 +188,12 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
   const selectedMonth = monthOptions.find(
     (opt) => opt.value === month.getMonth().toString()
   );
-  const selectedYear = yearOptions.find(
+
+  // Find the currently selected year in the dynamic options
+  const selectedYearOption = yearOptions.find(
     (opt) => opt.value === month.getFullYear().toString()
   );
+
 
   const currentHours = selectedDate
     ? selectedDate.getHours()
@@ -242,7 +270,12 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
     handleTimeChange(newHour24, selectedDate ? selectedDate.getMinutes() : 0);
   };
 
-  const displayValue = selectedDate ? format(selectedDate, "yyyy-MM-dd hh:mm a") : "";
+  const displayValue = selectedDate ? formatForDisplay(selectedDate) : "";
+
+  // Get the min and max year from the dynamic options for DayPicker range
+  const minYear = yearOptions.length > 0 ? Number(yearOptions[0].value) : new Date().getFullYear() - YEAR_RANGE;
+  const maxYear = yearOptions.length > 0 ? Number(yearOptions[yearOptions.length - 1].value) : new Date().getFullYear() + YEAR_RANGE;
+
 
   return (
     <Popover
@@ -292,17 +325,18 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               onChange={handleMonthChange}
               width="85%"
               maxMenuHeight={200}
-              menuPortalTarget={document.body}
-                size="sm"
+              menuPortalTarget={true}
+              size="sm"
             />
+            {/* --- START: Modified CustomSelect for Dynamic Years --- */}
             <CustomSelect
               options={yearOptions}
-              value={selectedYear ?? null}
+              value={selectedYearOption ?? null}
               onChange={handleYearChange}
               width="85%"
               maxMenuHeight={200}
-              menuPortalTarget={document.body}
-                 size="sm"
+              menuPortalTarget={true}
+              size="sm"
             />
           </SimpleGrid>
 
@@ -313,8 +347,8 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               onSelect={handleDaySelect}
               month={month}
               onMonthChange={setMonth}
-              startMonth={new Date(Number(yearOptions[0]?.value) || new Date().getFullYear() - 30, 0)}
-              endMonth={new Date(Number(yearOptions[yearOptions.length - 1]?.value) || new Date().getFullYear() + 30, 11)}
+              startMonth={new Date(minYear, 0)}
+              endMonth={new Date(maxYear, 11)}
               showOutsideDays
               captionLayout="label"
             />
