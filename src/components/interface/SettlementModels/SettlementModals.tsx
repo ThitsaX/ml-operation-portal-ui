@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import {
   AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader,
   AlertDialogContent, AlertDialogOverlay, useDisclosure,
@@ -35,6 +35,8 @@ import {
 import { ISettlementScheduleForm } from '@typescript/form/settlements';
 import { ISettlementModel } from '@typescript/services';
 import { allTimezones, useTimezoneSelect } from 'react-timezone-select';
+import { getNextRunInfo, formatCountdown } from '@utils/schedule';
+
 interface SettlementModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -287,6 +289,52 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     const dow = days.map(d => DOW_MAP[d]).join(',');
     return { cron: `0 ${mm} ${hh} ? * ${dow}`, zoneId: currentOffset };
   };
+
+  const [nextCountdown, setNextCountdown] = useState<string>('--:--:--');
+  const [nextUtc, setNextUtc] = useState<number | null>(null);
+
+  const buildActiveCronList = useCallback((): string[] => {
+    const map: Record<'Mon'|'Tue'|'Wed'|'Thu'|'Fri'|'Sat'|'Sun', 'MON'|'TUE'|'WED'|'THU'|'FRI'|'SAT'|'SUN'> = {
+      Mon:'MON', Tue:'TUE', Wed:'WED', Thu:'THU', Fri:'FRI', Sat:'SAT', Sun:'SUN'
+    };
+
+    const out: string[] = [];
+    for (const key of rows) {
+      if (!rowActiveMap[key]) continue;           // must be toggled ON
+      
+      const set = matrix[key];
+      
+      if (!(set && set.size)) continue;           // at least one day
+
+      const [HH, MM] = key.split(':');
+      const dows = Array.from(set).map(d => map[d]).sort();
+      
+      out.push(`0 ${MM} ${HH} ? * ${dows.join(',')}`);
+    }
+    return out;
+  }, [rows, matrix, rowActiveMap]);
+
+  useEffect(() => {
+    const zoneOffset =
+      typeof settlementModel.zoneId === 'string' &&
+      /^(?:[+-]\d{2}:[0-5]\d)$/.test(settlementModel.zoneId)
+        ? settlementModel.zoneId
+        : currentOffset;
+  
+    const crons = buildActiveCronList();
+    const { nextUtc: n, countdown } = getNextRunInfo(crons, zoneOffset, Date.now());
+    setNextUtc(n);
+    setNextCountdown(countdown);
+    
+  }, [rows, matrix, rowActiveMap, settlementModel.zoneId, currentOffset, buildActiveCronList]);
+
+  useEffect(() => {
+    if (!nextUtc) return;
+    const id = setInterval(() => {
+      setNextCountdown(formatCountdown(nextUtc - Date.now()));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [nextUtc]);
 
   const mustKeepOneOn = (turningOff: 'auto' | 'manual') => {
     if (turningOff === 'auto' && !manualCloseWindow) return true;
@@ -813,6 +861,11 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                 )}
               </Box>
             </Flex>
+              <Box mb={2}>
+                <Text fontSize="lg" fontWeight="semibold">
+                  Window will close in in: <Box as="span" color="blue.600">{nextCountdown}</Box>
+                </Text>
+              </Box>
             <Box
               border="1px"
               borderColor="gray.300"
