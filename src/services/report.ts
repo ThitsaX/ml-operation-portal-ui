@@ -4,7 +4,6 @@ import { store } from '@store';
 import { type IUserState } from '@store/features/user';
 import {
   type IApiErrorResponse,
-  type IGetAllOtherParticipant
 } from '@typescript/services';
 import { type IGetSettlementIds } from '@typescript/services/report';
 import { type AxiosError } from 'axios';
@@ -246,37 +245,6 @@ export const getSettlementIds = async (
     });
 };
 
-export const getAllOtherParticipants = async (
-  user: IUserState,
-  params: any
-) => {
-  const { participantId } = params;
-
-  /** Generate Access Token */
-  const accessToken = await generateAccessToken({
-    method: 'GET',
-    uri: routes.getOtherParticipantList,
-    secret: user.auth?.secretKey as string
-  });
-
-  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
-  return axios
-    .get<IGetAllOtherParticipant>(routes.getOtherParticipantList, {
-      params: { participantId: participantId }
-    })
-    .then((d) => d.data)
-    .catch((error: AxiosError<IApiErrorResponse>) => {
-      const { code, message, ...rest } = axiosErrorHandler(error);
-      if (code && message) {
-        throw {
-          error_code: code,
-          default_error_message: getErrorMessageByCode(code),
-          i18n_error_messages: null
-        };
-      }
-      throw rest;
-    });
-};
 
 export const downloadFile = (
   initialFileName: string,
