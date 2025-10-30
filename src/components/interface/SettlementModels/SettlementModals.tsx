@@ -742,21 +742,21 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
         <ModalBody>
           <VStack spacing={4} align="stretch">
             <Flex align="center">
-              <Text w="220px" fontWeight="semibold">Settlement Model Name:</Text>
+              <Text w="230px" fontWeight="semibold">Settlement Model Name:</Text>
               <Input ml="2" value={settlementModel.name ?? ''} isDisabled flex="1" maxW="60%" />
             </Flex>
 
             <Flex align="center">
-              <Text w="220px" fontWeight="semibold">Settlement Model Type:</Text>
+              <Text w="230px" fontWeight="semibold">Settlement Model Type:</Text>
               <Input ml="2" value={settlementModel.type ?? ''} isDisabled flex="1" maxW="60%" />
             </Flex>
 
             <Flex align="center">
-              <Text w="220px" fontWeight="semibold">Settlement Model Currency:</Text>
+              <Text w="230px" fontWeight="semibold">Settlement Model Currency:</Text>
               <Input ml="2" value={settlementModel.currencyId ?? 'N/A'} isDisabled flex="1" maxW="60%" />
             </Flex>
             <Flex align="center">
-              <Text w="220px" fontWeight="semibold">Close Window Manually: </Text>
+              <Text w="230px" fontWeight="semibold">Close Window Manually: </Text>
               <Switch
                 ml="2"
                 isChecked={manualCloseWindow}
@@ -773,7 +773,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
               />
             </Flex>
             <Flex align="center">
-              <Text fontWeight="semibold">Close Window Automatically: </Text>
+              <Text w="230px" fontWeight="semibold">Close Window Automatically: </Text>
               <Switch
                 ml="2"
                 isChecked={autoCloseWindow}
@@ -797,7 +797,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
               )}
             </Flex>
             <Flex align="center">
-              <Text w="220px" fontWeight="semibold">Choose Timezone:</Text>
+              <Text w="230px" fontWeight="semibold">Choose Timezone:</Text>
               <Box flex="1" maxW="60%">
                 <CustomSelect
                   options={tzOptions}
