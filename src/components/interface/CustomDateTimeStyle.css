@@ -111,7 +111,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 2px;
-  transition: background-color 0.1s, color 0.1s;
+  transition: transform 0.1s ease-in-out;
   margin: 0 auto;
   padding: 0;
   border: none;
@@ -140,6 +140,7 @@
 /* Hover state */
 .rdp-day:hover:not(.rdp-day_selected):not(.rdp-day_disabled) {
   background-color: #e2e8f0 !important;
+  transform: translateY(-1px);
 }
 
 /* Selected state */
