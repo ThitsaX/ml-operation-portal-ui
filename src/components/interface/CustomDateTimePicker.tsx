@@ -20,7 +20,7 @@ import { CalendarIcon, CloseIcon } from "@chakra-ui/icons";
 import { format } from "date-fns";
 import "react-day-picker/style.css";
 import CustomSelect from "./CustomSelect";
-import "./try.css";
+import "./CustomDateTimeStyle.css";
 
 interface Props {
   value?: string | Date;
@@ -323,7 +323,7 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               options={monthOptions}
               value={selectedMonth ?? null}
               onChange={handleMonthChange}
-              width="85%"
+              width="100%"
               maxMenuHeight={200}
               menuPortalTarget={true}
               size="sm"
@@ -333,7 +333,7 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               options={yearOptions}
               value={selectedYearOption ?? null}
               onChange={handleYearChange}
-              width="85%"
+              width="100%"
               maxMenuHeight={200}
               menuPortalTarget={true}
               size="sm"
@@ -366,7 +366,7 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               options={hourOptions}
               value={selectedHour ?? null}
               onChange={handleHourChange}
-              width="85%"
+              width="100%"
               maxMenuHeight={200}
             size="sm"
             />
@@ -374,7 +374,7 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               options={minuteOptions}
               value={selectedMinute ?? null}
               onChange={handleMinuteChange}
-              width="85%"
+              width="100%"
               maxMenuHeight={200}
                 size="sm"
             />
@@ -382,7 +382,7 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               options={amPmOptions}
               value={selectedAmPm ?? null}
               onChange={handleAmPmChange}
-              width="85%"
+              width="100%"
               maxMenuHeight={200}
                 size="sm"
             />
