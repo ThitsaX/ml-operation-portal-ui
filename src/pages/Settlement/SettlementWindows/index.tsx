@@ -81,7 +81,7 @@ const SettlementWindows = () => {
     const [dateRange, setDateRange] = useState<Ranges>('oneDay');
     const { data: currencyList } = useGetParticipantCurrencyList();
     const { data: stateList } = useGetSettlementWindowStateList();
-    const { data: modelList } = useGetSettlementModelList();
+    const { data: modelList } = useGetSettlementModelList({ refetchOnMount: 'always' });
 
     // const [toFspOptions, setToFspOptions] = useState<any[]>([]);
     // const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string }>();
