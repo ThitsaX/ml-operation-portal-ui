@@ -249,7 +249,7 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
       isOpen={isOpen}
       onClose={() => setIsOpen(false)}
       placement="bottom-start"
-      closeOnBlur={true}
+//       closeOnBlur={true}
     >
       <PopoverTrigger>
         <Box w="full">
@@ -293,6 +293,7 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               width="85%"
               maxMenuHeight={200}
               menuPortalTarget={document.body}
+                size="sm"
             />
             <CustomSelect
               options={yearOptions}
@@ -301,13 +302,11 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               width="85%"
               maxMenuHeight={200}
               menuPortalTarget={document.body}
+                 size="sm"
             />
           </SimpleGrid>
 
-          <Box
-            w="full"
-            overflow="auto"
-          >
+
             <DayPicker
               mode="single"
               selected={selectedDate || undefined}
@@ -319,7 +318,7 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               showOutsideDays
               captionLayout="label"
             />
-          </Box>
+
 
           <Text
             fontSize="sm"
@@ -335,6 +334,7 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               onChange={handleHourChange}
               width="85%"
               maxMenuHeight={200}
+            size="sm"
             />
             <CustomSelect
               options={minuteOptions}
@@ -342,6 +342,7 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               onChange={handleMinuteChange}
               width="85%"
               maxMenuHeight={200}
+                size="sm"
             />
             <CustomSelect
               options={amPmOptions}
@@ -349,6 +350,7 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
               onChange={handleAmPmChange}
               width="85%"
               maxMenuHeight={200}
+                size="sm"
             />
           </SimpleGrid>
 
