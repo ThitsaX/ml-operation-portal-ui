@@ -30,7 +30,7 @@ export const formatCountdown = (diffMs: number): string => {
   const h = String(Math.floor(total / 3600)).padStart(2, '0');
   const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
   const s = String(total % 60).padStart(2, '0');
-  return `${h}:${m}:${s}`;
+  return `${h} Hours ${m} minutes ${s} seconds`;
 };
 
 export const parseQuartz = (expr: string): { hh: number; mm: number; days: Day[] } | null => {
@@ -108,6 +108,6 @@ export const getNextRunInfo = (
     if (typeof n === 'number' && (best === null || n < best)) best = n;
 
   }
-  if (best === null) return { nextUtc: null as number | null, countdown: '--:--:--' };
+  if (best === null) return { nextUtc: null as number | null, countdown: '-- hours -- minutes -- seconds' };
   return { nextUtc: best, countdown: formatCountdown(best - nowUtc) };
 };
