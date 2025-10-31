@@ -246,7 +246,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                                                         icon={<FiEdit2 />}
                                                         aria-label="Edit"
                                                         variant="ghost"
-                                                        size="md"
+                                                        size="sm"
                                                         onClick={() => handleEdit(item)}
                                                     />
                                                 </Tooltip>
@@ -258,7 +258,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                                                         icon={<FiTrash2 />}
                                                         aria-label="Delete"
                                                         variant="ghost"
-                                                        size="md"
+                                                        size="sm"
                                                         onClick={() =>
                                                             handleDeleteClick(item)
                                                         }
