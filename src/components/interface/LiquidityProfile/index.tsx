@@ -63,6 +63,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
     const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
     const cancelRef = useRef<HTMLButtonElement>(null);
     const [deleteItem, setDeleteItem] = useState<ILiquidityProfile | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     const toast = useToast();
 
@@ -75,6 +76,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
     }, [user]);
 
     const handleSave = useCallback((values: ILiquidityProfile) => {
+        setIsSaving(true); 
         const action = isEdit
             ? modifyLiquidityProfile(values)
             : createLiquidityProfile(values);
@@ -106,6 +108,9 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                     duration: 3000,
                     isClosable: true,
                 });
+            })
+            .finally(() => {
+                setIsSaving(false);
             });
     }, [form, isEdit, toast, onClose, refetch]);
 
@@ -198,6 +203,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                 form={form}
                 setForm={setForm}
                 isEdit={isEdit}
+                isSaving={isSaving}
             />
 
             <TableContainer border={`1px solid ${borderColor}`} borderRadius="sm" w="full">

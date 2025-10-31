@@ -31,6 +31,7 @@ interface Props {
     form: ILiquidityProfile;
     setForm: React.Dispatch<React.SetStateAction<ILiquidityProfile>>;
     isEdit: boolean;
+    isSaving: boolean;
 }
 
 const LiquidityProfileModal: React.FC<Props> = ({
@@ -39,7 +40,8 @@ const LiquidityProfileModal: React.FC<Props> = ({
     onSave,
     form,
     setForm,
-    isEdit }) => {
+    isEdit,
+    isSaving}) => {
 
     const { data } = useGetParticipantCurrencyList();
 
@@ -164,6 +166,8 @@ const LiquidityProfileModal: React.FC<Props> = ({
                     </Button>
                     <Button
                         isDisabled={!isDirty || !isValid}
+                        isLoading={isSaving}
+                        loadingText={isEdit ? 'Saving...' : 'Adding...'}
                         onClick={handleSubmit(liquidityHandler)}
                         colorScheme="blue" mr={3}>
                         {isEdit ? 'Save' : 'Add'}

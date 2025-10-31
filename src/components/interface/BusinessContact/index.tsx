@@ -51,7 +51,7 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [contactToDelete, setContactToDelete] = useState<IBusinessContact | null>(null);
     const { data, isLoading, refetch } = useGetContactList(participantId);
-
+    const [isSaving, setIsSaving] = useState(false);
 
     const toast = useToast();
     const { data: user } = useGetUserState();
@@ -65,6 +65,7 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
 
     /* Handlers */
     const handleSave = useCallback((values: IBusinessContact) => {
+        setIsSaving(true);
         const action = isEdit
             ? modifyContact(values)
             : createBusinessContact(values);
@@ -95,6 +96,9 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
                     duration: 3000,
                     isClosable: true,
                 });
+            })
+            .finally(() => {
+                setIsSaving(false);
             });
     }, [form, isEdit, toast, onClose, refetch]);
 
@@ -183,6 +187,7 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
                 form={form}
                 setForm={setForm}
                 isEdit={isEdit}
+                isSaving={isSaving}
             />
 
             <TableContainer border={`1px solid ${borderColor}`} borderRadius="sm" w="full">

@@ -64,6 +64,7 @@ const User = () => {
 
   const [resetUser, setResetUser] = useState<{ userId: string; email: string } | null>(null);
   const [isResetOpen, setIsResetOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleResetClick = (user: IParticipantUser) => {
     setResetUser({ userId: user.userId, email: user.email });
@@ -236,7 +237,7 @@ const User = () => {
   };
 
   const handleSave = useCallback((values: IParticipantUserForm) => {
-
+    setIsSaving(true);
     const { firstName, lastName, confirmPassword, ...rest } = values;
     const name = `${firstName} ${lastName}`;
     const userData = { ...rest, name, firstName, lastName };
@@ -272,7 +273,9 @@ const User = () => {
           duration: 3000,
           isClosable: true,
         });
-      });
+      }).finally(() => {
+      setIsSaving(false);
+    });
   }, [isEdit, toast, refetch, selectedUser]);
 
   const handlePageValidation = (value: string) => {
@@ -472,6 +475,7 @@ const User = () => {
         isEdit={isEdit}
         participantInfoList={participantInfoList}
         onSave={handleSave}
+        isSaving={isSaving} 
       />
 
       <ResetPasswordModal
