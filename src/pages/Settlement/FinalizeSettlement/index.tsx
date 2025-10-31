@@ -608,7 +608,8 @@ const FinalizeSettlement = () => {
                       </SimpleGrid>
                 </Stack>
 
-                <TableContainer
+            <VStack w="full" align="flex-start" spacing={2} >
+                <TableContainer 
                     w="full"
                     borderWidth={1}
                     borderColor="gray.100"
@@ -673,7 +674,7 @@ const FinalizeSettlement = () => {
                                         {...row.getRowProps()}
                                     >
                                         {row.cells.map((cell) => (
-                                            <Td {...cell.getCellProps()}>{cell.render('Cell')}</Td>
+                                            <Td {...cell.getCellProps()} py={2}>{cell.render('Cell')}</Td>
                                         ))}
                                     </Tr>
                                 );
@@ -740,8 +741,8 @@ const FinalizeSettlement = () => {
                         </HStack>
                     </HStack>
                 </TableContainer>
-
-
+            </VStack>
+            
             <Modal isOpen={isFinalizeOpen} onClose={onFinalizeClose} isCentered size="lg">
                 <ModalOverlay />
                 <ModalContent>
