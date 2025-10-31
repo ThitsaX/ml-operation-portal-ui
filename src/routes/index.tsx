@@ -5,8 +5,8 @@ import { Auth, Main } from '@layouts';
 import ErrorPage from '@pages/ErrorPage';
 import Login from '@pages/Login';
 import ChangePassword from '@pages/ChangePassword';
-import { SettlementStatementReport, SettlementSummaryReport } from '@pages/Reports';
-import SettlementBankReport from '@pages/Reports/SettlementBankReport';
+import { SettlementBankReport,SettlementDetailReport, SettlementSummaryReport, 
+ SettlementStatementReport, SettlementAuditReport, AuditReport } from '@pages/Reports';
 import Transfer from '@pages/Transfer';
 import User from '@pages/UserManagement/User';
 import Home from '@pages/Home';
@@ -16,9 +16,6 @@ import PendingApprovals from '@pages/PendingApprovals';
 import SupportCenter from '@pages/SupportCenter';
 import ParticipantPositionDetails from '@pages/Participant/ParticipantPositionDetails';
 import { FinalizeSettlement, SettlementModels, SettlementWindows } from '@pages/Settlement';
-import SettlementDetailReport from '@pages/Reports/SettlementDetailReport';
-import SettlementAuditReport from '@pages/Reports/SettlementAuditReport';
-import AuditReport from '@pages/Reports/AuditReport';
 import ProtectedRoute from "./ProtectedRoute";
 
 export const router = createBrowserRouter([

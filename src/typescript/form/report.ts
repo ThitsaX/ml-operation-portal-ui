@@ -1,3 +1,26 @@
+export interface ISettlementBankReport {
+  startDate: string
+  endDate: string
+  settlementId: string
+  currency: string
+  fileType: string
+  timezoneOffset: string
+}
+
+export interface ISettlementReport {
+  startDate: string
+  endDate: string
+}
+
+export interface ISettlementAuditReport {
+  dfspId: string
+  startDate: string
+  endDate: string
+  currencyId: string
+  timezoneOffset: string
+  fileType: string
+}
+
 export interface ISettlementDetailReport {
   fspId: string
   startDate: string

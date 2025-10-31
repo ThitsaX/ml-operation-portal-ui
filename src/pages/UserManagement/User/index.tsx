@@ -32,16 +32,15 @@ import {
 } from 'react-icons/tfi';
 import { FaRegEdit } from "react-icons/fa";
 import { useGetUserListByParticipant } from '@hooks/services';
-import { modifyUser, modifyUserStatus } from '@services/participant';
+import { createUser, modifyUser, modifyUserStatus } from '@services/user';
 import {
   type IParticipantUser,
   type IModifyUser,
   type IParticipantUserForm,
-  IApiErrorResponse
+  type IApiErrorResponse
 } from '@typescript/services';
 import { UserStatus } from '@typescript/form';
 import { useGetOrganizationListByParticipant } from '@hooks/services/participant';
-import { createUser } from '@services/participant';
 import { GrPowerReset } from "react-icons/gr";
 import ResetPasswordModal from '@components/interface/ResetPassword';
 import GlobalFilter from '@components/interface/GlobalFilter';

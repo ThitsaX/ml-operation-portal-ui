@@ -20,7 +20,7 @@ import {
 } from '@services/report';
 
 import { useGetUserState } from '@store/hooks';
-import { type ISettlementDetailReport } from '@typescript/form/settlement-detail-report';
+import { type ISettlementDetailReport } from '@typescript/form/report';
 
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone';

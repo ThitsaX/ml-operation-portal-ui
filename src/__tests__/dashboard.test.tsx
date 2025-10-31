@@ -1,8 +1,8 @@
 import React from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import * as dashboardService from '@services/dashboard';
-import { useGetDashboard } from '@hooks/services';
+import * as participantService from '@services/participant';
+import { useGetParticipantPositionList } from '@hooks/services';
 
 const mockData = [{
     "participantName": "wallet2",
@@ -18,15 +18,15 @@ const mockData = [{
     "isActive": true
 }];
 
-jest.spyOn(dashboardService, 'getParticipantPositionList').mockResolvedValue(mockData);
+jest.spyOn(participantService, 'getParticipantPositionList').mockResolvedValue(mockData);
 
 const wrapper = ({ children }: any) => (
     <QueryClientProvider client={new QueryClient()}>{children}</QueryClientProvider>
 );
 
-describe('useGetDashboard', () => {
+describe('useGetParticipantPositionList', () => {
     it('returns dashboard data', async () => {
-        const { result } = renderHook(() => useGetDashboard(), { wrapper });
+        const { result } = renderHook(() => useGetParticipantPositionList(), { wrapper });
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
         expect(result.current.data).toEqual(mockData);
     });

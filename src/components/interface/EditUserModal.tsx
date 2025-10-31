@@ -24,7 +24,7 @@ import { IParticipantOrganization, IParticipantUser, IParticipantUserForm, IPart
 import { UserManagementHelper } from '@helpers/form';
 import { isEmpty } from 'lodash-es';
 import { IoReload } from 'react-icons/io5';
-import { syncHubParticipantsToPortal } from '@services/dashboard';
+import { syncHubParticipantsToPortal } from '@services/participant';
 import { UserStatus } from '@typescript/form';
 import { getRoleListByParticipant } from '@services/participant';
 
