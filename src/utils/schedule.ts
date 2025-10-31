@@ -26,12 +26,26 @@ const zonedWallClockToUtcMs = (
 
 export const formatCountdown = (diffMs: number): string => {
   if (diffMs < 0) diffMs = 0;
-  const total = Math.floor(diffMs / 1000);
-  const h = String(Math.floor(total / 3600)).padStart(2, '0');
-  const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
-  const s = String(total % 60).padStart(2, '0');
-  return `${h} Hours ${m} minutes ${s} seconds`;
+
+  const totalSeconds = Math.floor(diffMs / 1000);
+
+  const days = Math.floor(totalSeconds / 86_400); // 24 * 3600
+  const remAfterDays = totalSeconds % 86_400;
+
+  const hours = Math.floor(remAfterDays / 3_600);
+  const remAfterHours = remAfterDays % 3_600;
+
+  const minutes = Math.floor(remAfterHours / 60);
+  const seconds = remAfterHours % 60;
+
+  const dStr = `${days} day${days === 1 ? '' : 's'}`;
+  const hStr = String(hours).padStart(2, '0');
+  const mStr = String(minutes).padStart(2, '0');
+  const sStr = String(seconds).padStart(2, '0');
+
+  return `${dStr} ${hStr} hours ${mStr} minutes ${sStr} seconds`;
 };
+
 
 export const parseQuartz = (expr: string): { hh: number; mm: number; days: Day[] } | null => {
   const parts = expr.trim().split(/\s+/);
@@ -108,6 +122,12 @@ export const getNextRunInfo = (
     if (typeof n === 'number' && (best === null || n < best)) best = n;
 
   }
-  if (best === null) return { nextUtc: null as number | null, countdown: '-- hours -- minutes -- seconds' };
+  if (best === null) {
+    return {
+      nextUtc: null as number | null,
+      countdown: '-- days -- hours -- minutes -- seconds',
+    };
+  }
+
   return { nextUtc: best, countdown: formatCountdown(best - nowUtc) };
 };

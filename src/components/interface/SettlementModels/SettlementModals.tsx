@@ -896,7 +896,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
             </Flex>
               <Box mb={2}>
                 <Text fontSize="lg" fontWeight="semibold">
-                  Window will close in in: <Box as="span" color="blue.600">{nextCountdown}</Box>
+                  Window will close in: <Box as="span" color="blue.600">{nextCountdown}</Box>
                 </Text>
               </Box>
             <Box
