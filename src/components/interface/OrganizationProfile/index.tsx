@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Button,
@@ -12,7 +12,8 @@ import {
   Stack,
   Flex,
   FormErrorMessage,
-
+  FormHelperText,
+  IconButton
 } from '@chakra-ui/react';
 import { Controller, useForm } from 'react-hook-form';
 import { IParticipantProfile } from '@typescript/services';
@@ -23,6 +24,7 @@ import { isEmpty } from 'lodash-es'
 import { getParticipantProfile } from '@services/participant';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
+import { RxCrossCircled } from "react-icons/rx";
 
 interface OrganizationProfileProps {
   participantId: string;
@@ -45,6 +47,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
   const [fileType, setFileType] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const organizationHelper = new OrganizationHelper();
 
@@ -98,27 +101,63 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setFileType(file.type);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result?.toString();
-        const base64String = result?.split(',')[1] ?? null;
+    if (!file) return;
 
-        setPreview(base64String);
-        setValue('logo', base64String ?? '', {
-          shouldValidate: true,
-          shouldDirty: true
-        });
-        setValue('logoFileType', file.type, {
-          shouldValidate: true,
-          shouldDirty: true
-        });
-      };
-      reader.readAsDataURL(file);
+    const ALLOWED_TYPES = ['image/png', 'image/jpeg'];
+    const MAX_FILE_SIZE = 1 * 1024 * 1024;
+
+    if (!ALLOWED_TYPES.includes(file.type.toLowerCase())) {
+      toast({
+        title: 'Invalid file type',
+        description: `Only PNG and JPEG formats are allowed. File: ${file.name}`,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+        position: 'top',
+      });
+      e.target.value = '';
+      return;
     }
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast({
+        title: 'File too large',
+        description: `Please upload an image smaller than 1MB. File: ${file.name}`,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+        position: 'top',
+      });
+      e.target.value = '';
+      return;
+    }
+
+    setFileType(file.type);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result?.toString();
+      const base64String = result?.split(',')[1] ?? null;
+
+      setPreview(base64String);
+      setValue('logo', base64String ?? '', {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      setValue('logoFileType', file.type, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    };
+    reader.readAsDataURL(file);
   };
 
+  const clearLogo = () => {
+    setPreview(null);
+    setFileType(null);
+    setValue('logo', '', { shouldDirty: true, shouldValidate: true });
+    setValue('logoFileType', '', { shouldDirty: true, shouldValidate: true });
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const organizationHandler = async (values: IParticipantProfile) => {
     setIsSubmitting(true);
@@ -207,12 +246,16 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
           <FormControl>
             <FormLabel fontSize="sm" fontWeight="semibold">Logo</FormLabel>
             <Input
+              ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept=".png, .jpeg"
               fontSize="md"
               pt={1}
               onChange={handleFileChange}
             />
+            <FormHelperText id="logo-helper-text">
+              Accepted formats: PNG, JPEG. Max size: 1MB.
+            </FormHelperText>
             {/* Hidden inputs to store base64 and fileType in react-hook-form */}
             <input type="hidden" {...register('logo')} />
             <input type="hidden" {...register('logoFileType')} />
@@ -220,10 +263,12 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
 
           {preview && (
             <Box
+              position="relative"
               border="1px solid"
               borderColor="gray.300"
               borderRadius="md"
               p={1}
+              margin={1}
               bg="gray.50"
               height="60px"
               width="100px"
@@ -236,6 +281,16 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
                 alt="Logo Preview"
                 maxHeight="50px"
                 objectFit="contain"
+              />
+              <IconButton
+                aria-label="Remove logo"
+                icon={<RxCrossCircled size={16} />}
+                size="sm"
+                position="absolute" top="-18px" right="-19px"
+                variant="ghost"
+                color="red.500"
+                _hover={{ color: 'red.700', bg: 'transparent' }}
+                onClick={clearLogo}
               />
             </Box>
           )}

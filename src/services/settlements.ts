@@ -7,9 +7,10 @@ import {
     ISettlementWindowState,
     ISettlementModel,
     ISettlementState,
+    ISettlementWindow, 
+    INetTransferAmount
 } from '@typescript/services'
 import { type AxiosError } from 'axios'
-import { ISettlementWindow, INetTransferAmount } from '@typescript/services'
 import { 
     ISettlementWindowForm, 
     ISettlementWindowCreateForm, 
@@ -17,6 +18,7 @@ import {
     ISettlementScheduleForm,
     ISettlementScheduleModifyForm,
     ISettlementScheduleRemoveForm,
+    IModifySettlementModelPayload,
 } from '@typescript/form/settlements'
 
 
@@ -175,14 +177,7 @@ export const getSettlementWindowsList = async (values: ISettlementWindowForm) =>
         })
 }
 
-export const modifySettlementModel = async (data: {
-    settlementModelId: string;
-    name: string;
-    modelType: string;
-    currencyID: string;   // backend expects string, can be ''
-    active: boolean;
-    autoCloseWindow: boolean;
-}) => {
+export const modifySettlementModel = async (data: IModifySettlementModelPayload) => {
     const {
         user: { auth }
     } = store.getState();

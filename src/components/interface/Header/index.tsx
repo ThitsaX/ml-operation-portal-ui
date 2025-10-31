@@ -19,7 +19,8 @@ import {
   VStack,
   Box
 } from '@chakra-ui/react';
-import { getRequestErrorMessage } from '@helpers/errors';
+import { getErrorMessage } from '@helpers/errors';
+import { IApiErrorResponse } from '@typescript/services';
 import { useAuth } from '@hooks/auth';
 import { useGetProfile } from '@hooks/services';
 import { useAppDispatch } from '@store';
@@ -50,12 +51,10 @@ const Header = () => {
     onSuccess(data) {
       dispatch(UserActions.updateUser(data));
     },
-    onError(err) {
-      console.log(err);
-      console.log(JSON.stringify(err));
+    onError(err: IApiErrorResponse) {
       toast({
         position: 'top',
-        description: getRequestErrorMessage(err),
+        description: getErrorMessage(err),
         status: 'error',
         isClosable: true,
         duration: 3000

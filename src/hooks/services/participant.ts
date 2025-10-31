@@ -1,15 +1,17 @@
 import {
   getUserListByParticipant, getRoleListByParticipant, getOrganizationListByParticipant, getContactList, getParticipantProfile,
-  getParticipantCurrencyList, getHubCurrency, getLiquidityProfileList, getParticipantList
+  getParticipantCurrencyList, getHubCurrency, getLiquidityProfileList, getParticipantList,
+  getParticipantPositionList
 } from '@services/participant'
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
 import {
   type IApiErrorResponse, type IParticipantUser,
   type IBusinessContact, type ILiquidityProfile, type ICurrency,
   type IParticipantProfile,
-  IParticipantUserRole,
-  IParticipantOrganization
+  IParticipantOrganization,
+  type IParticipantPositionData
 } from '@typescript/services'
+
 
 export const useGetUserListByParticipant = (
   options?: UseQueryOptions<IParticipantUser[],
@@ -77,8 +79,6 @@ export const useGetContactList = (
     ...options
   });
 
-
-
 export const useGetLiquidityProfileList = (
   type:string,
   options?: UseQueryOptions<ILiquidityProfile[],
@@ -90,6 +90,7 @@ export const useGetLiquidityProfileList = (
     queryFn:({queryKey})=> getLiquidityProfileList(queryKey[1] as string),
     ...options
   })
+
 export const useGetParticipantList = (
   options?: UseQueryOptions<IParticipantProfile[],
     IApiErrorResponse
@@ -101,4 +102,12 @@ export const useGetParticipantList = (
     ...options
   })
 
+  export const useGetParticipantPositionList = (
+  options?: UseQueryOptions<IParticipantPositionData[], IApiErrorResponse>
+) =>
+  useQuery<IParticipantPositionData[], IApiErrorResponse>({
+    queryKey: ['getParticipantPositionList'],
+    queryFn: getParticipantPositionList,
+    ...options
+  })
 

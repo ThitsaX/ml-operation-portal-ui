@@ -27,6 +27,7 @@ import { useLoadingContext } from '@contexts/hooks'
 import { useAppDispatch } from '@store';
 import { IAuthResponse } from '@typescript/services';
 import { UserActions } from '@store/features/user';
+import { getErrorMessage } from '@helpers/errors'
 
 const authHelper = new AuthHelper()
 
@@ -69,7 +70,7 @@ const ChangePassword = () => {
 
       toast({
         position: 'top',
-        title: getRequestErrorMessage(err),
+        title: getErrorMessage(err),
         status: 'error',
         isClosable: true,
         duration: 3000

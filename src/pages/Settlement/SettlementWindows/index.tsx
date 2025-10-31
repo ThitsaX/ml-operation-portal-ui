@@ -6,7 +6,6 @@ import {
     Heading,
     HStack,
     Input,
-    Select,
     Stack,
     useToast,
     Table,
@@ -54,6 +53,8 @@ import { CustomSelect } from '@components/interface';
 import { Ranges } from '@typescript/pages';
 import { usePagination, useSortBy, useTable, Column } from 'react-table';
 import { ISettlementWindow, INetTransferAmount, INetTransferDetail } from '@typescript/services';
+import { getSettlementSchedulerList } from '@services/settlements';
+import { getNextRunInfo, formatCountdown } from '@utils/schedule';
 
 import {
     getSettlementWindowsList,
@@ -71,7 +72,8 @@ import {
     useGetSettlementModelList,
 } from '@hooks/services/settlements';
 import { useNavigate } from "react-router-dom";
-
+import { hasMenuAccess } from '@helpers/permissions';
+import { getErrorMessage } from '@helpers/errors';
 
 const SettlementWindows = () => {
     const { start, complete } = useLoadingContext();
@@ -81,7 +83,7 @@ const SettlementWindows = () => {
     const [dateRange, setDateRange] = useState<Ranges>('oneDay');
     const { data: currencyList } = useGetParticipantCurrencyList();
     const { data: stateList } = useGetSettlementWindowStateList();
-    const { data: modelList } = useGetSettlementModelList();
+    const { data: modelList } = useGetSettlementModelList({ refetchOnMount: 'always' });
 
     // const [toFspOptions, setToFspOptions] = useState<any[]>([]);
     // const [selectedToFspOption, setSelectedToFspOption] = useState<{ value: string; label: string }>();
@@ -97,6 +99,10 @@ const SettlementWindows = () => {
 
     const settlementWindowHelper = new SettlementWindowHelper();
     const [settlementWindows, setSettlementWindows] = useState<ISettlementWindow[]>([]);
+
+    const [nextUtc, setNextUtc] = useState<number | null>(null);
+    const [countdownText, setCountdownText] = useState<string>('');
+    const [countdownConfigured, setCountdownConfigured] = useState<boolean | null>(null);
 
     const navigate = useNavigate();
 
@@ -172,7 +178,7 @@ const SettlementWindows = () => {
                 } else {
                     toast({
                         position: 'top',
-                        description: err.default_error_message || "Internal error",
+                        description: getErrorMessage(err) || "Internal error",
                         status: 'error',
                         isClosable: true,
                         duration: 3000
@@ -197,7 +203,7 @@ const SettlementWindows = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: err.default_error_message || 'Cannot retrieve net transfer amount',
+                description: getErrorMessage(err) || 'Cannot retrieve net transfer amount',
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -247,7 +253,7 @@ const SettlementWindows = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: err.default_error_message || 'Failed to close Settlement Window',
+                description: getErrorMessage(err) || 'Failed to close Settlement Window',
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -292,7 +298,7 @@ const SettlementWindows = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: err.default_error_message || 'Failed to create settlement',
+                description: getErrorMessage(err) || 'Failed to create settlement',
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -313,7 +319,8 @@ const SettlementWindows = () => {
     };
 
 
-    const columns = useMemo<Column<ISettlementWindow>[]>(() => [
+    const columns = useMemo<Column<ISettlementWindow>[]>(() => {
+            const baseColumns: Column<ISettlementWindow>[] = [
         {
             id: "selection",
             Header: () => (
@@ -396,32 +403,46 @@ const SettlementWindows = () => {
                     <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DD HH:mm')}</Text>
                 );
             },
-        },
-        {
-            Header: 'Action',
-            disableSortBy: true,
-            Cell: ({ row }: any) => {
-                if (row.original.state === 'OPEN') {
-                    return (
-                        <HStack spacing={4}>
-                            <Button
-                                size="sm"
-                                colorScheme="green"
-                                variant="solid"
-                                onClick={() => handleClose(row.original)}>
-                                Close Window
-                            </Button>
-                        </HStack>
-                    );
-                }
 
-                return <></>;
-            }
+        }];
 
-        },
-    ],
-        [settlementWindows, selectedRowIds, selectedTZString]
-    );
+        const actionColumn = hasMenuAccess("CloseSettlementWindows")
+                ? [
+                    {
+                        Header: 'Action',
+                        id: 'action',
+                        disableSortBy: true,
+                        Cell: ({ row }: any) => {
+                            let canCloseManual = true;
+                            if (modelList && modelList.length > 0) {
+                                canCloseManual = modelList[0].manualCloseWindow;
+                            }
+
+                            if (row.original.state === 'OPEN') {
+                                return (
+                                    <HStack spacing={4}>
+                                        <Button
+                                            isDisabled={!canCloseManual}
+                                            title={ !canCloseManual ? "Disabled due to not allowing manual closing" : "" }
+                                            size="sm"
+                                            colorScheme="green"
+                                            variant="solid"
+                                            onClick={() => handleClose(row.original)}>
+                                            Close Window
+                                        </Button>
+                                    </HStack>
+                                );
+                            }
+
+                            return <></>;
+                        }
+                    } as Column<ISettlementWindow>,
+                    ]
+                : []
+
+            return [...baseColumns, ...actionColumn];
+        }, [settlementWindows, selectedRowIds, selectedTZString]);
+
 
     const {
         getTableProps,
@@ -458,7 +479,6 @@ const SettlementWindows = () => {
         trigger,
         reset,
         handleSubmit,
-        register,
         formState: { errors }
     } = useForm<ISettlementWindowForm>({
         resolver: zodResolver(schema),
@@ -516,7 +536,6 @@ const SettlementWindows = () => {
                 case 'custom':
                     setDateRange(range);
                     return;
-                    break;
             }
 
             setDateRange(range);
@@ -542,6 +561,86 @@ const SettlementWindows = () => {
         setSettlementWindows([]);
     }, [selectedTimezone])
 
+    useEffect(() => {
+        let timer: any;
+
+        const stop = () => {
+            if (timer) clearInterval(timer);
+            timer = null;
+        };
+
+        const chooseFirst = settlementModel === '' || !modelList?.length;
+        if (chooseFirst) {
+            stop();
+            setCountdownConfigured(null);
+            setCountdownText('');
+            setNextUtc(null);
+            return;
+        }
+
+        const model = modelList?.find(m => m.name === settlementModel);
+        if (!model) {
+            stop();
+            setCountdownConfigured(false);
+            setCountdownText('');
+            setNextUtc(null);
+            return;
+        }
+
+        // must have auto-close and a valid zoneId like +07:00 / -03:30
+        const zoneOk = typeof model.zoneId === 'string' && /^[+-]\d{2}:[0-5]\d$/.test(model.zoneId);
+        if (!model.autoCloseWindow || !zoneOk) {
+            stop();
+            setCountdownConfigured(false);
+            setCountdownText('');
+            setNextUtc(null);
+            return;
+        }
+
+        (async () => {
+            try {
+                const resp = await getSettlementSchedulerList(model.settlementModelId);
+                const list: any[] = Array.isArray(resp?.settlementSchedulerList) ? resp.settlementSchedulerList : [];
+                const crons = list
+                    .filter(it => !!it?.active && typeof it?.cronExpression === 'string' && it.cronExpression.trim().length > 0)
+                    .map(it => String(it.cronExpression));
+
+                if (!crons.length) {
+                    stop();
+                    setCountdownConfigured(false);
+                    setCountdownText('');
+                    setNextUtc(null);
+                    return;
+                }
+
+                const { nextUtc: n, countdown } = getNextRunInfo(crons, model.zoneId as string, Date.now());
+                if (!n) {
+                    stop();
+                    setCountdownConfigured(false);
+                    setCountdownText('');
+                    setNextUtc(null);
+                    return;
+                }
+
+                setCountdownConfigured(true);
+                setNextUtc(n);
+                setCountdownText(countdown);
+
+                // tick every second
+                stop();
+                timer = setInterval(() => {
+                    setCountdownText(formatCountdown((n as number) - Date.now()));
+                }, 1000);
+            } catch {
+                stop();
+                setCountdownConfigured(false);
+                setCountdownText('');
+                setNextUtc(null);
+            }
+        })();
+
+        return () => stop();
+    }, [settlementModel, modelList]);
 
     const onClearHandler = useCallback(() => {
         reset()
@@ -656,7 +755,8 @@ const SettlementWindows = () => {
                             name="state"
                             render={({ field }) => (
                                 <CustomSelect
-                                    placeholder="All State"
+                                    placeholder="All States"
+                                    isClearable={true}
                                     options={
                                         stateList?.map((item) => ({
                                             value: item.settlementWindowStateId,
@@ -679,13 +779,14 @@ const SettlementWindows = () => {
                                 name="currency"
                                 render={({ field }) => (
                                     <CustomSelect
-                                        placeholder="All Currency"
-                                        options={[
-                                            ...(currencyList ?? []).map((item) => ({
+                                        placeholder="All Currencies"
+                                        isClearable={true}
+                                        options={
+                                            currencyList?.map((item) => ({
                                             value: item.currency,
                                             label: item.currency,
-                                            })),
-                                        ]}
+                                            })) ?? []
+                                        }
                                         value={field.value ? {
                                             value: field.value,
                                             label: field.value
@@ -723,40 +824,106 @@ const SettlementWindows = () => {
                             Find
                         </Button>
                         </FormControl>
-                      </SimpleGrid>
+                    </SimpleGrid>
                 </Stack>
+                <Flex justify="space-between" align="center" flex={1} gap={5} mt={6}>
+                    <Box>
+                        {countdownConfigured === null && (
+                            <Box
+                                display="inline-flex"
+                                alignItems="center"
+                                px={4}
+                                py={3}
+                                border="1px solid"
+                                borderColor="gray.200"
+                                borderRadius="md"
+                                bg="gray.50"
+                                color="gray.700"
+                            >
+                                <Text fontWeight="semibold">
+                                    Please choose Settlement Model to see when the window will close.
+                                </Text>
+                            </Box>
+                        )}
 
-                <Flex justify="flex-end" flex={1} gap={5} mt={6} >
-                    <CustomSelect
-                        placeholder="Choose Settlement Model"
-                        isClearable={true}
-                        options={[
-                            { value: '', label: 'Choose Settlement Model' },
-                            ...(modelList ?? []).map((item) => ({
-                                value: item.name,
-                                label: item.name
-                            })),
-                        ]}
-                        value={settlementModel ? {
-                            value: settlementModel,
-                            label: settlementModel
-                        } : null}
-                        onChange={(selectedOption) => {
-                            setSettlementModel(selectedOption ? selectedOption.value : '');
-                        }}
-                           width="250px"
-                    />
-                    <Button
-                        isDisabled={ settlementModel === '' || selectedRowIds.length < 1 }
-                        color="white"
-                        bg="primary"
-                        _hover={{
-                            bg: 'primary',
-                            opacity: 0.4
-                        }}
-                        onClick={createSettlement}>
-                        Create Settlement
-                    </Button>
+                        {countdownConfigured === false && (
+                            <Box
+                                display="inline-flex"
+                                alignItems="center"
+                                px={4}
+                                py={3}
+                                border="1px solid"
+                                borderColor="gray.200"
+                                borderRadius="md"
+                                bg="gray.50"
+                                color="gray.700"
+                            >
+                                <Text>
+                                    <Text as="span" fontWeight="semibold">
+                                        Countdown timer is not configured.
+                                    </Text>{" "}
+                                    Please contact the system administrator or check configuration settings.
+                                </Text>
+                            </Box>
+                        )}
+
+                        {countdownConfigured === true && (
+                            <Box
+                                display="inline-flex"
+                                alignItems="center"
+                                px={4}
+                                py={3}
+                                border="1px solid"
+                                borderColor="green.200"
+                                borderRadius="md"
+                                bg="green.50"
+                                color="green.800"
+                            >
+                                <Text fontWeight="semibold">
+                                    Window will close in{" "}
+                                    <Box as="span" color="green.700">
+                                        {countdownText}
+                                    </Box>
+                                </Text>
+                            </Box>
+                        )}
+                    </Box>
+
+                    <HStack>
+                        <CustomSelect
+                            placeholder="Choose Settlement Model"
+                            isClearable={true}
+                            width={"16em"}
+                            options={
+                                modelList?.map((item) => ({
+                                    value: item.name,
+                                    label: item.name,
+                                })) ?? []
+                            }
+                            value={
+                                settlementModel
+                                    ? {
+                                        value: settlementModel,
+                                        label: settlementModel,
+                                    }
+                                    : null
+                            }
+                            onChange={(selectedOption) => {
+                                setSettlementModel(selectedOption ? selectedOption.value : "");
+                            }}
+                        />
+                        {hasMenuAccess("CreateSettlement") && (
+                            <Button
+                                isDisabled={settlementModel === "" || selectedRowIds.length < 1}
+                                color="white"
+                                bg="primary"
+                                _hover={{ bg: "primary", opacity: 0.4 }}
+                                onClick={createSettlement}
+                            >
+                                Create Settlement
+                            </Button>
+                        )}
+                    </HStack>
                 </Flex>
 
                 <TableContainer

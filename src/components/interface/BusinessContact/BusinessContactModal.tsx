@@ -29,7 +29,8 @@ interface BusinessContactModalProps {
   onSave: (values: IBusinessContact) => void;
   form: IBusinessContact;
   setForm: React.Dispatch<React.SetStateAction<IBusinessContact>>;
-  isEdit: boolean
+  isEdit: boolean;
+  isSaving?: boolean;
 }
 
 const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
@@ -38,7 +39,8 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
   onSave,
   form,
   setForm,
-  isEdit
+  isEdit,
+  isSaving
 }) => {
 
   const contactHelper = new ContactHelper();
@@ -161,6 +163,8 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
             type="submit"
             colorScheme="blue"
             isDisabled={!isDirty || !isValid}
+            isLoading={isSaving}
+            loadingText={isEdit ? "Saving..." : "Adding..."}
             onClick={handleSubmit(contactHandler)} mr={3}>
             {isEdit ? 'Save' : 'Add'}
           </Button>

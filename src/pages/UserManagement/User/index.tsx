@@ -14,11 +14,9 @@ import {
   VStack,
   Heading,
   Text,
-  Select as ChakraSelect,
   Icon,
   Divider,
   Switch,
-  Toast,
   useToast,
   Stack
 } from '@chakra-ui/react';
@@ -34,16 +32,15 @@ import {
 } from 'react-icons/tfi';
 import { FaRegEdit } from "react-icons/fa";
 import { useGetUserListByParticipant } from '@hooks/services';
-import { modifyUser, modifyUserStatus } from '@services/participant';
+import { createUser, modifyUser, modifyUserStatus } from '@services/user';
 import {
   type IParticipantUser,
   type IModifyUser,
   type IParticipantUserForm,
-  IApiErrorResponse
+  type IApiErrorResponse
 } from '@typescript/services';
 import { UserStatus } from '@typescript/form';
 import { useGetOrganizationListByParticipant } from '@hooks/services/participant';
-import { createUser } from '@services/participant';
 import { GrPowerReset } from "react-icons/gr";
 import ResetPasswordModal from '@components/interface/ResetPassword';
 import GlobalFilter from '@components/interface/GlobalFilter';
@@ -66,6 +63,7 @@ const User = () => {
 
   const [resetUser, setResetUser] = useState<{ userId: string; email: string } | null>(null);
   const [isResetOpen, setIsResetOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleResetClick = (user: IParticipantUser) => {
     setResetUser({ userId: user.userId, email: user.email });
@@ -76,8 +74,6 @@ const User = () => {
     const newStatus = checked ? UserStatus.ACTIVE : UserStatus.INACTIVE;
     try {
       await modifyUserStatus(userId, newStatus);
-
-
       toast({
         position: 'top',
         description: 'User status updated successfully',
@@ -240,7 +236,7 @@ const User = () => {
   };
 
   const handleSave = useCallback((values: IParticipantUserForm) => {
-
+    setIsSaving(true);
     const { firstName, lastName, confirmPassword, ...rest } = values;
     const name = `${firstName} ${lastName}`;
     const userData = { ...rest, name, firstName, lastName };
@@ -276,7 +272,9 @@ const User = () => {
           duration: 3000,
           isClosable: true,
         });
-      });
+      }).finally(() => {
+      setIsSaving(false);
+    });
   }, [isEdit, toast, refetch, selectedUser]);
 
   const handlePageValidation = (value: string) => {
@@ -476,6 +474,7 @@ const User = () => {
         isEdit={isEdit}
         participantInfoList={participantInfoList}
         onSave={handleSave}
+        isSaving={isSaving} 
       />
 
       <ResetPasswordModal

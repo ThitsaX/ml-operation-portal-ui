@@ -1,7 +1,5 @@
-export * from './dashboard';
 export * from './user';
 export * from './participant';
-export * from './company-info';
 export * from './transfer';
 export * from './transfer';
 export * from './announcement';

@@ -20,7 +20,7 @@ import { isEmpty } from "lodash";
 import { resetPasswordUser } from "@services/participant";
 import { ParticipantHelper } from "@helpers/form";
 import { type IResetPasswordValues } from "@typescript/form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { type IApiErrorResponse } from "@typescript/services";
 import { getErrorMessage } from "@helpers/errors";
 
@@ -40,6 +40,7 @@ export default function ResetPasswordModal({
     onSuccess,
 }: ResetPasswordModalProps) {
     const toast = useToast();
+    const [isSaving, setIsSaving] = useState(false);
 
     const {
         register,
@@ -68,6 +69,7 @@ export default function ResetPasswordModal({
 
     const onSubmitHandler = async (values: IResetPasswordValues & { confirmPassword: string }) => {
         try {
+            setIsSaving(true);
             await resetPasswordUser({ email: values.email, newPassword: values.newPassword });
             toast({
                 position: "top",
@@ -88,7 +90,9 @@ export default function ResetPasswordModal({
                 duration: 3000,
                 isClosable: true,
             });
-        }
+        }finally {
+        setIsSaving(false);
+    }
     };
 
     const handleCancel = () => {
@@ -135,6 +139,8 @@ export default function ResetPasswordModal({
                         colorScheme="blue"
                         onClick={handleSubmit(onSubmitHandler)}
                         isDisabled={!isDirty || !isValid}
+                        isLoading={isSaving}
+                        loadingText="Saving..."
                     >
                         Save
                     </Button>

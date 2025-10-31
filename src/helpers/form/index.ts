@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { passwordRegex } from '@helpers';
 
 export class FormHelper { }
 
@@ -6,20 +7,27 @@ export class AuthHelper extends FormHelper {
   get loginSchema() {
     return z.object({
       email: z.string({ required_error: 'Required' }).email('invalid-email'),
-      password: z.string({ required_error: 'Required' })
+      password: z.string({ required_error: 'Required' }).min(6, 'Password must be at least 6 characters long')
     });
   }
 
   get passwordChangeSchema(): any {
+    const newPasswordSchema = z
+      .string({ required_error: 'Password is required' })
+      .regex(
+        passwordRegex,
+        'Password must be at least 6 characters long and include one uppercase letter, one lowercase letter, one number, and one special character'
+      );
+
     return z
       .object({
         oldPassword: z.string({ required_error: 'Required' }),
-        newPassword: z.string({ required_error: 'Required' }),
+        newPassword: newPasswordSchema,
         confirmPassword: z.string({ required_error: 'Required' })
       })
       .refine((data) => data.newPassword === data.confirmPassword, {
         message: 'password-not-match',
-        path: ['confirm_password']
+        path: ['confirmPassword']
       });
   }
 }
@@ -65,10 +73,17 @@ export class ParticipantHelper extends FormHelper {
   }
 
   get resetPasswordSchema() {
+    const newPasswordSchema = z
+      .string({ required_error: 'Password is required' })
+      .regex(
+        passwordRegex,
+        'Password must be at least 6 characters long and include one uppercase letter, one lowercase letter, one number, and one special character'
+      );
+
     return z
       .object({
         email: z.string({ required_error: 'Required' }).email('invalid-email'),
-        newPassword: z.string({ required_error: 'Required' }),
+        newPassword: newPasswordSchema,
         confirmPassword: z.string({ required_error: 'Required' })
       })
       .refine((data) => data.newPassword === data.confirmPassword, {
@@ -78,41 +93,15 @@ export class ParticipantHelper extends FormHelper {
   }
 }
 
-export class CompanyInfoHelper extends FormHelper {
-  get schema() {
-    return z.object({
-      participant_id: z.string().optional(),
-      dfsp_code: z.string().optional(),
-      name: z.string().optional(),
-      address: z.string({ required_error: 'Required' }),
-      mobile: z.string({ required_error: 'Required' }),
-
-      business_contatct_id: z.string().optional(),
-      business_contatct_name: z.string().optional(),
-      business_contatct_title: z.string().optional(),
-      business_contatct_email: z.string().optional(),
-      business_contatct_mobile: z.string().optional(),
-
-      technical_contatct_id: z.string().optional(),
-      technical_contatct_name: z.string().optional(),
-      technical_contatct_title: z.string().optional(),
-      technical_contatct_email: z.string().optional(),
-      technical_contatct_mobile: z.string().optional(),
-
-      extra_property_list: z.array(
-        z.object({
-          extra_property_id: z.string().optional(),
-          property_key: z.string().optional(),
-          label: z.string().optional(),
-          property_value: z.string().optional()
-        })
-      )
-    });
-  }
-}
-
 export class UserManagementHelper extends FormHelper {
   get schema() {
+    const newPasswordSchema = z
+      .string({ required_error: 'Password is required' })
+      .regex(
+        passwordRegex,
+        'Password must be at least 6 characters long and include one uppercase letter, one lowercase letter, one number, and one special character'
+      );
+
     return z.object({
       firstName: z.string().min(1, 'First Name is required'),
       lastName: z.string().min(1, 'Last Name is required'),
@@ -122,7 +111,7 @@ export class UserManagementHelper extends FormHelper {
       jobTitle: z.string().optional(),
       status: z.string().optional(),
       userId: z.string().optional(),
-      password: z.string().min(3, 'Password must be at least 6 characters'),
+      password: newPasswordSchema,
       confirmPassword: z.string(),
     }).refine((data) => data.password === data.confirmPassword, {
       message: "Passwords do not match",

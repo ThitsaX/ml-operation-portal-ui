@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import {
   AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader,
   AlertDialogContent, AlertDialogOverlay, useDisclosure,
@@ -25,21 +25,23 @@ import { CloseIcon } from '@chakra-ui/icons';
 import { CustomSelect } from '@components/interface';
 import type { OptionType } from '@components/interface/CustomSelect';
 
-import { 
-  createSettlementScheduler, 
-  getSettlementSchedulerList, 
-  modifySettlementModel, 
-  modifySettlementScheduler, 
-  removeSettlementScheduler 
+import {
+  createSettlementScheduler,
+  getSettlementSchedulerList,
+  modifySettlementModel,
+  modifySettlementScheduler,
+  removeSettlementScheduler
 } from '@services/settlements';
 import { ISettlementScheduleForm } from '@typescript/form/settlements';
 import { ISettlementModel } from '@typescript/services';
 import { allTimezones, useTimezoneSelect } from 'react-timezone-select';
+import { getNextRunInfo, formatCountdown } from '@utils/schedule';
+
 interface SettlementModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    settlementModel: ISettlementModel;
-    onUpdated?: (updated: ISettlementModel) => void;
+  isOpen: boolean;
+  onClose: () => void;
+  settlementModel: ISettlementModel;
+  onUpdated?: (updated: ISettlementModel) => void;
 }
 
 const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, settlementModel, onUpdated }) => {
@@ -48,14 +50,14 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
   const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
   const { isOpen: isConfirmOpen, onOpen: openConfirm, onClose: closeConfirm } = useDisclosure();
   const cancelRef = useRef<HTMLButtonElement | null>(null);
-  
+
   const MODEL_CODE = 'DFN';
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
   type Day = typeof days[number];
-  const DOW_MAP: Record<Day, string> = { Mon:'MON', Tue:'TUE', Wed:'WED', Thu:'THU', Fri:'FRI', Sat:'SAT', Sun:'SUN' };
-  const REV_DOW_MAP: Record<string, Day> = { MON:'Mon', TUE:'Tue', WED:'Wed', THU:'Thu', FRI:'Fri', SAT:'Sat', SUN:'Sun' };
-  
-  
+  const DOW_MAP: Record<Day, string> = { Mon: 'MON', Tue: 'TUE', Wed: 'WED', Thu: 'THU', Fri: 'FRI', Sat: 'SAT', Sun: 'SUN' };
+  const REV_DOW_MAP: Record<string, Day> = { MON: 'Mon', TUE: 'Tue', WED: 'Wed', THU: 'Thu', FRI: 'Fri', SAT: 'Sat', SUN: 'Sun' };
+
+
   const [serverMatrix, setServerMatrix] = useState<Record<string, Set<Day>>>({});
   const setsEqual = (a?: Set<Day>, b?: Set<Day>) => {
     if (!a && !b) return true;
@@ -70,9 +72,9 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     const ui = getRowSet(matrix, key);
     const sv = getRowSet(serverMatrix, key);
     const hasId = !!rowIdMap[key];
-    if (!hasId) return ui.size > 0;           
-    if (ui.size === 0 && sv.size > 0) return true; 
-    return !setsEqual(ui, sv);                
+    if (!hasId) return ui.size > 0;
+    if (ui.size === 0 && sv.size > 0) return true;
+    return !setsEqual(ui, sv);
   };
 
   const [rows, setRows] = useState<string[]>([]);
@@ -82,16 +84,20 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     // '09:30': new Set<Day>([]),
     // '10:00': new Set<Day>(['Mon', 'Wed', 'Sat']),
   })
-  
   const [newHour, setNewHour] = useState<string>('09');
   const [newMinute, setNewMinute] = useState<string>('00');
   const [selectedTz, setSelectedTz] = useState<string>(() => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
+  const [savedTz, setSavedTz] = useState<string>(selectedTz);
+  const tzDirty = selectedTz !== savedTz;
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [autoCloseWindow, setAutoCloseWindow] = useState<boolean>(settlementModel.autoCloseWindow);
-  
+  const [manualCloseWindow, setManualCloseWindow] = useState<boolean>(settlementModel.manualCloseWindow);
+
+  const [rowActiveMap, setRowActiveMap] = useState<Record<string, boolean>>({});
+  const [togglingKey, setTogglingKey] = useState<string | null>(null);
   const [rowIdMap, setRowIdMap] = useState<Record<string, string | undefined>>({});
-  
+
   const normalizeTime = (h: string, m: string) => `${h.padStart(2, '0')}:${m.padStart(2, '0')}`
 
   const humanDays = (days: Day[]) => {
@@ -103,21 +109,20 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
   };
 
   const nameForKey = (key: string, setOverride?: Set<Day>) => {
-    const { time, zoneId, tz } = splitKey(key);
+    const { time } = splitKey(key);
     const set = setOverride ?? matrix[key] ?? new Set<Day>();
     const days = Array.from(set);
     const label = humanDays(days);
-    return `${MODEL_CODE}_${label}_${time}_${zoneId}_${tz}`;
+    return `${MODEL_CODE}_${label}_${time}`;
   };
 
   const descriptionForKey = (key: string, cron: string | null, setOverride?: Set<Day>) => {
-    const { time, zoneId, tz } = splitKey(key);
+    const { time } = splitKey(key);
     const set = setOverride ?? matrix[key] ?? new Set<Day>();
     const days = Array.from(set);
     const when = humanDays(days);
     const model = settlementModel.name || 'Settlement Model';
-
-    const base = `Run for ${model} at ${time} (${zoneId} ${tz})`;
+    const base = `Run for ${model} at ${time}`;
     const repeat = when ? ` every ${when}` : '';
     return `${base}${repeat}`;
   };
@@ -136,10 +141,10 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
   };
 
   const currentOffset = useMemo(() => getOffsetForZone(selectedTz), [selectedTz]);
-  
+
   const hasAnyActiveSchedule = useMemo(
-    () => rows.some((k) => (matrix[k]?.size ?? 0) > 0),
-    [rows, matrix]
+    () => rows.some((k) => (rowActiveMap[k] && (matrix[k]?.size ?? 0) > 0)),
+    [rows, matrix, rowActiveMap]
   );
 
   const COMMON_TZS = [
@@ -167,7 +172,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     'Australia/Sydney',
     'Pacific/Auckland',
   ];
-  
+
   const { options: rtsOptions } = useTimezoneSelect({
     labelStyle: 'original',
     timezones: allTimezones,
@@ -182,7 +187,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       try {
         const zones = anyIntl.supportedValuesOf('timeZone') as string[];
         if (Array.isArray(zones) && zones.length) return zones;
-      } catch {}
+      } catch { }
     }
     // Fallback if API missing or throws
     return COMMON_TZS;
@@ -206,28 +211,38 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     return { value: tz, label: `(${off} ${tz})` };
   });
 
-  const makeKey = (time: string, offset: string, tz: string) => `${time}|${offset}|${tz}`;
-  const splitKey = (key: string) => {
-    const [time, zoneId, tz] = key.split('|');
-    return { time, zoneId, tz };
-  };
+  const makeKey = (time: string) => time;
+  const splitKey = (key: string) => ({ time: key });
 
   useEffect(() => {
     setAutoCloseWindow(!!settlementModel.autoCloseWindow);
   }, [settlementModel?.autoCloseWindow]);
 
-  const tzOptions: OptionType[] = useMemo(
+
+  useEffect(() => {
+    setManualCloseWindow(!!settlementModel.manualCloseWindow);
+  }, [settlementModel?.manualCloseWindow]);
+
+  type TzOption = OptionType & { offset: string };
+
+  const tzOptionsFull: TzOption[] = useMemo(
     () =>
       rtsOptions.map(o => {
         const iana = String(o.value);
-        const offset = getOffsetForZone(iana); 
+        const offset = getOffsetForZone(iana);
         const clean = stripLeadingGMT(String(o.label));
         return {
-          value: iana,                      
-          label: `(GMT${offset}) ${clean}`, 
+          value: iana,
+          label: `(GMT${offset}) ${clean}`,
+          offset,
         };
       }),
     [rtsOptions]
+  );
+
+  const tzOptions: OptionType[] = useMemo(
+    () => tzOptionsFull.map(({ value, label }) => ({ value, label })),
+    [tzOptionsFull]
   );
 
   useEffect(() => {
@@ -249,24 +264,82 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       }
     })();
 
+
+    const byOffset = tzOptionsFull.find(opt => opt.offset === (settlementModel.zoneId || ''));
+    if (byOffset) {
+      setSelectedTz(byOffset.value);
+      setSavedTz(byOffset.value);
+    } else {
+
+      setSavedTz(selectedTz);
+    }
+
     return () => { cancelled = true; };
-  }, [isOpen, settlementModel.settlementModelId]);
+  }, [isOpen, settlementModel.settlementModelId, settlementModel?.zoneId, tzOptionsFull]);
 
   const buildCronForKey = (key: string, setOverride?: Set<Day>): { cron: string | null, zoneId: string } => {
-    const { time, zoneId } = splitKey(key);
-
+    const { time } = splitKey(key);
     const set = setOverride ?? matrix[key];
-    
-    if (!set || set.size === 0) return { cron: null, zoneId };
-    
+    if (!set || set.size === 0) return { cron: null, zoneId: currentOffset };
+
     const [hh, mm] = time.split(':');
     const days = Array.from(set);
-    
-    if (!days.length) return { cron: null, zoneId };
-    
+    if (!days.length) return { cron: null, zoneId: currentOffset };
+
     const dow = days.map(d => DOW_MAP[d]).join(',');
+    return { cron: `0 ${mm} ${hh} ? * ${dow}`, zoneId: currentOffset };
+  };
+
+  const [nextCountdown, setNextCountdown] = useState<string>('--:--:--');
+  const [nextUtc, setNextUtc] = useState<number | null>(null);
+
+  const buildActiveCronList = useCallback((): string[] => {
+    const map: Record<'Mon'|'Tue'|'Wed'|'Thu'|'Fri'|'Sat'|'Sun', 'MON'|'TUE'|'WED'|'THU'|'FRI'|'SAT'|'SUN'> = {
+      Mon:'MON', Tue:'TUE', Wed:'WED', Thu:'THU', Fri:'FRI', Sat:'SAT', Sun:'SUN'
+    };
+
+    const out: string[] = [];
+    for (const key of rows) {
+      if (!rowActiveMap[key]) continue;           // must be toggled ON
+      
+      const set = matrix[key];
+      
+      if (!(set && set.size)) continue;           // at least one day
+
+      const [HH, MM] = key.split(':');
+      const dows = Array.from(set).map(d => map[d]).sort();
+      
+      out.push(`0 ${MM} ${HH} ? * ${dows.join(',')}`);
+    }
+    return out;
+  }, [rows, matrix, rowActiveMap]);
+
+  useEffect(() => {
+    const zoneOffset =
+      typeof settlementModel.zoneId === 'string' &&
+      /^(?:[+-]\d{2}:[0-5]\d)$/.test(settlementModel.zoneId)
+        ? settlementModel.zoneId
+        : currentOffset;
+  
+    const crons = buildActiveCronList();
+    const { nextUtc: n, countdown } = getNextRunInfo(crons, zoneOffset, Date.now());
+    setNextUtc(n);
+    setNextCountdown(countdown);
     
-    return { cron: `0 ${mm} ${hh} ? * ${dow}`, zoneId };
+  }, [rows, matrix, rowActiveMap, settlementModel.zoneId, currentOffset, buildActiveCronList]);
+
+  useEffect(() => {
+    if (!nextUtc) return;
+    const id = setInterval(() => {
+      setNextCountdown(formatCountdown(nextUtc - Date.now()));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [nextUtc]);
+
+  const mustKeepOneOn = (turningOff: 'auto' | 'manual') => {
+    if (turningOff === 'auto' && !manualCloseWindow) return true;
+    if (turningOff === 'manual' && !autoCloseWindow) return true;
+    return false;
   };
 
   const ensureAutoCloseEnabled = async () => {
@@ -278,11 +351,15 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
         currencyID: (settlementModel.currencyId ?? ''),
         active: true,
         autoCloseWindow: true,
+        manualCloseWindow: manualCloseWindow,
+        zoneId: currentOffset
       });
       setAutoCloseWindow(true);
       // tell parent so it updates its copy (table/list)
-      onUpdated?.({ ...settlementModel, autoCloseWindow: true });
+      onUpdated?.({ ...settlementModel, autoCloseWindow: true, manualCloseWindow });
       settlementModel.autoCloseWindow = true;
+      settlementModel.manualCloseWindow = manualCloseWindow;
+      settlementModel.zoneId = currentOffset;
 
       toast({
         status: 'success',
@@ -291,6 +368,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       });
     }
   };
+
   const saveRow = async (key: string) => {
     const set = matrix[key] ?? new Set<Day>();
     const { cron, zoneId } = buildCronForKey(key, set);
@@ -302,11 +380,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       name: schedulerName,
       description: schedulerDesc,
       cronExpression: cron ?? '',
-      zoneId
     };
-
-    const zoneOk = /^[+-]\d{2}:\d{2}$/.test(payload.zoneId);
-    if (!zoneOk) payload.zoneId = '+00:00';
 
     try {
       setIsSubmitting(true);
@@ -332,7 +406,9 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                 modelType: settlementModel.type,
                 currencyID: settlementModel.currencyId ?? '',
                 active: true,
-                autoCloseWindow: false
+                autoCloseWindow: false,
+                manualCloseWindow: true,
+                zoneId: currentOffset
               });
               setAutoCloseWindow(false);
               onUpdated?.({ ...settlementModel, autoCloseWindow: false });
@@ -374,24 +450,20 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
 
   const addRow = () => {
     const time = normalizeTime(newHour, newMinute);
-
     if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)) {
       toast({ status: 'warning', title: 'Invalid time', description: 'Use HH:mm (24-hour).' });
       return;
     }
-    
     if (!/^[+-]\d{2}:\d{2}$/.test(currentOffset)) {
       toast({ status: 'warning', title: 'Invalid timezone', description: 'Offset must be ±HH:mm.' });
       return;
     }
-
-    const key = makeKey(time, currentOffset, selectedTz);
+    const key = makeKey(time);
     if (rows.includes(key)) {
-      toast({ status: 'info', title: 'Duplicate row', description: `${nameForKey(key)} (Same Timezone) already exists.` });
+      toast({ status: 'info', title: 'Duplicate row', description: `${time} already exists.` });
       return;
     }
-
-    setRows(r => [...r, key].sort());
+    setRows(r => [...r, key]);
     setMatrix(m => ({ ...m, [key]: new Set<Day>() }));
   };
 
@@ -417,7 +489,8 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
               modelType: settlementModel.type,
               currencyID: settlementModel.currencyId ?? '',
               active: true,
-              autoCloseWindow: false
+              autoCloseWindow: false,
+              manualCloseWindow: true,
             });
             setAutoCloseWindow(false);
             onUpdated?.({ ...settlementModel, autoCloseWindow: false });
@@ -428,7 +501,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
             toast({ status: 'warning', title: 'Could not disable auto-close', description: e?.default_error_message || e?.description || 'Please try again.' });
           }
         }
-      }else {
+      } else {
         // just local ui remove row
         setRows(r => r.filter(k => k !== key));
         setMatrix(m => {
@@ -455,13 +528,6 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     openConfirm();
   };
 
-  const parseTzFromName = (name?: string): string | null => {
-    if (!name) return null;
-    const m = name.match(/_(\d{2}:\d{2})_([+-]\d{2}:\d{2})_(.+)$/);
-    if (!m) return null;
-    return m[3];
-  };
-
   const refreshSchedules = async (): Promise<{ hasActive: boolean }> => {
     const resp = await getSettlementSchedulerList(settlementModel.settlementModelId);
     const objList: any[] = Array.isArray(resp?.settlementSchedulerList) ? resp.settlementSchedulerList : [];
@@ -469,35 +535,31 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     const nextRows = new Set<string>();
     const nextMatrix: Record<string, Set<Day>> = {};
     const nextIds: Record<string, string | undefined> = {};
+    const nextActive: Record<string, boolean> = {};
 
     if (objList.length) {
       for (const it of objList) {
         const ex = it?.cronExpression as string | undefined;
-        const zid = String(it?.zoneId ?? '+00:00');
-        const tzFromName = parseTzFromName(it?.name);
-        const tz = tzFromName || selectedTz || 'UTC';
-
         if (!ex) continue;
-
         const p = parseQuartzCron(ex);
-
         if (!p) continue;
 
-        const key = makeKey(p.time, zid, tz);
-
+        const key = makeKey(p.time);          // time-only key
         nextRows.add(key);
-
         if (!nextMatrix[key]) nextMatrix[key] = new Set<Day>();
         p.dayList.forEach((d) => nextMatrix[key].add(d));
         if (it?.schedulerConfigId) nextIds[key] = String(it.schedulerConfigId);
+
+        nextActive[key] = Boolean(it?.active ?? true);
       }
     }
 
-    const rowsArr = Array.from(nextRows).sort((a, b) => a.localeCompare(b));
+    const rowsArr = Array.from(nextRows);
     setRows(rowsArr);
-    setMatrix(nextMatrix);       // UI mirrors server after refresh
-    setServerMatrix(nextMatrix); // snapshot for compare
+    setMatrix(nextMatrix);
+    setServerMatrix(nextMatrix);
     setRowIdMap(nextIds);
+    setRowActiveMap(nextActive);
 
     return { hasActive: rowsArr.length > 0 };
   };
@@ -539,7 +601,31 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
   };
 
   const mustAddScheduleNow = autoCloseWindow && !hasAnyActiveSchedule;
-  
+
+  const handleManualCloseToggle = async (checked: boolean) => {
+    try {
+      setManualCloseWindow(checked);
+      await modifySettlementModel({
+        settlementModelId: settlementModel.settlementModelId,
+        name: settlementModel.name,
+        modelType: settlementModel.type,
+        currencyID: (settlementModel.currencyId ?? ''),
+        active: true,
+        manualCloseWindow: checked,
+        autoCloseWindow: autoCloseWindow,
+        zoneId: currentOffset
+      } as any);
+      onUpdated?.({ ...settlementModel, manualCloseWindow: checked, zoneId: currentOffset });
+      settlementModel.manualCloseWindow = checked;
+      settlementModel.zoneId = currentOffset;
+
+      toast({ status: 'success', title: 'Updated', description: `Manual close ${checked ? 'enabled' : 'disabled'}.` });
+    } catch (err: any) {
+      setManualCloseWindow(!checked); // revert UI
+      toast({ status: 'error', title: 'Failed', description: err?.default_error_message || err?.description || 'Unable to modify settlement model.' });
+    }
+  }
+
   const handleAutoCloseToggle = async (checked: boolean) => {
     setAutoCloseWindow(checked);
 
@@ -549,7 +635,9 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       modelType: settlementModel.type,
       currencyID: (settlementModel.currencyId ?? ''),
       active: true,
-      autoCloseWindow: checked
+      autoCloseWindow: checked,
+      manualCloseWindow: manualCloseWindow,
+      zoneId: currentOffset,
     };
 
     if (!checked) {
@@ -562,8 +650,14 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
           currencyID: settlementModel.currencyId ?? '',
           active: true,
           autoCloseWindow: false,
+          manualCloseWindow: manualCloseWindow,
+          zoneId: currentOffset
         });
-        onUpdated?.({ ...settlementModel, autoCloseWindow: false });
+        onUpdated?.({ ...settlementModel, autoCloseWindow: false, manualCloseWindow, zoneId: currentOffset });
+        settlementModel.autoCloseWindow = false;
+        settlementModel.manualCloseWindow = manualCloseWindow;
+        settlementModel.zoneId = currentOffset;
+
         toast({ status: 'success', title: 'Updated', description: 'Auto-close disabled.' });
       } catch (e: any) {
         setAutoCloseWindow(true); // revert
@@ -575,11 +669,12 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     if (hasAnyActiveSchedule) {
       try {
         await modifySettlementModel(payload);
-        // Notify Back the Settlement List page... that model is changed!
-        onUpdated?.({
-          ...settlementModel,
-          autoCloseWindow: checked,
-        });
+
+        onUpdated?.({ ...settlementModel, autoCloseWindow: checked, manualCloseWindow, zoneId: currentOffset });
+        settlementModel.autoCloseWindow = checked;
+        settlementModel.manualCloseWindow = manualCloseWindow;
+        settlementModel.zoneId = currentOffset;
+
         toast({
           status: 'success',
           title: 'Updated',
@@ -595,216 +690,354 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     };
   }
 
-    return (
-        <Modal isOpen={isOpen} onClose={onClose} size="4xl" scrollBehavior="inside" isCentered>
-            <ModalOverlay />
-            <ModalContent>
-                <ModalHeader textAlign="left" fontSize="xl" fontWeight="bold" textDecoration="underline">
-                    Settlement Models
-                </ModalHeader>
-                <ModalCloseButton isDisabled={mustAddScheduleNow} />
+  const handleSaveTimezone = async () => {
+    try {
+      setIsSubmitting(true);
 
-                <ModalBody>
-                    <VStack spacing={4} align="stretch">
-                        <Flex align="center">
-                            <Text w="220px" fontWeight="semibold">Settlement Model Name:</Text>
-                            <Input ml="2" value={settlementModel.name ?? ''} isDisabled flex="1" maxW="60%" />
-                        </Flex>
+      await modifySettlementModel({
+        settlementModelId: settlementModel.settlementModelId,
+        name: settlementModel.name,
+        modelType: settlementModel.type,
+        currencyID: settlementModel.currencyId ?? '',
+        active: true,
+        autoCloseWindow: autoCloseWindow,
+        manualCloseWindow: manualCloseWindow,
+        zoneId: currentOffset,
+      });
 
-                        <Flex align="center">
-                            <Text w="220px" fontWeight="semibold">Settlement Model Type:</Text>
-                            <Input ml="2" value={settlementModel.type ?? ''} isDisabled flex="1" maxW="60%" />
-                        </Flex>
+      setSavedTz(selectedTz); // mark clean
+      onUpdated?.({ ...settlementModel, autoCloseWindow, manualCloseWindow, zoneId: currentOffset } as any);
 
-                        <Flex align="center">
-                            <Text w="220px" fontWeight="semibold">Settlement Model Currency:</Text>
-                            <Input ml="2" value={settlementModel.currencyId ?? 'N/A'} isDisabled flex="1" maxW="60%" />
-                        </Flex>
+      toast({ status: 'success', title: 'Saved', description: `Timezone updated to (GMT${currentOffset}) ${selectedTz}` });
+    } catch (e: any) {
+      toast({ status: 'error', title: 'Save failed', description: e?.default_error_message || e?.description || 'Unable to update timezone.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
+  const toggleRowActive = async (key: string) => {
+    try {
+      setTogglingKey(key);   // NEW
+      setIsSubmitting(true);
 
-                      <Flex align="center">
-                        <Text fontWeight="semibold">Close Window Automatically: </Text>
-                        <Switch
-                          ml="2"
-                          isChecked={autoCloseWindow}
-                          colorScheme="green"
-                          onChange={(e) => handleAutoCloseToggle(e.target.checked)}
-                          />
-                          {mustAddScheduleNow && (
-                            <Box mt={2}>
-                              <Box
-                                border="1px solid"
-                                borderColor="orange.300"
-                                bg="orange.50"
-                                color="orange.800"
-                                rounded="md"
-                                p={3}
-                                ml={2}
-                                fontSize="sm"
-                              >
-                                Auto-close is ON, but there’s no active schedule yet. <br />
-                                Add a time row and tick at least one day to enable saving.
-                              </Box>
-                            </Box>
-                          )}
-                      </Flex>
-                      <Box
-                        border="1px"
-                        borderColor="gray.300"
-                        borderRadius="md"
-                        p={4}
-                        opacity={autoCloseWindow ? 1 : 0.5}
-                        pointerEvents={autoCloseWindow ? 'auto' : 'none'}
-                      >
-                      <VStack align="stretch" spacing={4}>
-                        <Table size="sm" variant="simple" >
-                          <Thead>
-                            <Tr>
-                              <Th w="120px" textAlign="center">Hr/Day</Th>
-                              {days.map((d) => (
-                                <Th key={d} textAlign="center">{d}</Th>
-                              ))}
-                              <Th w="100px" textAlign="center"> </Th>
-                            </Tr>
-                          </Thead>
-                          <Tbody>
-                            {rows.slice().sort().map((key) => {
-                              const { time, zoneId, tz } = splitKey(key);
-                              const display = `${time} (${zoneId} ${tz})`;
-                              return (
-                                <Tr key={key}>
-                                  <Td bg="green.50" fontWeight="semibold" textAlign="center">{display}</Td>
-                                  {days.map((d, idx) => {
-                                    const active = !!matrix[key]?.has(d);
-                                    return (
+      const set = matrix[key] ?? new Set<Day>();
+      const { cron, zoneId } = buildCronForKey(key, set);
+      const schedulerName = nameForKey(key, set);
+      const schedulerDesc = descriptionForKey(key, cron, set);
+      const currentActive = !!rowActiveMap[key];
+      const schedulerConfigId = rowIdMap[key];
 
-                                      <Td key={`${key}-${d}`} textAlign="center" cursor={isSubmitting ? 'not-allowed' : 'pointer'} onClick={() => !isSubmitting && toggleCell(key, d)}>
-                                        <Checkbox
-                                          isChecked={active}
-                                          colorScheme="green"
-                                          pointerEvents="none"
-                                          size="sm"
-                                        />
-                                      </Td>
-                                    );
-                                  })}
-                                  <Td textAlign="center">
-                                    <HStack justify="center" spacing={2}>
-                                      <Button
-                                        size="sm"
-                                        colorScheme="blue"
-                                        onClick={() => saveRow(key)}
-                                        isDisabled={!canUpdate(key) || isSubmitting}
-                                      >
-                                        UPDATE
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        colorScheme="red"
-                                        variant="solid"
-                                        onClick={() => requestDeleteRow(key)}
-                                        leftIcon={<CloseIcon boxSize={2.5} />}
-                                        isDisabled={isSubmitting}
-                                      >
-                                        DELETE
-                                      </Button>
-                                    </HStack>
-                                  </Td>
-                                </Tr>
-                              );
-                            })}
+      if (!schedulerConfigId) {
+        toast({ status: 'warning', title: 'Not created yet', description: 'Save the row first before toggling.' });
+        return;
+      }
 
-                            <Tr>
-                              <Td bg="gray.100" fontWeight="semibold" textAlign="center">Select Time</Td>
+      await modifySettlementScheduler({
+        settlementModelId: settlementModel.settlementModelId,
+        schedulerConfigId,
+        name: schedulerName,
+        description: schedulerDesc,
+        cronExpression: cron ?? '',
+        active: !currentActive,
+      });
 
-                              <Td colSpan={days.length + 1}>
-                                <HStack spacing={3}>
-                                  <Box w="100px">
-                                    <CustomSelect
-                                      options={HOUR_OPTS}
-                                      value={{ value: newHour, label: newHour }}
-                                      onChange={(opt: OptionType | null) => setNewHour((opt?.value as string) || '00')}
-                                      maxMenuHeight={300}
-                                      menuPlacement='top'        
-                                    />
-                                  </Box>
+      const { hasActive } = await refreshSchedules();
 
-                                  {/* Minute */}
-                                  <Box w="100px">
-                                    <CustomSelect
-                                      options={MIN_OPTS}
-                                      value={{ value: newMinute, label: newMinute }}
-                                      onChange={(opt: OptionType | null) => setNewMinute((opt?.value as string) || '00')}
-                                      maxMenuHeight={300}
-                                      menuPlacement='top'            
-                                    />
-                                  </Box>
+      if (!hasActive && (autoCloseWindow || settlementModel.autoCloseWindow)) {
+        try {
+          await modifySettlementModel({
+            settlementModelId: settlementModel.settlementModelId,
+            name: settlementModel.name,
+            modelType: settlementModel.type,
+            currencyID: settlementModel.currencyId ?? '',
+            active: true,
+            autoCloseWindow: false,
+            manualCloseWindow: !!manualCloseWindow,
+            zoneId: currentOffset,
+          });
+          setAutoCloseWindow(false);
+          onUpdated?.({ ...settlementModel, autoCloseWindow: false });
+          settlementModel.autoCloseWindow = false;
+          toast({ status: 'info', title: 'Auto-close disabled', description: 'No active schedules remain.' });
+        } catch (e: any) {
+          toast({ status: 'warning', title: 'Could not disable auto-close', description: e?.default_error_message || e?.description || 'Please try again.' });
+        }
+      } else {
+        toast({
+          status: 'success',
+          title: !currentActive ? 'Activated' : 'Deactivated',
+          description: nameForKey(key),
+        });
+      }
+    } catch (e: any) {
+      toast({ status: 'error', title: 'Toggle failed', description: e?.default_error_message || e?.description || 'Unable to change status.' });
+    } finally {
+      setIsSubmitting(false);
+      setTogglingKey(null);  // NEW
+    }
+  };
 
-                                  {/* Timezone (region) */}
-                                  <Box flex="1" maxW="60%">
-                              <CustomSelect
-                                options={tzOptions}
-                                value={tzOptions.find(z => z.value === selectedTz) ?? null}
-                                onChange={(opt) => setSelectedTz(opt?.value ?? 'UTC')}
-                                maxMenuHeight={300}
-                                menuPlacement='top'            
-                              />
-                                  </Box>
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} size="4xl" scrollBehavior="inside" isCentered>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader textAlign="left" fontSize="xl" fontWeight="bold" textDecoration="underline">
+          Settlement Models
+        </ModalHeader>
+        <ModalCloseButton isDisabled={mustAddScheduleNow} />
 
-                                  <Button ml="auto" colorScheme="green" onClick={addRow}>ADD</Button>
-                                </HStack>
+        <ModalBody>
+          <VStack spacing={4} align="stretch">
+            <Flex align="center">
+              <Text w="230px" fontWeight="semibold">Settlement Model Name:</Text>
+              <Input ml="2" value={settlementModel.name ?? ''} isDisabled flex="1" maxW="60%" />
+            </Flex>
+
+            <Flex align="center">
+              <Text w="230px" fontWeight="semibold">Settlement Model Type:</Text>
+              <Input ml="2" value={settlementModel.type ?? ''} isDisabled flex="1" maxW="60%" />
+            </Flex>
+
+            <Flex align="center">
+              <Text w="230px" fontWeight="semibold">Settlement Model Currency:</Text>
+              <Input ml="2" value={settlementModel.currencyId ?? 'N/A'} isDisabled flex="1" maxW="60%" />
+            </Flex>
+            <Flex align="center">
+              <Text w="230px" fontWeight="semibold">Close Window Manually: </Text>
+              <Switch
+                ml="2"
+                isChecked={manualCloseWindow}
+                colorScheme="green"
+                onChange={async (e) => {
+                  const next = e.target.checked;
+                  // enforce at least one ON
+                  if (!next && mustKeepOneOn('manual')) {
+                    toast({ status: 'warning', title: 'At least one must be ON', description: 'Auto or Manual must stay enabled.' });
+                    return;
+                  }
+                  handleManualCloseToggle(next);
+                }}
+              />
+            </Flex>
+            <Flex align="center">
+              <Text w="230px" fontWeight="semibold">Close Window Automatically: </Text>
+              <Switch
+                ml="2"
+                isChecked={autoCloseWindow}
+                colorScheme="green"
+                onChange={(e) => {
+                  const next = e.target.checked;
+                  if (!next && mustKeepOneOn('auto')) {
+                    toast({ status: 'warning', title: 'At least one must be ON', description: 'Auto or Manual must stay enabled.' });
+                    return;
+                  }
+                  handleAutoCloseToggle(next);
+                }}
+              />
+              {mustAddScheduleNow && (
+                <Box mt={2}>
+                  <Box border="1px solid" borderColor="orange.300" bg="orange.50" color="orange.800" rounded="md" p={3} ml={2} fontSize="sm">
+                    Auto-close is ON, but there’s no active schedule yet. <br />
+                    Add a time row and tick at least one day to enable saving.
+                  </Box>
+                </Box>
+              )}
+            </Flex>
+            <Flex align="center">
+              <Text w="230px" fontWeight="semibold">Choose Timezone:</Text>
+              <Box flex="1" maxW="60%">
+                <CustomSelect
+                  options={tzOptions}
+                  value={tzOptions.find(z => z.value === selectedTz) ?? null}
+                  onChange={(opt) => setSelectedTz(opt?.value ?? 'UTC')}
+                  maxMenuHeight={300}
+                  menuPlacement="top"
+                />
+                {tzDirty && (
+                  <Text fontSize="sm" color="orange.500" mt={1}>
+                    Timezone changed — click Save to apply.
+                  </Text>
+                )}
+              </Box>
+            </Flex>
+              <Box mb={2}>
+                <Text fontSize="lg" fontWeight="semibold">
+                  Window will close in in: <Box as="span" color="blue.600">{nextCountdown}</Box>
+                </Text>
+              </Box>
+            <Box
+              border="1px"
+              borderColor="gray.300"
+              borderRadius="md"
+              p={4}
+              opacity={autoCloseWindow ? 1 : 0.5}
+              pointerEvents={autoCloseWindow ? 'auto' : 'none'}
+            >
+              <VStack align="stretch" spacing={4}>
+                <Table size="sm" variant="simple" >
+                  <Thead>
+                    <Tr>
+                      <Th w="120px" textAlign="center">HH:MM</Th>
+                      {days.map((d) => (
+                        <Th key={d} textAlign="center">{d}</Th>
+                      ))}
+                      <Th w="100px" textAlign="center"> </Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {rows.slice().map((key) => {
+                      return (
+                        <Tr key={key}>
+                          <Td bg={rowActiveMap[key] ? 'green.50' : 'gray.100'} fontWeight="semibold" textAlign="center">
+                            {`${key}`}
+                          </Td>
+                          {days.map((d, idx) => {
+                            const active = !!matrix[key]?.has(d);
+                            return (
+
+                              <Td key={`${key}-${d}`} textAlign="center" cursor={isSubmitting ? 'not-allowed' : 'pointer'} onClick={() => !isSubmitting && toggleCell(key, d)}>
+                                <Checkbox
+                                  isChecked={active}
+                                  colorScheme="green"
+                                  pointerEvents="none"
+                                  size="sm"
+                                />
                               </Td>
-                            </Tr>
-                          </Tbody>
-                        </Table>
-                      </VStack>
-                    </Box>
+                            );
+                          })}
+                          <Td textAlign="center">
+                            <HStack justify="center" spacing={2}>
+                              <Button
+                                size="sm"
+                                colorScheme="blue"
+                                onClick={() => saveRow(key)}
+                                isDisabled={!canUpdate(key) || isSubmitting}
+                              >
+                                UPDATE
+                              </Button>
+                              <HStack spacing={2}>
+                                <Switch
+                                  size="lg"
+                                  colorScheme="green"
+                                  isChecked={!!rowActiveMap[key]}
+                                  onChange={() => toggleRowActive(key)}
+                                  isDisabled={!rowIdMap[key] || isSubmitting || togglingKey === key}
+                                  aria-label={`Toggle active for ${nameForKey(key)}`}
+                                />
+                              </HStack>
 
-                   </VStack>
-                </ModalBody>
+                              <Button
+                                size="sm"
+                                colorScheme="red"
+                                variant="solid"
+                                onClick={() => requestDeleteRow(key)}
+                                leftIcon={<CloseIcon boxSize={2.5} />}
+                                isDisabled={isSubmitting}
+                              >
+                                DELETE
+                              </Button>
+                            </HStack>
+                          </Td>
+                        </Tr>
+                      );
+                    })}
 
-                <ModalFooter>
-                  <Button variant="outline" mr={3} onClick={onClose} isDisabled={isSubmitting || mustAddScheduleNow}>Close</Button>
-                </ModalFooter>
-            </ModalContent>
+                    <Tr>
+                      <Td bg="gray.100" fontWeight="semibold" textAlign="center">Select Time</Td>
 
-                <AlertDialog
-                  isOpen={isConfirmOpen}
-                  leastDestructiveRef={cancelRef}
-                  onClose={closeConfirm}
-                  isCentered
-                >
-                  <AlertDialogOverlay>
-                    <AlertDialogContent>
-                      <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                        Delete schedule?
-                      </AlertDialogHeader>
+                      <Td colSpan={days.length + 1}>
+                        <HStack spacing={3}>
+                          <Box w="100px">
+                            <CustomSelect
+                              options={HOUR_OPTS}
+                              value={{ value: newHour, label: newHour }}
+                              onChange={(opt: OptionType | null) => setNewHour((opt?.value as string) || '00')}
+                              maxMenuHeight={300}
+                              menuPlacement='top'
+                            />
+                          </Box>
 
-                      <AlertDialogBody>
-                        {pendingDeleteKey ? (
-                          <>
-                            Are you sure you want to delete <b>{nameForKey(pendingDeleteKey)}</b>?
-                            <br />
-                            This action cannot be undone.
-                          </>
-                        ) : (
-                          'Are you sure you want to delete this schedule?'
-                        )}
-                      </AlertDialogBody>
+                          {/* Minute */}
+                          <Box w="100px">
+                            <CustomSelect
+                              options={MIN_OPTS}
+                              value={{ value: newMinute, label: newMinute }}
+                              onChange={(opt: OptionType | null) => setNewMinute((opt?.value as string) || '00')}
+                              maxMenuHeight={300}
+                              menuPlacement='top'
+                            />
+                          </Box>
 
-                      <AlertDialogFooter>
-                        <Button ref={cancelRef} onClick={closeConfirm} variant="outline">
-                          Cancel
-                        </Button>
-                        <Button colorScheme="red" onClick={deleteRow} ml={3} isLoading={isSubmitting}>
-                          Delete
-                        </Button>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialogOverlay>
-                </AlertDialog>
-        </Modal>
-    );
+                          <Button ml="auto" colorScheme="green" onClick={addRow}>ADD</Button>
+                        </HStack>
+                      </Td>
+                    </Tr>
+                  </Tbody>
+                </Table>
+              </VStack>
+            </Box>
+
+          </VStack>
+        </ModalBody>
+
+        <ModalFooter>
+          <Button
+            colorScheme="blue"
+            mr={3}
+            onClick={handleSaveTimezone}
+            isDisabled={!tzDirty || isSubmitting}
+          >
+            Save
+          </Button>
+          <Button
+            variant="outline"
+            mr={3}
+            onClick={onClose}
+            isDisabled={isSubmitting || mustAddScheduleNow}
+          >
+            Close
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+
+      <AlertDialog
+        isOpen={isConfirmOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={closeConfirm}
+        isCentered
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Delete schedule?
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              {pendingDeleteKey ? (
+                <>
+                  Are you sure you want to delete <b>{nameForKey(pendingDeleteKey)}</b>?
+                  <br />
+                  This action cannot be undone.
+                </>
+              ) : (
+                'Are you sure you want to delete this schedule?'
+              )}
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={closeConfirm} variant="outline">
+                Cancel
+              </Button>
+              <Button colorScheme="red" onClick={deleteRow} ml={3} isLoading={isSubmitting}>
+                Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+    </Modal>
+  );
 };
 
 export default SettlementModal;

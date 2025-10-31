@@ -35,8 +35,6 @@ export const getAllPendingApprovals = async () => {
     })
 }
 
-
-
 export const modifyApprovalAction = async (
   approvalRequestId: string,
   action: PendingApprovalStatus

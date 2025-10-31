@@ -31,7 +31,11 @@ export const actionIds = {
     "GetAuditList": "GetAuditList",
     "GetTransferStateList": "GetTransferStateList",
     "GetTransferDetail": "GetTransferDetail",
-    "GetTransferList": "GetTransferList"
+    "GetTransferList": "GetTransferList",
+    "ModifySettlementModel":"ModifySettlementModel",
+    "CloseSettlementWindows":"CloseSettlementWindows",
+    "CreateSettlement":"CreateSettlement",
+    "FinalizeSettlement":"FinalizeSettlement"
 } as const;
 
 export type ActionId = keyof typeof actionIds;

@@ -32,7 +32,6 @@ import {
   ModalFooter,
   useDisclosure,
   Spinner,
-  Code,
 } from '@chakra-ui/react';
 import {
   TfiAngleDoubleLeft,
@@ -193,6 +192,16 @@ const Audit = () => {
     setSelectedAuditId(null);
   };
 
+  const getDisplayMadeBy = (madeBy?: string, action?: string) => {
+    if (!madeBy || madeBy.trim() === '') {
+      if (action && action.endsWith('Scheduler')) {
+        return action.replace(/Scheduler$/, 'Automatically');
+      }
+      return '—';
+    }
+    return madeBy;
+  };
+
   // Pagination + Search + Sort
   const columns = useMemo<Column<AuditInfo>[]>(
     () => [
@@ -213,6 +222,10 @@ const Audit = () => {
           <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Made By</Text>
         ),
         accessor: 'madeBy',
+        Cell: ({ row }: any) => {
+          const { madeBy, action } = row.original;
+          return <Text fontSize="sm">{getDisplayMadeBy(madeBy, action)}</Text>;
+        },
       },
     ],
     []

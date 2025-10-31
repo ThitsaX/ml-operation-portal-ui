@@ -6,7 +6,6 @@ import {
     Heading,
     HStack,
     Input,
-    Select,
     Stack,
     useToast,
     Table,
@@ -30,7 +29,6 @@ import {
     ModalFooter,
     ModalCloseButton,
     SimpleGrid,
-    Flex
 } from '@chakra-ui/react';
 import { FinalizeSettlementHelper } from '@helpers/form';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
@@ -65,7 +63,8 @@ import {
 } from '@services/settlements';
 import { useLocation } from "react-router-dom";
 import CustomSelect from '@components/interface/CustomSelect';
-
+import { hasMenuAccess } from '@helpers/permissions';
+import { getErrorMessage } from '@helpers/errors';
 
 const finalizeSettlementHelper = new FinalizeSettlementHelper();
 
@@ -183,7 +182,7 @@ const FinalizeSettlement = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: err.default_error_message || 'Cannot retrieve net transfer amount',
+                description: getErrorMessage(err) || 'Cannot retrieve net transfer amount',
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -227,7 +226,7 @@ const FinalizeSettlement = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: err.default_error_message || 'Failed to finalize the settlement',
+                description: getErrorMessage(err) || 'Failed to finalize the settlement',
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -239,7 +238,8 @@ const FinalizeSettlement = () => {
         });
     }
 
-    const columns = useMemo<Column<IFinalizeSettlement>[]>(() => [
+    const columns = useMemo<Column<IFinalizeSettlement>[]>(() => {
+                const baseColumns: Column<IFinalizeSettlement>[] = [
         {
             Header: 'Settlement ID',
             accessor: 'settlementId',
@@ -283,30 +283,38 @@ const FinalizeSettlement = () => {
             Cell: ({ value }) => (
                 <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DD HH:mm')}</Text>
             )
-        },
-        {
-            Header: 'Action',
-            disableSortBy: true,
-            Cell: ({ row }: any) => {
-                if (!['SETTLED', 'ABORTED'].includes(row.original.state)) {
-                    return (
-                        <HStack spacing={4}>
-                            <Button
-                                size="sm"
-                                colorScheme="green"
-                                variant="solid"
-                                onClick={() => handleFinalize(row.original)}>
-                                Finalize
-                            </Button>
-                        </HStack>
-                    );
-                }
+        }];
 
-                return <></>;
-            }
-        },
-    ], [finalizeSettlements, selectedTZString]);
+            const actionColumn = hasMenuAccess("FinalizeSettlement")
+                            ? [
+                                {
+                                    Header: 'Action',
+                                    id: 'action',
+                                    disableSortBy: true,
+                                    Cell: ({ row }: any) => {
+                                        if (!['SETTLED', 'ABORTED'].includes(row.original.state)) {
+                                            return (
+                                                <HStack spacing={4}>
+                                                    <Button
+                                                        size="sm"
+                                                        colorScheme="green"
+                                                        variant="solid"
+                                                        onClick={() => handleFinalize(row.original)}>
+                                                        Finalize
+                                                    </Button>
+                                                </HStack>
+                                            );
+                                        }
 
+                                        return <></>;
+                                    }
+                                } as Column<IFinalizeSettlement>,
+                                ]
+                            : []
+        
+            return [...baseColumns, ...actionColumn];
+    }, [finalizeSettlements, selectedTZString]);
+        
 
     const {
         getTableProps,
@@ -337,7 +345,6 @@ const FinalizeSettlement = () => {
 
     const {
         control,
-        register,
         getValues,
         setValue,
         trigger,
@@ -530,11 +537,14 @@ const FinalizeSettlement = () => {
                             name="state"
                             render={({ field }) => (
                                 <CustomSelect
-                                placeholder="All State"
-                                    options={ stateList ? stateList.map(({ settlementStateId, enumeration }) => ({
-                                        value: settlementStateId,
-                                        label: enumeration
-                                    })) : [] }
+                                    placeholder="All States"
+                                    isClearable={true}
+                                    options={ 
+                                        stateList?.map(({ settlementStateId, enumeration }) => ({
+                                            value: settlementStateId,
+                                            label: enumeration
+                                        })) ?? []
+                                    }
                                     value={field.value ? {
                                         value: field.value,
                                         label: field.value
@@ -552,12 +562,13 @@ const FinalizeSettlement = () => {
                                 render={({ field }) => (
                                     <CustomSelect
                                         placeholder="All Currency"
-                                        options={[
-                                            ...(currencyList ?? []).map((item) => ({
-                                            value: item.currency,
-                                            label: item.currency,
-                                            })),
-                                        ]}
+                                        isClearable={true}
+                                        options={
+                                            currencyList?.map((item) => ({
+                                                value: item.currency,
+                                                label: item.currency,
+                                            })) ?? []
+                                        }
                                         value={field.value ? {
                                             value: field.value,
                                             label: field.value
