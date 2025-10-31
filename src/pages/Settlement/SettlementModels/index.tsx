@@ -39,7 +39,7 @@ import {
 import SettlementModal from '@components/interface/SettlementModels/SettlementModals';
 import { ISettlementModel } from '@typescript/services';
 import { getSettlementModelList } from '@services/settlements';
-import { hasMenuAccess } from '@helpers/permissions';
+import { hasActionPermission } from '@helpers/permissions';
 
 const SettlementModels = () => {
     const [models, setModels] = useState<ISettlementModel[]>([]);
@@ -136,7 +136,7 @@ const SettlementModels = () => {
             },
         ];
 
-        const actionColumn = hasMenuAccess("ModifySettlementModel")
+        const actionColumn = hasActionPermission("ModifySettlementModel")
             ? [
                 {
                     Header: 'Action',
@@ -144,7 +144,7 @@ const SettlementModels = () => {
                     disableSortBy: true,
                     Cell: ({ row }: { row: Row<ISettlementModel> }) => (
                         <HStack spacing={3}>
-                            <Button colorScheme="blue" size="md" onClick={() => handleEditClick(row.original)}>
+                            <Button colorScheme="blue" size="sm" onClick={() => handleEditClick(row.original)}>
                                 Edit
                             </Button>
                         </HStack>
@@ -200,145 +200,148 @@ const SettlementModels = () => {
             <Stack>
                 <Heading fontSize="2xl" fontWeight="bold" mb={6}>Settlement Models</Heading>
             </Stack>
-            <TableContainer
-                w="full"
-                borderWidth={1}
-                borderColor="gray.100"
-                rounded="lg"
-                mt="4">
-                <Table variant="simple" {...getTableProps()}>
-                    <Thead bg="gray.100">
-                        {headerGroups.map((headerGroup) => (
-                            <Tr {...headerGroup.getHeaderGroupProps()}>
-                                {headerGroup.headers.map((column) => (
-                                    <Th
-                                        textTransform="none"
-                                        {...column.getHeaderProps(
-                                            column.disableSortBy
-                                                ? undefined
-                                                : column.getSortByToggleProps()
-                                        )}>
-                                        <HStack
-                                            align="center"
-                                            spacing="2"
-                                            flex={1}>
-                                            <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">
-                                                {column.render('Header')}
-                                            </Text>
-                                            {column.disableSortBy ? null : (
-                                                <VStack
-                                                    display="inline-flex"
-                                                    align="center"
-                                                    spacing={0}>
-                                                    <Icon
-                                                        as={IoChevronUp}
-                                                        size={12}
-                                                        color={
-                                                            !column.isSorted
-                                                                ? 'gray.400'
-                                                                : !column.isSortedDesc
-                                                                ? 'gray.700'
-                                                                : 'gray.400'
-                                                        }
-                                                    />
-                                                    <Icon
-                                                        as={IoChevronDown}
-                                                        size={12}
-                                                        color={
-                                                            !column.isSorted
-                                                                ? 'gray.400'
-                                                                : column.isSortedDesc
-                                                                ? 'gray.700'
-                                                                : 'gray.400'
-                                                        }
-                                                    />
-                                                </VStack>
-                                            )}
-                                        </HStack>
-                                    </Th>
-                                ))}
-                            </Tr>
-                        ))}
-                    </Thead>
-                    <Tbody maxH={300} overflowY="auto" {...getTableBodyProps()}>
-                        {page.map((row) => {
-                            prepareRow(row);
-                            return (
-                                <Tr
-                                    fontSize="sm"
-                                    cursor="pointer"
-                                    _hover={{ bg: 'muted.50' }}
-                                    {...row.getRowProps()}>
-                                    {row.cells.map((cell) => (
-                                        <Td {...cell.getCellProps()}>
-                                            {cell.render('Cell')}
-                                        </Td>
+            <VStack w="full" align="flex-start" spacing={2} >
+                <TableContainer
+                    w="full"
+                    borderWidth={1}
+                    borderColor="gray.100"
+                    rounded="lg"
+                    mt="4">
+                    <Table variant="simple" {...getTableProps()}>
+                        <Thead bg="gray.100">
+                            {headerGroups.map((headerGroup) => (
+                                <Tr {...headerGroup.getHeaderGroupProps()}>
+                                    {headerGroup.headers.map((column) => (
+                                        <Th
+                                            textTransform="none"
+                                            {...column.getHeaderProps(
+                                                column.disableSortBy
+                                                    ? undefined
+                                                    : column.getSortByToggleProps()
+                                            )}>
+                                            <HStack
+                                                align="center"
+                                                spacing="2"
+                                                flex={1}>
+                                                <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">
+                                                    {column.render('Header')}
+                                                </Text>
+                                                {column.disableSortBy ? null : (
+                                                    <VStack
+                                                        display="inline-flex"
+                                                        align="center"
+                                                        spacing={0}>
+                                                        <Icon
+                                                            as={IoChevronUp}
+                                                            size={12}
+                                                            color={
+                                                                !column.isSorted
+                                                                    ? 'gray.400'
+                                                                    : !column.isSortedDesc
+                                                                    ? 'gray.700'
+                                                                    : 'gray.400'
+                                                            }
+                                                        />
+                                                        <Icon
+                                                            as={IoChevronDown}
+                                                            size={12}
+                                                            color={
+                                                                !column.isSorted
+                                                                    ? 'gray.400'
+                                                                    : column.isSortedDesc
+                                                                    ? 'gray.700'
+                                                                    : 'gray.400'
+                                                            }
+                                                        />
+                                                    </VStack>
+                                                )}
+                                            </HStack>
+                                        </Th>
                                     ))}
                                 </Tr>
-                            );
-                        })}
-                    </Tbody>
-                </Table>
-                <HStack px="6" py="2">
-                    <HStack flex={2}>
-                        <IconButton
-                            aria-label="Skip to start"
-                            variant="ghost"
-                            icon={<TfiAngleDoubleLeft />}
-                            isDisabled={!canPreviousPage}
-                            onClick={() => gotoPage(0)}
-                        />
-                        <IconButton
-                            aria-label="Go Previous"
-                            variant="ghost"
-                            icon={<TfiAngleLeft />}
-                            isDisabled={!canPreviousPage}
-                            onClick={previousPage}
-                        />
-                        <IconButton
-                            aria-label="Go Next"
-                            variant="ghost"
-                            icon={<TfiAngleRight />}
-                            isDisabled={!canNextPage}
-                            onClick={nextPage}
-                        />
-                        <IconButton
-                            aria-label="Skip to end"
-                            variant="ghost"
-                            icon={<TfiAngleDoubleRight />}
-                            isDisabled={!canNextPage}
-                            onClick={() => gotoPage(pageCount - 1)}
-                        />
+                            ))}
+                        </Thead>
+                        <Tbody maxH={300} overflowY="auto" {...getTableBodyProps()}>
+                            {page.map((row) => {
+                                prepareRow(row);
+                                return (
+                                    <Tr
+                                        fontSize="sm"
+                                        cursor="pointer"
+                                        _hover={{ bg: 'muted.50' }}
+                                        {...row.getRowProps()}
+                                        >
+                                        {row.cells.map((cell) => (
+                                            <Td {...cell.getCellProps()} py={2}>
+                                                {cell.render('Cell')}
+                                            </Td>
+                                        ))}
+                                    </Tr>
+                                );
+                            })}
+                        </Tbody>
+                    </Table>
+                    <HStack px="6" py="2">
+                        <HStack flex={2}>
+                            <IconButton
+                                aria-label="Skip to start"
+                                variant="ghost"
+                                icon={<TfiAngleDoubleLeft />}
+                                isDisabled={!canPreviousPage}
+                                onClick={() => gotoPage(0)}
+                            />
+                            <IconButton
+                                aria-label="Go Previous"
+                                variant="ghost"
+                                icon={<TfiAngleLeft />}
+                                isDisabled={!canPreviousPage}
+                                onClick={previousPage}
+                            />
+                            <IconButton
+                                aria-label="Go Next"
+                                variant="ghost"
+                                icon={<TfiAngleRight />}
+                                isDisabled={!canNextPage}
+                                onClick={nextPage}
+                            />
+                            <IconButton
+                                aria-label="Skip to end"
+                                variant="ghost"
+                                icon={<TfiAngleDoubleRight />}
+                                isDisabled={!canNextPage}
+                                onClick={() => gotoPage(pageCount - 1)}
+                            />
+                        </HStack>
+                        <Text>
+                            Page{' '}
+                            <strong>
+                                {pageIndex + 1} of {pageOptions.length || 1}
+                            </strong>
+                        </Text>
+                        <Box h="6">
+                            <Divider orientation="vertical" />
+                        </Box>
+                        <HStack>
+                            <Text> Go to page : </Text>
+                            <Input
+                                value={pageNumber ? Number(pageNumber) : ''}
+                                textAlign="center"
+                                w="14"
+                                type="number"
+                                min={pageIndex + 1}
+                                max={pageOptions.length}
+                                onChange={(e) => {
+                                    handlePageValidation(e.target.value);
+                                    const pageNumber = e.target.value
+                                        ? Number(e.target.value) - 1
+                                        : 0;
+                                    gotoPage(pageNumber);
+                                }}
+                            />
+                        </HStack>
                     </HStack>
-                    <Text>
-                        Page{' '}
-                        <strong>
-                            {pageIndex + 1} of {pageOptions.length || 1}
-                        </strong>
-                    </Text>
-                    <Box h="6">
-                        <Divider orientation="vertical" />
-                    </Box>
-                    <HStack>
-                        <Text> Go to page : </Text>
-                        <Input
-                            value={pageNumber ? Number(pageNumber) : ''}
-                            textAlign="center"
-                            w="14"
-                            type="number"
-                            min={pageIndex + 1}
-                            max={pageOptions.length}
-                            onChange={(e) => {
-                                handlePageValidation(e.target.value);
-                                const pageNumber = e.target.value
-                                    ? Number(e.target.value) - 1
-                                    : 0;
-                                gotoPage(pageNumber);
-                            }}
-                        />
-                    </HStack>
-                </HStack>
-            </TableContainer>
+                </TableContainer>
+            </VStack>
             {settlementModelToEdit && (
                 <SettlementModal 
                     settlementModel={settlementModelToEdit} 

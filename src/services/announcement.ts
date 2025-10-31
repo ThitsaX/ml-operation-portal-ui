@@ -8,7 +8,7 @@ import {
 import { type AxiosError } from 'axios';
 
 export const getAllAnnouncement = async () => {
-  const uri = routes.get_all_announcement;
+  const uri = routes.getAnnouncements;
   const { axios } = AxiosRequest();
   return axios
     .get<IGetAllAnnouncement>(uri)
