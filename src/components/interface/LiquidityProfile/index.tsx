@@ -34,7 +34,7 @@ import { useRef } from 'react';
 import { Cell, HeaderCell } from '../Table';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
-import { hasMenuAccess } from '@helpers/permissions';
+import { hasActionPermission } from '@helpers/permissions';
 
 const defaultForm: ILiquidityProfile = {
     participantId: '',
@@ -182,7 +182,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                 <Text fontSize="lg" fontWeight="bold" lineHeight="1.2">
                     Liquidity Profile
                 </Text>
-                {hasMenuAccess("CreateLiquidityProfile") && (
+                {hasActionPermission("CreateLiquidityProfile") && (
                     <Button colorScheme="blue" size="md" onClick={() => {
                         setForm({
                             ...defaultForm,
@@ -214,7 +214,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                             <HeaderCell borderColor={borderColor}>Account Name</HeaderCell>
                             <HeaderCell borderColor={borderColor}>Account Number</HeaderCell>
                             <HeaderCell borderColor={borderColor}>Currency</HeaderCell>
-                            {(hasMenuAccess("ModifyLiquidityProfile") || hasMenuAccess("RemoveLiquidityProfile")) && (
+                            {(hasActionPermission("ModifyLiquidityProfile") || hasActionPermission("RemoveLiquidityProfile")) && (
                                 <HeaderCell borderColor={borderColor}>
                                     Action
                                 </HeaderCell>
@@ -224,7 +224,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                     <Tbody>
                         {data?.length === 0 && !isLoading && (
                             <Tr>
-                                <Cell colSpan={(hasMenuAccess("ModifyLiquidityProfile") || hasMenuAccess("RemoveLiquidityProfile")) ? 5 : 4}>No Liquidity found</Cell>
+                                <Cell colSpan={(hasActionPermission("ModifyLiquidityProfile") || hasActionPermission("RemoveLiquidityProfile")) ? 5 : 4}>No Liquidity found</Cell>
                             </Tr>
                         )}
                         {data?.map((item, idx) => (
@@ -237,10 +237,10 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                                 
                                 <Cell borderColor={borderColor}>{item.currency}</Cell>
 
-                                {( hasMenuAccess("ModifyLiquidityProfile") || hasMenuAccess("RemoveLiquidityProfile")) && (
+                                {( hasActionPermission("ModifyLiquidityProfile") || hasActionPermission("RemoveLiquidityProfile")) && (
                                     <Td border={`1px solid ${borderColor}`} px={4} py={2}>
                                         <HStack spacing={3} justify="center">
-                                            {hasMenuAccess("ModifyLiquidityProfile") && (
+                                            {hasActionPermission("ModifyLiquidityProfile") && (
                                                 <Tooltip label='Edit Liquidity Profile' bg='white' color='black'>
                                                     <IconButton
                                                         icon={<FiEdit2 />}
@@ -252,7 +252,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                                                 </Tooltip>
                                             )}
 
-                                            {hasMenuAccess("RemoveLiquidityProfile") && (
+                                            {hasActionPermission("RemoveLiquidityProfile") && (
                                                 <Tooltip label='Delete Liquidity Profile' bg='white' color='black'>
                                                     <IconButton
                                                         icon={<FiTrash2 />}

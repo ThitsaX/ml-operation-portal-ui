@@ -253,7 +253,7 @@ const Audit = () => {
       align="flex-start"
       w="full"
       p="3"
-      spacing={4}
+      spacing={2}
       mt={10}
     >
       <Heading fontSize="2xl" fontWeight="bold" mb={6}>Audit</Heading>
@@ -452,8 +452,9 @@ const Audit = () => {
                     {...row.getRowProps()}
                     onClick={() => handleRowClick(row.original.auditId)}
                   >
+                    
                     {row.cells.map((cell) => (
-                      <Td {...cell.getCellProps()}>
+                      <Td {...cell.getCellProps()} py={2}>
                         {cell.column.id === 'action' || cell.column.id === 'madeBy'
                           ? cell.render('Cell')
                           : isNumber(cell.value)

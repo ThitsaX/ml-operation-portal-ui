@@ -103,65 +103,6 @@ export const getParticipantList = async (
     });
 };
 
-export const createNewParticipantUser = async (data: ICreateUserValues) => {
-  const {
-    user: { auth }
-  } = store.getState()
-  const uri = routes.create_new_participant_user
-  const accessKey = auth?.accessKey as string
-  const secretKey = auth?.secretKey as string
-  const accessToken = await generateAccessToken({
-    method: 'POST',
-    uri,
-    secret: secretKey,
-    payload: data
-  })
-  const { axios } = AxiosRequest(accessToken, accessKey)
-  return axios
-    .post<{ is_created: true }>(uri, data)
-    .then((d) => d.data)
-    .catch((error: AxiosError<IApiErrorResponse>) => {
-      const { code, message, ...rest } = axiosErrorHandler(error)
-      if (code && message) {
-        throw {
-          error_code: code,
-          default_error_message: getErrorMessageByCode(code),
-          i18n_error_messages: null
-        }
-      }
-      throw rest
-    })
-}
-
-export const modifyParticipantUser = async (data: IModifyUserValues) => {
-  const {
-    user: { auth }
-  } = store.getState()
-  const uri = routes.modify_participant_user
-  const accessKey = auth?.accessKey as string
-  const secretKey = auth?.secretKey as string
-  const accessToken = await generateAccessToken({
-    method: 'POST',
-    uri,
-    secret: secretKey,
-    payload: data
-  })
-  const { axios } = AxiosRequest(accessToken, accessKey)
-  return axios
-    .post<{ modified: true }>(uri, data)
-    .then((d) => d.data)
-    .catch((error: AxiosError<IApiErrorResponse>) => {
-      const { code, message, ...rest } = axiosErrorHandler(error)
-      if (code && message) {
-        throw {
-          error_code: code,
-          default_error_message: getErrorMessageByCode(code),
-          i18n_error_messages: null
-        }
-      }
-      throw rest
-    })
-}
 
 export const modifyContact = async (data: IBusinessContact) => {
   const {
@@ -193,38 +134,6 @@ export const modifyContact = async (data: IBusinessContact) => {
     })
 }
 
-export const removeParticipantUser = async (data: {
-  participant_user_id: string
-  participant_id: string
-}) => {
-  const {
-    user: { auth }
-  } = store.getState()
-  const uri = routes.remove_participant_user
-  const accessKey = auth?.accessKey as string
-  const secretKey = auth?.secretKey as string
-  const accessToken = await generateAccessToken({
-    method: 'POST',
-    uri,
-    secret: secretKey,
-    payload: data
-  })
-  const { axios } = AxiosRequest(accessToken, accessKey)
-  return axios
-    .post<{ removed: true }>(uri, data)
-    .then((d) => d.data)
-    .catch((error: AxiosError<IApiErrorResponse>) => {
-      const { code, message, ...rest } = axiosErrorHandler(error)
-      if (code && message) {
-        throw {
-          error_code: code,
-          default_error_message: getErrorMessageByCode(code),
-          i18n_error_messages: null
-        }
-      }
-      throw rest
-    })
-}
 
 export const resetPasswordUser = async (data: IResetPasswordValues) => {
   const {

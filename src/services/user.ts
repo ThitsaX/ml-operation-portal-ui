@@ -9,7 +9,7 @@ export const getUserProfile = async () => {
   const {
     user: { auth }
   } = store.getState();
-  const uri = routes.get_user_profile;
+  const uri = routes.getUserProfile;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
   const accessToken = await generateAccessToken({

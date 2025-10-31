@@ -2,18 +2,15 @@
 export const publicRoutes = {
   login: '/public/loginUserAccount',
 
-  get_all_announcement: '/public/getAnnouncements',
+  getAnnouncements: '/public/getAnnouncements',
   getGreetingMessages: '/public/getGeetingMessages',
 };
 
 export const privateRoutes = {
   getParticipantPositionList: '/secured/getParticipantPositionList',
-  get_all_participants: '/secured/get_all_participants',
-  get_user_profile: '/secured/getUserProfile',
-  change_password: '/secured/changePassword',
+  getUserProfile: '/secured/getUserProfile',
+  changePassword: '/secured/changePassword',
 
-  get_participant: '/secured/get_participant',
-  modify_participant: '/secured/modify_participant',
   getOtherParticipantList: '/secured/getOtherParticipantList',
 
   getSettlementWindowStateList: '/secured/getSettlementWindowStateList',
@@ -50,18 +47,11 @@ export const privateRoutes = {
   modifyUserStatus: '/secured/modifyUserStatus',
   generateSettlementBankReport: '/secured/generateSettlementBankReport',
 
-  create_new_participant_user: '/secured/create_new_participant_user',
-  modify_participant_user: '/secured/modify_participant_user',
-  remove_participant_user: '/secured/remove_participant_user',
   resetPassword: '/secured/resetPassword',
-
-  get_all_id_type: '/secured/getAllIdType',
-  get_all_transfer_state: '/secured/getAllTransferState',
-  get_all_transfer: '/secured/getAllTransfer',
-  get_transfer_detail: '/secured/getTransferDetail',
-
-  get_all_audit_by_participant: '/secured/get_all_audit_by_participant',
-
+  getAllIdType: '/secured/getAllIdType',
+  getAllTransferState: '/secured/getAllTransferState',
+  getAllTransfer: '/secured/getAllTransfer',
+  getTransferDetail: '/secured/getTransferDetail',
 
   getParticipantProfile: '/secured/getParticipantProfile',
   getContactList: '/secured/getContactList',

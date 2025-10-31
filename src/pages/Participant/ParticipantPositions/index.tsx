@@ -45,7 +45,7 @@ import { createApprovalRequest, updateParticipantStatus,
  } from '@services/participant';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
-import { hasMenuAccess } from '@helpers/permissions';
+import { hasActionPermission } from '@helpers/permissions';
 import { formatNumberWithCommas } from '@utils';
 
 const ParticipantPositions = () => {
@@ -231,7 +231,7 @@ const ParticipantPositions = () => {
                                 <Switch
                                     colorScheme="green"
                                     size="sm"
-                                    isDisabled={!hasMenuAccess("UpdateParticipantStatus")}
+                                    isDisabled={!hasActionPermission("UpdateParticipantStatus")}
                                     isChecked={row.original.isActive}
                                     onChange={(e) => toggleStatus(row.original)}
                                 />
@@ -240,7 +240,7 @@ const ParticipantPositions = () => {
                     }
                 }];
 
-            const actionColumn = hasMenuAccess("CreateApprovalRequest") ? [{
+            const actionColumn = hasActionPermission("CreateApprovalRequest") ? [{
                 Header: () => (
                     <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Action</Text>
                 ),

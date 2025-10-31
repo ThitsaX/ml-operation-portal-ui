@@ -18,7 +18,8 @@ import {
   Divider,
   Switch,
   useToast,
-  Stack
+  Stack,
+  Center
 } from '@chakra-ui/react';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { usePagination, useSortBy, useTable, Column, CellProps, useGlobalFilter } from 'react-table';
@@ -47,7 +48,7 @@ import GlobalFilter from '@components/interface/GlobalFilter';
 import { store } from '@store'
 import { getErrorMessage } from '@helpers/errors';
 import { CustomSelect } from '@components/interface';
-import { hasMenuAccess } from '@helpers/permissions';
+import { hasActionPermission } from '@helpers/permissions';
 
 const User = () => {
   const [filterStatus, setFilterStatus] = useState('ACTIVE');
@@ -129,19 +130,19 @@ const User = () => {
       },
       {
         Header: () => (
-          <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">Status</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Status</Text>
         ),
         accessor: "status",
         disableSortBy: true,
         Cell: ({ value }) => (
-          <Box textAlign="left" px={3}>
+          <Box textAlign="left">
             {value}
           </Box>
         ),
       },
       {
         Header: () => (
-          <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">Action</Text>
+          <Text flex={1} textAlign={'center'} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Action</Text>
         ),
         id: "id",
         disableSortBy: true,
@@ -150,7 +151,7 @@ const User = () => {
           const isSelfUser = row.original.userId === user?.userId;
 
           return (
-            <HStack spacing={3}>
+            <HStack justify="center" spacing={3}>
               <IconButton
                 icon={<GrPowerReset />}
                 aria-label="Reset Password"
@@ -165,7 +166,7 @@ const User = () => {
                 size="md"
                 onClick={() => handleEditClick(row.original)}
                 variant="ghost"
-                isDisabled={!hasMenuAccess("ModifyUser")}
+                isDisabled={!hasActionPermission("ModifyUser")}
               />
               <Switch
                 colorScheme="green"
@@ -174,7 +175,7 @@ const User = () => {
                 onChange={e =>
                   toggleStatus(row.original.userId, e.target.checked)
                 }
-                isDisabled={isSelfUser || !hasMenuAccess("ModifyUserStatus")}
+                isDisabled={isSelfUser || !hasActionPermission("ModifyUserStatus")}
               />
             </HStack>
           )
@@ -315,7 +316,7 @@ const User = () => {
             includeAllOption={false}
           />
         </Box>
-        {hasMenuAccess("CreateUser") && (
+        {hasActionPermission("CreateUser") && (
           <Button
             colorScheme="blue"
             onClick={handleNewClick}
@@ -394,9 +395,7 @@ const User = () => {
                   >
                     {row.cells.map((cell) => (
                       <Td {...cell.getCellProps()}
-                        {...cell.getCellProps()}
                         py={1}   // ✅ reduce row height
-                        px={3}
                         fontSize="sm">{cell.render('Cell')}</Td>
                     ))}
                   </Tr>
