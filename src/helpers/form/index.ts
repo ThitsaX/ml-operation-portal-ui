@@ -95,6 +95,13 @@ export class ParticipantHelper extends FormHelper {
 
 export class UserManagementHelper extends FormHelper {
   get schema() {
+    const newPasswordSchema = z
+      .string({ required_error: 'Password is required' })
+      .regex(
+        passwordRegex,
+        'Password must be at least 6 characters long and include one uppercase letter, one lowercase letter, one number, and one special character'
+      );
+
     return z.object({
       firstName: z.string().min(1, 'First Name is required'),
       lastName: z.string().min(1, 'Last Name is required'),
@@ -104,7 +111,7 @@ export class UserManagementHelper extends FormHelper {
       jobTitle: z.string().optional(),
       status: z.string().optional(),
       userId: z.string().optional(),
-      password: z.string().min(3, 'Password must be at least 6 characters'),
+      password: newPasswordSchema,
       confirmPassword: z.string(),
     }).refine((data) => data.password === data.confirmPassword, {
       message: "Passwords do not match",

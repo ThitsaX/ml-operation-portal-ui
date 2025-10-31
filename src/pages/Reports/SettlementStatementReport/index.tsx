@@ -11,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { downloadFile, generateSettlementStatementReport } from "@services/report";
 
 import { useGetUserState } from '@store/hooks'
-import { type ISettlementStatementReport } from '@typescript/form/settlement-detail-report'
+import { type ISettlementStatementReport } from '@typescript/form/report'
 
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone'

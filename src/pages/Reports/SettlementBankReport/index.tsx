@@ -24,7 +24,7 @@ import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone';
 import { memo, useMemo, useEffect, useState, useCallback } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { type ISettlementBankReport } from '@typescript/form/fee-report';
+import { type ISettlementBankReport } from '@typescript/form/report';
 import { useLoadingContext } from '@contexts/hooks';
 import { ITimezoneOption } from 'react-timezone-select';
 import { useSelector } from 'react-redux';

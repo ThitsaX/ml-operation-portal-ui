@@ -24,7 +24,7 @@ import { IParticipantOrganization, IParticipantUser, IParticipantUserForm, IPart
 import { UserManagementHelper } from '@helpers/form';
 import { isEmpty } from 'lodash-es';
 import { IoReload } from 'react-icons/io5';
-import { syncHubParticipantsToPortal } from '@services/dashboard';
+import { syncHubParticipantsToPortal } from '@services/participant';
 import { UserStatus } from '@typescript/form';
 import { getRoleListByParticipant } from '@services/participant';
 
@@ -38,6 +38,7 @@ interface EditUserModalProps {
   selectedUser?: Partial<IParticipantUser>;
   participantInfoList?: IParticipantOrganization[];
   onSave: (data: IParticipantUserForm) => void;
+  isSaving?: boolean;
 }
 
 const EditUserModal: React.FC<EditUserModalProps> = ({
@@ -47,6 +48,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   selectedUser,
   participantInfoList,
   onSave,
+  isSaving,
 }) => {
   const [roleList, setRoleList] = useState<IParticipantUserRole[]>([]);
 
@@ -139,7 +141,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   // Submit handler
   const handleFormSubmit = (values: IParticipantUserForm) => {
     onSave(values);
-    onClose();
   };
 
   return (
@@ -261,7 +262,10 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button colorScheme="blue" onClick={handleSubmit(handleFormSubmit)} isLoading={isSubmitting} isDisabled={!isValid}>
+          <Button colorScheme="blue" onClick={handleSubmit(handleFormSubmit)}
+           isLoading={isSaving}
+           loadingText={isEdit ? "Updating..." : "Saving..."}
+           isDisabled={!isValid || isSaving}>
             {isEdit ? 'Update' : 'Save'}
           </Button>
         </ModalFooter>

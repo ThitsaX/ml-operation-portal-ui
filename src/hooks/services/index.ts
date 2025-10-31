@@ -1,4 +1,3 @@
-export * from './dashboard';
 export * from './user';
 export * from './participant';
 export * from './transfer';

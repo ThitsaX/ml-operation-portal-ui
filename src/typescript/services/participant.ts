@@ -72,6 +72,24 @@ export interface IGetParticipantList {
   participantInfoList: IParticipantProfile[];
 }
 
+export interface IGetParticipantPositionData {
+  participantPositionsData: IParticipantPositionData[]
+}
+
+export interface IParticipantPositionData {
+  participantName: string,
+  description: string,
+  currency: string,
+  balance: number,
+  currentPosition: number,
+  ndcPercent: string,
+  ndc: number,
+  ndcUsed: number,
+  participantSettlementCurrencyId: number,
+  participantPositionCurrencyId: number,
+  isActive: boolean
+}
+
 export interface IGetAllLiquidityProfile {
   liquidityProfileInfoList: ILiquidityProfile[];
 }

@@ -19,7 +19,7 @@ import {
   generateSettlementAuditReport,
 } from '@services/report';
 
-import { type ISettlementAuditReport } from '@typescript/form/settlement-audit-report';
+import { type ISettlementAuditReport } from '@typescript/form/report';
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone';
 import { Controller, useForm } from "react-hook-form";

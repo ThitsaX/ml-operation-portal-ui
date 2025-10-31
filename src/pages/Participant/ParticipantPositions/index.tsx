@@ -37,13 +37,12 @@ import moment from 'moment';
 import { RootState } from '@store';
 import { IApprovalRequest, IParticipantPositionData, PositionActionType } from '@typescript/services';
 import type { ITimezoneOption } from 'react-timezone-select';
-
 import DepositModal from '@components/interface/Participant';
 import WithdrawModal from '@components/interface/Participant/WidthdrawModal';
 import NetDebitCapModal from '@components/interface/Participant/NetDebitCardModal';
-import { syncHubParticipantsToPortal } from '@services/dashboard';
-import { createApprovalRequest, updateParticipantStatus } from '@services/participant';
-import { getParticipantPositionList } from '@services/dashboard';
+import { createApprovalRequest, updateParticipantStatus,
+    syncHubParticipantsToPortal, getParticipantPositionList
+ } from '@services/participant';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 import { hasMenuAccess } from '@helpers/permissions';
