@@ -339,7 +339,7 @@ const PendingApprovals = () => {
                     {...row.getRowProps()}
                   >
                     {row.cells.map((cell) => (
-                      <Td {...cell.getCellProps()}>{cell.render('Cell')}</Td>
+                      <Td {...cell.getCellProps()} py={2}>{cell.render('Cell')}</Td>
                     ))}
                   </Tr>
                 );
