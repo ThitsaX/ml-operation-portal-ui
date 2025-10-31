@@ -29,6 +29,7 @@ import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 import { OptionType } from '@components/interface/CustomSelect';
 import { CustomSelect } from '@components/interface';
+import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 
 const auditHelper = new AuditReportHelper();
 
@@ -159,8 +160,7 @@ const AuditReport = () => {
                             control={control}
                             name="fromDate"
                             render={({ field: { value, onChange } }) => (
-                                <Input
-                                    type="datetime-local"
+                                <CustomDateTimePicker
                                     value={value}
                                     onChange={(e) => {
                                         onChange(e.target.value);
@@ -178,8 +178,7 @@ const AuditReport = () => {
                             control={control}
                             name="toDate"
                             render={({ field: { value, onChange } }) => (
-                                <Input
-                                    type="datetime-local"
+                                <CustomDateTimePicker
                                     value={value}
                                     onChange={(e) => {
                                         onChange(e.target.value);

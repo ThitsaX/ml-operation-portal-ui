@@ -35,6 +35,7 @@ import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 import { CustomSelect } from '@components/interface';
 import { OptionType } from '@components/interface/CustomSelect';
+import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 
 const settlementBankReport = new SettlementBankReportHelper();
 const initialFileName = 'SettlementBankReport';
@@ -200,9 +201,8 @@ const SettlementBankReport = () => {
               control={control}
               name="startDate"
               render={({ field }) => (
-                <Input
+                <CustomDateTimePicker
                   {...field}
-                  type="datetime-local"
                   onChange={(e) => {
                     field.onChange(e);
                     trigger("endDate");
@@ -223,7 +223,7 @@ const SettlementBankReport = () => {
               control={control}
               name="endDate"
               render={({ field }) => (
-                <Input
+                <CustomDateTimePicker
                   {...field}
                   type="datetime-local"
                   onChange={(e) => {

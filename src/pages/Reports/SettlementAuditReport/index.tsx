@@ -33,6 +33,7 @@ import { type IApiErrorResponse } from "@typescript/services";
 import { getErrorMessage } from "@helpers/errors";
 import { CustomSelect } from '@components/interface';
 import { OptionType } from '@components/interface/CustomSelect';
+import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 
 const settlementAuditReportHelper = new SettlementAuditReportHelper();
 const initialFileName = 'SettlementAuditReport';
@@ -193,8 +194,7 @@ const SettlementAuditReport = () => {
               control={control}
               name="startDate"
               render={({ field: { value, onChange } }) => (
-                <Input
-                  type="datetime-local"
+                <CustomDateTimePicker
                   value={value}
                   onChange={(e) => {
                     onChange(e.target.value);
@@ -212,7 +212,7 @@ const SettlementAuditReport = () => {
               control={control}
               name="endDate"
               render={({ field: { value, onChange } }) => (
-                <Input
+                <CustomDateTimePicker
                   type="datetime-local"
                   value={value}
                   onChange={(e) => {

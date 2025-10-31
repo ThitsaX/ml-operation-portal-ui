@@ -25,6 +25,8 @@ import "./CustomDateTimeStyle.css";
 interface Props {
   value?: string | Date;
   onChange: (e: { target: { value: string } }) => void;
+  onBlur?: () => void; // Add this - optional
+  type?: string; // Add this - optional
 }
 
 type OptionType = {

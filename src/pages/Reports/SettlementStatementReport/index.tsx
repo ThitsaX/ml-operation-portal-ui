@@ -26,6 +26,7 @@ import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from "@helpers/errors";
 import { OptionType } from '@components/interface/CustomSelect';
 import { CustomSelect } from '@components/interface';
+import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 
 const settlementStatementReportHelper = new SettlementStatementReportHelper()
 const initialFileName = 'DFSPSettlementStatementReport'
@@ -185,14 +186,13 @@ const SettlementStatementReport = () => {
               control={control}
               render={({ field: { value, onChange, onBlur } }) => {
                 return (
-                  <Input
+                  <CustomDateTimePicker
                     value={value}
                     onChange={(e) => {
                       onChange(e);
                       trigger('endDate');
                     }}
                     onBlur={onBlur}
-                    type="datetime-local"
                   />
                 );
               }}
@@ -209,14 +209,13 @@ const SettlementStatementReport = () => {
                 fieldState: { error }
               }) => {
                 return (
-                  <Input
+                  <CustomDateTimePicker
                     value={value}
                     onChange={(e) => {
                       onChange(e);
                       trigger('startDate');
                     }}
                     onBlur={onBlur}
-                    type="datetime-local"
                   />
                 );
               }}
