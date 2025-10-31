@@ -31,7 +31,7 @@ import { formatEpochToTZ } from '@helpers/dateHelper';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { ITimezoneOption } from 'react-timezone-select';
-import { hasMenuAccess } from '@helpers/permissions';
+import { hasActionPermission } from '@helpers/permissions';
 import { IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 import { CustomSelect } from '@components/interface';
@@ -174,7 +174,7 @@ const PendingApprovals = () => {
     ] as Column<IPendingApproval>[];;
 
     const statusColumn: Partial<Column<IPendingApproval>>[] =
-      filterStatus === 'PENDING' && hasMenuAccess("ModifyApprovalAction")
+      filterStatus === 'PENDING' && hasActionPermission("ModifyApprovalAction")
         ? [
           {
             Header: () => <Text fontWeight="semibold" fontSize="sm" textTransform="none">Action</Text>,

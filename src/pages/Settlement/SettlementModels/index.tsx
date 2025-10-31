@@ -39,7 +39,7 @@ import {
 import SettlementModal from '@components/interface/SettlementModels/SettlementModals';
 import { ISettlementModel } from '@typescript/services';
 import { getSettlementModelList } from '@services/settlements';
-import { hasMenuAccess } from '@helpers/permissions';
+import { hasActionPermission } from '@helpers/permissions';
 
 const SettlementModels = () => {
     const [models, setModels] = useState<ISettlementModel[]>([]);
@@ -136,7 +136,7 @@ const SettlementModels = () => {
             },
         ];
 
-        const actionColumn = hasMenuAccess("ModifySettlementModel")
+        const actionColumn = hasActionPermission("ModifySettlementModel")
             ? [
                 {
                     Header: 'Action',

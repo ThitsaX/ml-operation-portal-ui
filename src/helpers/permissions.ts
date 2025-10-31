@@ -1,7 +1,7 @@
 import { store } from '@store';
 import { type ActionId } from '../configs/action-ids';
 
-export const hasMenuAccess = (allowedActionId: ActionId): boolean => {
+export const hasActionPermission = (allowedActionId: ActionId): boolean => {
   const {
     user: { data },
   } = store.getState();

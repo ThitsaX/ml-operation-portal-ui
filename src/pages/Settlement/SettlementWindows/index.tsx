@@ -72,7 +72,7 @@ import {
     useGetSettlementModelList,
 } from '@hooks/services/settlements';
 import { useNavigate } from "react-router-dom";
-import { hasMenuAccess } from '@helpers/permissions';
+import { hasActionPermission } from '@helpers/permissions';
 import { getErrorMessage } from '@helpers/errors';
 
 const SettlementWindows = () => {
@@ -406,7 +406,7 @@ const SettlementWindows = () => {
 
         }];
 
-        const actionColumn = hasMenuAccess("CloseSettlementWindows")
+        const actionColumn = hasActionPermission("CloseSettlementWindows")
                 ? [
                     {
                         Header: 'Action',
@@ -912,7 +912,7 @@ const SettlementWindows = () => {
                                 setSettlementModel(selectedOption ? selectedOption.value : "");
                             }}
                         />
-                        {hasMenuAccess("CreateSettlement") && (
+                        {hasActionPermission("CreateSettlement") && (
                             <Button
                                 isDisabled={settlementModel === "" || selectedRowIds.length < 1}
                                 color="white"

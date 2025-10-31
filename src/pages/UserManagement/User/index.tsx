@@ -48,7 +48,7 @@ import GlobalFilter from '@components/interface/GlobalFilter';
 import { store } from '@store'
 import { getErrorMessage } from '@helpers/errors';
 import { CustomSelect } from '@components/interface';
-import { hasMenuAccess } from '@helpers/permissions';
+import { hasActionPermission } from '@helpers/permissions';
 
 const User = () => {
   const [filterStatus, setFilterStatus] = useState('ACTIVE');
@@ -166,7 +166,7 @@ const User = () => {
                 size="md"
                 onClick={() => handleEditClick(row.original)}
                 variant="ghost"
-                isDisabled={!hasMenuAccess("ModifyUser")}
+                isDisabled={!hasActionPermission("ModifyUser")}
               />
               <Switch
                 colorScheme="green"
@@ -175,7 +175,7 @@ const User = () => {
                 onChange={e =>
                   toggleStatus(row.original.userId, e.target.checked)
                 }
-                isDisabled={isSelfUser || !hasMenuAccess("ModifyUserStatus")}
+                isDisabled={isSelfUser || !hasActionPermission("ModifyUserStatus")}
               />
             </HStack>
           )
@@ -316,7 +316,7 @@ const User = () => {
             includeAllOption={false}
           />
         </Box>
-        {hasMenuAccess("CreateUser") && (
+        {hasActionPermission("CreateUser") && (
           <Button
             colorScheme="blue"
             onClick={handleNewClick}

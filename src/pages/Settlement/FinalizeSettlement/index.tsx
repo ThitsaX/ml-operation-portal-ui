@@ -63,7 +63,7 @@ import {
 } from '@services/settlements';
 import { useLocation } from "react-router-dom";
 import CustomSelect from '@components/interface/CustomSelect';
-import { hasMenuAccess } from '@helpers/permissions';
+import { hasActionPermission } from '@helpers/permissions';
 import { getErrorMessage } from '@helpers/errors';
 
 const finalizeSettlementHelper = new FinalizeSettlementHelper();
@@ -285,7 +285,7 @@ const FinalizeSettlement = () => {
             )
         }];
 
-            const actionColumn = hasMenuAccess("FinalizeSettlement")
+            const actionColumn = hasActionPermission("FinalizeSettlement")
                             ? [
                                 {
                                     Header: 'Action',
@@ -742,7 +742,7 @@ const FinalizeSettlement = () => {
                     </HStack>
                 </TableContainer>
             </VStack>
-            
+
             <Modal isOpen={isFinalizeOpen} onClose={onFinalizeClose} isCentered size="lg">
                 <ModalOverlay />
                 <ModalContent>
