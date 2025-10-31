@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import {
   Popover,
   PopoverTrigger,
@@ -12,11 +12,11 @@ import {
   useBreakpointValue,
   Text,
   SimpleGrid,
-  Button,
-  HStack
+  HStack,
+  useOutsideClick
 } from "@chakra-ui/react";
 import { DayPicker } from "react-day-picker";
-import { CalendarIcon, CloseIcon } from "@chakra-ui/icons";
+import { CalendarIcon } from "@chakra-ui/icons";
 import { format } from "date-fns";
 import "react-day-picker/style.css";
 import CustomSelect from "./CustomSelect";
@@ -33,7 +33,6 @@ type OptionType = {
 };
 
 // Constants
-
 const TIME_OPTIONS = {
   hours: Array.from({ length: 12 }, (_, i) => ({
     label: (i + 1).toString(),
@@ -54,7 +53,7 @@ const TIME_OPTIONS = {
 };
 
 // Custom Hook for Dynamic Years
-const YEAR_RANGE = 20; // Show 0 years before/after selected
+const YEAR_RANGE = 20;
 const useDynamicYearOptions = (selectedYear?: number) => {
   const [yearOffset, setYearOffset] = useState(0);
 
@@ -79,7 +78,7 @@ const formatForDateTimeLocal = (date: Date): string => {
 };
 
 const formatForDisplay = (date: Date): string => {
-  return format(date, "yyyy-MM-dd hh:mm a");
+  return format(date, "MM/dd/yyyy hh:mm a");
 };
 
 export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
@@ -90,6 +89,27 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
   const initialDate = useMemo(() => value ? new Date(value) : null, [value]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(initialDate);
   const [month, setMonth] = useState<Date>(initialDate || new Date());
+
+  // Refs for popover and dropdown detection
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+
+  // Enhanced outside click handler that ignores dropdown menus
+  useOutsideClick({
+    ref: popoverRef,
+    handler: (event) => {
+      const target = event.target as Element;
+      const isReactSelectDropdown =
+        target.closest('.react-select__menu') ||
+        target.closest('.react-select__dropdown') ||
+        target.closest('.react-select__menu-list') ||
+        target.closest('[id*="react-select"]');
+
+      if (!isReactSelectDropdown) {
+        setIsOpen(false);
+      }
+    },
+  });
 
   // Sync with external value changes
   useEffect(() => {
@@ -226,9 +246,10 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
   }, [yearOptions]);
 
   return (
-    <Popover isOpen={isOpen} onClose={() => setIsOpen(false)} placement="bottom-start">
+      <Box ref={popoverRef}>
+    <Popover isOpen={isOpen} onClose={() => setIsOpen(false)} placement="bottom" closeOnBlur={false}>
       <PopoverTrigger>
-        <Box w="full">
+          <Box w="full" ref={triggerRef}>
           <InputGroup size={inputSize}>
             <Input
               value={displayValue}
@@ -348,5 +369,6 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
         </VStack>
       </PopoverContent>
     </Popover>
+    </Box>
   );
 };
