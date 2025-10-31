@@ -213,7 +213,6 @@ const SettlementAuditReport = () => {
               name="endDate"
               render={({ field: { value, onChange } }) => (
                 <CustomDateTimePicker
-                  type="datetime-local"
                   value={value}
                   onChange={(e) => {
                     onChange(e.target.value);

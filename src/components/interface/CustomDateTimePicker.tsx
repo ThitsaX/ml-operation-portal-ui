@@ -25,8 +25,14 @@ import "./CustomDateTimeStyle.css";
 interface Props {
   value?: string | Date;
   onChange: (e: { target: { value: string } }) => void;
-  onBlur?: () => void; // Add this - optional
-  type?: string; // Add this - optional
+  onBlur?: () => void;
+  type?: string;
+  disabled?: boolean;
+  placeholder?: string;
+  required?: boolean;
+  readOnly?: boolean;
+  borderWidth?: string;
+  _disabled?: any;
 }
 
 type OptionType = {
@@ -83,7 +89,13 @@ const formatForDisplay = (date: Date): string => {
   return format(date, "MM/dd/yyyy hh:mm a");
 };
 
-export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
+export const CustomDateTimePicker: React.FC<Props> = ({
+  value,
+  onChange,
+  disabled = false, // Destructure with default value
+  placeholder = "Select date and time",
+  ...props // Capture other props
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const inputSize = useBreakpointValue({ base: "sm", md: "md" });
 
@@ -100,6 +112,8 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
   useOutsideClick({
     ref: popoverRef,
     handler: (event) => {
+      if (disabled) return; // Don't close if disabled
+
       const target = event.target as Element;
       const isReactSelectDropdown =
         target.closest('.react-select__menu') ||
@@ -125,27 +139,31 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
 
   // Event Handlers
   const emitChange = useCallback((date: Date | null) => {
+    if (disabled) return; // Don't emit changes if disabled
+
     setSelectedDate(date);
     onChange({
       target: { value: date ? formatForDateTimeLocal(date) : "" }
     });
-  }, [onChange]);
+  }, [onChange, disabled]);
 
   const handleClear = useCallback(() => {
+    if (disabled) return;
     setSelectedDate(null);
     setMonth(new Date());
     emitChange(null);
-  }, [emitChange]);
+  }, [emitChange, disabled]);
 
   const handleToday = useCallback(() => {
+    if (disabled) return;
     const today = new Date();
     setSelectedDate(today);
     setMonth(today);
     emitChange(today);
-  }, [emitChange]);
+  }, [emitChange, disabled]);
 
   const handleDaySelect = useCallback((day?: Date | null) => {
-    if (!day) return;
+    if (disabled || !day) return;
 
     const updated = new Date(day);
     if (selectedDate) {
@@ -155,17 +173,19 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
       updated.setHours(now.getHours(), now.getMinutes());
     }
     emitChange(updated);
-  }, [selectedDate, emitChange]);
+  }, [selectedDate, emitChange, disabled]);
 
   const handleTimeChange = useCallback((hour: number, minute: number) => {
+    if (disabled) return;
+
     const updated = selectedDate ? new Date(selectedDate) : new Date();
     updated.setHours(hour, minute);
     emitChange(updated);
-  }, [selectedDate, emitChange]);
+  }, [selectedDate, emitChange, disabled]);
 
   // Selection Handlers
   const handleMonthChange = useCallback((val: OptionType | null) => {
-    if (!val || !selectedDate) return;
+    if (disabled || !val || !selectedDate) return;
 
     const newMonth = Number(val.value);
     const updatedDate = new Date(selectedDate);
@@ -174,10 +194,10 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
 
     setMonth(new Date(updatedDate.getFullYear(), newMonth, 1));
     emitChange(updatedDate);
-  }, [selectedDate, emitChange]);
+  }, [selectedDate, emitChange, disabled]);
 
   const handleYearChange = useCallback((val: OptionType | null) => {
-    if (!val || !selectedDate) return;
+    if (disabled || !val || !selectedDate) return;
 
     const newYear = Number(val.value);
     const updatedDate = new Date(selectedDate);
@@ -185,31 +205,31 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
 
     setMonth(new Date(newYear, month.getMonth(), 1));
     emitChange(updatedDate);
-  }, [selectedDate, month, emitChange]);
+  }, [selectedDate, month, emitChange, disabled]);
 
   const handleHourChange = useCallback((val: OptionType | null) => {
-    if (!val) return;
+    if (disabled || !val) return;
 
     const newHour12 = Number(val.value);
     const currentAmPm = getSelectedAmPm();
     const newHour24 = convert12to24(newHour12, currentAmPm);
 
     handleTimeChange(newHour24, selectedDate?.getMinutes() || 0);
-  }, [selectedDate, handleTimeChange]);
+  }, [selectedDate, handleTimeChange, disabled]);
 
   const handleMinuteChange = useCallback((val: OptionType | null) => {
-    if (!val) return;
+    if (disabled || !val) return;
     handleTimeChange(selectedDate?.getHours() || new Date().getHours(), Number(val.value));
-  }, [selectedDate, handleTimeChange]);
+  }, [selectedDate, handleTimeChange, disabled]);
 
   const handleAmPmChange = useCallback((val: OptionType | null) => {
-    if (!val) return;
+    if (disabled || !val) return;
 
     const currentHour12 = getCurrentHours12();
     const newHour24 = convert12to24(currentHour12, val.value);
 
     handleTimeChange(newHour24, selectedDate?.getMinutes() || 0);
-  }, [selectedDate, handleTimeChange]);
+  }, [selectedDate, handleTimeChange, disabled]);
 
   // Helper Functions
   const getCurrentHours12 = () => {
@@ -248,129 +268,145 @@ export const CustomDateTimePicker: React.FC<Props> = ({ value, onChange }) => {
   }, [yearOptions]);
 
   return (
-      <Box ref={popoverRef}>
-    <Popover isOpen={isOpen} onClose={() => setIsOpen(false)} placement="bottom" closeOnBlur={false}>
-      <PopoverTrigger>
+    <Box ref={popoverRef}>
+      <Popover
+        isOpen={isOpen && !disabled} // Don't open if disabled
+        onClose={() => setIsOpen(false)}
+        placement="bottom"
+        closeOnBlur={false}
+      >
+        <PopoverTrigger>
           <Box w="full" ref={triggerRef}>
-          <InputGroup size={inputSize}>
-            <Input
-              value={displayValue}
-              readOnly
-              cursor="pointer"
-              onClick={() => setIsOpen(!isOpen)}
-              className="date-time-input"
-              placeholder="Select date and time"
-            />
-            <InputRightElement>
-              <IconButton
-                aria-label="Select date and time"
-                icon={<CalendarIcon />}
-                size={inputSize}
-                variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsOpen(!isOpen);
-                }}
+            <InputGroup size={inputSize}>
+              <Input
+                value={displayValue}
+                readOnly
+                cursor={disabled ? "not-allowed" : "pointer"}
+                onClick={() => !disabled && setIsOpen(!isOpen)}
+                className="date-time-input"
+                placeholder={placeholder}
+                isDisabled={disabled} // Chakra UI disabled prop
+                opacity={disabled ? 0.6 : 1}
+                {...props} // Spread other props like borderWidth, etc.
               />
-            </InputRightElement>
-          </InputGroup>
-        </Box>
-      </PopoverTrigger>
+              <InputRightElement>
+                <IconButton
+                  aria-label="Select date and time"
+                  icon={<CalendarIcon />}
+                  size={inputSize}
+                  variant="ghost"
+                  isDisabled={disabled} // Disable button too
+                  onClick={(e) => {
+                    if (disabled) return;
+                    e.stopPropagation();
+                    setIsOpen(!isOpen);
+                  }}
+                />
+              </InputRightElement>
+            </InputGroup>
+          </Box>
+        </PopoverTrigger>
 
-      <PopoverContent p={1} maxW="100%" borderRadius="md" className="date-time-popover">
-        <VStack spacing={1} w="full">
-          {/* Month/Year Selectors */}
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="full" alignItems="center">
-            <CustomSelect
-              options={TIME_OPTIONS.months}
-              value={selectedValues.month ?? null}
-              onChange={handleMonthChange}
-              width="100%"
-              maxMenuHeight={200}
-              menuPortalTarget
-              size="sm"
-            />
-            <CustomSelect
-              options={yearOptions}
-              value={selectedValues.year ?? null}
-              onChange={handleYearChange}
-              width="100%"
-              maxMenuHeight={200}
-              menuPortalTarget
-              size="sm"
-            />
-          </SimpleGrid>
+        <PopoverContent p={1} maxW="100%" borderRadius="md" className="date-time-popover">
+          <VStack spacing={1} w="full">
+            {/* Month/Year Selectors */}
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} w="full" alignItems="center">
+              <CustomSelect
+                options={TIME_OPTIONS.months}
+                value={selectedValues.month ?? null}
+                onChange={handleMonthChange}
+                width="100%"
+                maxMenuHeight={200}
+                menuPortalTarget
+                size="sm"
+                isDisabled={disabled} // Disable selects when component is disabled
+              />
+              <CustomSelect
+                options={yearOptions}
+                value={selectedValues.year ?? null}
+                onChange={handleYearChange}
+                width="100%"
+                maxMenuHeight={200}
+                menuPortalTarget
+                size="sm"
+                isDisabled={disabled}
+              />
+            </SimpleGrid>
 
-          {/* Day Picker */}
-          <DayPicker
-            mode="single"
-            selected={selectedDate || undefined}
-            onSelect={handleDaySelect}
-            month={month}
-            onMonthChange={setMonth}
-            startMonth={new Date(minYear, 0)}
-            endMonth={new Date(maxYear, 11)}
-            showOutsideDays
-            captionLayout="label"
-          />
+            {/* Day Picker */}
+            <DayPicker
+              mode="single"
+              selected={selectedDate || undefined}
+              onSelect={handleDaySelect}
+              month={month}
+              onMonthChange={setMonth}
+              startMonth={new Date(minYear, 0)}
+              endMonth={new Date(maxYear, 11)}
+              showOutsideDays
+              captionLayout="label"
+              // DayPicker doesn't have a direct disabled prop, but days won't be clickable due to our handler
+            />
 
-          {/* Time Selectors */}
-          <Text fontSize="sm" fontWeight="semibold" textAlign={{ base: "center", sm: "left" }}>
-            Time
-          </Text>
-          <SimpleGrid columns={3} spacing={1} w="full">
-            <CustomSelect
-              options={TIME_OPTIONS.hours}
-              value={selectedValues.hour ?? null}
-              onChange={handleHourChange}
-              width="100%"
-              maxMenuHeight={200}
-              size="sm"
-            />
-            <CustomSelect
-              options={TIME_OPTIONS.minutes}
-              value={selectedValues.minute ?? null}
-              onChange={handleMinuteChange}
-              width="100%"
-              maxMenuHeight={200}
-              size="sm"
-            />
-            <CustomSelect
-              options={TIME_OPTIONS.ampm}
-              value={selectedValues.ampm ?? null}
-              onChange={handleAmPmChange}
-              width="100%"
-              maxMenuHeight={200}
-              size="sm"
-            />
-          </SimpleGrid>
-
-          {/* Action Buttons */}
-          <HStack spacing={4} w="full" justify="center">
-            <Text
-              onClick={handleToday}
-              color="blue.500"
-              fontSize="xs"
-              cursor="pointer"
-              fontWeight="medium"
-              _hover={{ textDecoration: "underline" }}
-            >
-              Today
+            {/* Time Selectors */}
+            <Text fontSize="sm" fontWeight="semibold" textAlign={{ base: "center", sm: "left" }}>
+              Time
             </Text>
-            <Text
-              onClick={handleClear}
-              color="blue.500"
-              fontSize="xs"
-              cursor="pointer"
-              fontWeight="medium"
-              _hover={{ textDecoration: "underline" }}
-            >
-              Clear
-            </Text>
-          </HStack>
-        </VStack>
-      </PopoverContent>
-    </Popover>
+            <SimpleGrid columns={3} spacing={1} w="full">
+              <CustomSelect
+                options={TIME_OPTIONS.hours}
+                value={selectedValues.hour ?? null}
+                onChange={handleHourChange}
+                width="100%"
+                maxMenuHeight={200}
+                size="sm"
+                isDisabled={disabled}
+              />
+              <CustomSelect
+                options={TIME_OPTIONS.minutes}
+                value={selectedValues.minute ?? null}
+                onChange={handleMinuteChange}
+                width="100%"
+                maxMenuHeight={200}
+                size="sm"
+                isDisabled={disabled}
+              />
+              <CustomSelect
+                options={TIME_OPTIONS.ampm}
+                value={selectedValues.ampm ?? null}
+                onChange={handleAmPmChange}
+                width="100%"
+                maxMenuHeight={200}
+                size="sm"
+                isDisabled={disabled}
+              />
+            </SimpleGrid>
+
+            {/* Action Buttons */}
+            <HStack spacing={4} w="full" justify="center">
+              <Text
+                onClick={handleToday}
+                color={disabled ? "gray.400" : "blue.500"}
+                fontSize="xs"
+                cursor={disabled ? "not-allowed" : "pointer"}
+                fontWeight="medium"
+                _hover={disabled ? {} : { textDecoration: "underline" }}
+              >
+                Today
+              </Text>
+              <Text
+                onClick={handleClear}
+                color={disabled ? "gray.400" : "blue.500"}
+                fontSize="xs"
+                cursor={disabled ? "not-allowed" : "pointer"}
+                fontWeight="medium"
+                _hover={disabled ? {} : { textDecoration: "underline" }}
+              >
+                Clear
+              </Text>
+            </HStack>
+          </VStack>
+        </PopoverContent>
+      </Popover>
     </Box>
   );
 };

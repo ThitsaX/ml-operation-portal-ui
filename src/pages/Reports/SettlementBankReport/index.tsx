@@ -225,7 +225,6 @@ const SettlementBankReport = () => {
               render={({ field }) => (
                 <CustomDateTimePicker
                   {...field}
-                  type="datetime-local"
                   onChange={(e) => {
                     field.onChange(e);
                     trigger("startDate");

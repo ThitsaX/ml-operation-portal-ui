@@ -57,6 +57,7 @@ import { Ranges, TransferType } from '@typescript/pages';
 import { ITimezoneOption } from 'react-timezone-select';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
+import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 
 const TransferDetails = lazy(() => import('./TransferDetails'));
 
@@ -494,9 +495,8 @@ const Transfer = () => {
                 control={control}
                 render={({ field: { value, onChange } }) => {
                   return (
-                    <Input
+                    <CustomDateTimePicker
                       disabled={dateRange !== 'custom' ? true : false}
-                      type="datetime-local"
                       value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
                       onChange={(event) => {
                         const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
@@ -522,9 +522,8 @@ const Transfer = () => {
                 control={control}
                 render={({ field: { value, onChange } }) => {
                   return (
-                    <Input
+                    <CustomDateTimePicker
                       disabled={dateRange !== 'custom' ? true : false}
-                      type="datetime-local"
                       value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
                       onChange={(event) => {
                         const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
@@ -532,7 +531,6 @@ const Transfer = () => {
                         onChange(date);
                       }}
                       borderWidth="1px"
-                      borderRadius="md"
                       _disabled={{
                         cursor: 'not-allowed',
                         opacity: 1
