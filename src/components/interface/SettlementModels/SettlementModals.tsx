@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import { FiSave, FiTrash2 } from 'react-icons/fi';
 import {
   AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader,
   AlertDialogContent, AlertDialogOverlay, useDisclosure,
@@ -11,7 +12,6 @@ import {
   ModalFooter,
   VStack, HStack,
   Input,
-  Select,
   Button,
   Box,
   Text,
@@ -19,7 +19,10 @@ import {
   Flex,
   useToast,
   Table, Thead, Tr, Th, Td, Tbody,
-  Checkbox
+  Checkbox,
+  useBreakpointValue,
+  IconButton,
+  Tooltip
 } from '@chakra-ui/react';
 import { CloseIcon } from '@chakra-ui/icons';
 import { CustomSelect } from '@components/interface';
@@ -658,6 +661,8 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
         settlementModel.manualCloseWindow = manualCloseWindow;
         settlementModel.zoneId = currentOffset;
 
+        await refreshSchedules(); // when disabling the rows should disabled(updated) by backend.. so we fetched again
+ 
         toast({ status: 'success', title: 'Updated', description: 'Auto-close disabled.' });
       } catch (e: any) {
         setAutoCloseWindow(true); // revert
@@ -718,7 +723,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
 
   const toggleRowActive = async (key: string) => {
     try {
-      setTogglingKey(key);   // NEW
+      setTogglingKey(key);
       setIsSubmitting(true);
 
       const set = matrix[key] ?? new Set<Day>();
@@ -764,6 +769,8 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
           toast({ status: 'warning', title: 'Could not disable auto-close', description: e?.default_error_message || e?.description || 'Please try again.' });
         }
       } else {
+        await ensureAutoCloseEnabled();
+
         toast({
           status: 'success',
           title: !currentActive ? 'Activated' : 'Deactivated',
@@ -776,6 +783,32 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       setIsSubmitting(false);
       setTogglingKey(null);  // NEW
     }
+  };
+
+  // Icon-only on base & md (covers iPad portrait)
+  const isIconOnly = useBreakpointValue({ base: true, md: true, lg: false });
+
+  const ActionBtn = ({
+    label,
+    icon,
+    tooltip,
+    ...props
+  }: {
+    label: string;
+    icon: React.ReactElement;
+    tooltip?: string;
+  } & React.ComponentProps<typeof Button>) => {
+    if (isIconOnly) {
+      const iconBtn = (
+        <IconButton aria-label={label} icon={icon} {...props} />
+      );
+      return tooltip ? <Tooltip label={tooltip}>{iconBtn}</Tooltip> : iconBtn;
+    }
+    return (
+      <Button leftIcon={icon} {...props}>
+        {label}
+      </Button>
+    );
   };
 
   return (
@@ -878,11 +911,11 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                 <Table size="sm" variant="simple" >
                   <Thead>
                     <Tr>
-                      <Th w="120px" textAlign="center">HH:MM</Th>
+                      <Th w="80px" textAlign="center">HH:MM</Th>
                       {days.map((d) => (
                         <Th key={d} textAlign="center">{d}</Th>
                       ))}
-                      <Th w="100px" textAlign="center"> </Th>
+                      <Th w="80px" textAlign="center"> </Th>
                     </Tr>
                   </Thead>
                   <Tbody>
@@ -907,15 +940,17 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                             );
                           })}
                           <Td textAlign="center">
-                            <HStack justify="center" spacing={2}>
-                              <Button
-                                size="sm"
+                            <HStack justify="center">
+                              <ActionBtn
+                                label="Update"
+                                icon={<FiSave />}
                                 colorScheme="blue"
+                                size="sm"
                                 onClick={() => saveRow(key)}
                                 isDisabled={!canUpdate(key) || isSubmitting}
-                              >
-                                UPDATE
-                              </Button>
+                                tooltip="Update schedule"
+                              />
+
                               <HStack spacing={2}>
                                 <Switch
                                   size="lg"
@@ -927,16 +962,16 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                                 />
                               </HStack>
 
-                              <Button
-                                size="sm"
+                              <ActionBtn
+                                label="Delete"
+                                icon={<FiTrash2 />}
                                 colorScheme="red"
                                 variant="solid"
+                                size="sm"
                                 onClick={() => requestDeleteRow(key)}
-                                leftIcon={<CloseIcon boxSize={2.5} />}
                                 isDisabled={isSubmitting}
-                              >
-                                DELETE
-                              </Button>
+                                tooltip={`Delete ${nameForKey(key)}`}
+                              />
                             </HStack>
                           </Td>
                         </Tr>
