@@ -54,7 +54,7 @@ export const getAllIdTypes = async () => {
     user: { auth }
   } = store.getState();
 
-  const uri = routes.get_all_id_type;
+  const uri = routes.getAllIdType;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
 
@@ -87,7 +87,7 @@ export const getAllTransferStates = async () => {
     user: { auth }
   } = store.getState();
 
-  const uri = routes.get_all_transfer_state;
+  const uri = routes.getAllTransferState;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
 
@@ -120,7 +120,7 @@ export const getAllTransfers = async (data: Partial<ITransferValues>, pageIndex:
     user: { auth }
   } = store.getState();
 
-  const uri = routes.get_all_transfer;
+  const uri = routes.getAllTransfer;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
   data.pageIndex = pageIndex;
@@ -146,7 +146,7 @@ export const getTransferDetails = async (transferId: string, timezone?: string) 
     user: { auth }
   } = store.getState();
 
-  const uri = routes.get_transfer_detail;
+  const uri = routes.getTransferDetail;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
 

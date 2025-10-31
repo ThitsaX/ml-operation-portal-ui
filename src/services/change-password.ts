@@ -11,7 +11,7 @@ export const changePassword = async (data: IChangePwdValues) => {
       user: { auth }
     } = store.getState();
 
-    const uri = routes.change_password;
+    const uri = routes.changePassword;
     const accessKey = auth?.accessKey as string;
     const secretKey = auth?.secretKey as string;
 
