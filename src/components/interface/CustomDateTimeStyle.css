@@ -7,7 +7,7 @@
 
 .rdp-caption_label{
   font-size: 12px;
-  color : #206B5B;
+  color : #2196F3;
     padding : 1;
 }
 .rdp-nav_button {
@@ -24,7 +24,7 @@
 
 .rdp-weekday {
   font-size: 12px;
-  color : #206B5B;
+  color : #2196F3;
 /*   background-color: #FFF8DC;*/
 }
 /* Months container */
@@ -42,10 +42,6 @@
   padding: 0;
   background: white;
 }
-
-
-
-
 
 /* Table structure */
 .rdp-table {
@@ -114,8 +110,6 @@
   transition: transform 0.1s ease-in-out;
   margin: 0 auto;
   padding: 0;
-  border: none;
-  background: transparent;
   cursor: pointer;
   font-weight: 400;
 }
@@ -131,10 +125,6 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  border: none !important;
-  background: transparent !important;
-  font-size: 10px !important;
-  font-weight: 400 !important;
 }
 
 /* Hover state */
@@ -145,9 +135,8 @@
 
 /* Selected state */
 .rdp-day_selected {
-  background-color: #3182ce !important;
-  color: white !important;
-  font-weight: 500 !important;
+  border: 2px solid #2196F3 !important;
+  color: #2196F3 !important;
 }
 
 .rdp-day_selected:hover {
