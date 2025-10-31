@@ -66,6 +66,7 @@ import { JsonViewer } from '@components/interface/JsonViewer';
 import { OptionType } from '@components/interface/CustomSelect';
 import { CustomSelect } from '@components/interface';
 import { useGetActionList, useGetMadeByList } from '@hooks/services';
+import { PAGE_SIZE_OPTIONS } from '@utils/constants';
 
 const auditHelper = new AuditHelper();
 
@@ -80,7 +81,6 @@ const Audit = () => {
   const [auditDetail, setAuditDetail] = useState<any>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure();
-
 
   // Selected timezone
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(
@@ -453,7 +453,7 @@ const Audit = () => {
                     {...row.getRowProps()}
                     onClick={() => handleRowClick(row.original.auditId)}
                   >
-                    
+
                     {row.cells.map((cell) => (
                       <Td {...cell.getCellProps()} py={2}>
                         {cell.column.id === 'action' || cell.column.id === 'madeBy'
@@ -510,18 +510,16 @@ const Audit = () => {
             {/* Rows per page */}
             <HStack spacing={2}>
               <Text>Rows:</Text>
-              <Select
-                value={pageSize}
-                onChange={(e) => onSearchHandler(getValues(), 1, Number(e.target.value))}
-                size="sm"
-                w="20"
-              >
-                {[5, 10, 25, 50].map((size) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </Select>
+              <CustomSelect
+                options={PAGE_SIZE_OPTIONS}
+                value={PAGE_SIZE_OPTIONS.find(opt => opt.value === pageSize.toString()) || null}
+                onChange={(selectedOption) => {
+                  if (!selectedOption) return;
+                  const newSize = Number(selectedOption.value);
+                  onSearchHandler(getValues(), 1, newSize);
+                }}
+                maxMenuHeight={150}
+              />
             </HStack>
             <HStack>
               <Text>Go to page :</Text>
