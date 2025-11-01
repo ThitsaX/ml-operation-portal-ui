@@ -9,11 +9,11 @@ import {
     Box,
     Input,
     Button,
-    Select,
     FormControl,
     FormLabel,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
+import CustomSelect from "../CustomSelect";
 
 interface NetDebitCapModalProps {
     isOpen: boolean;
@@ -54,8 +54,8 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
             <ModalOverlay />
             <ModalContent
                 w={{ base: "90%", md: "500px" }}
-                maxW="90%"                     
-                mx="auto"                      
+                maxW="90%"
+                mx="auto"
             >
                 <form onSubmit={handleFormSubmit}>
                     <ModalHeader textAlign="center">Net Debit Cap</ModalHeader>
@@ -64,19 +64,16 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
                         <Box mb={4}>
                             <FormControl mb={4} isRequired>
                                 <FormLabel>Type</FormLabel>
-                                <Select
-                                    name="currency"
-                                    value={selectedType}
-                                    onChange={(e) => setSelectedType(e.target.value as "fixed" | "percentage")}>
-                                    <option value="" disabled>
-                                        Choose Fixed/Percentage
-                                    </option>
-                                    {netDebitCardList.map((item) => (
-                                        <option key={item.value} value={item.value}>
-                                            {item.label}
-                                        </option>
-                                    ))}
-                                </Select>
+                                <CustomSelect
+                                    placeholder="Choose Fixed/Percentage"
+                                    options={netDebitCardList.map(item => ({ value: item.value, label: item.label }))}
+                                    value={netDebitCardList
+                                        .map(item => ({ value: item.value, label: item.label }))
+                                        .find(opt => opt.value === selectedType) || null}
+                                    onChange={(selectedOption) => {
+                                        setSelectedType(selectedOption?.value as "fixed" | "percentage" || "");
+                                    }}
+                                />
                             </FormControl>
 
                             {selectedType === "fixed" && (

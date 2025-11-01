@@ -58,6 +58,7 @@ import { ITimezoneOption } from 'react-timezone-select';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
+import { PAGE_SIZE_OPTIONS } from '@utils/constants';
 
 const TransferDetails = lazy(() => import('./TransferDetails'));
 
@@ -711,17 +712,32 @@ const Transfer = () => {
                   readOnly
                 />
               ) : (
-                <Select placeholder="Payee FSP ID"  {...register('payeeFspId')}>
-                  {participantRes?.data?.participantInfoList.map(
-                    (item, index) => {
-                      return (
-                        <option key={index} value={item.participantName}>
-                          {item.participantName}
-                        </option>
-                      );
-                    }
+                <Controller
+                  control={control}
+                  name="payeeFspId"
+                  render={({ field }) => (
+                    <CustomSelect
+                      isMulti={false}
+                      maxMenuHeight={300}
+                      isClearable={true}
+                      placeholder="Payee FSP ID"
+                      options={
+                        participantRes?.data?.participantInfoList?.map((item) => ({
+                          value: item.participantName,
+                          label: item.participantName
+                        })) || []
+                      }
+                      value={
+                        field.value
+                          ? { value: field.value, label: field.value }
+                          : null
+                      }
+                      onChange={(selectedOption) => {
+                        field.onChange(selectedOption?.value || '');
+                      }}
+                    />
                   )}
-                </Select>
+                />
               )}
 
             <FormErrorMessage>{errors.payeeFspId?.message}</FormErrorMessage>
@@ -918,22 +934,19 @@ const Transfer = () => {
           {/* Page size selector */}
           <HStack spacing={2}>
             <Text>Rows:</Text>
-            <Select
-              w="20"
-              size="sm"
-              value={pageSize}
-              onChange={(e) => {
-                const newSize = Number(e.target.value);
-                setPageSize(newSize);      
-                setPageIndex(1);            
-                setPageNumber(1);         
+            <CustomSelect
+              options={PAGE_SIZE_OPTIONS}
+              value={PAGE_SIZE_OPTIONS.find(opt => opt.value === pageSize.toString()) || null}
+              onChange={(selected) => {
+                if (!selected) return;
+                const newSize = Number(selected.value);
+                setPageSize(newSize);
+                setPageIndex(1);
+                setPageNumber(1);
                 handleSubmit(values => onFindHandler(values, 1, newSize))();
               }}
-            >
-              {[5, 10, 25, 50].map((size) => (
-                <option key={size} value={size}>{size}</option>
-              ))}
-            </Select>
+              maxMenuHeight={150}
+            />
 
           </HStack>
 
