@@ -61,7 +61,7 @@ const TIME_OPTIONS = {
 };
 
 // Custom Hook for Dynamic Years
-const YEAR_RANGE = 20;
+const YEAR_RANGE = 30;
 const useDynamicYearOptions = (selectedYear?: number) => {
   const [yearOffset, setYearOffset] = useState(0);
 

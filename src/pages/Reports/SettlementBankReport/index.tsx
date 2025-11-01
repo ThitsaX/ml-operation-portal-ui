@@ -192,9 +192,10 @@ const SettlementBankReport = () => {
           columns={{ base: 1, md: 2, lg: 4 }}
           spacing={4}
           w="full"
+          pb={2}
         >
           <FormControl
-            isInvalid={!isEmpty(errors.startDate)}
+            isInvalid={!isEmpty(errors.startDate)} position="relative" pb={3}
           >
             <FormLabel>Start Date</FormLabel>
             <Controller
@@ -212,11 +213,11 @@ const SettlementBankReport = () => {
                 />
               )}
             />
-            <FormErrorMessage>{errors.startDate?.message}</FormErrorMessage>
+            <FormErrorMessage pb={1} position="absolute" bottom="-22px">{errors.startDate?.message}</FormErrorMessage>
           </FormControl>
 
           <FormControl
-            isInvalid={!isEmpty(errors.endDate)}
+            isInvalid={!isEmpty(errors.endDate)} position="relative" pb={3}
           >
             <FormLabel>End Date</FormLabel>
             <Controller
@@ -234,7 +235,7 @@ const SettlementBankReport = () => {
                 />
               )}
             />
-            <FormErrorMessage>{errors.endDate?.message}</FormErrorMessage>
+            <FormErrorMessage pb={1} position="absolute" bottom="-22px">{errors.endDate?.message}</FormErrorMessage>
           </FormControl>
           <Box />
           <FormControl
@@ -249,6 +250,7 @@ const SettlementBankReport = () => {
               colorScheme="blue"
               gap="2"
               size="md"
+              mb={2}
               w={{ base: "100%", md: "50%" }}
             >
               Search

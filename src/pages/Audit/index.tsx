@@ -269,7 +269,7 @@ const Audit = () => {
           spacing={4}
           w="full"
         >
-          <FormControl isInvalid={!isEmpty(errors.fromDate)} position="relative">
+          <FormControl isInvalid={!isEmpty(errors.fromDate)}>
             <FormLabel>From</FormLabel>
             <Controller
               control={control}
@@ -284,10 +284,10 @@ const Audit = () => {
                 />
               )}
             />
-            <FormErrorMessage position="absolute" bottom="-20px">{errors.fromDate?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.toDate)} position="relative">
+          <FormControl isInvalid={!isEmpty(errors.toDate)}>
             <FormLabel>To</FormLabel>
             <Controller
               control={control}
@@ -302,7 +302,7 @@ const Audit = () => {
                 />
               )}
             />
-            <FormErrorMessage position="absolute" bottom="-20px">{errors.toDate?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
           </FormControl>
 
           <FormControl>
