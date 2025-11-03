@@ -13,11 +13,12 @@ const Home = () => {
   /* React Query */
   const { data: announcements = [] } = useGetAllAnnouncement();
 
-  function changeDateMonthFormat(date: string) {
-    return moment(date).format('MMM');
+function changeDateMonthFormat(timestamp: number) {
+    return moment(timestamp * 1000).format('MMM');
   }
-  function changeDateDayFormat(date: string) {
-    return moment(date).format('DD');
+
+  function changeDateDayFormat(timestamp: number) {
+    return moment(timestamp * 1000).format('DD');
   }
 
 
@@ -99,7 +100,7 @@ const Home = () => {
             </VStack>
           </HStack>
         ))}
-
+      <Box h={8} />
       </VStack>
     </VStack>
   );

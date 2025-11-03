@@ -66,6 +66,7 @@ import { JsonViewer } from '@components/interface/JsonViewer';
 import { OptionType } from '@components/interface/CustomSelect';
 import { CustomSelect } from '@components/interface';
 import { useGetActionList, useGetMadeByList } from '@hooks/services';
+import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 import { PAGE_SIZE_OPTIONS } from '@utils/constants';
 
 const auditHelper = new AuditHelper();
@@ -128,8 +129,8 @@ const Audit = () => {
 
   const onSearchHandler = useCallback(
     async (values: IGetAuditByParticipantValues, page = 1, size = pageSize) => {
-      const fromDate = moment.tz(values.fromDate, selectedTZString).utc().format();
-      const toDate = moment.tz(values.toDate, selectedTZString).utc().format();
+      const fromDate = moment.tz(values.fromDate, selectedTZString).utc().set('second', 0).format();
+      const toDate = moment.tz(values.toDate, selectedTZString).utc().set('second', 59).format();
       const actionId = values.actionId;
       const userId = values.userId;
 
@@ -268,14 +269,13 @@ const Audit = () => {
           spacing={4}
           w="full"
         >
-          <FormControl isInvalid={!isEmpty(errors.fromDate)} position="relative">
+          <FormControl isInvalid={!isEmpty(errors.fromDate)}>
             <FormLabel>From</FormLabel>
             <Controller
               control={control}
               name="fromDate"
               render={({ field: { value, onChange } }) => (
-                <Input
-                  type="datetime-local"
+                <CustomDateTimePicker
                   value={value}
                   onChange={(e) => {
                     onChange(e.target.value);
@@ -284,17 +284,16 @@ const Audit = () => {
                 />
               )}
             />
-            <FormErrorMessage position="absolute" bottom="-20px">{errors.fromDate?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.toDate)} position="relative">
+          <FormControl isInvalid={!isEmpty(errors.toDate)}>
             <FormLabel>To</FormLabel>
             <Controller
               control={control}
               name="toDate"
               render={({ field: { value, onChange } }) => (
-                <Input
-                  type="datetime-local"
+                <CustomDateTimePicker
                   value={value}
                   onChange={(e) => {
                     onChange(e.target.value);
@@ -303,7 +302,7 @@ const Audit = () => {
                 />
               )}
             />
-            <FormErrorMessage position="absolute" bottom="-20px">{errors.toDate?.message}</FormErrorMessage>
+            <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
           </FormControl>
 
           <FormControl>

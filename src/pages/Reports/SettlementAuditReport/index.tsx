@@ -33,6 +33,7 @@ import { type IApiErrorResponse } from "@typescript/services";
 import { getErrorMessage } from "@helpers/errors";
 import { CustomSelect } from '@components/interface';
 import { OptionType } from '@components/interface/CustomSelect';
+import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 
 const settlementAuditReportHelper = new SettlementAuditReportHelper();
 const initialFileName = 'SettlementAuditReport';
@@ -93,9 +94,11 @@ const SettlementAuditReport = () => {
     const fileType = formData.fileType;
 
     const StartDate = moment.tz(formData.startDate, selectedTimezone?.value)
+      .set('second', 0)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const EndDate = moment.tz(formData.endDate, selectedTimezone?.value)
+      .set('second', 59)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const tzOffSet = selectedTimezone?.offset === 0
@@ -193,8 +196,7 @@ const SettlementAuditReport = () => {
               control={control}
               name="startDate"
               render={({ field: { value, onChange } }) => (
-                <Input
-                  type="datetime-local"
+                <CustomDateTimePicker
                   value={value}
                   onChange={(e) => {
                     onChange(e.target.value);
@@ -212,8 +214,7 @@ const SettlementAuditReport = () => {
               control={control}
               name="endDate"
               render={({ field: { value, onChange } }) => (
-                <Input
-                  type="datetime-local"
+                <CustomDateTimePicker
                   value={value}
                   onChange={(e) => {
                     onChange(e.target.value);

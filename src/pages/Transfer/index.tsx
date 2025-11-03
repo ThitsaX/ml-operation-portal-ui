@@ -57,6 +57,7 @@ import { Ranges, TransferType } from '@typescript/pages';
 import { ITimezoneOption } from 'react-timezone-select';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
+import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 import { PAGE_SIZE_OPTIONS } from '@utils/constants';
 
 const TransferDetails = lazy(() => import('./TransferDetails'));
@@ -220,11 +221,13 @@ const Transfer = () => {
       values.fromDate = moment
         .utc(values.fromDate)
         .tz(selectedTZString ? selectedTZString : currentTimeZone)
+        .set('second', 0)
         .utc()
         .format();
       values.toDate = moment
         .utc(values.toDate)
         .tz(selectedTZString ? selectedTZString : currentTimeZone)
+        .set('second', 59)
         .utc()
         .format();
       values.timezone = timezone;
@@ -232,6 +235,15 @@ const Transfer = () => {
       start();
       getAllTransfers(omitBy(values, isEmpty), currentPage, currentSize)  // number of rows per page)
         .then((data) => {
+          if (!data?.transferInfoList?.length) {
+            toast({
+              position: 'top',
+              description: 'No data found',
+              status: 'warning',
+              isClosable: true,
+              duration: 3000
+            });
+          }
           setTransferData(data.transferInfoList);
           setTotalPages(Math.ceil(data.totalPage / currentSize));
           setPageNumber(currentPage);
@@ -495,9 +507,8 @@ const Transfer = () => {
                 control={control}
                 render={({ field: { value, onChange } }) => {
                   return (
-                    <Input
+                    <CustomDateTimePicker
                       disabled={dateRange !== 'custom' ? true : false}
-                      type="datetime-local"
                       value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
                       onChange={(event) => {
                         const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
@@ -523,9 +534,8 @@ const Transfer = () => {
                 control={control}
                 render={({ field: { value, onChange } }) => {
                   return (
-                    <Input
+                    <CustomDateTimePicker
                       disabled={dateRange !== 'custom' ? true : false}
-                      type="datetime-local"
                       value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
                       onChange={(event) => {
                         const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
@@ -533,7 +543,6 @@ const Transfer = () => {
                         onChange(date);
                       }}
                       borderWidth="1px"
-                      borderRadius="md"
                       _disabled={{
                         cursor: 'not-allowed',
                         opacity: 1

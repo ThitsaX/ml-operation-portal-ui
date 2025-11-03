@@ -26,6 +26,7 @@ import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from "@helpers/errors";
 import { OptionType } from '@components/interface/CustomSelect';
 import { CustomSelect } from '@components/interface';
+import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 
 const settlementStatementReportHelper = new SettlementStatementReportHelper()
 const initialFileName = 'DFSPSettlementStatementReport'
@@ -56,9 +57,11 @@ const SettlementStatementReport = () => {
     const fileType = formData.fileType;
 
     const StartDate = moment.tz(formData.startDate, selectedTimezone?.value)
+      .set('second', 0)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const EndDate = moment.tz(formData.endDate, selectedTimezone?.value)
+      .set('second', 59)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     let tzOffSet: string = selectedTimezone.offset === 0
@@ -185,14 +188,13 @@ const SettlementStatementReport = () => {
               control={control}
               render={({ field: { value, onChange, onBlur } }) => {
                 return (
-                  <Input
+                  <CustomDateTimePicker
                     value={value}
                     onChange={(e) => {
                       onChange(e);
                       trigger('endDate');
                     }}
                     onBlur={onBlur}
-                    type="datetime-local"
                   />
                 );
               }}
@@ -209,14 +211,13 @@ const SettlementStatementReport = () => {
                 fieldState: { error }
               }) => {
                 return (
-                  <Input
+                  <CustomDateTimePicker
                     value={value}
                     onChange={(e) => {
                       onChange(e);
                       trigger('startDate');
                     }}
                     onBlur={onBlur}
-                    type="datetime-local"
                   />
                 );
               }}

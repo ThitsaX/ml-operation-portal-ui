@@ -29,6 +29,7 @@ import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 import { OptionType } from '@components/interface/CustomSelect';
 import { CustomSelect } from '@components/interface';
+import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 
 const auditHelper = new AuditReportHelper();
 
@@ -96,10 +97,12 @@ const AuditReport = () => {
         // Interpret input as selected timezone, then convert to UTC
         const utcFromDate = moment.tz(formData.fromDate, selectedTimezone?.value || currentTimeZone)
             .utc()
+            .set('second', 0)
             .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
         const utcToDate = moment.tz(formData.toDate, selectedTimezone?.value || currentTimeZone)
             .utc()
+            .set('second', 59)
             .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
         const tzOffSet = selectedTimezone?.offset === 0
@@ -159,8 +162,7 @@ const AuditReport = () => {
                             control={control}
                             name="fromDate"
                             render={({ field: { value, onChange } }) => (
-                                <Input
-                                    type="datetime-local"
+                                <CustomDateTimePicker
                                     value={value}
                                     onChange={(e) => {
                                         onChange(e.target.value);
@@ -178,8 +180,7 @@ const AuditReport = () => {
                             control={control}
                             name="toDate"
                             render={({ field: { value, onChange } }) => (
-                                <Input
-                                    type="datetime-local"
+                                <CustomDateTimePicker
                                     value={value}
                                     onChange={(e) => {
                                         onChange(e.target.value);

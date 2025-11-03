@@ -35,6 +35,7 @@ import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 import { CustomSelect } from '@components/interface';
 import { OptionType } from '@components/interface/CustomSelect';
+import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 
 const settlementBankReport = new SettlementBankReportHelper();
 const initialFileName = 'SettlementBankReport';
@@ -92,9 +93,11 @@ const SettlementBankReport = () => {
     const values = getValues();
 
     const StartDate = moment.tz(values.startDate, selectedTimezone?.value)
+       .set('second', 0)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const EndDate = moment.tz(values.endDate, selectedTimezone?.value)
+      .set('second', 59)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const tzOffSet = selectedTimezone?.offset === 0
@@ -191,18 +194,18 @@ const SettlementBankReport = () => {
           columns={{ base: 1, md: 2, lg: 4 }}
           spacing={4}
           w="full"
+          pb={2}
         >
           <FormControl
-            isInvalid={!isEmpty(errors.startDate)}
+            isInvalid={!isEmpty(errors.startDate)} position="relative" pb={3}
           >
             <FormLabel>Start Date</FormLabel>
             <Controller
               control={control}
               name="startDate"
               render={({ field }) => (
-                <Input
+                <CustomDateTimePicker
                   {...field}
-                  type="datetime-local"
                   onChange={(e) => {
                     field.onChange(e);
                     trigger("endDate");
@@ -212,20 +215,19 @@ const SettlementBankReport = () => {
                 />
               )}
             />
-            <FormErrorMessage>{errors.startDate?.message}</FormErrorMessage>
+            <FormErrorMessage pb={1} position="absolute" bottom="-22px">{errors.startDate?.message}</FormErrorMessage>
           </FormControl>
 
           <FormControl
-            isInvalid={!isEmpty(errors.endDate)}
+            isInvalid={!isEmpty(errors.endDate)} position="relative" pb={3}
           >
             <FormLabel>End Date</FormLabel>
             <Controller
               control={control}
               name="endDate"
               render={({ field }) => (
-                <Input
+                <CustomDateTimePicker
                   {...field}
-                  type="datetime-local"
                   onChange={(e) => {
                     field.onChange(e);
                     trigger("startDate");
@@ -235,7 +237,7 @@ const SettlementBankReport = () => {
                 />
               )}
             />
-            <FormErrorMessage>{errors.endDate?.message}</FormErrorMessage>
+            <FormErrorMessage pb={1} position="absolute" bottom="-22px">{errors.endDate?.message}</FormErrorMessage>
           </FormControl>
           <Box />
           <FormControl
@@ -250,6 +252,7 @@ const SettlementBankReport = () => {
               colorScheme="blue"
               gap="2"
               size="md"
+              mb={2}
               w={{ base: "100%", md: "50%" }}
             >
               Search

@@ -1,0 +1,183 @@
+/* Root container fixes */
+.rdp-root {
+  padding: 0.25rem;
+  margin: 0;
+  padding: 0;
+}
+
+.rdp-caption_label{
+  font-size: 12px;
+  color : #2196F3;
+    padding : 1;
+}
+.rdp-nav_button {
+  width: 16px !important;    /* Smaller button */
+  height: 16px !important;   /* Smaller button */
+  font-size: 10px !important; /* Smaller arrow icon */
+}
+
+/* Or target the SVG icons directly */
+.rdp-nav_button svg {
+  width: 10px !important;
+  height: 10px !important;
+}
+
+.rdp-weekday {
+  font-size: 12px;
+  color : #2196F3;
+/*   background-color: #FFF8DC;*/
+}
+/* Months container */
+.rdp-months {
+  display: flex;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Single month container */
+.rdp-month {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: white;
+}
+
+/* Table structure */
+.rdp-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
+  margin: 0;
+  padding: 0;
+  display: table !important;
+}
+
+/* Table header */
+.rdp-head {
+  margin: 0;
+  padding: 0;
+}
+
+.rdp-head_row {
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.rdp-head_cell {
+  width: 14.28% !important;
+  height: 24px;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 500;
+  color: #718096;
+  vertical-align: middle;
+  text-transform: uppercase;
+}
+
+/* Table body */
+.rdp-tbody {
+  margin: 0;
+  padding: 0;
+}
+
+.rdp-row {
+  margin: 0;
+  padding: 0;
+}
+
+.rdp-cell {
+  width: 14.28% !important;
+  height: 24px;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Day styles - matching the compact design */
+.rdp-day {
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  transition: transform 0.1s ease-in-out;
+  margin: 0 auto;
+  padding: 0;
+  cursor: pointer;
+  font-weight: 400;
+}
+
+/* Day button fixes */
+.rdp-day_button {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 30px !important;
+  height: 20px !important;
+  min-width: auto !important;
+  min-height: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Hover state */
+.rdp-day:hover:not(.rdp-day_selected):not(.rdp-day_disabled) {
+  background-color: #e2e8f0 !important;
+  transform: translateY(-1px);
+}
+
+/* Selected state */
+.rdp-day_selected {
+  border: 2px solid #2196F3 !important;
+  color: #2196F3 !important;
+}
+
+.rdp-day_selected:hover {
+  background-color: #2c5aa0 !important;
+}
+
+/* Outside days - styling for days from other months */
+.rdp-day_outside {
+  color: #a0aec0 !important;
+  opacity: 1;
+  font-weight: 300 !important;
+}
+
+/* Today state */
+.rdp-day_today {
+  font-weight: 600 !important;
+  color: #3182ce !important;
+}
+
+.rdp-day_today.rdp-day_selected {
+  color: white !important;
+}
+
+
+/* Popover container fixes to match design */
+.date-time-popover {
+  max-width: 240px !important;
+  width: 240px !important;
+  padding: 8px !important;
+}
+
+.chakra-popover__content {
+  max-width: 240px !important;
+  width: 240px !important;
+}
+
+/* Focus states */
+.rdp-day:focus-visible {
+  outline: 1px solid #3182ce;
+  outline-offset: 1px;
+}
+
+
+

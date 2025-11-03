@@ -65,6 +65,7 @@ import { useLocation } from "react-router-dom";
 import CustomSelect from '@components/interface/CustomSelect';
 import { hasActionPermission } from '@helpers/permissions';
 import { getErrorMessage } from '@helpers/errors';
+import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 
 const finalizeSettlementHelper = new FinalizeSettlementHelper();
 
@@ -114,10 +115,12 @@ const FinalizeSettlement = () => {
         values.fromDate = moment(values.fromDate)
             .tz(selectedTZString ? selectedTZString : currentTimeZone)
             .utc()
+            .set('second', 0)
             .format('YYYY-MM-DDTHH:mm:00');
         values.toDate = moment(values.toDate)
             .tz(selectedTZString ? selectedTZString : currentTimeZone)
             .utc()
+            .set('second', 59)
             .format('YYYY-MM-DDTHH:mm:59');
 
         if (values.state === '') {
@@ -481,9 +484,8 @@ const FinalizeSettlement = () => {
                                         control={control}
                                         render={({ field: { value, onChange } }) => {
                                             return (
-                                                <Input
+                                                <CustomDateTimePicker
                                                     disabled={dateRange !== 'custom' ? true : false}
-                                                    type="datetime-local"
                                                     value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
                                                     onChange={(event) => {
                                                         const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
@@ -509,9 +511,8 @@ const FinalizeSettlement = () => {
                                         control={control}
                                         render={({ field: { value, onChange } }) => {
                                             return (
-                                                <Input
+                                                <CustomDateTimePicker
                                                     disabled={dateRange !== 'custom' ? true : false}
-                                                    type="datetime-local"
                                                     value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
                                                     onChange={(event) => {
                                                         const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
