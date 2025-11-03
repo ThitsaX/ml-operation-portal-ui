@@ -114,13 +114,16 @@ export const getNextRunInfo = (
   cronList: string[],
   zoneOffset: string,
   nowUtc = Date.now(),
+  isAutoCloseEnabled: boolean,
 ) => {
   let best: number | null = null;
-  for (const c of cronList) {
-    const n = nextUtcForQuartz(c, zoneOffset, nowUtc);
-
-    if (typeof n === 'number' && (best === null || n < best)) best = n;
-
+  if (isAutoCloseEnabled) {
+    for (const c of cronList) {
+      const n = nextUtcForQuartz(c, zoneOffset, nowUtc);
+  
+      if (typeof n === 'number' && (best === null || n < best)) best = n;
+  
+    }
   }
   if (best === null) {
     return {

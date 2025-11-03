@@ -616,7 +616,7 @@ const SettlementWindows = () => {
                     return;
                 }
 
-                const { nextUtc: n, countdown } = getNextRunInfo(crons, model.zoneId as string, Date.now());
+                const { nextUtc: n, countdown } = getNextRunInfo(crons, model.zoneId as string, Date.now(), model.autoCloseWindow);
                 if (!n) {
                     stop();
                     setCountdownConfigured(false);
