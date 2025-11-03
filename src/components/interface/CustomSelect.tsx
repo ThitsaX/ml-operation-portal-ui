@@ -1,5 +1,10 @@
-import React from 'react';
-import Select, { SingleValue, MultiValue, MenuPlacement } from 'react-select';
+import React, { useRef, useEffect, useState } from "react";
+import Select, {
+  SingleValue,
+  MultiValue,
+  MenuPlacement,
+  components,
+} from "react-select";
 
 export type OptionType = {
   value: string;
@@ -17,6 +22,7 @@ interface BaseProps {
   menuPlacement?: MenuPlacement; // 'auto' | 'top' | 'bottom'
   menuPortalTarget?: boolean;
   size?: 'sm' | 'md' | 'lg'; // Add size prop without default
+  scrollWheel?: boolean;
 }
 
 interface SingleSelectProps extends BaseProps {
@@ -48,6 +54,7 @@ const CustomSelect: React.FC<UnifiedSelectProps> = (props) => {
     menuPlacement = 'auto',
     menuPortalTarget = false,
     size, // No default value
+    scrollWheel = false, // default false
   } = props;
 
   const finalOptions = includeAllOption
@@ -67,7 +74,6 @@ const CustomSelect: React.FC<UnifiedSelectProps> = (props) => {
   // Size-based styles - only applied when size is specified
   const getSizeStyles = (): Record<string, any> => {
     if (!size) return {};
-
     const sizeStyles: Record<string, any> = {
         sm: {
           control: {minHeight: '22px',fontSize: '12px',},
@@ -94,11 +100,85 @@ const CustomSelect: React.FC<UnifiedSelectProps> = (props) => {
         menuList: {fontSize: '16px'},
       },
     };
-
     return sizeStyles[size] || {};
   };
 
   const sizeStyles = getSizeStyles();
+
+const WheelMenuList = (menuProps: any) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const val = value as OptionType | null;
+    const initialIndex = finalOptions.findIndex((opt) => opt.value === val?.value);
+    return initialIndex >= 0 ? initialIndex : 0;
+  });
+
+  const itemHeight = 25;
+
+  useEffect(() => {
+    if (ref.current) {
+      const centerOffset = (maxMenuHeight - itemHeight) / 2;
+      ref.current.scrollTop = currentIndex * itemHeight - centerOffset;
+    }
+  }, [currentIndex]);
+
+  const handleScroll = (direction: 'up' | 'down') => {
+    const newIndex =
+      direction === 'down'
+        ? Math.min(currentIndex + 1, finalOptions.length - 1)
+        : Math.max(currentIndex - 1, 0);
+
+    setCurrentIndex(newIndex);
+    handleChange(finalOptions[newIndex]);
+  };
+
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (e.deltaY > 0 || e.deltaX > 0) {
+      handleScroll('down');
+    } else if (e.deltaY < 0 || e.deltaX < 0) {
+      handleScroll('up');
+    }
+  };
+
+  return (
+    <div
+      ref={ref}
+      onWheel={handleWheel}
+      tabIndex={0}
+      style={{
+        maxHeight: maxMenuHeight,
+        height: maxMenuHeight,
+        overflowY: 'auto',
+        position: 'relative',
+        textAlign: 'center',
+        userSelect: 'none',
+      }}
+    >
+      <div>
+        {finalOptions.map((opt, i) => (
+          <div
+            key={opt.value}
+            style={{
+              height: `${itemHeight}px`,
+              display: 'flex',
+              justifyContent: 'center',
+              color: i === currentIndex ? 'white' : '#333',
+              backgroundColor: i === currentIndex ? '#0096FF' : 'transparent',
+              fontSize: '12px',
+            }}
+            onClick={() => {
+              setCurrentIndex(i);
+              handleChange(opt);
+            }}
+          >
+            {opt.label}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
   return (
     <Select
@@ -113,6 +193,7 @@ const CustomSelect: React.FC<UnifiedSelectProps> = (props) => {
       menuPortalTarget={menuPortalTarget ? document.body : undefined}
       closeMenuOnScroll={false}
       menuShouldBlockScroll={true}
+      components={scrollWheel ? { MenuList: WheelMenuList } : undefined}
       styles={{
         menuPortal: base => ({ ...base, zIndex: 9999 }),
         menuList: base => ({

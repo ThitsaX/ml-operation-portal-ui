@@ -61,7 +61,7 @@ const TIME_OPTIONS = {
 };
 
 // Custom Hook for Dynamic Years
-const YEAR_RANGE = 30;
+const YEAR_RANGE = 50;
 const useDynamicYearOptions = (selectedYear?: number) => {
   const [yearOffset, setYearOffset] = useState(0);
 
@@ -329,6 +329,7 @@ export const CustomDateTimePicker: React.FC<Props> = ({
                 maxMenuHeight={200}
                 menuPortalTarget
                 size="sm"
+                scrollWheel={true}
                 isDisabled={disabled}
               />
             </SimpleGrid>
