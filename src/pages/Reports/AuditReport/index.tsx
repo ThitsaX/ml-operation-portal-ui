@@ -97,10 +97,12 @@ const AuditReport = () => {
         // Interpret input as selected timezone, then convert to UTC
         const utcFromDate = moment.tz(formData.fromDate, selectedTimezone?.value || currentTimeZone)
             .utc()
+            .set('second', 0)
             .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
         const utcToDate = moment.tz(formData.toDate, selectedTimezone?.value || currentTimeZone)
             .utc()
+            .set('second', 59)
             .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
         const tzOffSet = selectedTimezone?.offset === 0

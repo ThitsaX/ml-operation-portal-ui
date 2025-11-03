@@ -129,8 +129,8 @@ const Audit = () => {
 
   const onSearchHandler = useCallback(
     async (values: IGetAuditByParticipantValues, page = 1, size = pageSize) => {
-      const fromDate = moment.tz(values.fromDate, selectedTZString).utc().format();
-      const toDate = moment.tz(values.toDate, selectedTZString).utc().format();
+      const fromDate = moment.tz(values.fromDate, selectedTZString).utc().set('second', 0).format();
+      const toDate = moment.tz(values.toDate, selectedTZString).utc().set('second', 59).format();
       const actionId = values.actionId;
       const userId = values.userId;
 

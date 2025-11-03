@@ -93,9 +93,11 @@ const SettlementBankReport = () => {
     const values = getValues();
 
     const StartDate = moment.tz(values.startDate, selectedTimezone?.value)
+       .set('second', 0)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const EndDate = moment.tz(values.endDate, selectedTimezone?.value)
+      .set('second', 59)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const tzOffSet = selectedTimezone?.offset === 0

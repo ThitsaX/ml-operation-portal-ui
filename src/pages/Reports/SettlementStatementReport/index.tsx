@@ -57,9 +57,11 @@ const SettlementStatementReport = () => {
     const fileType = formData.fileType;
 
     const StartDate = moment.tz(formData.startDate, selectedTimezone?.value)
+      .set('second', 0)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const EndDate = moment.tz(formData.endDate, selectedTimezone?.value)
+      .set('second', 59)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     let tzOffSet: string = selectedTimezone.offset === 0

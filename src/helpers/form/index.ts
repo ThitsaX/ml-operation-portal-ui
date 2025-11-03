@@ -170,8 +170,12 @@ export class SettlementDetailReportHelper extends FormHelper {
         fileType: z.string().optional(),
         timezoneOffset: z.string().optional()
       })
-      .refine((data) => data.startDate < data.endDate, {
-        message: 'End Date must not earlier than Start Date',
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be less than end date',
+        path: ['startDate']
+      })
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be greater than start date',
         path: ['endDate']
       });
   }
@@ -192,8 +196,12 @@ export class SettlementSummaryReportHelper extends FormHelper {
         fileType: z.string().optional(),
         timezoneOffset: z.string().optional()
       })
-      .refine((data) => data.startDate < data.endDate, {
-        message: 'End Date must not earlier than Start Date',
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be less than end date',
+        path: ['startDate']
+      })
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be greater than start date',
         path: ['endDate']
       });
   }
@@ -214,8 +222,12 @@ export class SettlementStatementReportHelper extends FormHelper {
         fileType: z.string().optional(),
         timezoneOffset: z.string().optional()
       })
-      .refine((data) => data.startDate < data.endDate, {
-        message: 'End Date must not earlier than Start Date',
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be less than end date',
+        path: ['startDate']
+      })
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be greater than start date',
         path: ['endDate']
       });
   }
@@ -270,8 +282,12 @@ export class SettlementBankReportHelper extends FormHelper {
         currency: z.string().optional(),
         settlementId: z.string().optional(),
       })
-      .refine((data) => data.startDate < data.endDate, {
-        message: 'End Date must not earlier than Start Date',
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be less than end date',
+        path: ['startDate']
+      })
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be greater than start date',
         path: ['endDate']
       });
   }

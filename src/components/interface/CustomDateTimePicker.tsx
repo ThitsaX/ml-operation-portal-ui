@@ -61,7 +61,7 @@ const TIME_OPTIONS = {
 };
 
 // Custom Hook for Dynamic Years
-const YEAR_RANGE = 50;
+const YEAR_RANGE = 30;
 const useDynamicYearOptions = (selectedYear?: number) => {
   const [yearOffset, setYearOffset] = useState(0);
 
@@ -89,13 +89,17 @@ const formatForDisplay = (date: Date): string => {
   return format(date, "MM/dd/yyyy hh:mm a");
 };
 
-export const CustomDateTimePicker: React.FC<Props> = ({
-  value,
-  onChange,
-  disabled = false, // Destructure with default value
-  placeholder = "Select date and time",
-  ...props // Capture other props
-}) => {
+export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
+  (
+    {
+      value,
+      onChange,
+      disabled = false,
+      placeholder = "Select date and time",
+      ...props
+    },
+    ref
+  ) => {
   const [isOpen, setIsOpen] = useState(false);
   const inputSize = useBreakpointValue({ base: "sm", md: "md" });
 
@@ -281,6 +285,7 @@ export const CustomDateTimePicker: React.FC<Props> = ({
               <Input
                 value={displayValue}
                 readOnly
+                ref={ref} // ✅ forward ref here
                 cursor={disabled ? "not-allowed" : "pointer"}
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 className="date-time-input"
@@ -329,7 +334,6 @@ export const CustomDateTimePicker: React.FC<Props> = ({
                 maxMenuHeight={200}
                 menuPortalTarget
                 size="sm"
-                scrollWheel={true}
                 isDisabled={disabled}
               />
             </SimpleGrid>
@@ -410,4 +414,4 @@ export const CustomDateTimePicker: React.FC<Props> = ({
       </Popover>
     </Box>
   );
-};
+});

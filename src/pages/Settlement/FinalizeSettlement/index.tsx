@@ -115,10 +115,12 @@ const FinalizeSettlement = () => {
         values.fromDate = moment(values.fromDate)
             .tz(selectedTZString ? selectedTZString : currentTimeZone)
             .utc()
+            .set('second', 0)
             .format('YYYY-MM-DDTHH:mm:00');
         values.toDate = moment(values.toDate)
             .tz(selectedTZString ? selectedTZString : currentTimeZone)
             .utc()
+            .set('second', 59)
             .format('YYYY-MM-DDTHH:mm:59');
 
         if (values.state === '') {

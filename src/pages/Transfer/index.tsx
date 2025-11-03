@@ -221,11 +221,13 @@ const Transfer = () => {
       values.fromDate = moment
         .utc(values.fromDate)
         .tz(selectedTZString ? selectedTZString : currentTimeZone)
+        .set('second', 0)
         .utc()
         .format();
       values.toDate = moment
         .utc(values.toDate)
         .tz(selectedTZString ? selectedTZString : currentTimeZone)
+        .set('second', 59)
         .utc()
         .format();
       values.timezone = timezone;
@@ -233,6 +235,15 @@ const Transfer = () => {
       start();
       getAllTransfers(omitBy(values, isEmpty), currentPage, currentSize)  // number of rows per page)
         .then((data) => {
+          if (!data?.transferInfoList?.length) {
+            toast({
+              position: 'top',
+              description: 'No data found',
+              status: 'warning',
+              isClosable: true,
+              duration: 3000
+            });
+          }
           setTransferData(data.transferInfoList);
           setTotalPages(Math.ceil(data.totalPage / currentSize));
           setPageNumber(currentPage);

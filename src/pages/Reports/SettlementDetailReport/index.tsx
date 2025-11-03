@@ -144,9 +144,11 @@ const SettlementDetailReport = () => {
     const formData = getValues();
 
     const StartDate = moment.tz(formData.startDate, selectedTimezone?.value)
+    .set('second', 0)
     .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const EndDate = moment.tz(formData.endDate, selectedTimezone?.value)
+    .set('second', 59)
     .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const tzOffSet = selectedTimezone?.offset === 0
