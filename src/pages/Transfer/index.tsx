@@ -216,17 +216,12 @@ const Transfer = () => {
 
   const onFindHandler = useCallback(
     (values: ITransferValues, currentPage = 1, currentSize = 10) => {
-      const currentTimeZone = moment.tz.guess();
 
-      values.fromDate = moment
-        .utc(values.fromDate)
-        .tz(selectedTZString ? selectedTZString : currentTimeZone)
+      values.fromDate = moment.tz(values.fromDate, selectedTZString).utc()
         .set('second', 0)
         .utc()
         .format();
-      values.toDate = moment
-        .utc(values.toDate)
-        .tz(selectedTZString ? selectedTZString : currentTimeZone)
+      values.toDate = moment.tz(values.toDate, selectedTZString).utc()
         .set('second', 59)
         .utc()
         .format();
@@ -262,7 +257,7 @@ const Transfer = () => {
           complete();
         });
     },
-    [complete, start, toast, pageIndex, pageSize]
+    [selectedTZString,complete, start, toast, pageIndex, pageSize]
   );
 
   const onCancelHandler = useCallback(() => {
