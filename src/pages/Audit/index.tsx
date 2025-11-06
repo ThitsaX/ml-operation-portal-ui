@@ -528,7 +528,17 @@ const Audit = () => {
                 w="14"
                 type="number"
                 min={1}
+                max={totalPages}
                 onChange={(e) => setPageNumber(Number(e.target.value))}
+                onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  let newPage = Number(pageNumber);
+                  if (!newPage || newPage < 1) newPage = 1;
+                  if (newPage > totalPages) newPage = totalPages;
+                  setPageNumber(newPage);
+                  onSearchHandler(getValues(), newPage, pageSize);
+                }
+              }}
                 onBlur={() => {
                   if (pageNumber >= 1 && pageNumber <= totalPages) {
                     onSearchHandler(getValues(), pageNumber, pageSize);
@@ -537,7 +547,6 @@ const Audit = () => {
                   }
                 }}
                 size="sm"
-                max={totalPages}
               />
             </HStack>
 
