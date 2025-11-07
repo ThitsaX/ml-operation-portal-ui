@@ -539,13 +539,6 @@ const Audit = () => {
                   onSearchHandler(getValues(), newPage, pageSize);
                 }
               }}
-                onBlur={() => {
-                  if (pageNumber >= 1 && pageNumber <= totalPages) {
-                    onSearchHandler(getValues(), pageNumber, pageSize);
-                  } else {
-                    setPageNumber(1);
-                  }
-                }}
                 size="sm"
               />
             </HStack>
