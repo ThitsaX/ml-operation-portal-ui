@@ -59,6 +59,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 import { PAGE_SIZE_OPTIONS } from '@utils/constants';
+import { formatNumberWithCommas } from '@utils';
 
 const TransferDetails = lazy(() => import('./TransferDetails'));
 
@@ -310,6 +311,17 @@ const Transfer = () => {
         Cell: ({ value }) => (
           <Text textAlign="center">
             {value}
+          </Text>
+        ),
+      },
+      {
+        Header: () => (
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Amount</Text>
+        ),
+        accessor: 'amount',
+        Cell: ({ value }) => (
+          <Text textAlign="right">
+            {formatNumberWithCommas(value)}
           </Text>
         ),
       },
