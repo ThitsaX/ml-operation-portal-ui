@@ -397,6 +397,21 @@ const ParticipantPositions = () => {
             currencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
             amount,
         };
+
+        const participantBalance = Math.abs(selectedParticipant!.balance || 0);
+
+        if (type === 'fixed' && amount > participantBalance) {
+            toast({
+            title: 'Invalid NDC Amount',
+            description: `Auto-rejected: NDC must be less than or equal to the balance.`,
+            status: 'error',
+            duration: 4000,
+            isClosable: true,
+            position: 'top',
+            });
+            return;
+        }
+        
         approvalRequest(data, 'Net Debit Cap Update', onNdcClose);
     };
 

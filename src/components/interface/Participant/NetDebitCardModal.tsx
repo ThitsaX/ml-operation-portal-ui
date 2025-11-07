@@ -83,6 +83,7 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
                                         placeholder="Enter Amount..."
                                         type="number"
                                         min={0}
+                                        step={0.01}
                                         name="fixedAmount"
                                         value={fixedAmount}
                                         onChange={(e) => setFixedAmount(e.target.value)}
