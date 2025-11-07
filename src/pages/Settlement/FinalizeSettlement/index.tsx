@@ -107,21 +107,32 @@ const FinalizeSettlement = () => {
         currency: '',
         state: ''
     }
+    const {
+        control,
+        getValues,
+        setValue,
+        trigger,
+        reset,
+        handleSubmit,
+        formState: { errors }
+    } = useForm<IFinalizeSettlementForm>({
+        resolver: zodResolver(schema),
+        defaultValues: initialValues,
+        mode: 'onChange'
+    });
+
+      useEffect(() => {
+        setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
+        setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+      }, [selectedTZString, setValue]);
 
     const onSearchHandler = (values: IFinalizeSettlementForm) => {
         const currentTimeZone = moment.tz.guess();
 
         // Convert the current timezone to UTC
-        values.fromDate = moment(values.fromDate)
-            .tz(selectedTZString ? selectedTZString : currentTimeZone)
-            .utc()
-            .set('second', 0)
-            .format('YYYY-MM-DDTHH:mm:00');
-        values.toDate = moment(values.toDate)
-            .tz(selectedTZString ? selectedTZString : currentTimeZone)
-            .utc()
-            .set('second', 59)
-            .format('YYYY-MM-DDTHH:mm:59');
+        values.fromDate = moment.tz(values.fromDate, selectedTZString ? selectedTZString: currentTimeZone ).utc().set('second', 0).format();
+        values.toDate = moment.tz(values.toDate, selectedTZString ? selectedTZString: currentTimeZone).utc().set('second', 59).format();
+
 
         if (values.state === '') {
             delete values.state;
@@ -346,20 +357,6 @@ const FinalizeSettlement = () => {
         usePagination
     );
 
-    const {
-        control,
-        getValues,
-        setValue,
-        trigger,
-        reset,
-        handleSubmit,
-        formState: { errors }
-    } = useForm<IFinalizeSettlementForm>({
-        resolver: zodResolver(schema),
-        defaultValues: initialValues,
-        mode: 'onChange'
-    });
-
     useEffect(() => {
         // Auto search settlements if coming from settlement windows page
         if (state?.autoSearch) {
@@ -486,11 +483,10 @@ const FinalizeSettlement = () => {
                                             return (
                                                 <CustomDateTimePicker
                                                     disabled={dateRange !== 'custom' ? true : false}
-                                                    value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
+                                                    value={value}
                                                     onChange={(event) => {
-                                                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
                                                         trigger('fromDate')
-                                                        onChange(date);
+                                                        onChange(event.target.value);
                                                     }}
                                                _disabled={{
                                                 cursor: 'not-allowed',
@@ -513,11 +509,10 @@ const FinalizeSettlement = () => {
                                             return (
                                                 <CustomDateTimePicker
                                                     disabled={dateRange !== 'custom' ? true : false}
-                                                    value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
+                                                    value={value}
                                                     onChange={(event) => {
-                                                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
                                                         trigger('toDate')
-                                                        onChange(date);
+                                                        onChange(event.target.value);
                                                     }}
                                                 _disabled={{
                                                     cursor: 'not-allowed',
