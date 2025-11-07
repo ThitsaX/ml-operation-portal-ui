@@ -297,8 +297,8 @@ export class SettlementWindowHelper extends FormHelper {
   get schema() {
     return z
       .object({
-        fromDate: z.coerce.date({ required_error: 'Required' }),
-        toDate: z.coerce.date({ required_error: 'Required' }),
+        fromDate: z.string({ required_error: 'Required' }),
+        toDate: z.string({ required_error: 'Required' }),
         state: z.string().optional(),
         currency: z.string().optional(),
         timeZoneOffset: z.string().optional()
@@ -314,8 +314,8 @@ export class FinalizeSettlementHelper extends FormHelper {
   get schema() {
     return z
       .object({
-        fromDate: z.coerce.date({ required_error: 'Required' }),
-        toDate: z.coerce.date({ required_error: 'Required' }),
+        fromDate: z.string({ required_error: 'Required' }),
+        toDate: z.string({ required_error: 'Required' }),
         state: z.string().optional(),
         currency: z.string().optional(),
         timeZoneOffset: z.string().optional()

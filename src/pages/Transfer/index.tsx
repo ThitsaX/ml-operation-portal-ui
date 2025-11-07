@@ -978,15 +978,17 @@ const Transfer = () => {
               min={1}
               max={totalPages}
               onChange={(e) => setPageNumber(Number(e.target.value))}
-              onBlur={() => {
-                let newPage = Number(pageNumber);
-                if (!newPage || newPage < 1) newPage = 1;
-                if (newPage > totalPages) newPage = totalPages;
+              onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      let newPage = Number(pageNumber);
+                      if (!newPage || newPage < 1) newPage = 1;
+                      if (newPage > totalPages) newPage = totalPages;
 
-                setPageIndex(newPage);
-                setPageNumber(newPage);
-                handleSubmit(values => onFindHandler(values, newPage, pageSize))();
-              }}
+                      setPageIndex(newPage);
+                      setPageNumber(newPage);
+                      handleSubmit(values => onFindHandler(values, newPage, pageSize))();
+                    }
+                  }}
             />
           </HStack>
         </HStack>
