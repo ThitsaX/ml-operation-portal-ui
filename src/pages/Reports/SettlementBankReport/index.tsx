@@ -84,6 +84,10 @@ const SettlementBankReport = () => {
     setValue('startDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
     setValue('endDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
 
+    setSettlementIdOptions([]);
+    setSettlementId('');
+    setValue('settlementId', '');
+
   }, [selectedTimezone, setValue]);
 
   const search = useCallback(() => {
@@ -131,7 +135,7 @@ const SettlementBankReport = () => {
         setRunButtonState(true);
         complete();
       });
-  }, [complete, getValues, start, toast, user]);
+  }, [complete, getValues, start, toast, user,selectedTimezone]);
 
   const onSearchClick = useCallback(async () => {
     search();
