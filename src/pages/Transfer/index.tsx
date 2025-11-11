@@ -518,9 +518,8 @@ const Transfer = () => {
                       disabled={dateRange !== 'custom' ? true : false}
                       value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
                       onChange={(event) => {
-                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
                         trigger('fromDate')
-                        onChange(date);
+                        onChange(event.target.value);
                       }}
                       borderWidth="1px"
                       _disabled={{
@@ -545,9 +544,8 @@ const Transfer = () => {
                       disabled={dateRange !== 'custom' ? true : false}
                       value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
                       onChange={(event) => {
-                        const date = moment(event.target.value, 'YYYY-MM-DDTHH:mm').toString()
                         trigger('toDate')
-                        onChange(date);
+                         onChange(event.target.value);
                       }}
                       borderWidth="1px"
                       _disabled={{
