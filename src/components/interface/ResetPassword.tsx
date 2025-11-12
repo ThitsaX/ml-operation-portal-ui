@@ -13,6 +13,9 @@ import {
     Button,
     VStack,
     useToast,
+    InputGroup,
+    InputRightElement,
+    IconButton
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,6 +26,7 @@ import { type IResetPasswordValues } from "@typescript/form";
 import { useEffect, useState } from "react";
 import { type IApiErrorResponse } from "@typescript/services";
 import { getErrorMessage } from "@helpers/errors";
+import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5';
 
 const participantUser = new ParticipantHelper()
 
@@ -41,6 +45,8 @@ export default function ResetPasswordModal({
 }: ResetPasswordModalProps) {
     const toast = useToast();
     const [isSaving, setIsSaving] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const {
         register,
@@ -120,13 +126,45 @@ export default function ResetPasswordModal({
 
                         <FormControl isInvalid={!isEmpty(errors.newPassword)} isRequired>
                             <FormLabel>New Password</FormLabel>
-                            <Input type="password" {...register("newPassword")} />
+                            <InputGroup>
+                                <Input type={showPassword ? "text" : "password"} {...register("newPassword")} />
+                                <InputRightElement>
+                                    <IconButton
+                                        variant="ghost"
+                                        aria-label="Show password"
+                                        icon={showPassword ? <IoEyeOffOutline /> : <IoEyeOutline />}
+                                        bg="transparent"
+                                        rounded="full"
+                                        size="sm"
+                                        _hover={{
+                                            bg: 'transparent'
+                                        }}
+                                        onClick={() => setShowPassword(!showPassword)}
+                                    />
+                                </InputRightElement>
+                            </InputGroup>
                             <FormErrorMessage>{errors.newPassword?.message}</FormErrorMessage>
                         </FormControl>
 
                         <FormControl isInvalid={!isEmpty(errors.confirmPassword)} isRequired>
                             <FormLabel>Confirm Password</FormLabel>
-                            <Input type="password" {...register("confirmPassword")} />
+                            <InputGroup>
+                                <Input type={showConfirmPassword  ? "text" : "password"} {...register("confirmPassword")} />
+                                <InputRightElement>
+                                <IconButton
+                                    variant="ghost"
+                                    aria-label= "Show password"
+                                    icon={showConfirmPassword  ? <IoEyeOffOutline /> : <IoEyeOutline />}
+                                    bg="transparent"
+                                    rounded="full"
+                                    size="sm"
+                                    _hover={{
+                                        bg: 'transparent'
+                                    }}
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                />
+                                </InputRightElement>
+                            </InputGroup>
                             <FormErrorMessage>{errors.confirmPassword?.message}</FormErrorMessage>
                         </FormControl>
                     </VStack>

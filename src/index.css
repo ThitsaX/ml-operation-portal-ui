@@ -44,3 +44,15 @@ div#root {
 :hover ::-webkit-scrollbar-thumb {
   background: #aeb1b5;
 }
+
+/* Hide built-in Edge/IE password reveal and clear buttons */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+/* Hide auto-fill or credential buttons in WebKit browsers (just in case) */
+input[type="password"]::-webkit-contacts-auto-fill-button,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  display: none !important;
+}
