@@ -15,6 +15,9 @@ import {
   FormControl,
   FormErrorMessage,
   SimpleGrid,
+  InputGroup,
+  InputRightElement,
+  IconButton
 } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +30,7 @@ import { IoReload } from 'react-icons/io5';
 import { syncHubParticipantsToPortal } from '@services/participant';
 import { UserStatus } from '@typescript/form';
 import { getRoleListByParticipant } from '@services/participant';
+import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5';
 
 const userSchema = new UserManagementHelper();
 
@@ -51,6 +55,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   isSaving,
 }) => {
   const [roleList, setRoleList] = useState<IParticipantUserRole[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     control,
@@ -245,12 +251,44 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             {!isEdit && (
               <>
                 <FormControl isInvalid={!isEmpty(errors.password)}>
-                  <Input placeholder="Password*" {...register('password')} />
+                  <InputGroup>
+                    <Input type={showPassword ? "text" : "password"} placeholder="Password*" {...register('password')} />
+                    <InputRightElement>
+                      <IconButton
+                        variant="ghost"
+                        aria-label="Show password"
+                        icon={showPassword ? <IoEyeOffOutline /> : <IoEyeOutline />}
+                        bg="transparent"
+                        rounded="full"
+                        size="sm"
+                        _hover={{
+                          bg: 'transparent'
+                        }}
+                        onClick={() => setShowPassword(!showPassword)}
+                      />
+                    </InputRightElement>
+                  </InputGroup>
                   <FormErrorMessage>{errors.password?.message}</FormErrorMessage>
                 </FormControl>
 
                 <FormControl isInvalid={!isEmpty(errors.confirmPassword)}>
-                  <Input placeholder="Confirm Password" {...register('confirmPassword')} />
+                  <InputGroup>
+                    <Input type={showConfirmPassword  ? "text" : "password"} placeholder="Confirm Password" {...register('confirmPassword')} />
+                    <InputRightElement>
+                      <IconButton
+                        variant="ghost"
+                        aria-label= "Show password"
+                        icon={showConfirmPassword  ? <IoEyeOffOutline /> : <IoEyeOutline />}
+                        bg="transparent"
+                        rounded="full"
+                        size="sm"
+                        _hover={{
+                          bg: 'transparent'
+                        }}
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      />
+                    </InputRightElement>
+                  </InputGroup>
                   <FormErrorMessage>{errors.confirmPassword?.message}</FormErrorMessage>
                 </FormControl>
               </>

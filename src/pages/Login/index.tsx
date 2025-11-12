@@ -124,6 +124,7 @@ const Login = () => {
                   aria-label="Show Password"
                   bg="transparent"
                   rounded="full"
+                  size="sm"
                   _hover={{
                     bg: 'transparent'
                   }}
