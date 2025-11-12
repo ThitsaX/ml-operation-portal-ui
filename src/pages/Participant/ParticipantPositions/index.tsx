@@ -383,6 +383,38 @@ const ParticipantPositions = () => {
             currencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
             amount,
         };
+
+        const participantBalance = Math.abs(selectedParticipant!.balance || 0);
+
+        if (selectedParticipant?.ndcPercent === "-") {
+            const remainingBalance = participantBalance - amount;
+
+            if (remainingBalance > selectedParticipant.ndc) {
+                toast({
+                    title: 'Rejected Withdraw',
+                    description: `The amount should not be greater than the NDC.`,
+                    status: 'error',
+                    duration: 4000,
+                    isClosable: true,
+                    position: 'top',
+                });
+                return;
+            }
+        }
+        else {
+            if (amount > participantBalance) {
+                toast({
+                    title: 'Rejected Withdraw',
+                    description: `Insufficient Balance.`,
+                    status: 'error',
+                    duration: 4000,
+                    isClosable: true,
+                    position: 'top',
+                    });
+                return;
+            }
+        }
+
         approvalRequest(data, 'Withdraw', onWithdrawClose);
     };
 
