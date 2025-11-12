@@ -90,6 +90,17 @@ const SettlementSummaryReport = () => {
 
   }, [selectedTimezone, setValue]);
 
+  useEffect(() => {
+    if (isHubUser) {
+      setFspId('');
+      setValue('fspId', '');
+    } else {
+      const participantName = user?.data?.participantName || '';
+      setFspId(participantName);
+      setValue('fspId', participantName);
+    }
+  }, [isHubUser, user, setValue]);
+
   /* Handlers */
   const onDownloadChangeHandler = (e: any) => {
     start();
