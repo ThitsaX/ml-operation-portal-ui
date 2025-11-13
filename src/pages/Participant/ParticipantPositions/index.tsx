@@ -383,13 +383,12 @@ const ParticipantPositions = () => {
             currencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
             amount,
         };
-
+    
         const participantBalance = Math.abs(selectedParticipant!.balance || 0);
 
-        if (selectedParticipant?.ndcPercent === "-") {
-            const remainingBalance = participantBalance - amount;
-
-            if (remainingBalance > selectedParticipant.ndc) {
+        const remainingBalance = Number(participantBalance.toFixed(2)) - Number(amount.toFixed(2)); 
+        
+            if (selectedParticipant?.ndcPercent === "-" && Number(remainingBalance.toFixed(2)) < selectedParticipant.ndc) {
                 toast({
                     title: 'Rejected Withdraw',
                     description: `The amount should not be greater than the NDC.`,
@@ -400,9 +399,8 @@ const ParticipantPositions = () => {
                 });
                 return;
             }
-        }
-        else {
-            if (amount > participantBalance) {
+ 
+            else if (amount > participantBalance) {
                 toast({
                     title: 'Rejected Withdraw',
                     description: `Insufficient Balance.`,
@@ -413,9 +411,7 @@ const ParticipantPositions = () => {
                     });
                 return;
             }
-        }
-
-        approvalRequest(data, 'Withdraw', onWithdrawClose);
+            else approvalRequest(data, 'Withdraw', onWithdrawClose);
     };
 
     const handleNetDebitCard = (type: 'fixed' | 'percentage', amount: number) => {

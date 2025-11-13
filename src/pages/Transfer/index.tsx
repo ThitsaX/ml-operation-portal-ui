@@ -962,6 +962,8 @@ const Transfer = () => {
                 handleSubmit(values => onFindHandler(values, 1, newSize))();
               }}
               maxMenuHeight={150}
+              menuPortalTarget={true}
+              menuPlacement='top'
             />
 
           </HStack>
