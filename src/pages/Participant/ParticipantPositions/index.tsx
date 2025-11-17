@@ -47,6 +47,7 @@ import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 import { hasActionPermission } from '@helpers/permissions';
 import { formatNumberWithCommas } from '@utils';
+import Decimal from 'decimal.js';
 
 const ParticipantPositions = () => {
 
@@ -364,31 +365,34 @@ const ParticipantPositions = () => {
         }
     };
 
-    const handleDeposit = (amount: number) => {
+    const handleDeposit = (amountStr: string) => {
+        
+        const amountDec = new Decimal(amountStr);
         const data: IApprovalRequest = {
             requestedAction: PositionActionType.DEPOSIT,
             participantName: selectedParticipant?.participantName || "",
             currency: selectedParticipant?.currency || "",
             currencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
-            amount,
+            amount:amountDec.toFixed(2),
         };
         approvalRequest(data, 'Deposit', onDepositClose);
     };
 
-    const handleWithdraw = (amount: number) => {
+    const handleWithdraw = (amountStr: string) => {
+        const amountDec = new Decimal(amountStr);
         const data: IApprovalRequest = {
             requestedAction: PositionActionType.WITHDRAW,
             participantName: selectedParticipant?.participantName || "",
             currency: selectedParticipant?.currency || "",
             currencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
-            amount,
+            amount: amountDec.toFixed(2),
         };
     
-        const participantBalance = Math.abs(selectedParticipant!.balance || 0);
+        const participantBalance = new Decimal(Math.abs(selectedParticipant!.balance || 0));
 
-        const remainingBalance = Number(participantBalance.toFixed(2)) - Number(amount.toFixed(2)); 
+        const remainingBalance = participantBalance.minus(amountDec).toDecimalPlaces(2, Decimal.ROUND_DOWN); 
         
-            if (selectedParticipant?.ndcPercent === "-" && Number(remainingBalance.toFixed(2)) < selectedParticipant.ndc) {
+            if (selectedParticipant?.ndcPercent === "-" && remainingBalance.lessThan(selectedParticipant.ndc)) {
                 toast({
                     title: 'Rejected Withdraw',
                     description: `The amount should not be greater than the NDC.`,
@@ -400,7 +404,7 @@ const ParticipantPositions = () => {
                 return;
             }
  
-            else if (amount > participantBalance) {
+            else if (amountDec.greaterThan(participantBalance)) {
                 toast({
                     title: 'Rejected Withdraw',
                     description: `Insufficient Balance.`,
@@ -414,7 +418,8 @@ const ParticipantPositions = () => {
             else approvalRequest(data, 'Withdraw', onWithdrawClose);
     };
 
-    const handleNetDebitCard = (type: 'fixed' | 'percentage', amount: number) => {
+    const handleNetDebitCard = (type: 'fixed' | 'percentage', amountStr: string) => {
+        const amountDec = new Decimal(amountStr);
         const data: IApprovalRequest = {
             requestedAction:
                 type === 'fixed'
@@ -423,12 +428,12 @@ const ParticipantPositions = () => {
             participantName: selectedParticipant?.participantName || "",
             currency: selectedParticipant?.currency || "",
             currencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
-            amount,
+            amount: amountDec.toFixed(2),
         };
 
         const participantBalance = Math.abs(selectedParticipant!.balance || 0);
-
-        if (type === 'fixed' && amount > participantBalance) {
+        
+        if (type === 'fixed' && amountDec.greaterThan(participantBalance)) {
             toast({
             title: 'Invalid NDC Amount',
             description: `Auto-rejected: NDC must be less than or equal to the balance.`,

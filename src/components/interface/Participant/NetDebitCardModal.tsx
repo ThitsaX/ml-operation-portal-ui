@@ -11,14 +11,16 @@ import {
     Button,
     FormControl,
     FormLabel,
+    FormErrorMessage
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import CustomSelect from "../CustomSelect";
+import { validateAmount } from "@helpers/validation";
 
 interface NetDebitCapModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (type: "fixed" | "percentage", value: number) => Promise<void> | void;
+    onSubmit: (type: "fixed" | "percentage", value: string) => Promise<void> | void;
 }
 
 const netDebitCardList = [
@@ -31,12 +33,17 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
     const [fixedAmount, setFixedAmount] = useState<string>("");
     const [percentage, setPercentage] = useState<string>("");
 
+    const inputValue = selectedType === "fixed" ? fixedAmount : percentage;
+    const inputLabel = selectedType === "fixed" ? "Amount" : "Percentage";
+
+    const { isValid, errorMessage } = validateAmount( inputValue, inputLabel);
+
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (selectedType === "fixed" && fixedAmount) {
-            await onSubmit("fixed", Number(fixedAmount));
+            await onSubmit("fixed", fixedAmount);
         } else if (selectedType === "percentage" && percentage) {
-            await onSubmit("percentage", Number(percentage));
+            await onSubmit("percentage", percentage);
         }
         onClose();
     };
@@ -77,31 +84,30 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
                             </FormControl>
 
                             {selectedType === "fixed" && (
-                                <FormControl mb={4} isRequired>
+                                <FormControl isInvalid={!!errorMessage} mb={4} isRequired>
                                     <FormLabel>Fixed</FormLabel>
                                     <Input
                                         placeholder="Enter Amount..."
                                         type="number"
-                                        min={0}
-                                        step={0.01}
                                         name="fixedAmount"
                                         value={fixedAmount}
                                         onChange={(e) => setFixedAmount(e.target.value)}
                                     />
+                                    <FormErrorMessage>{errorMessage}</FormErrorMessage>
                                 </FormControl>
                             )}
 
                             {selectedType === "percentage" && (
-                                <FormControl mb={4} isRequired>
+                                <FormControl isInvalid={!!errorMessage} mb={4} isRequired>
                                     <FormLabel>Percentage</FormLabel>
                                     <Input
                                         placeholder="Enter Percentage..."
                                         type="number"
-                                        min={0}
                                         name="percentage"
                                         value={percentage}
                                         onChange={(e) => setPercentage(e.target.value)}
                                     />
+                                    <FormErrorMessage>{errorMessage}</FormErrorMessage>
                                 </FormControl>
                             )}
                         </Box>
@@ -111,7 +117,7 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
                         <Button variant="ghost" onClick={onClose} mr={3}>
                             Cancel
                         </Button>
-                        <Button colorScheme="blue" type="submit">
+                        <Button colorScheme="blue" isDisabled={!isValid} type="submit">
                             Submit
                         </Button>
                     </ModalFooter>
