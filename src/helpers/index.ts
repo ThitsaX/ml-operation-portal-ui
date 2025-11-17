@@ -1,3 +1,5 @@
 export const thousandSeparatorRegex = /\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g // thousand separators regex to replace comma
 
 export const passwordRegex =/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}|:;<>,.?/\[\]]).{6,}$/;
+
+export const amountTwoDecimalRegex = /^([1-9]\d*|0)?(\.\d{0,2})?$/;

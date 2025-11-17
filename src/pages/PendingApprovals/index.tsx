@@ -37,6 +37,7 @@ import { getErrorMessage } from '@helpers/errors';
 import { CustomSelect } from '@components/interface';
 import { OptionType } from '@components/interface/CustomSelect';
 import GlobalFilter from '@components/interface/GlobalFilter';
+import { formatNumberWithCommas } from '@utils';
 
 const PendingApprovals = () => {
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
@@ -147,7 +148,7 @@ const PendingApprovals = () => {
         accessor: 'amount',
         Cell: ({ value }: any) => (
           <Box textAlign={'right'}>
-            {value}
+            {formatNumberWithCommas(value)}
           </Box>
         )
 

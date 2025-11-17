@@ -26,7 +26,7 @@ export interface IApprovalRequest {
     participantName: string,
     currencyId: number,
     currency: string,
-    amount: number,
+    amount: string,
 }
 
 export enum PendingApprovalStatus {

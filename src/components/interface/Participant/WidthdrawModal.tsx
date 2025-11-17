@@ -5,31 +5,27 @@ import {
     Button, Box, Input, FormControl, FormLabel, FormErrorMessage
 } from "@chakra-ui/react";
 import { useEffect } from "react";
+import { validateAmount } from "@helpers/validation";
 
-interface DepositModalProps {
+interface WithdrawModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (amount: number) => void;
+    onSubmit: (amount: string) => void;
 }
 
-const WidthdrawMoal: React.FC<DepositModalProps> = ({ isOpen, onClose, onSubmit }) => {
-    const [amount, setAmount] = useState<number>(0);
-    const [error, setError] = useState<string>("");
+const WidthdrawMoal: React.FC<WithdrawModalProps> = ({ isOpen, onClose, onSubmit }) => {
+    const [amount, setAmount] = useState<string>("");
+    const { isValid, errorMessage } = validateAmount(amount, "Amount");
 
     const handleSubmit = () => {
-        if (amount <= 0) {
-            setError("Amount must be greater than 0");
-            return;
-        }
-        setError("");
+        if (!isValid) return;
         onSubmit(amount);
         onClose();
     };
 
     useEffect(() => {
         if (isOpen) {
-            setAmount(0);
-            setError("");
+            setAmount("");
         }
     }, [isOpen]);
 
@@ -45,25 +41,22 @@ const WidthdrawMoal: React.FC<DepositModalProps> = ({ isOpen, onClose, onSubmit 
                 <ModalCloseButton />
                 <ModalBody>
                     <Box mb={4}>
-                        <FormControl isInvalid={!!error} isRequired>
+                        <FormControl isInvalid={!!errorMessage} isRequired>
                             <FormLabel>Amount</FormLabel>
                             <Input
                                 placeholder="Enter Amount..."
                                 type="number"
                                 min={1}
-                                value={amount === 0 ? "" : amount}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    setAmount(val === "" ? 0 : Number(val));
-                                }}
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
                             />
-                            <FormErrorMessage>{error}</FormErrorMessage>
+                            <FormErrorMessage>{errorMessage}</FormErrorMessage>
                         </FormControl>
                     </Box>
                 </ModalBody>
                 <ModalFooter>
                     <Button variant="ghost" onClick={onClose} mr={3}>Cancel</Button>
-                    <Button colorScheme="blue" onClick={handleSubmit}>
+                    <Button colorScheme="blue" isDisabled={!isValid} onClick={handleSubmit}>
                         Submit
                     </Button>
                 </ModalFooter>
