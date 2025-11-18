@@ -52,7 +52,7 @@ import { RootState } from '@store';
 import { CustomSelect } from '@components/interface';
 import { Ranges } from '@typescript/pages';
 import { usePagination, useSortBy, useTable, Column } from 'react-table';
-import { ISettlementWindow, INetTransferAmount, INetTransferDetail } from '@typescript/services';
+import { ISettlementWindow, INetTransferAmount, INetTransferDetail, ISettlementModel, ISettlementScheduler } from '@typescript/services';
 import { getSettlementSchedulerList } from '@services/settlements';
 import { getNextRunInfo, formatCountdown } from '@utils/schedule';
 
@@ -557,71 +557,95 @@ const SettlementWindows = () => {
     //     // setValue('timezoneOffset', timezone, options)
     // }, [selectedTimezone]);
 
-    // Reseting values as soon as timezone change
     useEffect(() => {
-        reset(initialValues)
-        onChangeDateRange('oneDay');
-        setSettlementWindows([]);
-    }, [selectedTimezone])
-
-    useEffect(() => {
-        let timer: any;
+        let timer: ReturnType<typeof setInterval> | null = null;
+        let cancelled = false;
 
         const stop = () => {
-            if (timer) clearInterval(timer);
-            timer = null;
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
         };
 
-        const chooseFirst = settlementModel === '' || !modelList?.length;
-        if (chooseFirst) {
-            stop();
-            setCountdownConfigured(null);
+        const resetState = (configured: boolean | null) => {
+            if (cancelled) return;
+            setCountdownConfigured(configured);
             setCountdownText('');
             setNextUtc(null);
-            return;
+        };
+
+        if (!modelList || modelList.length === 0) {
+            stop();
+            resetState(null);
+            return () => {
+                cancelled = true;
+                stop();
+            };
         }
 
-        const model = modelList?.find(m => m.name === settlementModel);
-        if (!model) {
+        const isDeferredNetModel = (m: ISettlementModel) => {
+            const t = (m.name || '').toString().toUpperCase();
+            return t.includes('DEFERREDNET');
+        };
+
+        const deferredModels = modelList.filter(isDeferredNetModel);
+
+        if (deferredModels.length === 0) {
             stop();
-            setCountdownConfigured(false);
-            setCountdownText('');
-            setNextUtc(null);
-            return;
+            resetState(null);
+            return () => {
+                cancelled = true;
+                stop();
+            };
         }
 
-        // must have auto-close and a valid zoneId like +07:00 / -03:30
-        const zoneOk = typeof model.zoneId === 'string' && /^[+-]\d{2}:[0-5]\d$/.test(model.zoneId);
-        if (!model.autoCloseWindow || !zoneOk) {
+        const model: ISettlementModel =
+            deferredModels.find((m: ISettlementModel) => m.autoCloseWindow) ?? deferredModels[0];
+
+        if (!model.autoCloseWindow) {
             stop();
-            setCountdownConfigured(false);
-            setCountdownText('');
-            setNextUtc(null);
-            return;
+            resetState(false);
+            return () => {
+                cancelled = true;
+                stop();
+            };
         }
 
         (async () => {
             try {
                 const resp = await getSettlementSchedulerList(model.settlementModelId);
-                const list: any[] = Array.isArray(resp?.settlementSchedulerList) ? resp.settlementSchedulerList : [];
+                if (cancelled) return;
+
+                const list: ISettlementScheduler[] = Array.isArray(resp?.settlementSchedulerList)
+                    ? resp.settlementSchedulerList
+                    : [];
+
                 const crons = list
-                    .filter(it => !!it?.active && typeof it?.cronExpression === 'string' && it.cronExpression.trim().length > 0)
-                    .map(it => String(it.cronExpression));
+                    .filter(
+                        (it) =>
+                            !!it?.active &&
+                            typeof it?.cronExpression === 'string' &&
+                            it.cronExpression.trim().length > 0
+                    )
+                    .map((it) => String(it.cronExpression));
 
                 if (!crons.length) {
                     stop();
-                    setCountdownConfigured(false);
-                    setCountdownText('');
-                    setNextUtc(null);
+                    resetState(false);
                     return;
                 }
 
-                const { nextUtc: n, countdown } = getNextRunInfo(crons, model.zoneId as string, Date.now(), model.autoCloseWindow);
-                if (!n) {
+                const { nextUtc: n, countdown } = getNextRunInfo(
+                    crons,
+                    model.zoneId as string,
+                    Date.now(),
+                    model.autoCloseWindow
+                );
+
+                if (!n || cancelled) {
                     stop();
-                    setCountdownConfigured(false);
-                    setCountdownText('');
-                    setNextUtc(null);
+                    resetState(false);
                     return;
                 }
 
@@ -629,21 +653,23 @@ const SettlementWindows = () => {
                 setNextUtc(n);
                 setCountdownText(countdown);
 
-                // tick every second
                 stop();
                 timer = setInterval(() => {
+                    if (cancelled || !n) return;
                     setCountdownText(formatCountdown((n as number) - Date.now()));
                 }, 1000);
             } catch {
+                if (cancelled) return;
                 stop();
-                setCountdownConfigured(false);
-                setCountdownText('');
-                setNextUtc(null);
+                resetState(false);
             }
         })();
 
-        return () => stop();
-    }, [settlementModel, modelList]);
+        return () => {
+            cancelled = true;
+            stop();
+        };
+    }, [modelList]);
 
     const onClearHandler = useCallback(() => {
         reset()
@@ -829,24 +855,6 @@ const SettlementWindows = () => {
                 </Stack>
                 <Flex justify="space-between" align="center" flex={1} gap={5} mt={6}>
                     <Box>
-                        {countdownConfigured === null && (
-                            <Box
-                                display="inline-flex"
-                                alignItems="center"
-                                px={4}
-                                py={3}
-                                border="1px solid"
-                                borderColor="gray.200"
-                                borderRadius="md"
-                                bg="gray.50"
-                                color="gray.700"
-                            >
-                                <Text fontWeight="semibold">
-                                    Please choose Settlement Model to see when the window will close.
-                                </Text>
-                            </Box>
-                        )}
-
                         {countdownConfigured === false && (
                             <Box
                                 display="inline-flex"
