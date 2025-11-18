@@ -16,6 +16,7 @@ import {
 import { useState, useEffect } from "react";
 import CustomSelect from "../CustomSelect";
 import { validateAmount } from "@helpers/validation";
+import { numericInputRegex } from "@helpers";
 
 interface NetDebitCapModalProps {
     isOpen: boolean;
@@ -32,11 +33,12 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
     const [selectedType, setSelectedType] = useState<"fixed" | "percentage" | "">("");
     const [fixedAmount, setFixedAmount] = useState<string>("");
     const [percentage, setPercentage] = useState<string>("");
+    const [isTouched, setIsTouched] = useState(false);
 
     const inputValue = selectedType === "fixed" ? fixedAmount : percentage;
     const inputLabel = selectedType === "fixed" ? "Amount" : "Percentage";
 
-    const { isValid, errorMessage } = validateAmount( inputValue, inputLabel);
+    const { isValid, errorMessage } = validateAmount( inputValue, inputLabel, selectedType === "percentage" ? "99.99" : undefined);
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -48,11 +50,19 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
         onClose();
     };
 
+    const handleNumericInputChange = ( value: string, setter: (v: string) => void) => {
+        if (!isTouched) setIsTouched(true);
+        if (value === "" || numericInputRegex.test(value)) {
+            setter(value);
+        }
+    };
+
     useEffect(() => {
         if (isOpen) {
             setFixedAmount("");
             setPercentage("");
             setSelectedType("");
+            setIsTouched(false);
         }
     }, [isOpen]);
 
@@ -79,33 +89,34 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
                                         .find(opt => opt.value === selectedType) || null}
                                     onChange={(selectedOption) => {
                                         setSelectedType(selectedOption?.value as "fixed" | "percentage" || "");
+                                        setIsTouched(false);
                                     }}
                                 />
                             </FormControl>
 
                             {selectedType === "fixed" && (
-                                <FormControl isInvalid={!!errorMessage} mb={4} isRequired>
+                                <FormControl isInvalid={isTouched && !!errorMessage} mb={4} isRequired>
                                     <FormLabel>Fixed</FormLabel>
                                     <Input
                                         placeholder="Enter Amount..."
-                                        type="number"
+                                        type="text"
                                         name="fixedAmount"
                                         value={fixedAmount}
-                                        onChange={(e) => setFixedAmount(e.target.value)}
+                                        onChange={(e) => handleNumericInputChange(e.target.value, setFixedAmount)}
                                     />
                                     <FormErrorMessage>{errorMessage}</FormErrorMessage>
                                 </FormControl>
                             )}
 
                             {selectedType === "percentage" && (
-                                <FormControl isInvalid={!!errorMessage} mb={4} isRequired>
+                                <FormControl isInvalid={isTouched && !!errorMessage} mb={4} isRequired>
                                     <FormLabel>Percentage</FormLabel>
                                     <Input
                                         placeholder="Enter Percentage..."
-                                        type="number"
+                                        type="text"
                                         name="percentage"
                                         value={percentage}
-                                        onChange={(e) => setPercentage(e.target.value)}
+                                        onChange={(e) => handleNumericInputChange(e.target.value, setPercentage)}
                                     />
                                     <FormErrorMessage>{errorMessage}</FormErrorMessage>
                                 </FormControl>
