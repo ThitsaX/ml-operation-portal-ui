@@ -2,4 +2,6 @@ export const thousandSeparatorRegex = /\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g // thous
 
 export const passwordRegex =/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+={}|:;<>,.?/\[\]]).{6,}$/;
 
-export const amountTwoDecimalRegex = /^([1-9]\d*|0)?(\.\d{0,2})?$/;
+export const amountTwoDecimalRegex = /^([0-9]\d*|0)?(\.\d{0,2})?$/;
+
+export const numericInputRegex = /^\d*\.?\d*$/;

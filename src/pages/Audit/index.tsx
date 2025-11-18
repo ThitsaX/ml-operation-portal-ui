@@ -515,6 +515,7 @@ const Audit = () => {
                 onChange={(selectedOption) => {
                   if (!selectedOption) return;
                   const newSize = Number(selectedOption.value);
+                  setPageSize(newSize);
                   onSearchHandler(getValues(), 1, newSize);
                 }}
                 maxMenuHeight={150}
