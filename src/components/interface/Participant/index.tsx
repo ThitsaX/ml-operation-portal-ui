@@ -5,6 +5,7 @@ import {
     Button, Box, Input, FormControl, FormLabel, FormErrorMessage
 } from "@chakra-ui/react";
 import { validateAmount } from "@helpers/validation";
+import { numericInputRegex } from "@helpers";
 
 interface DepositModalProps {
     isOpen: boolean;
@@ -15,6 +16,7 @@ interface DepositModalProps {
 const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, onSubmit }) => {
     const [amount, setAmount] = useState<string>("");
     const {isValid, errorMessage} = validateAmount(amount, "Amount");
+    const [isTouched, setIsTouched] = useState(false);
 
     const handleSubmit = () => {
         if (!isValid) return;
@@ -22,9 +24,17 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, onSubmit }
         onClose();
     };
 
+    const handleNumericInputChange = ( value: string) => {
+            if (!isTouched) setIsTouched(true);
+            if (value === "" || numericInputRegex.test(value)) {
+                setAmount(value);
+            }
+    };
+
     useEffect(() => {
         if (isOpen) {
             setAmount("");
+            setIsTouched(false);
         }
     }, [isOpen]);
 
@@ -40,15 +50,19 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, onSubmit }
                 <ModalCloseButton />
                 <ModalBody>
                     <Box mb={4}>
-                        <FormControl isInvalid={!!errorMessage} isRequired>
+                        <FormControl isInvalid={isTouched && !!errorMessage} isRequired>
                             <FormLabel>Amount</FormLabel>
                             <Input
                                 placeholder="Enter Amount..."
-                                type="number"
+                                type="text"
                                 value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
+                                onChange={(e) =>
+                                        handleNumericInputChange(e.target.value)
+                                }
                             />
-                            <FormErrorMessage>{errorMessage}</FormErrorMessage>
+                            {isTouched && errorMessage && (
+                                <FormErrorMessage>{errorMessage}</FormErrorMessage>
+                            )}
                         </FormControl>
                     </Box>
                 </ModalBody>
