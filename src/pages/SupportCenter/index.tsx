@@ -70,7 +70,7 @@ const SupportCenter = () => {
           title="Dispute"
           description="Raise an issue or challenge"
           actionLabel="Submit Dispute"
-          href="https://www.thitsaworks.com/"
+          href="https://thitsa.atlassian.net/servicedesk/customer/portal/11/group/33/create/10549"
           color="orange.700"
           onClick={() => { }}
         />
@@ -80,7 +80,7 @@ const SupportCenter = () => {
           title="Service Request"
           description="Request assistance or information"
           actionLabel="Service Request"
-          href="https://www.thitsaworks.com/"
+          href="https://thitsa.atlassian.net/servicedesk/customer/portal/11/group/33/create/10548"
           color="blue.700"
           onClick={() => { }}
         />

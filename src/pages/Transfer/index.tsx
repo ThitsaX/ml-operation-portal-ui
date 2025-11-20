@@ -262,11 +262,11 @@ const Transfer = () => {
   );
 
   const onCancelHandler = useCallback(() => {
-    reset()
+    onSelectedTimezoneChange();
     onChangeTransferType('inbound');
     onChangeDateRange('oneDay');
-    onSelectedTimezoneChange();
 
+    setTotalPages(1);
     setTransferData([]);
   }, [onChangeDateRange, onChangeTransferType, reset, selectedTimezone]);
 
