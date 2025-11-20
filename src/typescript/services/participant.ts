@@ -45,6 +45,8 @@ export interface IParticipantOrganization {
   participantId: string,
   participantName: string,
   participantDescription: string
+  logoFileType: string | null;
+  logo: string | null;
 }
 
 export interface IGetAllOtherParticipant {
