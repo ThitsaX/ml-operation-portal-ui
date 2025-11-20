@@ -19,6 +19,7 @@ import {
     ISettlementScheduleModifyForm,
     ISettlementScheduleRemoveForm,
     IModifySettlementModelPayload,
+    ISettlementScheduleFormResponse,
 } from '@typescript/form/settlements'
 
 
@@ -243,7 +244,7 @@ export const getSettlementSchedulerList = async(settlementModelId: string) => {
         })
 }
 
-export const createSettlementScheduler = async (data: ISettlementScheduleForm) => {
+export const createSettlementScheduler = async (data: ISettlementScheduleForm): Promise<ISettlementScheduleFormResponse> => {
     const {
         user: { auth }
     } = store.getState()
@@ -258,7 +259,7 @@ export const createSettlementScheduler = async (data: ISettlementScheduleForm) =
     })
     const { axios } = AxiosRequest(accessToken, accessKey)
     return axios
-        .post<{ is_created: true }>(uri, data)
+        .post<ISettlementScheduleFormResponse>(uri, data)
         .then((d) => d.data)
         .catch((error: AxiosError<IApiErrorResponse>) => {
             const { code, message, ...rest } = axiosErrorHandler(error)
