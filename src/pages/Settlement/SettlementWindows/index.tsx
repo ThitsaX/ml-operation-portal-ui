@@ -400,7 +400,7 @@ const SettlementWindows = () => {
             Header: 'Open Date',
             accessor: 'createdDate',
             Cell: ({ value }) => (
-                <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DD HH:mm')}</Text>
+                <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}</Text>
             ),
         },
         {
@@ -412,7 +412,7 @@ const SettlementWindows = () => {
                 }
 
                 return (
-                    <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DD HH:mm')}</Text>
+                    <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}</Text>
                 );
             },
 
@@ -1108,22 +1108,22 @@ const SettlementWindows = () => {
                     <ModalCloseButton />
                     <ModalBody>
                         <Stack spacing={4}>
-                            <SimpleGrid columns={{ base: 1, md: 5 }} spacing={6} textAlign="center">
+                            <SimpleGrid columns={{ base: 1, md: 5 }} spacing={3} textAlign="center">
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window ID</Text>
-                                    <Text fontSize="md">{selectedWindow?.settlementWindowId}</Text>
+                                    <Text fontSize="0.8rem">{selectedWindow?.settlementWindowId}</Text>
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window State</Text>
-                                    <Text fontSize="md">{selectedWindow?.state}</Text>
+                                    <Text fontSize="xs">{selectedWindow?.state}</Text>
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window Open Date</Text>
-                                    <Text fontSize="md">
+                                    <Text fontSize="xs">
                                         {
                                             (
                                                 selectedWindow?.createdDate ?
-                                                moment(selectedWindow.createdDate).tz(selectedTZString).format('YYYY-MM-DD HH:mm')
+                                                moment(selectedWindow.createdDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')
                                                 :
                                                 ""
                                             )
@@ -1132,11 +1132,11 @@ const SettlementWindows = () => {
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window Close Date</Text>
-                                    <Text fontSize="md">
+                                    <Text fontSize="xs">
                                         {
                                             selectedWindow?.state !== 'OPEN' && (
                                                 selectedWindow?.changedDate ?
-                                                moment(selectedWindow.changedDate).tz(selectedTZString).format('YYYY-MM-DD HH:mm')
+                                                moment(selectedWindow.changedDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')
                                                 :
                                                 ""
                                             )

@@ -288,14 +288,14 @@ const FinalizeSettlement = () => {
             Header: 'Settlement Created Date',
             accessor: 'createdDate',
             Cell: ({ value }) => (
-                <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DD HH:mm')}</Text>
+                <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}</Text>
             ),
         },
         {
             Header: 'Settlement Finalize Date',
             accessor: 'changedDate',
             Cell: ({ value }) => (
-                <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DD HH:mm')}</Text>
+                <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}</Text>
             )
         }];
 
@@ -766,14 +766,14 @@ const FinalizeSettlement = () => {
                     <ModalCloseButton />
                     <ModalBody>
                         <Stack spacing={4}>
-                            <SimpleGrid columns={{ base: 1, md: 5 }} spacing={6} textAlign="center">
+                            <SimpleGrid columns={{ base: 1, md: 5 }} spacing={3} textAlign="center">
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Settlement ID</Text>
-                                    <Text fontSize="md">{selectedSettlement?.settlementId}</Text>
+                                    <Text fontSize=" 0.8rem">{selectedSettlement?.settlementId}</Text>
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window ID</Text>
-                                    <Text fontSize="md">
+                                    <Text fontSize=" 0.8rem">
                                         { 
                                             selectedSettlement?.settlementWindowList?.map((window) => window.settlementWindowId).join(', ')
                                         }
@@ -781,15 +781,15 @@ const FinalizeSettlement = () => {
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Settlement State</Text>
-                                    <Text fontSize="md">{selectedSettlement?.state}</Text>
+                                    <Text fontSize="xs" >{selectedSettlement?.state}</Text>
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Created Date</Text>
-                                    <Text fontSize="md">
+                                    <Text fontSize="xs">
                                         {
                                             (
                                                 selectedSettlement?.createdDate ? 
-                                                moment(selectedSettlement.createdDate).tz(selectedTZString).format('YYYY-MM-DD HH:mm')
+                                                moment(selectedSettlement.createdDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')
                                                 :
                                                 ""
                                             )
@@ -798,11 +798,11 @@ const FinalizeSettlement = () => {
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Finalized Date</Text>
-                                    <Text fontSize="md">
+                                    <Text fontSize="xs">
                                         {
                                             (
                                                 selectedSettlement?.changedDate ? 
-                                                moment(selectedSettlement.changedDate).tz(selectedTZString).format('YYYY-MM-DD HH:mm')
+                                                moment(selectedSettlement.changedDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')
                                                 :
                                                 ""
                                             )
