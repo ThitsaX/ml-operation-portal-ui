@@ -22,27 +22,27 @@ import { useState } from 'react';
 import { TbGavel } from "react-icons/tb";
 import { GrServices } from "react-icons/gr";
 import { ImUsers } from "react-icons/im";
-import { useGetParticipantList } from '@hooks/services/participant';
+import { useGetOrganizationListByParticipant } from '@hooks/services/participant';
 import { getContactList } from '@services/participant';
-import { IBusinessContact, IParticipantProfile } from '@typescript/services';
+import { IBusinessContact, IParticipantOrganization } from '@typescript/services';
 import { SupportCard } from '@components/interface/SupportCenter';
 import { type IApiErrorResponse } from '@typescript/services';
 
 const SupportCenter = () => {
   const toast = useToast();
 
-  const [selectedParticipant, setSelectedParticipant] = useState<IParticipantProfile>();
+  const [selectedParticipant, setSelectedParticipant] = useState<IParticipantOrganization>();
   const [contactList, setContactList] = useState<IBusinessContact[] | null>(null);
 
   // Data Fetching
-  const { data: participantInfoList } = useGetParticipantList();
+  const { data: participantInfoList } = useGetOrganizationListByParticipant();
 
   // Modal Control
   const { isOpen: isListOpen, onOpen: onListOpen, onClose: onListClose } = useDisclosure();
   const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure();
 
   // Handlers
-  const showParticipantContacts = async (participant: IParticipantProfile) => {
+  const showParticipantContacts = async (participant: IParticipantOrganization) => {
     setSelectedParticipant(participant);
     try {
       const data = await getContactList(participant.participantId);
@@ -144,7 +144,7 @@ const SupportCenter = () => {
                 >
                   <Image
                     src={`data:${p.logoFileType};base64,${p.logo}`}
-                    alt={p.description}
+                    alt={p.participantName}
                     boxSize={{ base: "56px", md: "60px" }}
                     objectFit="cover"
                     borderRadius="full"
@@ -152,7 +152,7 @@ const SupportCenter = () => {
                     mb={2}
                   />
                   <Text fontWeight="medium" fontSize="sm" noOfLines={2}>
-                    {p.description}
+                    {p.participantName}
                   </Text>
                 </Box>
               ))}
@@ -177,14 +177,14 @@ const SupportCenter = () => {
             <Flex align="center" mb={6}>
               <Image
                 src={`data:${selectedParticipant?.logoFileType};base64,${selectedParticipant?.logo}`}
-                alt={selectedParticipant?.description}
+                alt={selectedParticipant?.participantName}
                 boxSize="60px"
                 objectFit="cover"
                 borderRadius="full"
                 mr={4}
               />
               <Text fontWeight="bold" fontSize="lg">
-                {selectedParticipant?.description || 'Participant'}
+                {selectedParticipant?.participantName || 'Participant'}
               </Text>
             </Flex>
             {contactList?.map((info, index) => (
