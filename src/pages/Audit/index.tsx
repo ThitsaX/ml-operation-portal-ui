@@ -458,7 +458,7 @@ const Audit = () => {
                         {cell.column.id === 'action' || cell.column.id === 'madeBy'
                           ? cell.render('Cell')
                           : isNumber(cell.value)
-                            ? moment.unix(cell.value).tz(selectedTZString).format('DD/MM/YYYY hh:mm:ss A')
+                            ? moment.unix(cell.value).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')
                             : cell.value}
                       </Td>
                     ))}
