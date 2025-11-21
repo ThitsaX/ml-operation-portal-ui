@@ -263,7 +263,9 @@ const Transfer = () => {
 
   const onCancelHandler = useCallback(() => {
     onSelectedTimezoneChange();
-    onChangeTransferType('inbound');
+    if (!isHubUser) {
+      onChangeTransferType('inbound');
+    }
     onChangeDateRange('oneDay');
 
     setTotalPages(1);
