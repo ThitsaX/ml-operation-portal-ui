@@ -7,18 +7,26 @@ import {
 } from '@chakra-ui/react';
 import moment from 'moment';
 import { useGetAllAnnouncement } from '@hooks/services';
+import { useSelector } from 'react-redux';
+import { RootState } from '@store';
+import { ITimezoneOption } from 'react-timezone-select';
 
 const Home = () => {
 
   /* React Query */
+
   const { data: announcements = [] } = useGetAllAnnouncement();
 
+    // Redux
+  const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
+  const selectedTZString = selectedTimezone.value;
+
 function changeDateMonthFormat(timestamp: number) {
-    return moment(timestamp * 1000).format('MMM');
+    return moment.tz(timestamp * 1000, selectedTZString).format('MMM');
   }
 
   function changeDateDayFormat(timestamp: number) {
-    return moment(timestamp * 1000).format('DD');
+    return moment.tz(timestamp * 1000,selectedTZString).format('DD');
   }
 
 
