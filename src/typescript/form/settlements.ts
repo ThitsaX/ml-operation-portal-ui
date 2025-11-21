@@ -27,7 +27,7 @@ export interface ISettlementScheduleForm {
 
 export interface ISettlementScheduleFormResponse { 
   is_created: boolean, 
-  schedulerConfigId: { id: string } 
+  schedulerConfigId: string 
 }
 
 export interface ISettlementScheduleModifyForm extends ISettlementScheduleForm {
