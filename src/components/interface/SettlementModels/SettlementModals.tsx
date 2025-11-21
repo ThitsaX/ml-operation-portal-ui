@@ -465,11 +465,11 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       // create or modify
       if (!hasId) {
         const newScheduler: ISettlementScheduleFormResponse = await createSettlementScheduler(payload);
-        if (newScheduler?.schedulerConfigId?.id) {
+        if (newScheduler?.schedulerConfigId) {
           
           setRowIdMap(prev => ({
             ...prev,
-            [key]: newScheduler.schedulerConfigId.id,
+            [key]: newScheduler.schedulerConfigId,
           }));
 
           setServerMatrix(prev => ({
