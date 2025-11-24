@@ -633,27 +633,52 @@ const SettlementWindows = () => {
                     return;
                 }
 
-                const { nextUtc: n, countdown } = getNextRunInfo(
+                const { nextUtc: initialNextUtc, countdown } = getNextRunInfo(
                     crons,
                     model.zoneId as string,
                     Date.now(),
                     model.autoCloseWindow
                 );
 
-                if (!n || cancelled) {
+                if (!initialNextUtc || cancelled) {
                     stop();
                     resetState(false);
                     return;
                 }
 
                 setCountdownConfigured(true);
-                setNextUtc(n);
+                setNextUtc(initialNextUtc);
                 setCountdownText(countdown);
+
+                let currentNextUtc = initialNextUtc;
 
                 stop();
                 timer = setInterval(() => {
-                    if (cancelled || !n) return;
-                    setCountdownText(formatCountdown((n as number) - Date.now()));
+                    if (cancelled || !currentNextUtc) return;
+
+                    const diff = currentNextUtc - Date.now();
+
+                    if (diff <= 0) {
+                        // the next countdown cronjob one
+                        const { nextUtc: newNextUtc, countdown: newCountdown } = getNextRunInfo(
+                            crons,
+                            model.zoneId as string,
+                            Date.now(),
+                            model.autoCloseWindow
+                        );
+
+                        if (!newNextUtc) {
+                            stop();
+                            resetState(false);
+                            return;
+                        }
+
+                        currentNextUtc = newNextUtc;
+                        setNextUtc(newNextUtc);
+                        setCountdownText(newCountdown);
+                    } else {
+                        setCountdownText(formatCountdown(diff));
+                    }
                 }, 1000);
             } catch {
                 if (cancelled) return;

@@ -323,13 +323,54 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       /^(?:[+-]\d{2}:[0-5]\d)$/.test(settlementModel.zoneId)
         ? settlementModel.zoneId
         : currentOffset;
-  
+
     const crons = buildActiveCronList();
-    const { nextUtc: n, countdown } = getNextRunInfo(crons, zoneOffset, Date.now(), settlementModel.autoCloseWindow);
-    setNextUtc(n);
-    setNextCountdown(countdown);
-    
-  }, [rows, matrix, rowActiveMap, settlementModel.zoneId, settlementModel.autoCloseWindow, currentOffset, buildActiveCronList]);
+
+    if (!settlementModel.autoCloseWindow || !crons.length) {
+      setNextUtc(null);
+      setNextCountdown('--:--:--');
+      return;
+    }
+
+    let cancelled = false;
+
+    const tick = () => {
+      if (cancelled) return;
+
+      const { nextUtc: n, countdown } = getNextRunInfo(
+        crons,
+        zoneOffset,
+        Date.now(),
+        settlementModel.autoCloseWindow
+      );
+
+      if (!n) {
+        setNextUtc(null);
+        setNextCountdown('--:--:--');
+        return;
+      }
+
+      setNextUtc(n);
+      setNextCountdown(countdown);
+    };
+
+    tick();
+
+    const id = setInterval(tick, 1000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [
+    rows,
+    matrix,
+    rowActiveMap,
+    settlementModel.zoneId,
+    settlementModel.autoCloseWindow,
+    currentOffset,
+    buildActiveCronList,
+  ]);
 
   useEffect(() => {
     if (!nextUtc) return;
