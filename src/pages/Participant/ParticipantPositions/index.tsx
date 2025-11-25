@@ -160,22 +160,30 @@ const ParticipantPositions = () => {
                         <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Balance</Text>
                     ),
                     accessor: 'balance',
-                    Cell: ({ row }: any) => (
-                        <Box textAlign={'right'}>
-                            {formatNumberWithCommas(row.original.balance)}
-                        </Box>
-                    )
+                    Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
+                        const balance = row.original.balance;
+                        const displayBalance = balance === 0 ? balance : ((balance) * -1);
+                        return (
+                            <Box textAlign={'right'}>
+                                {formatNumberWithCommas(displayBalance)}
+                            </Box>
+                        );
+                    }
                 },
                 {
                     Header: () => (
                         <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Current Position</Text>
                     ),
                     accessor: 'currentPosition',
-                    Cell: ({ row }: { row: Row<IParticipantPositionData> }) => (
-                        <Box textAlign={'right'}>
-                            {formatNumberWithCommas(row.original.currentPosition)}
-                        </Box>
-                    )
+                    Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
+                        const currentPosition = row.original.currentPosition;
+                        const displayCurrentPosition = currentPosition === 0 ? currentPosition : ((currentPosition) * -1);
+                        return (
+                            <Box textAlign={'right'}>
+                                {formatNumberWithCommas(displayCurrentPosition)}
+                            </Box>
+                        );
+                    }
                 },
                 {
                     Header: () => (
