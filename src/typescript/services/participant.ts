@@ -8,6 +8,8 @@ export interface IParticipantUser {
   lastName: string;
   roleList: string[];
   participantId: string;
+  participantName: string;
+  participantDescription: string;
   jobTitle: string;
   status: UserStatus;
   password: string;

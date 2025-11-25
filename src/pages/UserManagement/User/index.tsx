@@ -105,6 +105,25 @@ const User = () => {
       },
       {
         Header: () => (
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Organization</Text>
+        ),
+        accessor: "participantName",
+        Cell: ({ row }: CellProps<IParticipantUser>) => {
+          const { participantName, participantDescription } = row.original;
+          return (
+            <Box
+              maxW="200px"
+              whiteSpace="normal"
+              wordBreak="break-word"
+              overflowWrap="break-word"
+            >
+              {participantName ? participantDescription ? `${participantName} (${participantDescription})` : participantName : '-'}
+            </Box>
+          );
+        },
+      },
+      {
+        Header: () => (
           <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Name</Text>
         ),
         accessor: "name",
@@ -118,9 +137,9 @@ const User = () => {
           if (!value || value.length === 0) return <span>-</span>;
           return (
             <Box
-              maxW="200px"             
-              whiteSpace="normal"      
-              wordBreak="break-word" 
+              maxW="200px"
+              whiteSpace="normal"
+              wordBreak="break-word"
               overflowWrap="break-word"
             >
               {value.join(", ")}

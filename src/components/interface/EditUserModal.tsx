@@ -190,13 +190,23 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                     menuPortalTarget={true}
                     placeholder="Select Organization*"
                       options={participantInfoList?.map(org => ({
-                          value: org.participantId,
-                          label: org.participantName })) ?? []}
+                        value: org.participantId,
+                        label: org.participantDescription
+                          ? `${org.participantName} (${org.participantDescription})`
+                          : org.participantName
+                      })) ?? []}
                       value={
                           participantInfoList?.find(org => org.participantId === field.value)
                             ? {
                                 value: field.value,
-                                label: participantInfoList.find(org => org.participantId === field.value)?.participantName || field.value
+                                label: (() => {
+                                  const org = participantInfoList.find(org => org.participantId === field.value);
+                                  return org
+                                    ? org.participantDescription
+                                      ? `${org.participantName} (${org.participantDescription})`
+                                      : org.participantName
+                                    : field.value;
+                                })(),
                               }
                             : null
                         }
