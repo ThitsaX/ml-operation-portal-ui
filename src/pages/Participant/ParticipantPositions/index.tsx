@@ -212,21 +212,25 @@ const ParticipantPositions = () => {
                         <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC Used %</Text>
                     ),
                     accessor: 'ndcUsed',
-                    Cell: ({ value }: any) => (
-                        <HStack spacing={2} w="full" justifyContent="flex-end">
-                            <Box
-                                w="10px"
-                                h="10px"
-                                borderRadius="full"
-                                bg={getValueColor(Number(value))}
-                            />
-                            <Box textAlign="right">
-                                <Text fontSize="sm">
-                                    {value}
-                                </Text>
-                            </Box>
-                        </HStack>
-                    ),
+                    Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
+                        const ndcUsed = row.original.ndcUsed;
+                        const displayndcUsed = ndcUsed === 0 ? ndcUsed : ((ndcUsed) * -1);
+                        return (
+                            <HStack spacing={2} w="full" justifyContent="flex-end">
+                                <Box
+                                    w="10px"
+                                    h="10px"
+                                    borderRadius="full"
+                                    bg={getValueColor(Number(displayndcUsed))}
+                                />
+                                <Box textAlign="right">
+                                    <Text fontSize="sm">
+                                        {displayndcUsed}%
+                                    </Text>
+                                </Box>
+                            </HStack>
+                            )
+                    }
                 },
                 {
                     Header: () => (
@@ -380,7 +384,8 @@ const ParticipantPositions = () => {
             requestedAction: PositionActionType.DEPOSIT,
             participantName: selectedParticipant?.participantName || "",
             currency: selectedParticipant?.currency || "",
-            currencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
+            settlementCurrencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
+            positionCurrencyId: selectedParticipant?.participantPositionCurrencyId || 0,
             amount:amountDec.toFixed(2),
         };
         approvalRequest(data, 'Deposit', onDepositClose);
@@ -392,18 +397,34 @@ const ParticipantPositions = () => {
             requestedAction: PositionActionType.WITHDRAW,
             participantName: selectedParticipant?.participantName || "",
             currency: selectedParticipant?.currency || "",
-            currencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
+            settlementCurrencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
+            positionCurrencyId: selectedParticipant?.participantPositionCurrencyId || 0,
             amount: amountDec.toFixed(2),
         };
     
         const participantBalance = new Decimal(Math.abs(selectedParticipant!.balance || 0));
 
         const remainingBalance = participantBalance.minus(amountDec).toDecimalPlaces(2, Decimal.ROUND_DOWN); 
+        const rawCurrentPosition = new Decimal(selectedParticipant!.currentPosition || 0).mul(-1);
+        const absoluteCurrentPosition = rawCurrentPosition.abs();
+        const ndc = new Decimal(selectedParticipant!.ndc || 0);
         
-            if (selectedParticipant?.ndcPercent === "-" && remainingBalance.lessThan(selectedParticipant.ndc)) {
+            if (remainingBalance.lessThan(ndc)) {
                 toast({
                     title: 'Rejected Withdraw',
-                    description: `The amount should not be greater than the NDC.`,
+                    description: `Amount is invalid. Balance after this transaction cannot be lower than the NDC.`,
+                    status: 'error',
+                    duration: 4000,
+                    isClosable: true,
+                    position: 'top',
+                });
+                return;
+            }
+
+            else if (rawCurrentPosition.isNegative() && remainingBalance.lessThan(absoluteCurrentPosition)) {
+                toast({
+                    title: 'Rejected Withdraw',
+                    description: `Amount is invalid. Balance after this transaction cannot be lower than the Current Position.`,
                     status: 'error',
                     duration: 4000,
                     isClosable: true,
@@ -415,7 +436,7 @@ const ParticipantPositions = () => {
             else if (amountDec.greaterThan(participantBalance)) {
                 toast({
                     title: 'Rejected Withdraw',
-                    description: `Insufficient Balance.`,
+                    description: `Amount is invalid. Transaction amount cannot exceed the available balance.`,
                     status: 'error',
                     duration: 4000,
                     isClosable: true,
@@ -435,16 +456,30 @@ const ParticipantPositions = () => {
                     : PositionActionType.UPDATE_NDC_PERCENTAGE,
             participantName: selectedParticipant?.participantName || "",
             currency: selectedParticipant?.currency || "",
-            currencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
+            settlementCurrencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
+            positionCurrencyId: selectedParticipant?.participantPositionCurrencyId || 0,
             amount: amountDec.toFixed(2),
         };
 
         const participantBalance = Math.abs(selectedParticipant!.balance || 0);
-        
-        if (type === 'fixed' && amountDec.greaterThan(participantBalance)) {
+        const rawCurrentPosition = new Decimal(selectedParticipant!.currentPosition || 0).mul(-1);
+        const absoluteCurrentPosition = rawCurrentPosition.abs();
+
+        if(rawCurrentPosition.isNegative() && amountDec.lessThan(absoluteCurrentPosition)){
+            toast({
+                title: 'Invalid NDC Amount',
+                description: `NDC value cannot be lower than the Current Position.`,
+                status: 'error',
+                duration: 4000,
+                isClosable: true,
+                position: 'top',
+            });
+            return;
+        }
+        else if (type === 'fixed' && amountDec.greaterThan(participantBalance)) {
             toast({
             title: 'Invalid NDC Amount',
-            description: `Auto-rejected: NDC must be less than or equal to the balance.`,
+            description: `NDC value cannot exceed the participant’s Balance.`,
             status: 'error',
             duration: 4000,
             isClosable: true,
