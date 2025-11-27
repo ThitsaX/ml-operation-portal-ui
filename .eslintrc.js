@@ -4,7 +4,8 @@ module.exports = {
     browser: true,
     es2021: true
   },
-  extends: ['react-app'],
+  extends: ['react-app', 'plugin:compat/recommended'],
+  plugins: ['compat'],
   overrides: [],
   parserOptions: {
     ecmaVersion: 'latest',
