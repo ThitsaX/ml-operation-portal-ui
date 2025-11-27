@@ -52,7 +52,7 @@ import { RootState } from '@store';
 import { CustomSelect } from '@components/interface';
 import { Ranges } from '@typescript/pages';
 import { usePagination, useSortBy, useTable, Column } from 'react-table';
-import { ISettlementWindow, INetTransferAmount, INetTransferDetail } from '@typescript/services';
+import { ISettlementWindow, INetTransferAmount, INetTransferDetail, ISettlementModel, ISettlementScheduler } from '@typescript/services';
 import { getSettlementSchedulerList } from '@services/settlements';
 import { getNextRunInfo, formatCountdown } from '@utils/schedule';
 
@@ -400,7 +400,7 @@ const SettlementWindows = () => {
             Header: 'Open Date',
             accessor: 'createdDate',
             Cell: ({ value }) => (
-                <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DD HH:mm')}</Text>
+                <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}</Text>
             ),
         },
         {
@@ -412,7 +412,7 @@ const SettlementWindows = () => {
                 }
 
                 return (
-                    <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DD HH:mm')}</Text>
+                    <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}</Text>
                 );
             },
 
@@ -554,93 +554,144 @@ const SettlementWindows = () => {
     //     // setValue('timezoneOffset', timezone, options)
     // }, [selectedTimezone]);
 
-    // Reseting values as soon as timezone change
     useEffect(() => {
-        reset(initialValues)
-        onChangeDateRange('oneDay');
-        setSettlementWindows([]);
-    }, [selectedTimezone])
-
-    useEffect(() => {
-        let timer: any;
+        let timer: ReturnType<typeof setInterval> | null = null;
+        let cancelled = false;
 
         const stop = () => {
-            if (timer) clearInterval(timer);
-            timer = null;
+            if (timer) {
+                clearInterval(timer);
+                timer = null;
+            }
         };
 
-        const chooseFirst = settlementModel === '' || !modelList?.length;
-        if (chooseFirst) {
-            stop();
-            setCountdownConfigured(null);
+        const resetState = (configured: boolean | null) => {
+            if (cancelled) return;
+            setCountdownConfigured(configured);
             setCountdownText('');
             setNextUtc(null);
-            return;
+        };
+
+        if (!modelList || modelList.length === 0) {
+            stop();
+            resetState(null);
+            return () => {
+                cancelled = true;
+                stop();
+            };
         }
 
-        const model = modelList?.find(m => m.name === settlementModel);
-        if (!model) {
+        const isDeferredNetModel = (m: ISettlementModel) => {
+            const t = (m.name || '').toString().toUpperCase();
+            return t.includes('DEFERREDNET');
+        };
+
+        const deferredModels = modelList.filter(isDeferredNetModel);
+
+        if (deferredModels.length === 0) {
             stop();
-            setCountdownConfigured(false);
-            setCountdownText('');
-            setNextUtc(null);
-            return;
+            resetState(null);
+            return () => {
+                cancelled = true;
+                stop();
+            };
         }
 
-        // must have auto-close and a valid zoneId like +07:00 / -03:30
-        const zoneOk = typeof model.zoneId === 'string' && /^[+-]\d{2}:[0-5]\d$/.test(model.zoneId);
-        if (!model.autoCloseWindow || !zoneOk) {
+        const model: ISettlementModel =
+            deferredModels.find((m: ISettlementModel) => m.autoCloseWindow) ?? deferredModels[0];
+
+        if (!model.autoCloseWindow) {
             stop();
-            setCountdownConfigured(false);
-            setCountdownText('');
-            setNextUtc(null);
-            return;
+            resetState(false);
+            return () => {
+                cancelled = true;
+                stop();
+            };
         }
 
         (async () => {
             try {
                 const resp = await getSettlementSchedulerList(model.settlementModelId);
-                const list: any[] = Array.isArray(resp?.settlementSchedulerList) ? resp.settlementSchedulerList : [];
+                if (cancelled) return;
+
+                const list: ISettlementScheduler[] = Array.isArray(resp?.settlementSchedulerList)
+                    ? resp.settlementSchedulerList
+                    : [];
+
                 const crons = list
-                    .filter(it => !!it?.active && typeof it?.cronExpression === 'string' && it.cronExpression.trim().length > 0)
-                    .map(it => String(it.cronExpression));
+                    .filter(
+                        (it) =>
+                            !!it?.active &&
+                            typeof it?.cronExpression === 'string' &&
+                            it.cronExpression.trim().length > 0
+                    )
+                    .map((it) => String(it.cronExpression));
 
                 if (!crons.length) {
                     stop();
-                    setCountdownConfigured(false);
-                    setCountdownText('');
-                    setNextUtc(null);
+                    resetState(false);
                     return;
                 }
 
-                const { nextUtc: n, countdown } = getNextRunInfo(crons, model.zoneId as string, Date.now(), model.autoCloseWindow);
-                if (!n) {
+                const { nextUtc: initialNextUtc, countdown } = getNextRunInfo(
+                    crons,
+                    model.zoneId as string,
+                    Date.now(),
+                    model.autoCloseWindow
+                );
+
+                if (!initialNextUtc || cancelled) {
                     stop();
-                    setCountdownConfigured(false);
-                    setCountdownText('');
-                    setNextUtc(null);
+                    resetState(false);
                     return;
                 }
 
                 setCountdownConfigured(true);
-                setNextUtc(n);
+                setNextUtc(initialNextUtc);
                 setCountdownText(countdown);
 
-                // tick every second
+                let currentNextUtc = initialNextUtc;
+
                 stop();
                 timer = setInterval(() => {
-                    setCountdownText(formatCountdown((n as number) - Date.now()));
+                    if (cancelled || !currentNextUtc) return;
+
+                    const diff = currentNextUtc - Date.now();
+
+                    if (diff <= 0) {
+                        // the next countdown cronjob one
+                        const { nextUtc: newNextUtc, countdown: newCountdown } = getNextRunInfo(
+                            crons,
+                            model.zoneId as string,
+                            Date.now(),
+                            model.autoCloseWindow
+                        );
+
+                        if (!newNextUtc) {
+                            stop();
+                            resetState(false);
+                            return;
+                        }
+
+                        currentNextUtc = newNextUtc;
+                        setNextUtc(newNextUtc);
+                        setCountdownText(newCountdown);
+                    } else {
+                        setCountdownText(formatCountdown(diff));
+                    }
                 }, 1000);
             } catch {
+                if (cancelled) return;
                 stop();
-                setCountdownConfigured(false);
-                setCountdownText('');
-                setNextUtc(null);
+                resetState(false);
             }
         })();
 
-        return () => stop();
-    }, [settlementModel, modelList]);
+        return () => {
+            cancelled = true;
+            stop();
+        };
+    }, [modelList]);
 
     const onClearHandler = useCallback(() => {
         reset()
@@ -824,24 +875,6 @@ const SettlementWindows = () => {
                 </Stack>
                 <Flex justify="space-between" align="center" flex={1} gap={5} mt={6}>
                     <Box>
-                        {countdownConfigured === null && (
-                            <Box
-                                display="inline-flex"
-                                alignItems="center"
-                                px={4}
-                                py={3}
-                                border="1px solid"
-                                borderColor="gray.200"
-                                borderRadius="md"
-                                bg="gray.50"
-                                color="gray.700"
-                            >
-                                <Text fontWeight="semibold">
-                                    Please choose Settlement Model to see when the window will close.
-                                </Text>
-                            </Box>
-                        )}
-
                         {countdownConfigured === false && (
                             <Box
                                 display="inline-flex"
@@ -1100,22 +1133,22 @@ const SettlementWindows = () => {
                     <ModalCloseButton />
                     <ModalBody>
                         <Stack spacing={4}>
-                            <SimpleGrid columns={{ base: 1, md: 5 }} spacing={6} textAlign="center">
+                            <SimpleGrid columns={{ base: 1, md: 5 }} spacing={3} textAlign="center">
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window ID</Text>
-                                    <Text fontSize="md">{selectedWindow?.settlementWindowId}</Text>
+                                    <Text fontSize="0.8rem">{selectedWindow?.settlementWindowId}</Text>
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window State</Text>
-                                    <Text fontSize="md">{selectedWindow?.state}</Text>
+                                    <Text fontSize="xs">{selectedWindow?.state}</Text>
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window Open Date</Text>
-                                    <Text fontSize="md">
+                                    <Text fontSize="xs">
                                         {
                                             (
                                                 selectedWindow?.createdDate ?
-                                                moment(selectedWindow.createdDate).tz(selectedTZString).format('YYYY-MM-DD HH:mm')
+                                                moment(selectedWindow.createdDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')
                                                 :
                                                 ""
                                             )
@@ -1124,11 +1157,11 @@ const SettlementWindows = () => {
                                 </Box>
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window Close Date</Text>
-                                    <Text fontSize="md">
+                                    <Text fontSize="xs">
                                         {
                                             selectedWindow?.state !== 'OPEN' && (
                                                 selectedWindow?.changedDate ?
-                                                moment(selectedWindow.changedDate).tz(selectedTZString).format('YYYY-MM-DD HH:mm')
+                                                moment(selectedWindow.changedDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')
                                                 :
                                                 ""
                                             )

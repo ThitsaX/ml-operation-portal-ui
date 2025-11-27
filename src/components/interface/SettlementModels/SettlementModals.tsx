@@ -35,7 +35,7 @@ import {
   modifySettlementScheduler,
   removeSettlementScheduler
 } from '@services/settlements';
-import { ISettlementScheduleForm } from '@typescript/form/settlements';
+import { ISettlementScheduleForm, ISettlementScheduleFormResponse } from '@typescript/form/settlements';
 import { ISettlementModel } from '@typescript/services';
 import { allTimezones, useTimezoneSelect } from 'react-timezone-select';
 import { getNextRunInfo, formatCountdown } from '@utils/schedule';
@@ -323,13 +323,54 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       /^(?:[+-]\d{2}:[0-5]\d)$/.test(settlementModel.zoneId)
         ? settlementModel.zoneId
         : currentOffset;
-  
+
     const crons = buildActiveCronList();
-    const { nextUtc: n, countdown } = getNextRunInfo(crons, zoneOffset, Date.now(), settlementModel.autoCloseWindow);
-    setNextUtc(n);
-    setNextCountdown(countdown);
-    
-  }, [rows, matrix, rowActiveMap, settlementModel.zoneId, settlementModel.autoCloseWindow, currentOffset, buildActiveCronList]);
+
+    if (!settlementModel.autoCloseWindow || !crons.length) {
+      setNextUtc(null);
+      setNextCountdown('--:--:--');
+      return;
+    }
+
+    let cancelled = false;
+
+    const tick = () => {
+      if (cancelled) return;
+
+      const { nextUtc: n, countdown } = getNextRunInfo(
+        crons,
+        zoneOffset,
+        Date.now(),
+        settlementModel.autoCloseWindow
+      );
+
+      if (!n) {
+        setNextUtc(null);
+        setNextCountdown('--:--:--');
+        return;
+      }
+
+      setNextUtc(n);
+      setNextCountdown(countdown);
+    };
+
+    tick();
+
+    const id = setInterval(tick, 1000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [
+    rows,
+    matrix,
+    rowActiveMap,
+    settlementModel.zoneId,
+    settlementModel.autoCloseWindow,
+    currentOffset,
+    buildActiveCronList,
+  ]);
 
   useEffect(() => {
     if (!nextUtc) return;
@@ -398,10 +439,44 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
             settlementModelId: settlementModel.settlementModelId,
             schedulerConfigId: rowIdMap[key] as string
           });
-          const { hasActive } = await refreshSchedules();
+
+          setRows((prev) => prev.filter((k) => k !== key));
+
+          setMatrix((prev) => {
+            const clone: Record<string, Set<Day>> = { ...prev };
+            delete clone[key];
+            return clone;
+          });
+
+          setServerMatrix((prev) => {
+            const clone: Record<string, Set<Day>> = { ...prev };
+            delete clone[key];
+            return clone;
+          });
+
+          setRowIdMap((prev) => {
+            const clone = { ...prev };
+            delete clone[key];
+            return clone;
+          });
+
+          setRowActiveMap((prev) => {
+            const clone: Record<string, boolean> = { ...prev };
+            delete clone[key];
+            return clone;
+          });
+
+          // compute if there will be any active schedules left AFTER this deletion
+          const otherHasActive = rows.some(
+            (k) =>
+              k !== key &&
+              rowActiveMap[k] &&
+              (matrix[k]?.size ?? 0) > 0
+          );
+
           toast({ status: 'info', title: 'Removed', description: `${nameForKey(key)} cleared.` });
 
-          if (!hasActive && (autoCloseWindow || settlementModel.autoCloseWindow)) {
+          if (!otherHasActive && (autoCloseWindow || settlementModel.autoCloseWindow)) {
             try {
               await modifySettlementModel({
                 settlementModelId: settlementModel.settlementModelId,
@@ -430,8 +505,27 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
 
       // create or modify
       if (!hasId) {
-        await createSettlementScheduler(payload);
-        await refreshSchedules();
+        const newScheduler: ISettlementScheduleFormResponse = await createSettlementScheduler(payload);
+        if (newScheduler?.schedulerConfigId) {
+          
+          setRowIdMap(prev => ({
+            ...prev,
+            [key]: newScheduler.schedulerConfigId,
+          }));
+
+          setServerMatrix(prev => ({
+            ...prev,
+            [key]: new Set(set),
+          }));
+
+          setRowActiveMap(prev => ({
+            ...prev,
+            [key]: true,
+          }));
+        } else{
+          throw "Scheduler Config Id not found"
+        }
+        
         toast({ status: 'success', title: 'Created', description: `${nameForKey(key)} saved.` });
       } else {
         await modifySettlementScheduler({
@@ -439,7 +533,11 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
           active: true,
           schedulerConfigId: rowIdMap[key] as string
         });
-        await refreshSchedules();
+
+        setServerMatrix(prev => ({
+          ...prev,
+          [key]: new Set(set),
+        }));
         toast({ status: 'success', title: 'Updated', description: `${nameForKey(key)} updated.` });
       }
 

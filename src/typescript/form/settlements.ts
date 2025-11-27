@@ -25,6 +25,11 @@ export interface ISettlementScheduleForm {
     cronExpression: string,
 } 
 
+export interface ISettlementScheduleFormResponse { 
+  is_created: boolean, 
+  schedulerConfigId: string 
+}
+
 export interface ISettlementScheduleModifyForm extends ISettlementScheduleForm {
   schedulerConfigId: string;
   active: boolean;
