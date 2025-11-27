@@ -355,7 +355,7 @@ const ParticipantPositions = () => {
         try {
             const res = await createApprovalRequest(data);
             toast({
-                title: `${actionLabel} request created`,
+                title: `${actionLabel}`,
                 position: 'top',
                 description: `Amount: ${data.amount} ${data.currency}`,
                 status: 'success',
