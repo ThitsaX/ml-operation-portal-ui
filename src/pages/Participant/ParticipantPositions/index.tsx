@@ -378,7 +378,7 @@ const ParticipantPositions = () => {
     };
 
     const handleDeposit = (amountStr: string) => {
-        
+        const message = `Deposit request created and awaiting approval`;
         const amountDec = new Decimal(amountStr);
         const data: IApprovalRequest = {
             requestedAction: PositionActionType.DEPOSIT,
@@ -388,10 +388,11 @@ const ParticipantPositions = () => {
             positionCurrencyId: selectedParticipant?.participantPositionCurrencyId || 0,
             amount:amountDec.toFixed(2),
         };
-        approvalRequest(data, 'Deposit', onDepositClose);
+        approvalRequest(data, message, onDepositClose);
     };
 
     const handleWithdraw = (amountStr: string) => {
+        const message = `Withdraw request created and awaiting approval`;
         const amountDec = new Decimal(amountStr);
         const data: IApprovalRequest = {
             requestedAction: PositionActionType.WITHDRAW,
@@ -443,10 +444,11 @@ const ParticipantPositions = () => {
                     });
                 return;
             }
-            else approvalRequest(data, 'Withdraw', onWithdrawClose);
+            else approvalRequest(data, message, onWithdrawClose);
     };
 
     const handleNetDebitCard = (type: 'fixed' | 'percentage', amountStr: string) => {
+        const message = `NDC update request created and awaiting approval`;
         let amountDec = new Decimal(amountStr);
         const data: IApprovalRequest = {
             requestedAction:
@@ -488,7 +490,7 @@ const ParticipantPositions = () => {
             return;
         }
         
-        approvalRequest(data, 'Net Debit Cap Update', onNdcClose);
+        approvalRequest(data, message, onNdcClose);
     };
 
 
