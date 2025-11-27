@@ -1,5 +1,5 @@
 import {
-  getUserListByParticipant, getRoleListByParticipant, getOrganizationListByParticipant, getContactList, getParticipantProfile,
+  getUserListByParticipant,getParticipantListIncludingHub, getRoleListByParticipant, getOrganizationListByParticipant, getContactList, getParticipantProfile,
   getParticipantCurrencyList, getHubCurrency, getLiquidityProfileList, getParticipantList,
   getParticipantPositionList
 } from '@services/participant'
@@ -46,6 +46,16 @@ export const useGetOrganizationListByParticipant = (
     ...options
   })
 
+export const useGetParticipantListIncludingHub = (
+  options?: UseQueryOptions<IParticipantOrganization[],
+    IApiErrorResponse
+  >
+  ) =>
+  useQuery<IParticipantOrganization[], IApiErrorResponse>({
+    queryKey: ['getParticipantListIncludingHub'],
+    queryFn: getParticipantListIncludingHub,
+    ...options
+  })
 
 export const useGetParticipantCurrencyList = (
   options?: UseQueryOptions<ICurrency[],
