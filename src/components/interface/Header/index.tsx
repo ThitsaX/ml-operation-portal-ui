@@ -80,6 +80,12 @@ const Header = () => {
     navigate('change-password');
   }, [navigate]);
 
+  const handleClick = (participantName: string, participantId: string) => {
+      navigate(`/participant/position/${participantName}`, {
+          state: { participantId },
+      });
+  };
+
   return (
     <HStack
       h={12}
@@ -98,6 +104,13 @@ const Header = () => {
       zIndex={1}>
       {data != null ? (
         <VStack w={10} h={10} justifyContent="center" alignItems="center">
+          <Box
+            cursor={data.participantName?.toLowerCase() === 'hub' ? 'pointer' : 'default'}
+            onClick={
+              data.participantName?.toLowerCase() === 'hub'
+                ? () => handleClick(data.participantName, data.participantId)
+                : undefined
+          }>
           <Image
             alt={data.participantName}
             src={`data:${data.logoFileType};base64,${data.logo}`}
@@ -109,6 +122,7 @@ const Header = () => {
             width="8"
             height="8"
           />
+          </Box>
         </VStack>
       ) : null}
       <Flex flex={2}>

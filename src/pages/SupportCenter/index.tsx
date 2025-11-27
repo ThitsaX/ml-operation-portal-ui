@@ -22,7 +22,7 @@ import { useState } from 'react';
 import { TbGavel } from "react-icons/tb";
 import { GrServices } from "react-icons/gr";
 import { ImUsers } from "react-icons/im";
-import { useGetOrganizationListByParticipant } from '@hooks/services/participant';
+import { useGetParticipantListIncludingHub } from '@hooks/services/participant';
 import { getContactList } from '@services/participant';
 import { IBusinessContact, IParticipantOrganization } from '@typescript/services';
 import { SupportCard } from '@components/interface/SupportCenter';
@@ -35,7 +35,7 @@ const SupportCenter = () => {
   const [contactList, setContactList] = useState<IBusinessContact[] | null>(null);
 
   // Data Fetching
-  const { data: participantInfoList } = useGetOrganizationListByParticipant();
+  const { data: participantInfoList } = useGetParticipantListIncludingHub();
 
   // Modal Control
   const { isOpen: isListOpen, onOpen: onListOpen, onClose: onListClose } = useDisclosure();
