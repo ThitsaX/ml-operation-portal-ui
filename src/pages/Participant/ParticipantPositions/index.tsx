@@ -408,8 +408,7 @@ const ParticipantPositions = () => {
         const rawCurrentPosition = new Decimal(selectedParticipant!.currentPosition || 0).mul(-1);
         const absoluteCurrentPosition = rawCurrentPosition.abs();
         const ndc = new Decimal(selectedParticipant!.ndc || 0);
-        
-            if (remainingBalance.lessThan(ndc)) {
+            if (selectedParticipant?.ndcPercent === "-" && remainingBalance.lessThan(ndc)) {
                 toast({
                     title: 'Rejected Withdraw',
                     description: `Amount is invalid. Balance after this transaction cannot be lower than the NDC.`,
@@ -448,7 +447,7 @@ const ParticipantPositions = () => {
     };
 
     const handleNetDebitCard = (type: 'fixed' | 'percentage', amountStr: string) => {
-        const amountDec = new Decimal(amountStr);
+        let amountDec = new Decimal(amountStr);
         const data: IApprovalRequest = {
             requestedAction:
                 type === 'fixed'
@@ -464,7 +463,8 @@ const ParticipantPositions = () => {
         const participantBalance = Math.abs(selectedParticipant!.balance || 0);
         const rawCurrentPosition = new Decimal(selectedParticipant!.currentPosition || 0).mul(-1);
         const absoluteCurrentPosition = rawCurrentPosition.abs();
-
+        const participantBalanceDec = new Decimal(participantBalance);
+        amountDec = type === 'percentage' ? participantBalanceDec.mul(amountDec.div(100)).toDecimalPlaces(2, Decimal.ROUND_DOWN): amountDec ;
         if(rawCurrentPosition.isNegative() && amountDec.lessThan(absoluteCurrentPosition)){
             toast({
                 title: 'Invalid NDC Amount',
