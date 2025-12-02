@@ -69,6 +69,11 @@ import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker
 
 const finalizeSettlementHelper = new FinalizeSettlementHelper();
 
+type settlementValidationResult = {
+    mode: number,
+    dfsps: string[],
+}
+
 const FinalizeSettlement = () => {
 
     const [dateRange, setDateRange] = useState<Ranges>('oneDay');
@@ -80,10 +85,12 @@ const FinalizeSettlement = () => {
 
     const [pageNumber, setPageNumber] = useState<String>('1');
     const { isOpen: isFinalizeOpen, onOpen: onFinalizeOpen, onClose: onFinalizeClose } = useDisclosure();
-
+    const { isOpen: isWarnOpen, onOpen: onWarnOpen, onClose: onWarnClose } = useDisclosure();
     const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure();
+
     const [selectedSettlement, setSelectedSettlement] = useState<IFinalizeSettlement | null>(null);
     const [netTransferAmount, setNetTransferAmount] = useState<INetTransferAmount | null>(null);
+    const [warnDfsps, setWarnDfsps] = useState<string[]>([]);
 
     const [finalizeSettlements, setFinalizeSettlements] = useState<IFinalizeSettlement[]>([]);
 
@@ -217,12 +224,57 @@ const FinalizeSettlement = () => {
         onFinalizeOpen();
     };
 
-    const handleConfirmedFinalize = () => {
-        if (!selectedSettlement) {
-            return;
-        }
+    const validateFinalization = async (settlementId: string): Promise<settlementValidationResult | null> => {
+        // We will return 0: ok, 1: error, 2: warning
+        const result: settlementValidationResult = {
+            mode: 0,
+            dfsps: [],
+        };
 
-        const data = { settlementId: selectedSettlement.settlementId };
+        // Validate by settlement's net transfer amount
+        try {
+            start();
+
+            const data: INetTransferAmount = await getNetTransferAmountBySettlement(settlementId);
+
+            if (!data.details.length) {
+                return null;
+            }
+
+            for (const dfsp of data.details) {
+                if (dfsp.creditAmount <= 0) {
+                    continue;
+                }
+
+                if (dfsp.creditAmount > Math.abs(dfsp.participantBalance)) {
+                    // Set the result mode to error and stop the loop
+                    result.mode = 1;
+                    break;
+                } else if (dfsp.participantLimit > (Math.abs(dfsp.participantBalance) - dfsp.creditAmount)) {
+                    // Set the result mode to warning but keep going to find out more error/warnings
+                    result.mode = 2;
+                    result.dfsps.push(dfsp.participantName);
+                }
+            }
+
+            return result;
+        } catch(err: any) {
+            toast({
+                position: 'top',
+                description: getErrorMessage(err) || 'Cannot retrieve net transfer amount',
+                status: 'error',
+                isClosable: true,
+                duration: 3000
+            });
+
+            return null;
+        } finally {
+            complete();
+        }
+    }
+
+    const proceedWithFinalization = (settlementId: string) => {
+        const data = { settlementId: settlementId };
 
         start();
         finalizeSettlementWindow(data).then((data) => {
@@ -248,8 +300,50 @@ const FinalizeSettlement = () => {
         })
         .finally(() => {
             complete();
-            onFinalizeClose();
+            if (isFinalizeOpen) onFinalizeClose();
+            if (isWarnOpen) onWarnClose();
         });
+    }
+
+    const handleConfirmedFinalize = async () => {
+        if (!selectedSettlement) {
+            onFinalizeClose();
+            return;
+        }
+
+        // Validations before finalization
+        const validateResult = await validateFinalization(selectedSettlement.settlementId);
+
+        if (!validateResult) {
+            onFinalizeClose();
+            return;
+        } else if (validateResult.mode === 1) {
+            onFinalizeClose();
+            toast({
+                position: 'top',
+                description: 'Credit amount cannot be greater than the balance',
+                status: 'error',
+                isClosable: true,
+                duration: 3000
+            });
+            return;
+        } else if (validateResult.mode === 2) {
+            onFinalizeClose();
+            setWarnDfsps(validateResult.dfsps);
+            // Open a warning dialogue to confirm proceed or not
+            onWarnOpen();
+            return;
+        }
+
+        proceedWithFinalization(selectedSettlement.settlementId);
+    }
+
+    const produceWarnDfsps = () => {
+        return (
+            <div>
+                { warnDfsps.map((dfsp) => <Text fontSize="md" color="red">{dfsp}</Text>) }
+            </div>
+        );
     }
 
     const columns = useMemo<Column<IFinalizeSettlement>[]>(() => {
@@ -745,7 +839,7 @@ const FinalizeSettlement = () => {
                     <ModalHeader>Finalize Settlement ID: <strong>{selectedSettlement?.settlementId}</strong></ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        Are you sure you want to proceed?
+                        Are you sure you want to finalize?
                     </ModalBody>
 
                     <ModalFooter>
@@ -754,6 +848,28 @@ const FinalizeSettlement = () => {
                         </Button>
                         <Button colorScheme="green" onClick={handleConfirmedFinalize}>
                             Yes, Finalize
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
+            <Modal isOpen={isWarnOpen} onClose={onWarnClose} isCentered size="lg">
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Proceed with Settlement ID: <strong>{selectedSettlement?.settlementId}</strong></ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        For the following organization(s): 
+                        {produceWarnDfsps()}
+                        this settlement will result in their balance falling below the NDC value. Do you wish to proceed?
+                    </ModalBody>
+
+                    <ModalFooter>
+                        <Button variant="ghost" mr={3} onClick={onWarnClose}>
+                            No
+                        </Button>
+                        <Button colorScheme="green" onClick={() => proceedWithFinalization(selectedSettlement?.settlementId || "")}>
+                            Yes, Proceed
                         </Button>
                     </ModalFooter>
                 </ModalContent>

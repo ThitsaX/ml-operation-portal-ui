@@ -87,6 +87,8 @@ export interface INetTransferDetail {
     debitAmount: number;
     creditAmount: number;
     currency: string;
+    participantBalance: number;
+    participantLimit: number;
 }
 
 export interface INetTransferAmount {
