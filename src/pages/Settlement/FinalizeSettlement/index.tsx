@@ -110,8 +110,8 @@ const FinalizeSettlement = () => {
     //     : moment().tz(selectedTZString).format('ZZ').replace('+', '');
 
     const initialValues = {
-        fromDate: moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'),
-        toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
+        fromDate: moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm:ss'),
+        toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'),
         currency: '',
         state: ''
     }
@@ -130,16 +130,16 @@ const FinalizeSettlement = () => {
     });
 
       useEffect(() => {
-        setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
-        setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+        setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'));
+        setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'));
       }, [selectedTZString, setValue]);
 
     const onSearchHandler = (values: IFinalizeSettlementForm) => {
         const currentTimeZone = moment.tz.guess();
 
         // Convert the current timezone to UTC
-        values.fromDate = moment.tz(values.fromDate, selectedTZString ? selectedTZString: currentTimeZone ).utc().set('second', 0).format();
-        values.toDate = moment.tz(values.toDate, selectedTZString ? selectedTZString: currentTimeZone).utc().set('second', 59).format();
+        values.fromDate = moment.tz(values.fromDate, selectedTZString ? selectedTZString: currentTimeZone ).utc().format();
+        values.toDate = moment.tz(values.toDate, selectedTZString ? selectedTZString: currentTimeZone).utc().format();
 
 
         if (values.state === '') {
@@ -472,28 +472,28 @@ const FinalizeSettlement = () => {
 
             switch (range) {
                 case 'oneDay':
-                    from = moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm');
-                    to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
+                    from = moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm:ss');
+                    to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss');
                     break;
                 case 'today':
-                    from = moment().tz(selectedTZString).startOf('d').format('YYYY-MM-DDTHH:mm');
-                    to = moment().tz(selectedTZString).endOf('d').format('YYYY-MM-DDTHH:mm');
+                    from = moment().tz(selectedTZString).startOf('d').format('YYYY-MM-DDTHH:mm:ss');
+                    to = moment().tz(selectedTZString).endOf('d').format('YYYY-MM-DDTHH:mm:ss');
                     break;
                 case 'twoDay':
-                    from = moment().tz(selectedTZString).subtract(2, 'd').format('YYYY-MM-DDTHH:mm');
-                    to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
+                    from = moment().tz(selectedTZString).subtract(2, 'd').format('YYYY-MM-DDTHH:mm:ss');
+                    to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss');
                     break;
                 case 'oneWeek':
-                    from = moment().tz(selectedTZString).subtract(1, 'w').format('YYYY-MM-DDTHH:mm');
-                    to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
+                    from = moment().tz(selectedTZString).subtract(1, 'w').format('YYYY-MM-DDTHH:mm:ss');
+                    to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss');
                     break;
                 case 'oneMonth':
-                    from = moment().tz(selectedTZString).subtract(1, 'month').format('YYYY-MM-DDTHH:mm');
-                    to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
+                    from = moment().tz(selectedTZString).subtract(1, 'month').format('YYYY-MM-DDTHH:mm:ss');
+                    to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss');
                     break;
                 case 'oneYear':
-                    from = moment().tz(selectedTZString).subtract(1, 'y').format('YYYY-MM-DDTHH:mm');
-                    to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
+                    from = moment().tz(selectedTZString).subtract(1, 'y').format('YYYY-MM-DDTHH:mm:ss');
+                    to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss');
                     break;
                 case 'custom':
                     setDateRange(range);

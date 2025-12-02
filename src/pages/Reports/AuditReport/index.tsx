@@ -68,8 +68,8 @@ const AuditReport = () => {
         reset
     } = useForm<IGetAuditReport>({
         defaultValues: {
-            fromDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
-            toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
+            fromDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
+            toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'),
             userId: '',
             actionId: '',
             fileType: 'xlsx',
@@ -80,8 +80,8 @@ const AuditReport = () => {
     });
 
     useEffect(() => {
-        setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
-        setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+        setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'));
+        setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'));
 
     }, [selectedTimezone, user?.participantId, setValue]);
 
@@ -97,12 +97,10 @@ const AuditReport = () => {
         // Interpret input as selected timezone, then convert to UTC
         const utcFromDate = moment.tz(formData.fromDate, selectedTimezone?.value || currentTimeZone)
             .utc()
-            .set('second', 0)
             .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
         const utcToDate = moment.tz(formData.toDate, selectedTimezone?.value || currentTimeZone)
             .utc()
-            .set('second', 59)
             .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
         const tzOffSet = selectedTimezone?.offset === 0

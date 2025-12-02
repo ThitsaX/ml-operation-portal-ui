@@ -79,15 +79,15 @@ const SettlementDetailReport = () => {
       fspId: '',
       settlementId: '',
       fileType: 'xlsx',
-      startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
-      endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
+      startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
+      endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'),
     },
     mode: 'onChange'
   });
 
   useEffect(() => {
-    setValue('startDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
-    setValue('endDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+    setValue('startDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'));
+    setValue('endDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'));
 
     setSettlementIdOptions([]);
     setSettlementId('');
@@ -159,11 +159,9 @@ const SettlementDetailReport = () => {
     const formData = getValues();
 
     const StartDate = moment.tz(formData.startDate, selectedTimezone?.value)
-    .set('second', 0)
     .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const EndDate = moment.tz(formData.endDate, selectedTimezone?.value)
-    .set('second', 59)
     .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const tzOffSet = selectedTimezone?.offset === 0
