@@ -19,6 +19,7 @@ interface BaseProps {
   includeAllOption?: boolean;
   isClearable?: boolean;
   isDisabled?: boolean;
+  isLoading?: boolean;
   menuPlacement?: MenuPlacement; // 'auto' | 'top' | 'bottom'
   menuPortalTarget?: boolean;
   size?: 'sm' | 'md' | 'lg'; // Add size prop without default
@@ -51,6 +52,7 @@ const CustomSelect: React.FC<UnifiedSelectProps> = (props) => {
     includeAllOption = false,
     isClearable = false,
     isDisabled = false,
+    isLoading = false,
     menuPlacement = 'auto',
     menuPortalTarget = false,
     size, // No default value
@@ -189,6 +191,7 @@ const WheelMenuList = (menuProps: any) => {
       placeholder={placeholder || 'Select...'}
       isClearable={isClearable}
       isDisabled={isDisabled}
+      isLoading={isLoading}
       menuPlacement={menuPlacement}
       menuPortalTarget={menuPortalTarget ? document.body : undefined}
       closeMenuOnScroll={false}
