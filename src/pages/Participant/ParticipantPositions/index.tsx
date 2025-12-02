@@ -392,59 +392,59 @@ const ParticipantPositions = () => {
     };
 
     const handleWithdraw = (amountStr: string) => {
+        
+        if (!selectedParticipant) return;
+
         const message = `Withdraw request created and awaiting approval`;
         const amountDec = new Decimal(amountStr);
         const data: IApprovalRequest = {
             requestedAction: PositionActionType.WITHDRAW,
-            participantName: selectedParticipant?.participantName || "",
-            currency: selectedParticipant?.currency || "",
-            settlementCurrencyId: selectedParticipant?.participantSettlementCurrencyId || 0,
-            positionCurrencyId: selectedParticipant?.participantPositionCurrencyId || 0,
+            participantName: selectedParticipant.participantName || "",
+            currency: selectedParticipant.currency || "",
+            settlementCurrencyId: selectedParticipant.participantSettlementCurrencyId || 0,
+            positionCurrencyId: selectedParticipant.participantPositionCurrencyId || 0,
             amount: amountDec.toFixed(2),
         };
     
-        const participantBalance = new Decimal(Math.abs(selectedParticipant!.balance || 0));
+        const participantBalance = new Decimal(Math.abs(selectedParticipant.balance || 0));
 
         const remainingBalance = participantBalance.minus(amountDec).toDecimalPlaces(2, Decimal.ROUND_DOWN); 
-        const rawCurrentPosition = new Decimal(selectedParticipant!.currentPosition || 0).mul(-1);
+        const rawCurrentPosition = new Decimal(selectedParticipant.currentPosition || 0).mul(-1);
         const absoluteCurrentPosition = rawCurrentPosition.abs();
-        const ndc = new Decimal(selectedParticipant!.ndc || 0);
-            if (selectedParticipant?.ndcPercent === "-" && remainingBalance.lessThan(ndc)) {
-                toast({
-                    title: 'Rejected Withdraw',
-                    description: `Amount is invalid. Balance after this transaction cannot be lower than the NDC.`,
-                    status: 'error',
-                    duration: 4000,
-                    isClosable: true,
-                    position: 'top',
-                });
-                return;
+        const rawPercent = selectedParticipant.ndcPercent;
+        const ndcPercent = rawPercent && rawPercent !== "-" ? new Decimal(rawPercent.replace("%", "").trim()): null;
+        const ndcAfterWithdraw = ndcPercent ? remainingBalance.mul(ndcPercent.div(100)).toDecimalPlaces(2, Decimal.ROUND_DOWN):null;
+
+        const ndc = new Decimal(selectedParticipant.ndc || 0);
+
+            if (amountDec.greaterThan(participantBalance)) {
+                return showError(`Amount is invalid. Transaction amount cannot exceed the available balance.`);
             }
 
-            else if (rawCurrentPosition.isNegative() && remainingBalance.lessThan(absoluteCurrentPosition)) {
-                toast({
-                    title: 'Rejected Withdraw',
-                    description: `Amount is invalid. Balance after this transaction cannot be lower than the Current Position.`,
-                    status: 'error',
-                    duration: 4000,
-                    isClosable: true,
-                    position: 'top',
-                });
-                return;
+            if (!ndcPercent && remainingBalance.lessThan(ndc)) {
+                return showError(`Amount is invalid. Balance after this transaction cannot be lower than the NDC.`);
             }
- 
-            else if (amountDec.greaterThan(participantBalance)) {
-                toast({
-                    title: 'Rejected Withdraw',
-                    description: `Amount is invalid. Transaction amount cannot exceed the available balance.`,
-                    status: 'error',
-                    duration: 4000,
-                    isClosable: true,
-                    position: 'top',
-                    });
-                return;
+
+            if (rawCurrentPosition.isNegative() && remainingBalance.lessThan(absoluteCurrentPosition)) {
+                return showError(`Amount is invalid. Balance after this transaction cannot be lower than the Current Position.`);
             }
-            else approvalRequest(data, message, onWithdrawClose);
+
+            if(ndcPercent && rawCurrentPosition.isNegative() && ndcAfterWithdraw!.lessThan(absoluteCurrentPosition)){
+                return showError(`Amount is invalid. This transaction amount results in NDC lower than the Current Position.`);
+            }
+
+            approvalRequest(data, message, onWithdrawClose);
+    };
+
+    const showError = (description: string) => {
+        toast({
+            title: 'Rejected Withdraw',
+            description,
+            status: 'error',
+            duration: 4000,
+            isClosable: true,
+            position: 'top',
+        });
     };
 
     const handleNetDebitCard = (type: 'fixed' | 'percentage', amountStr: string) => {
