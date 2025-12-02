@@ -50,6 +50,10 @@ const TIME_OPTIONS = {
     label: String(i).padStart(2, "0"),
     value: i.toString(),
   })),
+  seconds: Array.from({ length: 60 }, (_, i) => ({
+    label: String(i).padStart(2, "0"),
+    value: i.toString(),
+  })),
   ampm: [
     { label: "AM", value: "AM" },
     { label: "PM", value: "PM" },
@@ -82,12 +86,15 @@ const useDynamicYearOptions = (selectedYear?: number) => {
 // Date Formatting Utilities
 const formatForDateTimeLocal = (date: Date): string => {
   const pad = (num: number) => String(num).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(
+    date.getMinutes()
+  )}:${pad(date.getSeconds())}`;
 };
 
 const formatForDisplay = (date: Date): string => {
-  return format(date, "MM/dd/yyyy hh:mm a");
+  return format(date, "MM/dd/yyyy hh:mm:ss a");
 };
+
 
 export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
   (
@@ -171,21 +178,28 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
 
     const updated = new Date(day);
     if (selectedDate) {
-      updated.setHours(selectedDate.getHours(), selectedDate.getMinutes());
+      updated.setHours(
+        selectedDate.getHours(),
+        selectedDate.getMinutes(),
+        selectedDate.getSeconds()
+      );
     } else {
       const now = new Date();
-      updated.setHours(now.getHours(), now.getMinutes());
+      updated.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
     }
     emitChange(updated);
   }, [selectedDate, emitChange, disabled]);
 
-  const handleTimeChange = useCallback((hour: number, minute: number) => {
-    if (disabled) return;
+  const handleTimeChange = useCallback(
+    (hour: number, minute: number, second: number) => {
+      if (disabled) return;
 
-    const updated = selectedDate ? new Date(selectedDate) : new Date();
-    updated.setHours(hour, minute);
-    emitChange(updated);
-  }, [selectedDate, emitChange, disabled]);
+      const updated = selectedDate ? new Date(selectedDate) : new Date();
+      updated.setHours(hour, minute, second);
+      emitChange(updated);
+    },
+    [selectedDate, emitChange, disabled]
+  );
 
   // Selection Handlers
   const handleMonthChange = useCallback((val: OptionType | null) => {
@@ -218,12 +232,29 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
     const currentAmPm = getSelectedAmPm();
     const newHour24 = convert12to24(newHour12, currentAmPm);
 
-    handleTimeChange(newHour24, selectedDate?.getMinutes() || 0);
+    handleTimeChange(
+      newHour24,
+      selectedDate?.getMinutes() || new Date().getMinutes(),
+      selectedDate?.getSeconds() || new Date().getSeconds()
+    );
   }, [selectedDate, handleTimeChange, disabled]);
 
   const handleMinuteChange = useCallback((val: OptionType | null) => {
     if (disabled || !val) return;
-    handleTimeChange(selectedDate?.getHours() || new Date().getHours(), Number(val.value));
+    handleTimeChange(
+        selectedDate?.getHours() || new Date().getHours(),
+        Number(val.value),
+        selectedDate?.getSeconds() || new Date().getSeconds()
+    );
+  }, [selectedDate, handleTimeChange, disabled]);
+
+  const handleSecondChange = useCallback((val: OptionType | null) => {
+    if (disabled || !val) return;
+    handleTimeChange(
+      selectedDate?.getHours() || new Date().getHours(),
+      selectedDate?.getMinutes() || new Date().getMinutes(),
+      Number(val.value)
+    );
   }, [selectedDate, handleTimeChange, disabled]);
 
   const handleAmPmChange = useCallback((val: OptionType | null) => {
@@ -232,7 +263,11 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
     const currentHour12 = getCurrentHours12();
     const newHour24 = convert12to24(currentHour12, val.value);
 
-    handleTimeChange(newHour24, selectedDate?.getMinutes() || 0);
+    handleTimeChange(
+      newHour24,
+      selectedDate?.getMinutes() || new Date().getMinutes(),
+      selectedDate?.getSeconds() || new Date().getSeconds()
+    );
   }, [selectedDate, handleTimeChange, disabled]);
 
   // Helper Functions
@@ -258,6 +293,9 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
     hour: TIME_OPTIONS.hours.find(opt => opt.value === getCurrentHours12().toString()),
     minute: TIME_OPTIONS.minutes.find(opt =>
       opt.value === (selectedDate?.getMinutes() || new Date().getMinutes()).toString()
+    ),
+    second: TIME_OPTIONS.seconds.find(opt =>
+      opt.value === (selectedDate?.getSeconds() || new Date().getSeconds()).toString()
     ),
     ampm: TIME_OPTIONS.ampm.find(opt => opt.value === getSelectedAmPm()),
   }), [selectedDate, month, yearOptions]);
@@ -289,6 +327,7 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
                 cursor={disabled ? "not-allowed" : "pointer"}
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 className="date-time-input"
+                fontSize="sm"
                 placeholder={placeholder}
                 isDisabled={disabled} // Chakra UI disabled prop
                 opacity={disabled ? 0.6 : 1}
@@ -375,6 +414,16 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
                 size="sm"
                 isDisabled={disabled}
               />
+              <CustomSelect
+                options={TIME_OPTIONS.seconds}
+                value={selectedValues.second ?? null}
+                onChange={handleSecondChange}
+                width="100%"
+                maxMenuHeight={200}
+                size="sm"
+                isDisabled={disabled}
+              />
+              <Box/>
               <CustomSelect
                 options={TIME_OPTIONS.ampm}
                 value={selectedValues.ampm ?? null}
