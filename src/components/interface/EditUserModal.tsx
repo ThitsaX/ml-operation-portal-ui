@@ -57,6 +57,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   const [roleList, setRoleList] = useState<IParticipantUserRole[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isRoleLoading, setIsRoleLoading] = useState(false);
 
   const {
     control,
@@ -83,6 +84,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
   // Fetch roles by participantName
   const getRoleList = async (participantName: string) => {
+    setIsRoleLoading(true);
     try {
       const roles = await getRoleListByParticipant(participantName);
       setRoleList(roles || []);
@@ -90,7 +92,9 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     } catch (error) {
       setRoleList([]);
       return [];
-    }
+    }finally {
+    setIsRoleLoading(false);
+  }
   };
 
   // Initialize form on open
@@ -239,6 +243,8 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                   <CustomSelect
                     menuPortalTarget={true}
                     isMulti={true}
+                    isLoading={isRoleLoading}
+                    isDisabled={isRoleLoading}
                     options={roleList?.map(role => ({ value: role.roleId, label: role.name })) ?? []}
                     value={
                       (roleList ?? [])
@@ -313,7 +319,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
           <Button colorScheme="blue" onClick={handleSubmit(handleFormSubmit)}
            isLoading={isSaving}
            loadingText={isEdit ? "Updating..." : "Saving..."}
-           isDisabled={!isValid || isSaving}>
+           isDisabled={!isValid || isSaving || isRoleLoading}>
             {isEdit ? 'Update' : 'Save'}
           </Button>
         </ModalFooter>
