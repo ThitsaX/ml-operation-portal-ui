@@ -38,7 +38,7 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
     const inputValue = selectedType === "fixed" ? fixedAmount : percentage;
     const inputLabel = selectedType === "fixed" ? "Amount" : "Percentage";
 
-    const { isValid, errorMessage } = validateAmount( inputValue, inputLabel, selectedType === "percentage" ? "99.99" : undefined);
+    const { isValid, errorMessage } = validateAmount( inputValue, inputLabel, selectedType === "percentage" ? "100.00" : undefined);
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
