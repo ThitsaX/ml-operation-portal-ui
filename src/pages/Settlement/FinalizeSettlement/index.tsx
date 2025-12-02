@@ -86,6 +86,7 @@ const FinalizeSettlement = () => {
     const [pageNumber, setPageNumber] = useState<String>('1');
     const { isOpen: isFinalizeOpen, onOpen: onFinalizeOpen, onClose: onFinalizeClose } = useDisclosure();
     const { isOpen: isWarnOpen, onOpen: onWarnOpen, onClose: onWarnClose } = useDisclosure();
+    const { isOpen: isErrorOpen, onOpen: onErrorOpen, onClose: onErrorClose } = useDisclosure();
     const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure();
 
     const [selectedSettlement, setSelectedSettlement] = useState<IFinalizeSettlement | null>(null);
@@ -249,6 +250,7 @@ const FinalizeSettlement = () => {
                 if (dfsp.creditAmount > Math.abs(dfsp.participantBalance)) {
                     // Set the result mode to error and stop the loop
                     result.mode = 1;
+                    result.dfsps = [dfsp.participantName];
                     break;
                 } else if (dfsp.participantLimit > (Math.abs(dfsp.participantBalance) - dfsp.creditAmount)) {
                     // Set the result mode to warning but keep going to find out more error/warnings
@@ -319,13 +321,9 @@ const FinalizeSettlement = () => {
             return;
         } else if (validateResult.mode === 1) {
             onFinalizeClose();
-            toast({
-                position: 'top',
-                description: 'Credit amount cannot be greater than the balance',
-                status: 'error',
-                isClosable: true,
-                duration: 3000
-            });
+            setWarnDfsps(validateResult.dfsps);
+            // Show a customized error message model
+            onErrorOpen();
             return;
         } else if (validateResult.mode === 2) {
             onFinalizeClose();
@@ -870,6 +868,25 @@ const FinalizeSettlement = () => {
                         </Button>
                         <Button colorScheme="green" onClick={() => proceedWithFinalization(selectedSettlement?.settlementId || "")}>
                             Yes, Proceed
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
+            <Modal isOpen={isErrorOpen} onClose={onErrorClose} isCentered size="lg">
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Finalize Settlement ID: <strong>{selectedSettlement?.settlementId}</strong></ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        Error: 
+                        {produceWarnDfsps()}
+                        The above organization does not have sufficient balance to perform this action.
+                    </ModalBody>
+
+                    <ModalFooter>
+                        <Button colorScheme="red" mr={3} onClick={onErrorClose}>
+                            Close
                         </Button>
                     </ModalFooter>
                 </ModalContent>
