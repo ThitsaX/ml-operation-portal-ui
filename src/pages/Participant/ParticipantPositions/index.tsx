@@ -48,6 +48,7 @@ import { getErrorMessage } from '@helpers/errors';
 import { hasActionPermission } from '@helpers/permissions';
 import { formatNumberWithCommas } from '@utils';
 import Decimal from 'decimal.js';
+import { MdWarningAmber } from "react-icons/md";
 
 const ParticipantPositions = () => {
 
@@ -163,10 +164,25 @@ const ParticipantPositions = () => {
                     Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
                         const balance = row.original.balance;
                         const displayBalance = balance === 0 ? balance : ((balance) * -1);
+                        const showWarning = row.original.ndc > displayBalance;
+
                         return (
-                            <Box textAlign={'right'}>
-                                {formatNumberWithCommas(displayBalance)}
-                            </Box>
+                            <HStack  justify="flex-end" spacing={2}>
+                                { showWarning && (
+                                    <Box 
+                                        borderRadius="md"
+                                        display="flex"
+                                        alignItems="center"
+                                        justifyContent="center"
+                                        >
+                                            <MdWarningAmber size={16} color="#FACC15" style={{ stroke: "black" }}/>
+                                    </Box>)
+                                }
+                                <Box textAlign={'right'}>
+                                    {formatNumberWithCommas(displayBalance)}
+                                </Box>
+                            </HStack>
+
                         );
                     }
                 },
@@ -201,11 +217,29 @@ const ParticipantPositions = () => {
                         <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC</Text>
                     ),
                     accessor: 'ndc',
-                    Cell: ({ value }: any) => (
-                        <Text textAlign="right">
-                            {formatNumberWithCommas(value)}
-                        </Text>
-                    ),
+                    Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
+                        const balance = row.original.balance;
+                        const displayBalance = balance === 0 ? balance : ((balance) * -1);
+                        const showWarning = row.original.ndc > displayBalance;
+
+                        return (   
+                                <HStack  justify="flex-end" spacing={2}>
+                                { showWarning && (
+                                    <Box 
+                                        borderRadius="md"
+                                        display="flex"
+                                        alignItems="center"
+                                        justifyContent="center"
+                                        >
+                                            <MdWarningAmber size={16} color="#FACC15" style={{ stroke: "black" }}/>
+                                    </Box>)
+                                } 
+                                <Text textAlign="right">
+                                    {formatNumberWithCommas(row.original.ndc)}
+                                </Text>
+                            </HStack>
+                        )
+                    },
                 },
                 {
                     Header: () => (
