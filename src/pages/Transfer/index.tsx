@@ -106,8 +106,8 @@ const Transfer = () => {
   const initialValues = {
     payeeFspId: '',
     payerFspId: '',
-    fromDate: moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'),
-    toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
+    fromDate: moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm:ss'),
+    toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'),
     transferId: '',
     currencyId: '',
     transferStateId: '',
@@ -160,28 +160,28 @@ const Transfer = () => {
 
       switch (range) {
         case 'oneDay':
-          from = moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm');
-          to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
+          from = moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm:ss');
+          to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss');
           break;
         case 'today':
-          from = moment().tz(selectedTZString).startOf('d').format('YYYY-MM-DDTHH:mm');
-          to = moment().tz(selectedTZString).endOf('d').format('YYYY-MM-DDTHH:mm');
+          from = moment().tz(selectedTZString).startOf('d').format('YYYY-MM-DDTHH:mm:ss');
+          to = moment().tz(selectedTZString).endOf('d').format('YYYY-MM-DDTHH:mm:ss');
           break;
         case 'twoDay':
-          from = moment().tz(selectedTZString).subtract(2, 'd').format('YYYY-MM-DDTHH:mm');
-          to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
+          from = moment().tz(selectedTZString).subtract(2, 'd').format('YYYY-MM-DDTHH:mm:ss');
+          to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss');
           break;
         case 'oneWeek':
-          from = moment().tz(selectedTZString).subtract(1, 'w').format('YYYY-MM-DDTHH:mm');
-          to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
+          from = moment().tz(selectedTZString).subtract(1, 'w').format('YYYY-MM-DDTHH:mm:ss');
+          to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss');
           break;
         case 'oneMonth':
-          from = moment().tz(selectedTZString).subtract(1, 'month').format('YYYY-MM-DDTHH:mm');
-          to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
+          from = moment().tz(selectedTZString).subtract(1, 'month').format('YYYY-MM-DDTHH:mm:ss');
+          to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss');
           break;
         case 'oneYear':
-          from = moment().tz(selectedTZString).subtract(1, 'y').format('YYYY-MM-DDTHH:mm');
-          to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm');
+          from = moment().tz(selectedTZString).subtract(1, 'y').format('YYYY-MM-DDTHH:mm:ss');
+          to = moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss');
           break;
         case 'custom':
           setDateRange(range);
@@ -200,8 +200,8 @@ const Transfer = () => {
   const onSelectedTimezoneChange = useCallback(() => {
     reset()
     const options = { shouldValidate: true, shouldDirty: true }
-    setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm'), options)
-    setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'), options)
+    setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'd').format('YYYY-MM-DDTHH:mm:ss'), options)
+    setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'), options)
     setValue('timezone', timezone, options)
   }, [selectedTimezone]);
 
@@ -219,11 +219,9 @@ const Transfer = () => {
     (values: ITransferValues, currentPage = 1, currentSize = 10) => {
 
       values.fromDate = moment.tz(values.fromDate, selectedTZString).utc()
-        .set('second', 0)
         .utc()
         .format();
       values.toDate = moment.tz(values.toDate, selectedTZString).utc()
-        .set('second', 59)
         .utc()
         .format();
       values.timezone = timezone;
@@ -518,7 +516,7 @@ const Transfer = () => {
                   return (
                     <CustomDateTimePicker
                       disabled={dateRange !== 'custom' ? true : false}
-                      value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.fromDate}
+                      value={value ? moment(value).format('YYYY-MM-DDTHH:mm:ss') : initialValues.fromDate}
                       onChange={(event) => {
                         trigger('fromDate')
                         onChange(event.target.value);
@@ -544,7 +542,7 @@ const Transfer = () => {
                   return (
                     <CustomDateTimePicker
                       disabled={dateRange !== 'custom' ? true : false}
-                      value={value ? moment(value).format('YYYY-MM-DDTHH:mm') : initialValues.toDate}
+                      value={value ? moment(value).format('YYYY-MM-DDTHH:mm:ss') : initialValues.toDate}
                       onChange={(event) => {
                         trigger('toDate')
                          onChange(event.target.value);

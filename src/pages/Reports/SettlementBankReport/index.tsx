@@ -70,8 +70,8 @@ const SettlementBankReport = () => {
   } = useForm<ISettlementBankReport>({
     resolver: zodResolver(schema),
     defaultValues: {
-      startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
-      endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
+      startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
+      endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'),
       settlementId: '',
       currency: 'all',
       fileType: 'xlsx',
@@ -81,8 +81,8 @@ const SettlementBankReport = () => {
   });
 
   useEffect(() => {
-    setValue('startDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
-    setValue('endDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+    setValue('startDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'));
+    setValue('endDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'));
 
     setSettlementIdOptions([]);
     setSettlementId('');
@@ -97,11 +97,9 @@ const SettlementBankReport = () => {
     const values = getValues();
 
     const StartDate = moment.tz(values.startDate, selectedTimezone?.value)
-       .set('second', 0)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const EndDate = moment.tz(values.endDate, selectedTimezone?.value)
-      .set('second', 59)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const tzOffSet = selectedTimezone?.offset === 0

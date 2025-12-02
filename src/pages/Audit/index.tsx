@@ -113,8 +113,8 @@ const Audit = () => {
     formState: { isValid, errors },
   } = useForm<IGetAuditByParticipantValues>({
     defaultValues: {
-      fromDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'),
-      toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'),
+      fromDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
+      toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'),
       actionId: '',
       userId: '',
     },
@@ -123,14 +123,14 @@ const Audit = () => {
   });
 
   useEffect(() => {
-    setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm'));
-    setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm'));
+    setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'));
+    setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'));
   }, [selectedTZString, setValue]);
 
   const onSearchHandler = useCallback(
     async (values: IGetAuditByParticipantValues, page = 1, size = pageSize) => {
-      const fromDate = moment.tz(values.fromDate, selectedTZString).utc().set('second', 0).format();
-      const toDate = moment.tz(values.toDate, selectedTZString).utc().set('second', 59).format();
+      const fromDate = moment.tz(values.fromDate, selectedTZString).utc().format();
+      const toDate = moment.tz(values.toDate, selectedTZString).utc().format();
       const actionId = values.actionId;
       const userId = values.userId;
 
