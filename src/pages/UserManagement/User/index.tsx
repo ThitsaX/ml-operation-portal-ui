@@ -177,7 +177,7 @@ const User = () => {
                 size="md"
                 onClick={() => handleResetClick(row.original)}
                 variant="ghost"
-                isDisabled={isSelfUser}
+                isDisabled={isSelfUser || !hasActionPermission("ResetCurrentPassword")}
               />
               <IconButton
                 icon={<FaRegEdit />}
