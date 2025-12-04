@@ -80,6 +80,9 @@ export const privateRoutes = {
   getParticipantContactList: '/secured/getParticipantContactList',
 
   syncHubParticipantsToPortal: '/secured/syncHubParticipantsToPortal',
+
+  getServiceRequestLink: '/secured/getServiceRequestLink',
+  getDisputeLink: '/secured/getDisputeLink',
 };
 
 const routes = {
