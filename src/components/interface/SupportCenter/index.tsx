@@ -2,8 +2,8 @@ import {
     Box,
     VStack,
     Text,
-    Link,
     Button,
+    Tooltip
 } from "@chakra-ui/react";
 
 interface SupportCardProps {
@@ -12,8 +12,9 @@ interface SupportCardProps {
     description: string;
     actionLabel: string;
     onClick: () => void;
-    href?: string;
     color?: string;
+    isLoading?: boolean;
+    tooltipLabel?: string;
 }
 
 export const SupportCard = ({
@@ -22,10 +23,11 @@ export const SupportCard = ({
     description,
     actionLabel,
     onClick,
-    href,
     color = "blue.700",
+    isLoading = false,
+    tooltipLabel = ""
 }: SupportCardProps) => {
-    const ActionComponent = href ? Link : Button;
+
 
     return (
         <VStack
@@ -49,18 +51,26 @@ export const SupportCard = ({
             <Text fontWeight="medium" fontSize="md" textAlign="center">
                 {description}
             </Text>
-            <ActionComponent
-                {...(href ? { href, isExternal: true } : { onClick })}
-                bg={color}
-                color="white"
-                px={4}
-                py={2}
-                borderRadius="md"
-                _hover={{ bg: `${color.replace(".700", ".800")}` }}
-                textAlign="center"
+            <Tooltip
+                label={isLoading ? tooltipLabel : ""}
+                shouldWrapChildren
             >
-                {actionLabel}
-            </ActionComponent>
+                <Button
+                    {...({ onClick })}
+                    bg={color}
+                    color="white"
+                    px={4}
+                    py={2}
+                    borderRadius="md"
+                    textAlign="center"
+                    isDisabled={isLoading}
+                    _hover={!isLoading ? { bg: color.replace(".700", ".800") } : {}}
+                >
+                    {
+                        actionLabel
+                    }
+                </Button>
+            </Tooltip>
         </VStack>
     );
 };

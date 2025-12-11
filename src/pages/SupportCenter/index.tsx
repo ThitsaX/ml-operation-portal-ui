@@ -22,32 +22,128 @@ import { useState } from 'react';
 import { TbGavel } from "react-icons/tb";
 import { GrServices } from "react-icons/gr";
 import { ImUsers } from "react-icons/im";
-import { useGetParticipantListIncludingHub } from '@hooks/services/participant';
 import { getContactList } from '@services/participant';
 import { IBusinessContact, IParticipantOrganization } from '@typescript/services';
 import { SupportCard } from '@components/interface/SupportCenter';
 import { type IApiErrorResponse } from '@typescript/services';
+import { getParticipantListIncludingHub } from '@services/participant';
+import { Spinner } from '@chakra-ui/react';
+import { getDisputeLink, getServiceRequestLink } from '@services/support-center';
 
 const SupportCenter = () => {
   const toast = useToast();
 
   const [selectedParticipant, setSelectedParticipant] = useState<IParticipantOrganization>();
   const [contactList, setContactList] = useState<IBusinessContact[] | null>(null);
+  const [participantInfoList, setParticipantInfoList] = useState<IParticipantOrganization[] | null>(null);
 
-  // Data Fetching
-  const { data: participantInfoList } = useGetParticipantListIncludingHub();
+  const [isLoadingList, setIsLoadingList] = useState(false);
+  const [isLoadingContacts, setIsLoadingContacts] = useState(false);
+
+  const [isLoadingDispute, setIsLoadingDispute] = useState(false);
+  const [isLoadingService, setIsLoadingService] = useState(false);
 
   // Modal Control
   const { isOpen: isListOpen, onOpen: onListOpen, onClose: onListClose } = useDisclosure();
   const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure();
 
   // Handlers
+  const handleDisputeClick = async () => {
+    setIsLoadingDispute(true);
+    try {
+      const url = await getDisputeLink();
+      if (!url) {
+        toast({
+          position: "top",
+          description: "This feature is currently unavailable.",
+          status: "warning",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+      window.open(url, "_blank");
+    } catch (err) {
+      toast({
+        position: "top",
+        title: getErrorMessage(err as IApiErrorResponse),
+        status: "error",
+        duration: 3000,
+      });
+    } finally {
+      setIsLoadingDispute(false);
+    }
+  };
+
+  const handleServiceClick = async () => {
+    setIsLoadingService(true);
+    try {
+      const url = await getServiceRequestLink();
+      if (!url) {
+        toast({
+          position: "top",
+          description: "This feature is currently unavailable.",
+          status: "warning",
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+      window.open(url, "_blank");
+    } catch (err) {
+      toast({
+        position: "top",
+        title: getErrorMessage(err as IApiErrorResponse),
+        status: "error",
+        duration: 3000,
+      });
+    } finally {
+      setIsLoadingService(false);
+    }
+  };
+
+  const handleViewListClick = async () => {
+    if (isLoadingList) return;
+    setIsLoadingList(true);
+    onListOpen();
+    try {
+      const data = await getParticipantListIncludingHub();
+
+      if (!data?.length) {
+        toast({
+          position: "top",
+          description: "No data found",
+          status: "warning",
+          isClosable: true,
+          duration: 3000,
+        });
+        setParticipantInfoList([]);
+        return;
+      }
+      setParticipantInfoList(data);
+
+    } catch (error) {
+      setParticipantInfoList([]);
+      toast({
+        position: "top",
+        title: getErrorMessage(error as IApiErrorResponse),
+        status: "error",
+        isClosable: true,
+        duration: 3000,
+      })
+    } finally {
+      setIsLoadingList(false);
+    }
+  };
+
   const showParticipantContacts = async (participant: IParticipantOrganization) => {
     setSelectedParticipant(participant);
+    setIsLoadingContacts(true);
+    onDetailOpen();
+
     try {
       const data = await getContactList(participant.participantId);
-      setContactList(data);
-      onDetailOpen();
+      setContactList(data || []);
     } catch (err) {
       toast({
         position: 'top',
@@ -56,9 +152,11 @@ const SupportCenter = () => {
         duration: 3000,
         isClosable: true,
       });
+      setContactList([]);
+    } finally {
+      setIsLoadingContacts(false);
     }
   };
-
 
   return (
     <VStack align="flex-start" w="full" h="full" p="3" mt={10}>
@@ -69,20 +167,22 @@ const SupportCenter = () => {
           icon={<TbGavel size={60} />}
           title="Dispute"
           description="Raise an issue or challenge"
-          actionLabel="Submit Dispute"
-          href="https://thitsa.atlassian.net/servicedesk/customer/portal/11/group/33/create/10549"
+          actionLabel={"Submit Dispute"}
           color="orange.700"
-          onClick={() => { }}
+          onClick={handleDisputeClick}
+          isLoading={isLoadingDispute}
+          tooltipLabel="Fetching dispute link… Please wait."
         />
 
         <SupportCard
           icon={<GrServices size={60} />}
           title="Service Request"
           description="Request assistance or information"
-          actionLabel="Service Request"
-          href="https://thitsa.atlassian.net/servicedesk/customer/portal/11/group/33/create/10548"
+          actionLabel={"Service Request"}
           color="blue.700"
-          onClick={() => { }}
+          onClick={handleServiceClick}
+          isLoading={isLoadingService}
+          tooltipLabel="Fetching service request link… Please wait."
         />
 
         <SupportCard
@@ -90,8 +190,9 @@ const SupportCenter = () => {
           title="Support Contacts"
           description="View focal contacts for support"
           actionLabel="View List"
-          onClick={onListOpen}
+          onClick={handleViewListClick}
           color="gray.600"
+          isLoading={isLoadingList}
         />
       </Flex>
 
@@ -122,41 +223,56 @@ const SupportCenter = () => {
               },
             }}
           >
-            <SimpleGrid
-              columns={{ base: 1, sm: 2, md: 3, lg: 4 }}
-              spacing={4}
-            >
-              {participantInfoList?.map((p, i) => (
-                <Box
-                  key={i}
-                  borderWidth="1px"
-                  borderColor="gray.200"
-                  borderRadius="lg"
-                  p={3}
-                  textAlign="center"
-                  boxShadow="sm"
-                  cursor="pointer"
-                  onClick={() => showParticipantContacts(p)}
-                  _hover={{ boxShadow: "md", transform: "scale(1.02)" }}
-                  transition="transform 0.15s ease"
-                  bg="white"
-                  willChange="transform"
-                >
-                  <Image
-                    src={`data:${p.logoFileType};base64,${p.logo}`}
-                    alt={p.participantName}
-                    boxSize={{ base: "56px", md: "60px" }}
-                    objectFit="cover"
-                    borderRadius="full"
-                    mx="auto"
-                    mb={2}
-                  />
-                  <Text fontWeight="medium" fontSize="sm" noOfLines={2}>
-                    {p.participantName}
-                  </Text>
-                </Box>
-              ))}
-            </SimpleGrid>
+            {isLoadingList ? (
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <VStack spacing={4} align="center">
+                  <Spinner size="xl" color="blue.500" />
+                  <Text color="gray.600">Loading dfsp list</Text>
+                </VStack>
+              </Box>
+            ) : (
+
+
+              <SimpleGrid
+                columns={{ base: 1, sm: 2, md: 3, lg: 4 }}
+                spacing={4}
+              >
+                {participantInfoList?.map((p, i) => (
+                  <Box
+                    key={i}
+                    borderWidth="1px"
+                    borderColor="gray.200"
+                    borderRadius="lg"
+                    p={3}
+                    textAlign="center"
+                    boxShadow="sm"
+                    cursor="pointer"
+                    onClick={() => showParticipantContacts(p)}
+                    _hover={{ boxShadow: "md", transform: "scale(1.02)" }}
+                    transition="transform 0.15s ease"
+                    bg="white"
+                    willChange="transform"
+                  >
+                    <Image
+                      src={`data:${p.logoFileType};base64,${p.logo}`}
+                      alt={p.participantName}
+                      boxSize={{ base: "56px", md: "60px" }}
+                      objectFit="cover"
+                      borderRadius="full"
+                      mx="auto"
+                      mb={2}
+                    />
+                    <Text fontWeight="medium" fontSize="sm" noOfLines={2}>
+                      {p.participantName}
+                    </Text>
+                  </Box>
+                ))}
+              </SimpleGrid>
+            )}
           </ModalBody>
 
           <ModalFooter>
@@ -187,19 +303,29 @@ const SupportCenter = () => {
                 {selectedParticipant?.participantName || 'Participant'}
               </Text>
             </Flex>
-            {contactList?.map((info, index) => (
-              <Box key={index} p={4}>
-                <Text fontWeight="bold" fontSize="lg" mb={4}>
-                  {info.contactType}
-                </Text>
-                <VStack spacing={2} align="start">
-                  <Text><b>Contact Person Name:</b> {info?.name}</Text>
-                  <Text><b>Position:</b> {info?.position}</Text>
-                  <Text><b>Email:</b> {info?.email}</Text>
-                  <Text><b>Contact Number:</b> {info?.mobile}</Text>
-                </VStack>
-              </Box>
-            ))}
+
+            {isLoadingContacts ? (
+              <VStack spacing={4} py={10}>
+                <Spinner size="xl" color="blue.500" />
+                <Text color="gray.600">Loading contact list...</Text>
+              </VStack>
+            ) : (
+              <>
+                {contactList?.map((info, index) => (
+                  <Box key={index} p={4}>
+                    <Text fontWeight="bold" fontSize="lg" mb={4}>
+                      {info.contactType}
+                    </Text>
+                    <VStack spacing={2} align="start">
+                      <Text><b>Contact Person Name:</b> {info?.name}</Text>
+                      <Text><b>Position:</b> {info?.position}</Text>
+                      <Text><b>Email:</b> {info?.email}</Text>
+                      <Text><b>Contact Number:</b> {info?.mobile}</Text>
+                    </VStack>
+                  </Box>
+                ))}
+              </>
+            )}
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="blue" onClick={onDetailClose}>
