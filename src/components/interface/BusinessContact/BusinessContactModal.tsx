@@ -78,7 +78,7 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
 
         <ModalBody>
           <VStack spacing={4}>
-            <FormControl isInvalid={!isEmpty(errors.contactType)}>
+            <FormControl isInvalid={!isEmpty(errors.contactType)} isRequired>
               <FormLabel>Contact Type</FormLabel>
               <Controller
                 name="contactType"
@@ -105,19 +105,19 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
               <FormErrorMessage>{errors.contactType?.message}</FormErrorMessage>
             </FormControl>
 
-            <FormControl isInvalid={!isEmpty(errors.name)}>
-              <FormLabel>Person Name</FormLabel>
+            <FormControl isInvalid={!isEmpty(errors.name)} isRequired>
+              <FormLabel>Name</FormLabel>
               <Controller
                 name="name"
                 control={control}
                 render={({ field }) => (
-                  <Input {...field} placeholder="Person Name" value={field.value ?? ''} />
+                  <Input {...field} placeholder="Name" value={field.value ?? ''} />
                 )}
               />
               <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
             </FormControl>
 
-            <FormControl isInvalid={!isEmpty(errors.position)}>
+            <FormControl isInvalid={!isEmpty(errors.position)} isRequired>
               <FormLabel>Position</FormLabel>
               <Controller
                 name="position"
@@ -129,7 +129,7 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
               <FormErrorMessage>{errors.position?.message}</FormErrorMessage>
             </FormControl>
 
-            <FormControl isInvalid={!isEmpty(errors.email)}>
+            <FormControl isInvalid={!isEmpty(errors.email)} isRequired>
               <FormLabel>Email</FormLabel>
               <Controller
                 name="email"
@@ -141,7 +141,7 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
               <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
             </FormControl>
 
-            <FormControl isInvalid={!isEmpty(errors.mobile)}>
+            <FormControl isInvalid={!isEmpty(errors.mobile)} isRequired>
               <FormLabel>Contact Number</FormLabel>
               <Controller
                 name="mobile"

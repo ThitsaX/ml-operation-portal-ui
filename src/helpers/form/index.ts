@@ -247,7 +247,11 @@ export class TransferHelper extends FormHelper {
       payeeIdentifierValue: z.string().optional(),
       currencyId: z.string().optional(),
       transferStateId: z.string().optional()
-    });
+     })
+      .refine((data) => data.fromDate < data.toDate, {
+        message: 'To Date must not earlier than From Date',
+        path: ['toDate']
+      });
   }
 }
 

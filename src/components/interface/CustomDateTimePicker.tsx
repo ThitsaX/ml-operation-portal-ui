@@ -234,25 +234,25 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
 
     handleTimeChange(
       newHour24,
-      selectedDate?.getMinutes() || new Date().getMinutes(),
-      selectedDate?.getSeconds() || new Date().getSeconds()
+      selectedDate?.getMinutes() ?? new Date().getMinutes(),
+      selectedDate?.getSeconds() ?? new Date().getSeconds()
     );
   }, [selectedDate, handleTimeChange, disabled]);
 
   const handleMinuteChange = useCallback((val: OptionType | null) => {
     if (disabled || !val) return;
     handleTimeChange(
-        selectedDate?.getHours() || new Date().getHours(),
+        selectedDate?.getHours() ?? new Date().getHours(),
         Number(val.value),
-        selectedDate?.getSeconds() || new Date().getSeconds()
+        selectedDate?.getSeconds() ?? new Date().getSeconds()
     );
   }, [selectedDate, handleTimeChange, disabled]);
 
   const handleSecondChange = useCallback((val: OptionType | null) => {
     if (disabled || !val) return;
     handleTimeChange(
-      selectedDate?.getHours() || new Date().getHours(),
-      selectedDate?.getMinutes() || new Date().getMinutes(),
+      selectedDate?.getHours() ?? new Date().getHours(),
+      selectedDate?.getMinutes() ?? new Date().getMinutes(),
       Number(val.value)
     );
   }, [selectedDate, handleTimeChange, disabled]);
@@ -265,8 +265,8 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
 
     handleTimeChange(
       newHour24,
-      selectedDate?.getMinutes() || new Date().getMinutes(),
-      selectedDate?.getSeconds() || new Date().getSeconds()
+      selectedDate?.getMinutes() ?? new Date().getMinutes(),
+      selectedDate?.getSeconds() ?? new Date().getSeconds()
     );
   }, [selectedDate, handleTimeChange, disabled]);
 
@@ -292,10 +292,10 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
     year: yearOptions.find(opt => opt.value === month.getFullYear().toString()),
     hour: TIME_OPTIONS.hours.find(opt => opt.value === getCurrentHours12().toString()),
     minute: TIME_OPTIONS.minutes.find(opt =>
-      opt.value === (selectedDate?.getMinutes() || new Date().getMinutes()).toString()
+      opt.value === (selectedDate?.getMinutes() ?? new Date().getMinutes()).toString()
     ),
     second: TIME_OPTIONS.seconds.find(opt =>
-      opt.value === (selectedDate?.getSeconds() || new Date().getSeconds()).toString()
+      opt.value === (selectedDate?.getSeconds() ?? new Date().getSeconds()).toString()
     ),
     ampm: TIME_OPTIONS.ampm.find(opt => opt.value === getSelectedAmPm()),
   }), [selectedDate, month, yearOptions]);
