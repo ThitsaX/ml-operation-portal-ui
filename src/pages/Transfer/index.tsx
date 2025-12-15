@@ -516,7 +516,7 @@ const Transfer = () => {
                   return (
                     <CustomDateTimePicker
                       disabled={dateRange !== 'custom' ? true : false}
-                      value={value ? moment(value).format('YYYY-MM-DDTHH:mm:ss') : initialValues.fromDate}
+                      value={value}
                       onChange={(event) => {
                         trigger('fromDate')
                         onChange(event.target.value);
@@ -542,7 +542,7 @@ const Transfer = () => {
                   return (
                     <CustomDateTimePicker
                       disabled={dateRange !== 'custom' ? true : false}
-                      value={value ? moment(value).format('YYYY-MM-DDTHH:mm:ss') : initialValues.toDate}
+                      value={value}
                       onChange={(event) => {
                         trigger('toDate')
                          onChange(event.target.value);
