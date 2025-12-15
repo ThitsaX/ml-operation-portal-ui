@@ -24,7 +24,7 @@ import {
   IconButton,
   Tooltip
 } from '@chakra-ui/react';
-import { CloseIcon } from '@chakra-ui/icons';
+import { TriangleDownIcon, TriangleUpIcon } from '@chakra-ui/icons';
 import { CustomSelect } from '@components/interface';
 import type { OptionType } from '@components/interface/CustomSelect';
 
@@ -100,6 +100,19 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
   const [rowActiveMap, setRowActiveMap] = useState<Record<string, boolean>>({});
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
   const [rowIdMap, setRowIdMap] = useState<Record<string, string | undefined>>({});
+
+  type SortDir = 'asc' | 'desc';
+  const [timeSortDir, setTimeSortDir] = useState<SortDir>('asc');
+  const sortedRows = useMemo(() => {
+    const arr = [...rows];
+    arr.sort((a, b) => a.localeCompare(b));
+    if (timeSortDir === 'desc') arr.reverse();
+    return arr;
+  }, [rows, timeSortDir]);
+
+  const toggleTimeSort = useCallback(() => {
+    setTimeSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+  }, []);
 
   const normalizeTime = (h: string, m: string) => `${h.padStart(2, '0')}:${m.padStart(2, '0')}`
 
@@ -1023,7 +1036,22 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                 <Table size="sm" variant="simple" >
                   <Thead>
                     <Tr>
-                      <Th w="80px" textAlign="center">HH:MM</Th>
+                      <Th
+                        w="80px"
+                        textAlign="center"
+                        cursor="pointer"
+                        userSelect="none"
+                        onClick={toggleTimeSort}
+                      >
+                        <HStack justify="center" spacing={1}>
+                          <Text>HH:MM</Text>
+                          {timeSortDir === 'asc' ? (
+                            <TriangleUpIcon/>
+                          ) : (
+                            <TriangleDownIcon/>
+                          )}
+                        </HStack>
+                      </Th>
                       {days.map((d) => (
                         <Th key={d} textAlign="center">{d}</Th>
                       ))}
@@ -1031,7 +1059,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {rows.slice().map((key) => {
+                    {sortedRows.map((key) => {
                       return (
                         <Tr key={key}>
                           <Td bg={rowActiveMap[key] ? 'green.50' : 'gray.100'} fontWeight="semibold" textAlign="center">
