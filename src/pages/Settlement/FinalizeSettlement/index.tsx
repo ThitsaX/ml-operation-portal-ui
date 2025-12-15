@@ -431,7 +431,7 @@ const FinalizeSettlement = () => {
                             : []
         
             return [...baseColumns, ...actionColumn];
-    }, [finalizeSettlements, selectedTZString]);
+    }, [finalizeSettlements, selectedTZString, btnFindDisabled]);
         
 
     const {
