@@ -88,6 +88,8 @@ const FinalizeSettlement = () => {
     const { isOpen: isWarnOpen, onOpen: onWarnOpen, onClose: onWarnClose } = useDisclosure();
     const { isOpen: isErrorOpen, onOpen: onErrorOpen, onClose: onErrorClose } = useDisclosure();
     const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure();
+    const [btnFindDisabled, setBtnFindDisabled ] = useState<boolean>(false);
+    const [ btnDgFinalizeDisabled, setBtnDgFinalizeDisabled ] = useState<boolean>(false);
 
     const [selectedSettlement, setSelectedSettlement] = useState<IFinalizeSettlement | null>(null);
     const [netTransferAmount, setNetTransferAmount] = useState<INetTransferAmount | null>(null);
@@ -149,6 +151,7 @@ const FinalizeSettlement = () => {
             delete values.currency;
         }
 
+        setBtnFindDisabled(true);
         start();
 
         getFinalizeSettlementList(values)
@@ -188,6 +191,7 @@ const FinalizeSettlement = () => {
             })
             .finally(() => {
                 complete();
+                setBtnFindDisabled(false);
             });
     };
 
@@ -222,6 +226,7 @@ const FinalizeSettlement = () => {
 
     const handleFinalize = (settlement: IFinalizeSettlement) => {
         setSelectedSettlement(settlement);
+        setBtnDgFinalizeDisabled(false);
         onFinalizeOpen();
     };
 
@@ -278,7 +283,9 @@ const FinalizeSettlement = () => {
     const proceedWithFinalization = (settlementId: string) => {
         const data = { settlementId: settlementId };
 
+        if (!btnDgFinalizeDisabled) setBtnDgFinalizeDisabled(true);
         start();
+
         finalizeSettlementWindow(data).then((data) => {
             if (data.finalized) {
                 toast({
@@ -313,6 +320,9 @@ const FinalizeSettlement = () => {
             return;
         }
 
+        // Disable the finalize button to prevent multiple clicks
+        setBtnDgFinalizeDisabled(true);
+
         // Validations before finalization
         const validateResult = await validateFinalization(selectedSettlement.settlementId);
 
@@ -328,6 +338,7 @@ const FinalizeSettlement = () => {
         } else if (validateResult.mode === 2) {
             onFinalizeClose();
             setWarnDfsps(validateResult.dfsps);
+            setBtnDgFinalizeDisabled(false);
             // Open a warning dialogue to confirm proceed or not
             onWarnOpen();
             return;
@@ -402,6 +413,7 @@ const FinalizeSettlement = () => {
                                             return (
                                                 <HStack spacing={4}>
                                                     <Button
+                                                        isDisabled={btnFindDisabled}
                                                         size="sm"
                                                         colorScheme="green"
                                                         variant="solid"
@@ -419,7 +431,7 @@ const FinalizeSettlement = () => {
                             : []
         
             return [...baseColumns, ...actionColumn];
-    }, [finalizeSettlements, selectedTZString]);
+    }, [finalizeSettlements, selectedTZString, btnFindDisabled]);
         
 
     const {
@@ -681,6 +693,7 @@ const FinalizeSettlement = () => {
                             Clear Filters
                         </Button>
                         <Button
+                            isDisabled={btnFindDisabled}
                             color="white"
                             bg="primary"
                             w={{ base: "100%", md: "50%" }}
@@ -831,7 +844,7 @@ const FinalizeSettlement = () => {
                 </TableContainer>
             </VStack>
 
-            <Modal isOpen={isFinalizeOpen} onClose={onFinalizeClose} isCentered size="lg">
+            <Modal isOpen={isFinalizeOpen} onClose={onFinalizeClose} closeOnOverlayClick={false} isCentered size="lg">
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>Finalize Settlement ID: <strong>{selectedSettlement?.settlementId}</strong></ModalHeader>
@@ -844,14 +857,14 @@ const FinalizeSettlement = () => {
                         <Button variant="ghost" mr={3} onClick={onFinalizeClose}>
                             Cancel
                         </Button>
-                        <Button colorScheme="green" onClick={handleConfirmedFinalize}>
+                        <Button colorScheme="green" isDisabled={btnDgFinalizeDisabled} onClick={handleConfirmedFinalize}>
                             Yes, Finalize
                         </Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>
 
-            <Modal isOpen={isWarnOpen} onClose={onWarnClose} isCentered size="lg">
+            <Modal isOpen={isWarnOpen} onClose={onWarnClose} closeOnOverlayClick={false} isCentered size="lg">
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>Proceed with Settlement ID: <strong>{selectedSettlement?.settlementId}</strong></ModalHeader>
@@ -866,7 +879,7 @@ const FinalizeSettlement = () => {
                         <Button variant="ghost" mr={3} onClick={onWarnClose}>
                             No
                         </Button>
-                        <Button colorScheme="green" onClick={() => proceedWithFinalization(selectedSettlement?.settlementId || "")}>
+                        <Button colorScheme="green" isDisabled={btnDgFinalizeDisabled} onClick={() => proceedWithFinalization(selectedSettlement?.settlementId || "")}>
                             Yes, Proceed
                         </Button>
                     </ModalFooter>

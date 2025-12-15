@@ -93,6 +93,9 @@ const SettlementWindows = () => {
     const [pageNumber, setPageNumber] = useState<String>('1');
     const { isOpen: isFinalizeOpen, onOpen: onFinalizeOpen, onClose: onFinalizeClose } = useDisclosure();
     const { isOpen: isMoveOnOpen, onOpen: onMoveOnOpen, onClose: onMoveOnClose } = useDisclosure();
+    const [btnWinCloseDisabled, setBtnWinCloseDisabled] = useState<boolean>(false);
+    const [btnCreateSettlementDisabled, setBtnCreateSettlementDisabled] = useState<boolean>(false);
+    const [btnFindDisabled, setBtnFindDisabled] = useState<boolean>(false);
 
     const { isOpen: isDetailOpen, onOpen: onDetailOpen, onClose: onDetailClose } = useDisclosure();
     const [netTransferAmount, setNetTransferAmount] = useState<INetTransferAmount | null>(null);
@@ -160,6 +163,7 @@ const SettlementWindows = () => {
             delete values.currency;
         }
 
+        setBtnFindDisabled(true);
         start();
 
         getSettlementWindowsList(values)
@@ -199,6 +203,7 @@ const SettlementWindows = () => {
             })
             .finally(() => {
                 complete();
+                setBtnFindDisabled(false);
             });
         }
 
@@ -249,7 +254,9 @@ const SettlementWindows = () => {
             reason: selectedWindow.reason
         }
 
+        setBtnWinCloseDisabled(true);
         start();
+        
         closeSettlementWindow(data).then(() => {
             toast({
                 position: 'top',
@@ -275,6 +282,7 @@ const SettlementWindows = () => {
             complete();
             // Close the model
             onFinalizeClose();
+            setBtnWinCloseDisabled(false);
         });
     };
 
@@ -294,7 +302,9 @@ const SettlementWindows = () => {
             settlementWindowIdList: selectedRowIds.map((id) => ({ id })),
         }
 
+        setBtnCreateSettlementDisabled(true);
         start();
+
         createSettlementWindow(formData).then(() => {
             toast({
                 position: 'top',
@@ -320,6 +330,7 @@ const SettlementWindows = () => {
             complete();
             setSettlementModel('');
             setSelectedRowIds([]);
+            setBtnCreateSettlementDisabled(false);
             // Ask wheter to go to finalize settlement page
             onMoveOnOpen();
         });
@@ -858,6 +869,7 @@ const SettlementWindows = () => {
                             Clear Filters
                         </Button>
                         <Button
+                            isDisabled={btnFindDisabled}
                             color="white"
                             bg="primary"
                             w={{ base: "100%", md: "50%" }}
@@ -943,7 +955,7 @@ const SettlementWindows = () => {
                         />
                         {hasActionPermission("CreateSettlement") && (
                             <Button
-                                isDisabled={settlementModel === "" || selectedRowIds.length < 1}
+                                isDisabled={settlementModel === "" || selectedRowIds.length < 1 || btnCreateSettlementDisabled}
                                 color="white"
                                 bg="primary"
                                 _hover={{ bg: "primary", opacity: 0.4 }}
@@ -1106,7 +1118,7 @@ const SettlementWindows = () => {
                 </ModalContent>
             </Modal>
 
-            <Modal isOpen={isFinalizeOpen} onClose={onFinalizeClose} isCentered>
+            <Modal isOpen={isFinalizeOpen} onClose={onFinalizeClose} closeOnOverlayClick={false} isCentered>
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>Close Settlement Window ID: <strong>{selectedWindow?.settlementWindowId}</strong></ModalHeader>
@@ -1119,7 +1131,7 @@ const SettlementWindows = () => {
                         <Button variant="ghost" mr={3} onClick={onFinalizeClose}>
                             Cancel
                         </Button>
-                        <Button colorScheme="green" onClick={closeSettlement}>
+                        <Button colorScheme="green" isDisabled={btnWinCloseDisabled} onClick={closeSettlement}>
                             Yes, Close
                         </Button>
                     </ModalFooter>
