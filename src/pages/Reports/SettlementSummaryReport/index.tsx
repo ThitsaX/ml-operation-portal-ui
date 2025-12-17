@@ -1,4 +1,5 @@
 import {
+    Box,
   Button,
   FormControl,
   FormErrorMessage,
@@ -229,7 +230,7 @@ const SettlementSummaryReport = () => {
                       (participantList ?? []).map(
                         (item): OptionType => ({
                           value: item.participantName,
-                          label: item.participantName,
+                          label: item.description ? `${item.participantName} (${item.description})` : item.participantName,
                         })
                       )
                     }
@@ -237,10 +238,16 @@ const SettlementSummaryReport = () => {
                       field.value
                         ? {
                           value: field.value,
-                          label:
-                            participantList?.find(
+                          label: (() => {
+                            const p = participantList?.find(
                               (p) => p.participantName === field.value
-                            )?.participantName || '',
+                            );
+                            return p
+                              ? p.description
+                                ? `${p.participantName} (${p.description})`
+                                : p.participantName
+                              : '';
+                          })(),
                         }
                         : null
                     }
@@ -363,43 +370,8 @@ const SettlementSummaryReport = () => {
                 )}
               />
             </FormControl>
-            <FormControl w="100%"
-              isInvalid={!isEmpty(errors.currencyId)}
-            >
-              <FormLabel>Currency</FormLabel>
-              <Controller
-                name="currencyId"
-                control={control}
-                render={({ field }) => (
-                  <CustomSelect
-                    maxMenuHeight={300}
-                    isClearable={false}
-                    options={[
-                      { value: 'all', label: 'All' },
-                      ...(currencyList ?? []).map((item) => ({
-                        value: item.currency,
-                        label: item.currency,
-                      })),
-                    ]}
-                    value={
-                      field.value
-                        ? {
-                          value: field.value,
-                          label:
-                            field.value === 'all'
-                              ? 'All'
-                              : currencyList?.find((c) => c.currency === field.value)?.currency || '',
-                        }
-                        : null
-                    }
-                    onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                    placeholder="Select Currency"
-                  />
-                )}
-              />
-              <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
-            </FormControl>
 
+            <Box />
             <FormControl w="100%" mt={8} >
               <Controller
                 control={control}

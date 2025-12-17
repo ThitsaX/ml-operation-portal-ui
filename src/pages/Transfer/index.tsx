@@ -620,14 +620,20 @@ const Transfer = () => {
                     options={
                       participantRes?.data?.participantInfoList?.map((item) => ({
                         value: item.participantName,
-                        label: item.participantName
+                        label: item.description ? `${item.participantName} (${item.description})` : item.participantName
                       })) || []
                     }
                     value={
                       field.value
-                        ? {
-                          value: field.value,
-                          label: field.value
+                      ?{
+                          value : field.value,
+                          label:(() => {
+                            const p = participantRes?.data?.participantInfoList?.find(i => i.participantName === field.value);
+                            return p ? p.description
+                                  ? `${p.participantName} (${p.description})`
+                                : p.participantName
+                              : '';
+                          })(),
                         }
                         : null
                     }
@@ -705,12 +711,21 @@ const Transfer = () => {
                     options={
                       participantRes?.data?.participantInfoList?.map((item) => ({
                         value: item.participantName,
-                        label: item.participantName
+                        label: item.description ? `${item.participantName} (${item.description})` : item.participantName
                       })) || []
                     }
                     value={
                       field.value
-                        ? { value: field.value, label: field.value }
+                      ?{
+                          value : field.value,
+                          label:(() => {
+                            const p = participantRes?.data?.participantInfoList?.find(i => i.participantName === field.value);
+                            return p ? p.description
+                                  ? `${p.participantName} (${p.description})`
+                                : p.participantName
+                              : '';
+                          })(),
+                        }
                         : null
                     }
                     onChange={(selectedOption) => {

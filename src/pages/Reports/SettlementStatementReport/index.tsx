@@ -105,8 +105,8 @@ const SettlementStatementReport = () => {
     defaultValues: {
       startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
       endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'),
-      fspId: 'all',
-      currencyId: 'all',
+      fspId: 'ALL',
+      currencyId: 'ALL',
       fileType: 'xlsx'
     },
     mode: 'onChange'
@@ -145,19 +145,25 @@ const SettlementStatementReport = () => {
                     options={(participantList ?? []).map(
                       (item): OptionType => ({
                         value: item.participantName,
-                        label: item.participantName,
+                        label: item.description ? `${item.participantName} (${item.description})` : item.participantName,
                       })
                     )}
                     value={
                       field.value
-                        ? field.value === 'all'
-                          ? { value: 'all', label: 'All' }
+                        ? field.value === 'ALL'
+                          ? { value: 'ALL', label: 'ALL' }
                           : {
                             value: field.value,
-                            label:
-                              participantList?.find(
+                            label: (() => {
+                              const p = participantList?.find(
                                 (p) => p.participantName === field.value
-                              )?.participantName || '',
+                              );
+                              return p
+                                ? p.description
+                                  ? `${p.participantName} (${p.description})`
+                                  : p.participantName
+                                : '';
+                            })(),
                           }
                         : null
                     }
@@ -233,7 +239,7 @@ const SettlementStatementReport = () => {
                   maxMenuHeight={300}
                   isClearable={false}
                   options={[
-                    { value: 'all', label: 'All' },
+                    { value: 'ALL', label: 'ALL' },
                     ...(currencyList ?? []).map((item) => ({
                       value: item.currency,
                       label: item.currency,
@@ -244,8 +250,8 @@ const SettlementStatementReport = () => {
                       ? {
                         value: field.value,
                         label:
-                          field.value === 'all'
-                            ? 'All'
+                          field.value === 'ALL'
+                            ? 'ALL'
                             : currencyList?.find((c) => c.currency === field.value)?.currency || '',
                       }
                       : null

@@ -60,7 +60,7 @@ const CustomSelect: React.FC<UnifiedSelectProps> = (props) => {
   } = props;
 
   const finalOptions = includeAllOption
-    ? [{ value: 'all', label: 'All' }, ...options]
+    ? [{ value: 'ALL', label: 'ALL' }, ...options]
     : options;
 
   const handleChange = (
