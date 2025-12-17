@@ -17,7 +17,11 @@ import {
   SimpleGrid,
   InputGroup,
   InputRightElement,
-  IconButton
+  IconButton,
+  Box,
+  Text,
+  Spinner,
+  Tooltip
 } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -58,6 +62,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isRoleLoading, setIsRoleLoading] = useState(false);
+  const [formReady, setFormReady] = useState(false);
 
   const {
     control,
@@ -100,7 +105,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   // Initialize form on open
   useEffect(() => {
     if (!isOpen) return;
-
+    setFormReady(false);
     const initializeForm = async () => {
       if (isEdit && selectedUser?.participantId && participantInfoList) {
         const org = participantInfoList.find(p => p.participantId === selectedUser.participantId);
@@ -136,6 +141,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
           confirmPassword: '',
         });
       }
+      setFormReady(true);
     };
 
     initializeForm();
@@ -160,10 +166,27 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         w={{ base: "90%", md: "500px" }}
         maxW="90%"
         mx="auto"
+        borderRadius="lg"
+        overflow="hidden"
+        boxShadow="2xl"
       >
         <ModalHeader textAlign="center">{isEdit ? 'Edit User' : 'Add New User'}</ModalHeader>
         <ModalCloseButton />
         <ModalBody pb={10}>
+          {!formReady ? (
+            <Box
+              minH={280}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              w="100%"
+            >
+              <VStack spacing={4} align="center">
+                <Spinner size="xl" color="blue.500" />
+                <Text color="gray.600">Loading user details...</Text>
+              </VStack>
+            </Box>
+          ):(
           <VStack spacing={4} align="stretch">
             <HStack spacing={5} align="start">
               <SimpleGrid columns={2} spacing={6} width="100%">
@@ -221,7 +244,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                     />
                   )}
                 />
-
+                <Tooltip label="Sync Participant" placement="top">
                 <Button
                   leftIcon={<IoReload />}
                   colorScheme="teal"
@@ -231,6 +254,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                   px={2}
                   aria-label="Sync Organizations"
                 />
+                </Tooltip>
               </HStack>
               <FormErrorMessage>{errors.participantId?.message}</FormErrorMessage>
             </FormControl>
@@ -289,7 +313,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
                 <FormControl isInvalid={!isEmpty(errors.confirmPassword)}>
                   <InputGroup>
-                    <Input type={showConfirmPassword  ? "text" : "password"} placeholder="Confirm Password" {...register('confirmPassword')} />
+                    <Input type={showConfirmPassword  ? "text" : "password"} placeholder="Confirm Password*" {...register('confirmPassword')} />
                     <InputRightElement>
                       <IconButton
                         variant="ghost"
@@ -309,7 +333,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                 </FormControl>
               </>
             )}
-          </VStack>
+          </VStack>)}
         </ModalBody>
 
         <ModalFooter display="flex" gap={3}>
