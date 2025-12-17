@@ -167,11 +167,20 @@ const SupportCenter = () => {
     return acc;
   }, {} as Record<string, IBusinessContact[]>);
 
+  const wheelFallback = (e: React.WheelEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    if (target.scrollHeight > target.clientHeight) {
+      target.scrollTop += e.deltaY;
+      // prevent page/body from also scrolling
+      e.preventDefault();
+    }
+  };
+
   return (
     <VStack align="flex-start" w="full" h="full" p="3" mt={10}>
       <Heading fontSize="2xl" fontWeight="bold" mb={6}>Support Center</Heading>
 
-      <Flex w="full" wrap="wrap" justify="center" gap={20} pb={6}>
+      <Flex w="full" wrap="wrap" justify="center" gap={6} pb={4}>
         <SupportCard
           icon={<TbGavel size={60} />}
           title="Dispute"
@@ -302,7 +311,7 @@ const SupportCenter = () => {
             Contact List
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody textAlign="center" maxH="70vh" overflowY="auto">
+          <ModalBody  onWheel={wheelFallback} textAlign="center" maxH="70vh" overflowY="auto">
 
             <Flex align="center" mb={6}>
               {selectedParticipant?.logo ? (<Image
