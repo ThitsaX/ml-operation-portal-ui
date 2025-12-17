@@ -48,29 +48,26 @@ export const SupportCard = ({
             <Text fontWeight="bold" fontSize="lg">
                 {title}
             </Text>
-            <Text fontWeight="medium" fontSize="md" textAlign="center">
+            <Text fontWeight="medium" fontSize="md" textAlign="center" minH="48px">
                 {description}
             </Text>
-            <Tooltip
-                label={isLoading ? tooltipLabel : ""}
-                shouldWrapChildren
-            >
-                <Button
-                    {...({ onClick })}
-                    bg={color}
-                    color="white"
-                    px={4}
-                    py={2}
-                    borderRadius="md"
-                    textAlign="center"
-                    isDisabled={isLoading}
-                    _hover={!isLoading ? { bg: color.replace(".700", ".800") } : {}}
-                >
-                    {
-                        actionLabel
-                    }
-                </Button>
-            </Tooltip>
+            <Box flex="1">
+                <Tooltip label={isLoading ? tooltipLabel : ""} shouldWrapChildren>
+                    <Button
+                        onClick={onClick}
+                        bg={color}
+                        color="white"
+                        px={4}
+                        py={2}
+                        borderRadius="md"
+                        textAlign="center"
+                        isDisabled={isLoading}
+                        _hover={!isLoading ? { bg: color.replace(".700", ".800") } : {}}
+                    >
+                        {actionLabel}
+                    </Button>
+                </Tooltip>
+            </Box>
         </VStack>
     );
 };
