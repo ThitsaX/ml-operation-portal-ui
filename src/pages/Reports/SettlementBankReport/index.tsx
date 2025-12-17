@@ -73,7 +73,7 @@ const SettlementBankReport = () => {
       startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
       endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'),
       settlementId: '',
-      currency: 'all',
+      currency: 'ALL',
       fileType: 'xlsx',
       timezoneOffset: '',
     },
@@ -316,7 +316,7 @@ const SettlementBankReport = () => {
                   maxMenuHeight={300}
                   isClearable={false}
                   options={[
-                    { value: 'all', label: 'All' },
+                    { value: 'ALL', label: 'ALL' },
                     ...(currencyList ?? []).map((item) => ({
                       value: item.currency,
                       label: item.currency,
@@ -327,8 +327,8 @@ const SettlementBankReport = () => {
                       ? {
                         value: field.value,
                         label:
-                          field.value === 'all'
-                            ? 'All'
+                          field.value === 'ALL'
+                            ? 'ALL'
                             : currencyList?.find((c) => c.currency === field.value)?.currency || '',
                       }
                       : null

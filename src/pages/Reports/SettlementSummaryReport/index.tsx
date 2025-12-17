@@ -1,4 +1,5 @@
 import {
+    Box,
   Button,
   FormControl,
   FormErrorMessage,
@@ -369,43 +370,8 @@ const SettlementSummaryReport = () => {
                 )}
               />
             </FormControl>
-            <FormControl w="100%"
-              isInvalid={!isEmpty(errors.currencyId)}
-            >
-              <FormLabel>Currency</FormLabel>
-              <Controller
-                name="currencyId"
-                control={control}
-                render={({ field }) => (
-                  <CustomSelect
-                    maxMenuHeight={300}
-                    isClearable={false}
-                    options={[
-                      { value: 'all', label: 'All' },
-                      ...(currencyList ?? []).map((item) => ({
-                        value: item.currency,
-                        label: item.currency,
-                      })),
-                    ]}
-                    value={
-                      field.value
-                        ? {
-                          value: field.value,
-                          label:
-                            field.value === 'all'
-                              ? 'All'
-                              : currencyList?.find((c) => c.currency === field.value)?.currency || '',
-                        }
-                        : null
-                    }
-                    onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                    placeholder="Select Currency"
-                  />
-                )}
-              />
-              <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
-            </FormControl>
 
+            <Box />
             <FormControl w="100%" mt={8} >
               <Controller
                 control={control}

@@ -72,8 +72,8 @@ const SettlementAuditReport = () => {
     defaultValues: {
       startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
       endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'),
-      dfspId: 'all',
-      currencyId: 'all',
+      dfspId: 'ALL',
+      currencyId: 'ALL',
       fileType: 'xlsx',
       timezoneOffset: ''
     },
@@ -167,8 +167,8 @@ const SettlementAuditReport = () => {
                   )}
                   value={
                     field.value
-                      ? field.value === 'all'
-                        ? { value: 'all', label: 'All' }
+                      ? field.value === 'ALL'
+                        ? { value: 'ALL', label: 'ALL' }
                         : {
                           value: field.value,
                           label: (() => {
@@ -240,7 +240,7 @@ const SettlementAuditReport = () => {
                   maxMenuHeight={300}
                   isClearable={false}
                   options={[
-                    { value: 'all', label: 'All' },
+                    { value: 'ALL', label: 'ALL' },
                     ...(currencyList ?? []).map((item) => ({
                       value: item.currency,
                       label: item.currency,
@@ -251,8 +251,8 @@ const SettlementAuditReport = () => {
                       ? {
                         value: field.value,
                         label:
-                          field.value === 'all'
-                            ? 'All'
+                          field.value === 'ALL'
+                            ? 'ALL'
                             : currencyList?.find((c) => c.currency === field.value)?.currency || '',
                       }
                       : null
