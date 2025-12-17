@@ -374,7 +374,6 @@ const SettlementDetailReport = () => {
                 )}
               />
             </FormControl>
-            <Box />
 
             <FormControl w="100%" mt={8}>
               <Controller
@@ -400,6 +399,7 @@ const SettlementDetailReport = () => {
                 )}
               />
             </FormControl>
+            <Box />
             <FormControl w="100%"
               display="flex"
               justifyContent={{ base: "stretch", md: "flex-end" }}
