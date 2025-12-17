@@ -229,7 +229,7 @@ const SettlementSummaryReport = () => {
                       (participantList ?? []).map(
                         (item): OptionType => ({
                           value: item.participantName,
-                          label: item.participantName,
+                          label: item.description ? `${item.participantName} (${item.description})` : item.participantName,
                         })
                       )
                     }
@@ -237,10 +237,16 @@ const SettlementSummaryReport = () => {
                       field.value
                         ? {
                           value: field.value,
-                          label:
-                            participantList?.find(
+                          label: (() => {
+                            const p = participantList?.find(
                               (p) => p.participantName === field.value
-                            )?.participantName || '',
+                            );
+                            return p
+                              ? p.description
+                                ? `${p.participantName} (${p.description})`
+                                : p.participantName
+                              : '';
+                          })(),
                         }
                         : null
                     }
