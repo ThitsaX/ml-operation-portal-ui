@@ -101,6 +101,30 @@ const ParticipantPositions = () => {
         }
     };
 
+    const handleRefresh = async () => {
+        try {
+            setStringDateTime(handleTimeZone(stringTimezone));
+            await syncHubParticipantsToPortal();
+            await getPositionList();
+            toast({
+                title: 'Data refreshed',
+                position: 'top',
+                status: 'success',
+                duration: 4000,
+                isClosable: true,
+            });
+        } catch (error) {
+            toast({
+                title: 'Error refreshing data',
+                position: 'top',
+                description: getErrorMessage(error as IApiErrorResponse) || 'Something went wrong. Please try again.',
+                status: 'error',
+                duration: 4000,
+                isClosable: true,
+            });
+        }
+    };
+
     useEffect(() => {
         setStringDateTime(handleTimeZone(stringTimezone))
     }, [selectedTimezone, stringTimezone])
@@ -596,12 +620,9 @@ const ParticipantPositions = () => {
                     <IconButton
                         colorScheme="muted"
                         variant="ghost"
-                        aria-label="Edit Account"
+                        aria-label="Refresh data"
                         icon={<IoReload />}
-                        onClick={() => {
-                            setStringDateTime(() => handleTimeZone(stringTimezone))
-                            syncHubParticipantsToPortal();
-                        }}
+                        onClick={handleRefresh}
                     />
                 </Tooltip>
 

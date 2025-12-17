@@ -105,11 +105,8 @@ const Header = () => {
       {data != null ? (
         <VStack w={10} h={10} justifyContent="center" alignItems="center">
           <Box
-            cursor={data.participantName?.toLowerCase() === 'hub' ? 'pointer' : 'default'}
-            onClick={
-              data.participantName?.toLowerCase() === 'hub'
-                ? () => handleClick(data.participantName, data.participantId)
-                : undefined
+            cursor='pointer'
+            onClick={() => handleClick(data.participantName, data.participantId)     
           }>
           <Image
             alt={data.participantName}
@@ -126,12 +123,7 @@ const Header = () => {
         </VStack>
       ) : null}
       <Flex flex={2}>
-        <Heading
-          size="md"
-          textAlign="center"
-          w="full">
-          Operation Portal
-        </Heading>
+
       </Flex>
       {data != null ? (
         <HStack align="center">

@@ -19,9 +19,11 @@ import { PersistGate } from 'redux-persist/integration/react';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnMount: false,
+      staleTime: 0,
+      cacheTime: 0,
+      refetchOnMount: 'always',
+      refetchOnWindowFocus: false,
       retry: 2,
-      staleTime: 3 * 60 * 1000, // 3 minutes
     },
   },
 });

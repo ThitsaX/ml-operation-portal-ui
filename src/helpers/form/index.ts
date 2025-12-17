@@ -7,7 +7,7 @@ export class AuthHelper extends FormHelper {
   get loginSchema() {
     return z.object({
       email: z.string({ required_error: 'Required' }).email('invalid-email'),
-      password: z.string({ required_error: 'Required' }).min(6, 'Password must be at least 6 characters long')
+      password: z.string({ required_error: 'Required' })
     });
   }
 
@@ -429,7 +429,7 @@ export class ContactHelper extends FormHelper {
         .string({ required_error: 'Required' })
         .trim()
         .min(1, 'Mobile is required')
-        .regex(/^\+[^a-zA-Z]*$/, 'Invalid mobile number format'),
+        .regex(/^\+[^a-zA-Z]*$/, 'Please include the country code (e.g., +1…)'),
       contactType: z.string({ required_error: 'Required' })
         .trim()
         .min(1, 'Contact Type is required'),

@@ -13,7 +13,7 @@ import {
   Flex,
   FormErrorMessage,
   FormHelperText,
-  IconButton
+  IconButton,
 } from '@chakra-ui/react';
 import { Controller, useForm } from 'react-hook-form';
 import { IParticipantProfile } from '@typescript/services';
@@ -25,6 +25,7 @@ import { getParticipantProfile } from '@services/participant';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 import { RxCrossCircled } from "react-icons/rx";
+import { hasActionPermission } from '@helpers/permissions';
 
 interface OrganizationProfileProps {
   participantId: string;
@@ -198,14 +199,15 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
       borderColor="gray.200"
       rounded="md"
     >
-      <Heading fontSize="lg" fontWeight="bold" mb={4}>
-        Organization Profile
-      </Heading>
+      <Box mb={6}>
+        <Heading fontSize="lg" fontWeight="bold">
+          Organization Profile
+        </Heading>
+      </Box>
 
       <VStack spacing={4} align="stretch" opacity={isLoading ? 0.5 : 1} pointerEvents={isLoading ? 'none' : 'auto'}>
-
         <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
-          <FormControl isInvalid={!isEmpty(errors.description)}>
+          <FormControl isInvalid={!isEmpty(errors.description)} flex={1}>
             <FormLabel fontSize="sm" fontWeight="semibold">Description</FormLabel>
             <Controller
               name="description"
@@ -217,7 +219,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
             <FormErrorMessage fontSize="xs">{errors.description?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.address)}>
+          <FormControl isInvalid={!isEmpty(errors.address)} flex={1}>
             <FormLabel fontSize="sm" fontWeight="semibold">Address</FormLabel>
             <Controller
               name='address'
@@ -228,8 +230,10 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
             />
             <FormErrorMessage fontSize="xs">{errors.address?.message}</FormErrorMessage>
           </FormControl>
+        </Stack>
 
-          <FormControl isInvalid={!isEmpty(errors.mobile)}>
+        <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
+          <FormControl isInvalid={!isEmpty(errors.mobile)} flex={1}>
             <FormLabel fontSize="sm" fontWeight="semibold">Contact Number</FormLabel>
             <Controller
               name='mobile'
@@ -240,75 +244,93 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
             />
             <FormErrorMessage fontSize="xs">{errors.mobile?.message}</FormErrorMessage>
           </FormControl>
+
+          <FormControl flex={1}>
+            <FormLabel fontSize="sm" fontWeight="semibold">Logo</FormLabel>
+            <Flex direction={{ base: 'column', md: 'row' }} gap={4} align={{ base: 'flex-start', md: 'center' }}>
+              <Box flex={{ base: '1 0 100%', sm: 1 }} w={{ base: '100%', sm: 'auto' }}>
+                <Input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".png, .jpeg"
+                  fontSize="md"
+                  pt={1}
+                  w="100%"
+                  onChange={handleFileChange}
+                />
+                <FormHelperText id="logo-helper-text" fontSize="xs">
+                  Accepted formats: PNG, JPEG. Max size: 1MB.
+                </FormHelperText>
+                <input type="hidden" {...register('logo')} />
+                <input type="hidden" {...register('logoFileType')} />
+              </Box>
+              
+              {preview && (
+                <Box
+                  position="relative"
+                  border="1px solid"
+                  borderColor="gray.300"
+                  borderRadius="md"
+                  p={1}
+                  bg="gray.50"
+                  height={{ base: '80px', md: '60px' }}
+                  width={{ base: '80px', md: '100px' }}
+                  flexShrink={0}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  mt={{ base: 2, md: 0 }}
+                  ml={{ base: 0, md: 4 }}
+                  alignSelf={{ base: 'center', md: 'center' }}
+                  mb={{ base: 0, md: '2px' }}
+                >
+                  <Image
+                    src={`data:${fileType};base64,${preview}`}
+                    alt="Logo Preview"
+                    maxHeight="50px"
+                    objectFit="contain"
+                    _hover={{ transform: 'none' }}
+                  />
+                  <IconButton
+                    aria-label="Remove logo"
+                    icon={<RxCrossCircled size={18} />}
+                    size="xs"
+                    position="absolute"
+                    top="-6px"
+                    right="-6px"
+                    minW={6}
+                    h={6}
+                    borderRadius="full"
+                    bg="white"
+                    borderWidth="1px"
+                    borderColor="gray.200"
+                    color="red.500"
+                    _hover={{ bg: 'white' }}
+                    _active={{ bg: 'white' }}
+                    onClick={clearLogo}
+                    boxShadow="sm"
+                  />
+                </Box>
+              )}
+            </Flex>
+          </FormControl>
         </Stack>
 
-        <Flex direction={{ base: 'column', md: 'row' }} gap={4} align="flex-end">
-          <FormControl>
-            <FormLabel fontSize="sm" fontWeight="semibold">Logo</FormLabel>
-            <Input
-              ref={fileInputRef}
-              type="file"
-              accept=".png, .jpeg"
-              fontSize="md"
-              pt={1}
-              onChange={handleFileChange}
-            />
-            <FormHelperText id="logo-helper-text">
-              Accepted formats: PNG, JPEG. Max size: 1MB.
-            </FormHelperText>
-            {/* Hidden inputs to store base64 and fileType in react-hook-form */}
-            <input type="hidden" {...register('logo')} />
-            <input type="hidden" {...register('logoFileType')} />
-          </FormControl>
-
-          {preview && (
-            <Box
-              position="relative"
-              border="1px solid"
-              borderColor="gray.300"
-              borderRadius="md"
-              p={1}
-              margin={1}
-              bg="gray.50"
-              height="60px"
-              width="100px"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
+        {hasActionPermission("ModifyParticipantProfile") && (
+          <Flex justify="flex-end" mt={6} pt={4} borderTopWidth="1px" borderColor="gray.100">
+            <Button
+              isDisabled={isSubmitting || !isDirty || !isValid}
+              isLoading={isSubmitting}
+              onClick={handleSubmit(organizationHandler)}
+              colorScheme="blue"
+              type="submit"
+              size="md"
+              minW="120px"
             >
-              <Image
-                src={`data:${fileType};base64,${preview}`}
-                alt="Logo Preview"
-                maxHeight="50px"
-                objectFit="contain"
-              />
-              <IconButton
-                aria-label="Remove logo"
-                icon={<RxCrossCircled size={16} />}
-                size="sm"
-                position="absolute" top="-18px" right="-19px"
-                variant="ghost"
-                color="red.500"
-                _hover={{ color: 'red.700', bg: 'transparent' }}
-                onClick={clearLogo}
-              />
-            </Box>
-          )}
-        </Flex>
-
-        <Box textAlign="right" pt={2}>
-          <Button
-            isDisabled={isSubmitting || !isDirty || !isValid}
-            isLoading={isSubmitting}
-            onClick={handleSubmit(organizationHandler)}
-            colorScheme="blue"
-            type="submit"
-            size="sm"
-          >
-            Save Profile
-          </Button>
-
-        </Box>
+              Save Profile
+            </Button>
+          </Flex>
+        )}
       </VStack>
     </Box>
   );

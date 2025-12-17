@@ -29,6 +29,7 @@ import { type IApiErrorResponse } from '@typescript/services';
 import { getParticipantListIncludingHub } from '@services/participant';
 import { Spinner } from '@chakra-ui/react';
 import { getDisputeLink, getServiceRequestLink } from '@services/support-center';
+import { Avatar } from '@chakra-ui/react';
 
 const SupportCenter = () => {
   const toast = useToast();
@@ -158,6 +159,14 @@ const SupportCenter = () => {
     }
   };
 
+  const groupedContacts = contactList?.reduce((acc, contact) => {
+    if (!acc[contact.contactType]) {
+      acc[contact.contactType] = [];
+    }
+    acc[contact.contactType].push(contact);
+    return acc;
+  }, {} as Record<string, IBusinessContact[]>);
+
   return (
     <VStack align="flex-start" w="full" h="full" p="3" mt={10}>
       <Heading fontSize="2xl" fontWeight="bold" mb={6}>Support Center</Heading>
@@ -257,7 +266,7 @@ const SupportCenter = () => {
                     bg="white"
                     willChange="transform"
                   >
-                    <Image
+                    {p.logo ? (<Image
                       src={`data:${p.logoFileType};base64,${p.logo}`}
                       alt={p.participantName}
                       boxSize={{ base: "56px", md: "60px" }}
@@ -265,9 +274,14 @@ const SupportCenter = () => {
                       borderRadius="full"
                       mx="auto"
                       mb={2}
-                    />
+                    />)
+                      : (<Avatar name={p.participantName} size="lg"
+                        mx="auto" mb={2}
+                      />)}
                     <Text fontWeight="medium" fontSize="sm" noOfLines={2}>
-                      {p.participantName}
+                      {p.participantName ? p.participantDescription ?
+                        `${p.participantName} (${p.participantDescription})`
+                        : p.participantName : ''}
                     </Text>
                   </Box>
                 ))}
@@ -291,16 +305,20 @@ const SupportCenter = () => {
           <ModalBody textAlign="center" maxH="70vh" overflowY="auto">
 
             <Flex align="center" mb={6}>
-              <Image
+              {selectedParticipant?.logo ? (<Image
                 src={`data:${selectedParticipant?.logoFileType};base64,${selectedParticipant?.logo}`}
                 alt={selectedParticipant?.participantName}
                 boxSize="60px"
                 objectFit="cover"
                 borderRadius="full"
                 mr={4}
-              />
+              />) : (<Avatar name={selectedParticipant?.participantName} size="lg"
+                mr={4}
+              />)}
               <Text fontWeight="bold" fontSize="lg">
-                {selectedParticipant?.participantName || 'Participant'}
+                {selectedParticipant?.participantName ? selectedParticipant.participantDescription ?
+                  `${selectedParticipant.participantName} (${selectedParticipant.participantDescription})`
+                  : selectedParticipant.participantName : 'Participant'}
               </Text>
             </Flex>
 
@@ -311,19 +329,25 @@ const SupportCenter = () => {
               </VStack>
             ) : (
               <>
-                {contactList?.map((info, index) => (
-                  <Box key={index} p={4}>
-                    <Text fontWeight="bold" fontSize="lg" mb={4}>
-                      {info.contactType}
-                    </Text>
-                    <VStack spacing={2} align="start">
-                      <Text><b>Contact Person Name:</b> {info?.name}</Text>
-                      <Text><b>Position:</b> {info?.position}</Text>
-                      <Text><b>Email:</b> {info?.email}</Text>
-                      <Text><b>Contact Number:</b> {info?.mobile}</Text>
-                    </VStack>
-                  </Box>
-                ))}
+                {groupedContacts &&
+                  Object.entries(groupedContacts).map(([contactType, contacts]) => (
+                    <Box key={contactType} mb={2} p={4}>
+                      <Text fontWeight="bold" fontSize="lg" mb={4}>
+                        {contactType}
+                      </Text>
+
+                      <>
+                        {contacts.map((info) => (
+                          <VStack key={info.contactId} spacing={2} align="start" mb={4}>
+                            <Text><b>Contact Person Name:</b> {info.name}</Text>
+                            <Text><b>Position:</b> {info.position}</Text>
+                            <Text><b>Email:</b> {info.email}</Text>
+                            <Text><b>Contact Number:</b> {info.mobile}</Text>
+                          </VStack>
+                        ))}
+                      </>
+                    </Box>
+                  ))}
               </>
             )}
           </ModalBody>

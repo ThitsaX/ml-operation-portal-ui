@@ -71,6 +71,11 @@ const User = () => {
     setIsResetOpen(true);
   };
 
+  const handleCloseModal = () => {
+    setSelectedUser(null);
+    setIsOpen(false);
+  };
+
   const toggleStatus = async (userId: string, checked: boolean) => {
     const newStatus = checked ? UserStatus.ACTIVE : UserStatus.INACTIVE;
     try {
@@ -112,7 +117,6 @@ const User = () => {
           const { participantName, participantDescription } = row.original;
           return (
             <Box
-              maxW="200px"
               whiteSpace="normal"
               wordBreak="break-word"
               overflowWrap="break-word"
@@ -137,7 +141,6 @@ const User = () => {
           if (!value || value.length === 0) return <span>-</span>;
           return (
             <Box
-              maxW="200px"
               whiteSpace="normal"
               wordBreak="break-word"
               overflowWrap="break-word"
@@ -282,7 +285,7 @@ const User = () => {
         });
         setIsEdit(false);
         refetch();
-        setIsOpen(false);
+        handleCloseModal();
       })
       .catch((error: IApiErrorResponse) => {
         toast({
@@ -487,7 +490,7 @@ const User = () => {
 
       <EditUserModal
         isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={handleCloseModal}
         selectedUser={selectedUser}
         isEdit={isEdit}
         participantInfoList={participantInfoList}

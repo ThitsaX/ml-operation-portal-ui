@@ -28,6 +28,7 @@ import { HeaderCell, Cell } from '../Table';
 import { ConfirmDialog } from '../ConfirmationDialog';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
+import { hasActionPermission } from '@helpers/permissions';
 
 interface BusinessContactProps {
     participantId: string;
@@ -168,16 +169,18 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
                 <Text fontSize="lg" fontWeight="bold" lineHeight="1.2">
                     Contacts
                 </Text>
-                <Button colorScheme="blue" size="md" onClick={() => {
-                    setForm({
-                        ...defaultForm,
-                        participantId: participantId
-                    });
-                    setIsEdit(false);
-                    onOpen();
-                }}>
-                    Add
-                </Button>
+                {hasActionPermission("CreateContact") && (
+                    <Button colorScheme="blue" size="md" onClick={() => {
+                        setForm({
+                            ...defaultForm,
+                            participantId: participantId
+                        });
+                        setIsEdit(false);
+                        onOpen();
+                    }}>
+                        Add
+                    </Button>
+                )}
             </HStack>
 
             <BusinessContactModal
@@ -199,7 +202,11 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
                             <HeaderCell borderColor={borderColor}>Position</HeaderCell>
                             <HeaderCell borderColor={borderColor}>Email</HeaderCell>
                             <HeaderCell borderColor={borderColor}>Contact Number</HeaderCell>
-                            <HeaderCell borderColor={borderColor}>Action</HeaderCell>
+                            {(hasActionPermission("ModifyContact") || hasActionPermission("RemoveContact")) && (
+                                <HeaderCell borderColor={borderColor}>
+                                      Action
+                                </HeaderCell>
+                            )}
                         </Tr>
                     </Thead>
                     <Tbody>
@@ -219,29 +226,36 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
                                 <Cell borderColor={borderColor}>{item.email}</Cell>
 
                                 <Cell borderColor={borderColor}>{item.mobile}</Cell>
+                                {( hasActionPermission("ModifyContact") || hasActionPermission("RemoveContact")) && (
 
                                 <Td border={`1px solid ${borderColor}`} px={4} py={2}>
                                     <HStack spacing={3} justify="center">
-                                        <Tooltip label='Edit Contact' bg='white' color='black'>
-                                            <IconButton
-                                                icon={<FiEdit2 />}
-                                                aria-label="Edit"
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleEdit(item)}
-                                            />
-                                        </Tooltip>
-                                        <Tooltip label='Delete Contact' bg='white' color='black'>
-                                            <IconButton
-                                                icon={<FiTrash2 />}
-                                                aria-label="Delete"
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleDeleteClick(item)}
-                                            />
-                                        </Tooltip>
+                                        {hasActionPermission("ModifyContact") && (
+                                            <Tooltip label='Edit Contact' bg='white' color='black'>
+                                                <IconButton
+                                                    icon={<FiEdit2 />}
+                                                    aria-label="Edit"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleEdit(item)}
+                                                />
+                                            </Tooltip>
+                                        )}
+
+                                        {hasActionPermission("RemoveContact") && (
+                                            <Tooltip label='Delete Contact' bg='white' color='black'>
+                                                <IconButton
+                                                    icon={<FiTrash2 />}
+                                                    aria-label="Delete"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleDeleteClick(item)}
+                                                />
+                                            </Tooltip>
+                                        )}
                                     </HStack>
                                 </Td>
+                                )}
                             </Tr>
                         ))}
                     </Tbody>
