@@ -275,6 +275,7 @@ const PendingApprovals = () => {
       {isError && <Text color="red.500">{String(error)}</Text>}
 
       {!isError && (
+          <Box w="full">
         <TableContainer
           w="full"
           borderWidth={1}
@@ -347,7 +348,9 @@ const PendingApprovals = () => {
               })}
             </Tbody>
           </Table>
-          <HStack px="6" py="2">
+        </TableContainer>
+        <HStack spacing={2} justify="space-between" w="full"
+             px={4} py={3} bg="gray.50" borderTopWidth="1px">
             <HStack flex={2}>
               <IconButton
                 aria-label="Skip to start"
@@ -406,7 +409,7 @@ const PendingApprovals = () => {
               />
             </HStack>
           </HStack>
-        </TableContainer>
+          </Box>
       )}
     </VStack>
       <ConfirmDialog

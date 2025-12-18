@@ -967,12 +967,13 @@ const SettlementWindows = () => {
                     </HStack>
                 </Flex>
 
+                <Box w="full">
                 <TableContainer
                     w="full"
                     borderWidth={1}
                     borderColor="gray.100"
                     rounded="lg"
-                    mt="4">
+                    mt="1">
                     <Table variant="simple" {...getTableProps()}>
                         <Thead bg="gray.100">
                             {headerGroups.map((headerGroup) => (
@@ -1038,7 +1039,9 @@ const SettlementWindows = () => {
                             })}
                         </Tbody>
                     </Table>
-                    <HStack px="6" py="2">
+                </TableContainer>
+                <HStack spacing={2} justify="space-between" w="full"
+                     px={4} py={3} bg="gray.50" borderTopWidth="1px">
                         <HStack flex={2}>
                             <IconButton
                                 aria-label="Skip to start"
@@ -1097,7 +1100,7 @@ const SettlementWindows = () => {
                             />
                         </HStack>
                     </HStack>
-                </TableContainer>
+                </Box>
             </Stack>
 
             <Modal isOpen={isMoveOnOpen} onClose={onMoveOnClose} isCentered>

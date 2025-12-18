@@ -351,12 +351,12 @@ const User = () => {
       <VStack w="full" align="flex-start" spacing={2} >
         <GlobalFilter mt={5} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
 
+        <Box w="full">
         <TableContainer
           w="full"
           borderWidth={1}
           borderColor="gray.100"
-          rounded="lg"
-          my={10}>
+          rounded="lg">
           <Table variant="simple" {...getTableProps()}>
             <Thead bg="gray.100">
               {headerGroups.map((headerGroup) => (
@@ -425,7 +425,9 @@ const User = () => {
               })}
             </Tbody>
           </Table>
-          <HStack px="6" py="2">
+        </TableContainer>
+        <HStack spacing={2} justify="space-between" w="full"
+             px={4} py={3} bg="gray.50" borderTopWidth="1px">
             <HStack flex={2}>
               <IconButton
                 aria-label="Skip to start"
@@ -484,8 +486,7 @@ const User = () => {
               />
             </HStack>
           </HStack>
-        </TableContainer>
-
+        </Box>
       </VStack>
 
       <EditUserModal
