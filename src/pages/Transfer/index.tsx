@@ -218,16 +218,33 @@ const Transfer = () => {
   const onFindHandler = useCallback(
     (values: ITransferValues, currentPage = 1, currentSize = 10) => {
 
-      values.fromDate = moment.tz(values.fromDate, selectedTZString).utc()
-        .utc()
-        .format();
-      values.toDate = moment.tz(values.toDate, selectedTZString).utc()
-        .utc()
-        .format();
-      values.timezone = timezone;
+    const requestValues = { ...values };
+    if (requestValues.transferId && requestValues.transferId.trim() !== '') {
+      const transferIdValue = requestValues.transferId.trim();
 
-      start();
-      getAllTransfers(omitBy(values, isEmpty), currentPage, currentSize)  // number of rows per page)
+      // Reset all other search fields to empty
+      Object.keys(requestValues).forEach(key => {
+        if (key !== 'transferId' &&
+            key !== 'fromDate' &&
+            key !== 'toDate' &&
+            key !== 'timezone') {
+          (requestValues as any)[key] = '';
+        }
+      });
+      requestValues.transferId = transferIdValue;
+    }
+
+    // Convert dates to UTC
+    requestValues.fromDate = moment.tz(requestValues.fromDate, selectedTZString)
+        .utc()
+        .format();
+    requestValues.toDate = moment.tz(requestValues.toDate, selectedTZString)
+        .utc()
+        .format();
+    requestValues.timezone = timezone;
+
+    start();
+    getAllTransfers(omitBy(requestValues, isEmpty), currentPage, currentSize)
         .then((data) => {
           if (!data?.transferInfoList?.length) {
             toast({
