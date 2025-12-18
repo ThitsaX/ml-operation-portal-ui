@@ -137,7 +137,18 @@ export const getAllTransfers = async (data: Partial<ITransferValues>, pageIndex:
     .get<IGetTransferDataArr>(uri, {
       params: data
     })
-    .then((d) => d.data);
+    .then((d) => d.data)
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
 };
 
 export const getTransferDetails = async (transferId: string, timezone?: string) => {
@@ -165,5 +176,16 @@ export const getTransferDetails = async (transferId: string, timezone?: string) 
         timezone
       }
     })
-    .then((d) => d.data);
+    .then((d) => d.data)
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
 };
