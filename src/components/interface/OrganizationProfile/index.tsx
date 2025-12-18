@@ -49,7 +49,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
+  const hasEditPermission = hasActionPermission("ModifyParticipantProfile");
   const organizationHelper = new OrganizationHelper();
 
   const {
@@ -205,12 +205,12 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
         </Heading>
       </Box>
 
-      <VStack spacing={4} align="stretch" opacity={isLoading ? 0.5 : 1} pointerEvents={isLoading ? 'none' : 'auto'}>
+      <VStack spacing={4} align="stretch" opacity={isLoading || !hasEditPermission ? 0.8 : 1} pointerEvents={isLoading ? 'none' : 'auto'}>
         <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
-          <FormControl isInvalid={!isEmpty(errors.description)} flex={1}>
+          <FormControl isInvalid={!isEmpty(errors.description)} flex={1} isDisabled={!hasEditPermission}>
             <FormLabel fontSize="sm" fontWeight="semibold">Description</FormLabel>
             <Controller
-              name="description"
+              name="description" 
               control={control}
               render={({ field }) => (
                 <Input {...field} fontSize="md" />
@@ -219,7 +219,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
             <FormErrorMessage fontSize="xs">{errors.description?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.address)} flex={1}>
+          <FormControl isInvalid={!isEmpty(errors.address)} flex={1} isDisabled={!hasEditPermission}>
             <FormLabel fontSize="sm" fontWeight="semibold">Address</FormLabel>
             <Controller
               name='address'
@@ -233,7 +233,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
         </Stack>
 
         <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
-          <FormControl isInvalid={!isEmpty(errors.mobile)} flex={1}>
+          <FormControl isInvalid={!isEmpty(errors.mobile)} flex={1} isDisabled={!hasEditPermission}>
             <FormLabel fontSize="sm" fontWeight="semibold">Contact Number</FormLabel>
             <Controller
               name='mobile'
@@ -245,7 +245,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
             <FormErrorMessage fontSize="xs">{errors.mobile?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl flex={1}>
+          <FormControl flex={1} isDisabled={!hasEditPermission}>
             <FormLabel fontSize="sm" fontWeight="semibold">Logo</FormLabel>
             <Flex direction={{ base: 'column', md: 'row' }} gap={4} align={{ base: 'flex-start', md: 'center' }}>
               <Box flex={{ base: '1 0 100%', sm: 1 }} w={{ base: '100%', sm: 'auto' }}>
@@ -256,6 +256,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
                   fontSize="md"
                   pt={1}
                   w="100%"
+                  isDisabled={!hasEditPermission}
                   onChange={handleFileChange}
                 />
                 <FormHelperText id="logo-helper-text" fontSize="xs">
@@ -309,6 +310,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
                     _active={{ bg: 'white' }}
                     onClick={clearLogo}
                     boxShadow="sm"
+                    isDisabled={!hasEditPermission}
                   />
                 </Box>
               )}
@@ -316,7 +318,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
           </FormControl>
         </Stack>
 
-        {hasActionPermission("ModifyParticipantProfile") && (
+        {hasEditPermission && (
           <Flex justify="flex-end" mt={6} pt={4} borderTopWidth="1px" borderColor="gray.100">
             <Button
               isDisabled={isSubmitting || !isDirty || !isValid}
