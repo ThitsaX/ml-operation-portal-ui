@@ -423,7 +423,10 @@ const ParticipantPositions = () => {
             toast({
                 title: `${actionLabel}`,
                 position: 'top',
-                description: `Amount: ${data.amount} ${data.currency}`,
+                description:
+                    data.requestedAction === PositionActionType.UPDATE_NDC_PERCENTAGE
+                        ? `Percentage: ${data.amount}% ${data.currency}`
+                        : `Amount: ${data.amount} ${data.currency}`,
                 status: 'success',
                 duration: 4000,
                 isClosable: true,

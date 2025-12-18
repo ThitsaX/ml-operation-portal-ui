@@ -393,7 +393,7 @@ const Audit = () => {
       </Stack>
 
 
-      <Stack w="full" align="flex-start" spacing={2}>
+      <Box w="full">
         {/* Table */}
         <TableContainer mt={2} w="full" borderWidth={1} borderColor="gray.100" rounded="lg">
           <Table variant="simple">
@@ -469,7 +469,9 @@ const Audit = () => {
           </Table>
 
           {/* Pagination */}
-          <HStack px="6" py="2">
+          </TableContainer>
+          <HStack spacing={2} justify="space-between" w="full"
+                 px={4} py={3} bg="gray.50" borderTopWidth="1px">
             <HStack flex={2}>
               <IconButton
                 aria-label="Skip to start"
@@ -547,8 +549,7 @@ const Audit = () => {
             </HStack>
 
           </HStack>
-        </TableContainer>
-      </Stack>
+      </Box>
 
       {/* Audit Detail Modal - Updated with beautified JSON display */}
       <Modal isOpen={isDetailOpen} onClose={handleCloseModal} size="3xl" scrollBehavior="inside" isCentered>

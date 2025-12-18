@@ -171,8 +171,6 @@ const SupportCenter = () => {
     const target = e.currentTarget;
     if (target.scrollHeight > target.clientHeight) {
       target.scrollTop += e.deltaY;
-      // prevent page/body from also scrolling
-      e.preventDefault();
     }
   };
 
