@@ -141,7 +141,7 @@ const SettlementDetailReport = () => {
         toast({
           position: 'top',
           description: getErrorMessage(error) || 'Faield to download',
-          status: 'warning',
+          status: 'error',
           isClosable: true,
           duration: 3000
         });
@@ -191,6 +191,15 @@ const SettlementDetailReport = () => {
         setValue('settlementId', '');
         setValue('fileType', 'xlsx');
       })
+        .catch((error: IApiErrorResponse) => {
+          toast({
+            position: 'top',
+            title: getErrorMessage(error),
+            status: 'error',
+            isClosable: true,
+            duration: 3000
+          });
+        })
       .finally(() => {
         setRunButtonState(true);
         complete();

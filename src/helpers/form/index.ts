@@ -236,8 +236,10 @@ export class SettlementStatementReportHelper extends FormHelper {
 export class TransferHelper extends FormHelper {
   get schema() {
     return z.object({
-      fromDate: z.string({ required_error: 'Required' }),
-      toDate: z.string({ required_error: 'Required' }),
+      fromDate: z.string({ required_error: 'Required' })
+      .min(1, 'Invalid date'),
+      toDate: z.string({ required_error: 'Required' })
+      .min(1, 'Invalid date'),
       transferId: z.string().optional(),
       payerFspId: z.string().optional(),
       payeeFspId: z.string().optional(),
@@ -301,8 +303,10 @@ export class SettlementWindowHelper extends FormHelper {
   get schema() {
     return z
       .object({
-        fromDate: z.string({ required_error: 'Required' }),
-        toDate: z.string({ required_error: 'Required' }),
+        fromDate: z.string({ required_error: 'Required' })
+        .min(1, 'Invalid date'),
+        toDate: z.string({ required_error: 'Required' })
+        .min(1, 'Invalid date'),
         state: z.string().optional(),
         currency: z.string().optional(),
         timeZoneOffset: z.string().optional()
@@ -318,8 +322,10 @@ export class FinalizeSettlementHelper extends FormHelper {
   get schema() {
     return z
       .object({
-        fromDate: z.string({ required_error: 'Required' }),
-        toDate: z.string({ required_error: 'Required' }),
+        fromDate: z.string({ required_error: 'Required' })
+        .min(1, 'Invalid date'),
+        toDate: z.string({ required_error: 'Required' })
+        .min(1, 'Invalid date'),
         state: z.string().optional(),
         currency: z.string().optional(),
         timeZoneOffset: z.string().optional()
