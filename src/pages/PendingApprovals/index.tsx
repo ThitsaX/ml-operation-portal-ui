@@ -48,12 +48,20 @@ const PendingApprovals = () => {
   const selectedTZString = selectedTimezone.value;
 
   const toast = useToast();
-  const { data, isError, error, refetch } = useGetPendingApprovalList({
-    staleTime: 0,
-    cacheTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: false
-  });
+  const { data, isError, error, refetch } = useGetPendingApprovalList();
+
+  useEffect(() => {
+    if (isError) {
+      toast({
+        title: 'Failed to fetch pending approvals',
+        position: 'top',
+        description: getErrorMessage(error as IApiErrorResponse) || 'Something went wrong. Please try again.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }, [isError, error, toast]);
 
   // State
   const [pageNumber, setPageNumber] = useState<String>('1');
@@ -275,86 +283,85 @@ const PendingApprovals = () => {
       </HStack>
 
       <VStack w="full" align="flex-start" spacing={2} >
-      <GlobalFilter mt={5} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
-      {isError && <Text color="red.500">{String(error)}</Text>}
+        <GlobalFilter mt={5} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
 
-      {!isError && (
-          <Box w="full">
-        <TableContainer
-          w="full"
-          borderWidth={1}
-          borderColor="gray.100"
-          rounded="lg"
-          mt="4">
-          <Table variant="simple" {...getTableProps()}>
-            <Thead bg="gray.100">
-              {headerGroups.map((headerGroup) => (
-                <Tr {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map((column) => (
-                    <Th
-                      {...column.getHeaderProps(
-                        column.disableSortBy
-                          ? undefined
-                          : column.getSortByToggleProps()
-                      )}>
-                      <HStack align="center" spacing="2" flex={1}>
-                        {column.render('Header')}
-                        {column.disableSortBy ? null : (
-                          <VStack
-                            display="inline-flex"
-                            align="center"
-                            spacing={0}>
-                            <Icon
-                              as={IoChevronUp}
-                              size={12}
-                              color={
-                                !column.isSorted
-                                  ? 'gray.400'
-                                  : !column.isSortedDesc
-                                    ? 'gray.700'
-                                    : 'gray.400'
-                              }
-                            />
-                            <Icon
-                              as={IoChevronDown}
-                              size={12}
-                              color={
-                                !column.isSorted
-                                  ? 'gray.400'
-                                  : column.isSortedDesc
-                                    ? 'gray.700'
-                                    : 'gray.400'
-                              }
-                            />
-                          </VStack>
-                        )}
-                      </HStack>
-                    </Th>
-                  ))}
-                </Tr>
-              ))}
-            </Thead>
-            <Tbody maxH={300} overflowY="auto" {...getTableBodyProps()}>
-              {page.map((row) => {
-                prepareRow(row);
-                return (
-                  <Tr
-                    fontSize="sm"
-                    cursor="pointer"
-                    _hover={{ bg: 'muted.50' }}
-                    {...row.getRowProps()}
-                  >
-                    {row.cells.map((cell) => (
-                      <Td {...cell.getCellProps()} py={2}>{cell.render('Cell')}</Td>
+
+        <Box w="full">
+          <TableContainer
+            w="full"
+            borderWidth={1}
+            borderColor="gray.100"
+            rounded="lg"
+            mt="4">
+            <Table variant="simple" {...getTableProps()}>
+              <Thead bg="gray.100">
+                {headerGroups.map((headerGroup) => (
+                  <Tr {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map((column) => (
+                      <Th
+                        {...column.getHeaderProps(
+                          column.disableSortBy
+                            ? undefined
+                            : column.getSortByToggleProps()
+                        )}>
+                        <HStack align="center" spacing="2" flex={1}>
+                          {column.render('Header')}
+                          {column.disableSortBy ? null : (
+                            <VStack
+                              display="inline-flex"
+                              align="center"
+                              spacing={0}>
+                              <Icon
+                                as={IoChevronUp}
+                                size={12}
+                                color={
+                                  !column.isSorted
+                                    ? 'gray.400'
+                                    : !column.isSortedDesc
+                                      ? 'gray.700'
+                                      : 'gray.400'
+                                }
+                              />
+                              <Icon
+                                as={IoChevronDown}
+                                size={12}
+                                color={
+                                  !column.isSorted
+                                    ? 'gray.400'
+                                    : column.isSortedDesc
+                                      ? 'gray.700'
+                                      : 'gray.400'
+                                }
+                              />
+                            </VStack>
+                          )}
+                        </HStack>
+                      </Th>
                     ))}
                   </Tr>
-                );
-              })}
-            </Tbody>
-          </Table>
-        </TableContainer>
-        <HStack spacing={2} justify="space-between" w="full"
-             px={4} py={3} bg="gray.50" borderTopWidth="1px">
+                ))}
+              </Thead>
+              <Tbody maxH={300} overflowY="auto" {...getTableBodyProps()}>
+                {page.map((row) => {
+                  prepareRow(row);
+                  return (
+                    <Tr
+                      fontSize="sm"
+                      cursor="pointer"
+                      _hover={{ bg: 'muted.50' }}
+                      {...row.getRowProps()}
+                    >
+                      {row.cells.map((cell) => (
+                        <Td {...cell.getCellProps()} py={2}>{cell.render('Cell')}</Td>
+                      ))}
+                    </Tr>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          </TableContainer>
+          <HStack spacing={2} justify="space-between" w="full"
+            px={4} py={3} bg="gray.50" borderTopWidth="1px">
             <HStack flex={2}>
               <IconButton
                 aria-label="Skip to start"
@@ -413,9 +420,8 @@ const PendingApprovals = () => {
               />
             </HStack>
           </HStack>
-          </Box>
-      )}
-    </VStack>
+        </Box>
+      </VStack>
       <ConfirmDialog
         isOpen={isDialogOpen}
         title={actionType === PendingApprovalStatus.APPROVED ? "Approve Request" : "Reject Request"}

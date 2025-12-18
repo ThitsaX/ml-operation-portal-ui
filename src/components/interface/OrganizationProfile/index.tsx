@@ -112,7 +112,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
         title: 'Invalid file type',
         description: `Only PNG and JPEG formats are allowed. File: ${file.name}`,
         status: 'error',
-        duration: 4000,
+        duration: 3000,
         isClosable: true,
         position: 'top',
       });
@@ -125,7 +125,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
         title: 'File too large',
         description: `Please upload an image smaller than 1MB. File: ${file.name}`,
         status: 'error',
-        duration: 4000,
+        duration: 3000,
         isClosable: true,
         position: 'top',
       });

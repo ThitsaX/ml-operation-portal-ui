@@ -19,7 +19,7 @@ import {
   Switch,
   useToast,
   Stack,
-  Center
+  Tooltip
 } from '@chakra-ui/react';
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { usePagination, useSortBy, useTable, Column, CellProps, useGlobalFilter } from 'react-table';
@@ -59,12 +59,25 @@ const User = () => {
   const [isEdit, setIsEdit] = useState(false);
 
   const toast = useToast();
-  const { data: participantInfoList } = useGetOrganizationListByParticipant();
-  const { data, refetch } = useGetUserListByParticipant();
+  const { data: participantInfoList, } = useGetOrganizationListByParticipant();
+  const { data,isError, error, refetch } = useGetUserListByParticipant();
 
   const [resetUser, setResetUser] = useState<{ userId: string; email: string } | null>(null);
   const [isResetOpen, setIsResetOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+      if (isError) {
+        toast({
+          title: 'Failed to fetch users',
+          position: 'top',
+          description: getErrorMessage(error as IApiErrorResponse) || 'Something went wrong. Please try again.',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    }, [isError, error, toast]);
 
   const handleResetClick = (user: IParticipantUser) => {
     setResetUser({ userId: user.userId, email: user.email });
@@ -174,22 +187,26 @@ const User = () => {
 
           return (
             <HStack justify="center" spacing={3}>
-              <IconButton
-                icon={<GrPowerReset />}
-                aria-label="Reset Password"
-                size="md"
-                onClick={() => handleResetClick(row.original)}
-                variant="ghost"
-                isDisabled={isSelfUser || !hasActionPermission("ResetCurrentPassword")}
-              />
-              <IconButton
-                icon={<FaRegEdit />}
-                aria-label="Edit"
-                size="md"
-                onClick={() => handleEditClick(row.original)}
-                variant="ghost"
-                isDisabled={!hasActionPermission("ModifyUser")}
-              />
+              <Tooltip label="Reset Password" placement="top">
+                <IconButton
+                  icon={<GrPowerReset />}
+                  aria-label="Reset Password"
+                  size="md"
+                  onClick={() => handleResetClick(row.original)}
+                  variant="ghost"
+                  isDisabled={isSelfUser || !hasActionPermission("ResetCurrentPassword")}
+                />
+              </Tooltip>
+              <Tooltip label="Edit User" placement="top">
+                <IconButton
+                  icon={<FaRegEdit />}
+                  aria-label="Edit"
+                  size="md"
+                  onClick={() => handleEditClick(row.original)}
+                  variant="ghost"
+                  isDisabled={!hasActionPermission("ModifyUser")}
+                />
+              </Tooltip>  
               <Switch
                 colorScheme="green"
                 size="sm"
