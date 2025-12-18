@@ -620,6 +620,10 @@ const ParticipantPositions = () => {
         useSortBy,
         usePagination
     );
+    
+    useEffect(() => {
+        setPageNumber(String(pageIndex + 1));
+    }, [pageIndex]);
 
     return (
 

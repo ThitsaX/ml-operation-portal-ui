@@ -462,6 +462,10 @@ const FinalizeSettlement = () => {
     );
 
     useEffect(() => {
+        setPageNumber(String(pageIndex + 1));
+    }, [pageIndex]);
+
+    useEffect(() => {
         // Auto search settlements if coming from settlement windows page
         if (state?.autoSearch) {
             onSearchHandler(getValues());

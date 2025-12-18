@@ -494,6 +494,9 @@ const SettlementWindows = () => {
         usePagination
     );
 
+    useEffect(() => {
+        setPageNumber(String(pageIndex + 1));
+    }, [pageIndex]);
 
 
 
