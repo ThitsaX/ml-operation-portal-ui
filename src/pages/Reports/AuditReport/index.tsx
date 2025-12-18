@@ -281,7 +281,13 @@ const AuditReport = () => {
                         />
                     </FormControl>
 
+                    <FormControl w="100%"
+                      display="flex"
+                      justifyContent={{ base: "stretch", md: "flex-end" }}
+                      alignItems="flex-end"
+                    >
                     <Button
+                        flex={{ base: '1', md: '0 0 50%' }}
                         colorScheme="blue"
                         isDisabled={!isValid || !runButtonState}
                         onClick={onDownloadChangeHandler}
@@ -289,6 +295,7 @@ const AuditReport = () => {
                     >
                         Download
                     </Button>
+                    </FormControl>
                 </SimpleGrid>
             </Stack>
         </VStack>
