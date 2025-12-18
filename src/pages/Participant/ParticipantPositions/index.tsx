@@ -95,7 +95,7 @@ const ParticipantPositions = () => {
                 position: 'top',
                 description: getErrorMessage(err as IApiErrorResponse) || 'Something went wrong. Please try again.',
                 status: 'error',
-                duration: 4000,
+                duration: 3000,
                 isClosable: true,
             });
         }
@@ -110,7 +110,7 @@ const ParticipantPositions = () => {
                 title: 'Data refreshed',
                 position: 'top',
                 status: 'success',
-                duration: 4000,
+                duration: 3000,
                 isClosable: true,
             });
         } catch (error) {
@@ -119,7 +119,7 @@ const ParticipantPositions = () => {
                 position: 'top',
                 description: getErrorMessage(error as IApiErrorResponse) || 'Something went wrong. Please try again.',
                 status: 'error',
-                duration: 4000,
+                duration: 3000,
                 isClosable: true,
             });
         }
@@ -428,7 +428,7 @@ const ParticipantPositions = () => {
                         ? `Percentage: ${data.amount}% ${data.currency}`
                         : `Amount: ${data.amount} ${data.currency}`,
                 status: 'success',
-                duration: 4000,
+                duration: 3000,
                 isClosable: true,
             });
 
@@ -440,7 +440,7 @@ const ParticipantPositions = () => {
                 position: 'top',
                 description: getErrorMessage(error) || 'Something went wrong',
                 status: 'error',
-                duration: 4000,
+                duration: 3000,
                 isClosable: true,
             });
         }
@@ -510,7 +510,7 @@ const ParticipantPositions = () => {
             title: 'Rejected Withdraw',
             description,
             status: 'error',
-            duration: 4000,
+            duration: 3000,
             isClosable: true,
             position: 'top',
         });
@@ -541,7 +541,7 @@ const ParticipantPositions = () => {
                 title: 'Invalid NDC Amount',
                 description: `NDC value cannot be lower than the Current Position.`,
                 status: 'error',
-                duration: 4000,
+                duration: 3000,
                 isClosable: true,
                 position: 'top',
             });
@@ -552,7 +552,7 @@ const ParticipantPositions = () => {
             title: 'Invalid NDC Amount',
             description: `NDC value cannot exceed the participant’s Balance.`,
             status: 'error',
-            duration: 4000,
+            duration: 3000,
             isClosable: true,
             position: 'top',
             });
