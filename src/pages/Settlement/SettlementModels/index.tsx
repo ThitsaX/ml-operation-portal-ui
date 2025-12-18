@@ -185,6 +185,10 @@ const SettlementModels = () => {
         usePagination
     );
 
+    useEffect(() => {
+        setPageNumber(String(pageIndex + 1));
+    }, [pageIndex]);
+
     const handlePageValidation = (value: string) => {
         if (Number(value) > pageOptions.length) {
             setPageNumber(pageNumber);

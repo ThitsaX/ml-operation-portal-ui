@@ -238,6 +238,9 @@ const User = () => {
 
   );
 
+  useEffect(() => {
+        setPageNumber(String(pageIndex + 1));
+  }, [pageIndex]);
 
   useEffect(() => {
     const filtered = data?.filter(user =>
