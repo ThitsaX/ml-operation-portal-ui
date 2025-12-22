@@ -406,7 +406,10 @@ export class OrganizationHelper extends FormHelper {
       participantName: z.string().optional(),
       description: z.string().optional(),
       address: z.string().optional(),
-      mobile: z.string().optional(),
+      mobile: z.string().optional().refine(
+        (val) => !val || /^\+[1-9]\d{1,14}$/.test(val), 
+        { message: 'Please include the country code (e.g., +1...)' }
+      ),
       logoFileType: z.string().nullable().optional(),
       logo: z.string().optional(),
       createdDate: z.number().optional(),
@@ -435,7 +438,7 @@ export class ContactHelper extends FormHelper {
         .string({ required_error: 'Required' })
         .trim()
         .min(1, 'Mobile is required')
-        .regex(/^\+[^a-zA-Z]*$/, 'Please include the country code (e.g., +1…)'),
+        .regex(/^\+[1-9]\d{1,14}$/, 'Please include the country code (e.g., +1…)'),
       contactType: z.string({ required_error: 'Required' })
         .trim()
         .min(1, 'Contact Type is required'),
