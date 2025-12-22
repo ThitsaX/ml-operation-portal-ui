@@ -361,7 +361,6 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
                 onChange={handleMonthChange}
                 width="100%"
                 maxMenuHeight={200}
-                menuPortalTarget
                 size="sm"
                 isDisabled={disabled} // Disable selects when component is disabled
               />
@@ -371,7 +370,6 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
                 onChange={handleYearChange}
                 width="100%"
                 maxMenuHeight={200}
-                menuPortalTarget
                 size="sm"
                 isDisabled={disabled}
               />
