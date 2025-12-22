@@ -416,7 +416,7 @@ const SettlementWindows = () => {
         },
         {
             Header: 'Closed Date',
-            accessor: 'changedDate',
+            accessor: 'closedDate',
             Cell: ({ row, value }) => {
                 if (row.original.state === 'OPEN') {
                     return <></>;
@@ -1178,8 +1178,8 @@ const SettlementWindows = () => {
                                     <Text fontSize="xs">
                                         {
                                             selectedWindow?.state !== 'OPEN' && (
-                                                selectedWindow?.changedDate ?
-                                                moment(selectedWindow.changedDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')
+                                                selectedWindow?.closedDate ?
+                                                moment(selectedWindow.closedDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')
                                                 :
                                                 ""
                                             )

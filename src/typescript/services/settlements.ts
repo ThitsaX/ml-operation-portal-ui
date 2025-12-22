@@ -41,6 +41,7 @@ export interface ISettlementWindow {
     reason: string;
     createdDate: string;
     changedDate: string;
+    closedDate: string;
     contentList: ISettlementWindowContent[];
 }
 export interface ISettlementWindowContent {
