@@ -554,8 +554,14 @@ const SettlementWindows = () => {
 
             setDateRange(range);
 
-            setValue('fromDate', from);
-            setValue('toDate', to);
+            setValue('fromDate', from, {
+              shouldValidate: true,
+              shouldDirty: true,
+            });
+            setValue('toDate', to, {
+              shouldValidate: true,
+              shouldDirty: true,
+            });
         },
         [setValue, selectedTimezone]
     );
@@ -768,8 +774,8 @@ const SettlementWindows = () => {
                                                     disabled={dateRange !== 'custom' ? true : false}
                                                     value={value}
                                                     onChange={(event) => {
-                                                        trigger('fromDate')
                                                         onChange(event.target.value);
+                                                        trigger('toDate');
                                                     }}
                                                 _disabled={{
                                                     cursor: 'not-allowed',
@@ -795,7 +801,7 @@ const SettlementWindows = () => {
                                                     value={value}
                                                     onChange={(event) => {
                                                         onChange(event.target.value);
-                                                        trigger('toDate')
+                                                         trigger('fromDate');
                                                     }}
                                                 _disabled={{
                                                     cursor: 'not-allowed',

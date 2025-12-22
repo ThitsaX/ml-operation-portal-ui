@@ -90,7 +90,7 @@ const SettlementStatementReport = () => {
         toast({
           position: 'top',
           description: getErrorMessage(error) || 'Faield to download',
-          status: 'warning',
+          status: 'error',
           isClosable: true,
           duration: 3000
         });
@@ -270,8 +270,7 @@ const SettlementStatementReport = () => {
           spacing={4}
           w="full">
 
-          <Box />
-          <Box />
+
           <FormControl w="100%">
             <Controller
               control={control}
@@ -296,7 +295,8 @@ const SettlementStatementReport = () => {
               )}
             />
           </FormControl>
-
+          <Box />
+          <Box />
             <FormControl w="100%"
               display="flex"
               justifyContent={{ base: "stretch", md: "flex-end" }}

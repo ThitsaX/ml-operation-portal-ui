@@ -68,6 +68,7 @@ const transferHelper = new TransferHelper();
 const Transfer = () => {
   const toast = useToast();
   const { start, complete } = useLoadingContext();
+  const [runButtonState, setRunButtonState] = useState(true);
 
   // For Modal
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -131,7 +132,7 @@ const Transfer = () => {
     reset,
     trigger,
     handleSubmit,
-    formState: { errors }
+    formState: { errors, isValid }
   } = useForm<ITransferValues>({
     defaultValues: initialValues,
     mode: 'onChange',
@@ -191,8 +192,15 @@ const Transfer = () => {
 
       setDateRange(range);
 
-      setValue('fromDate', from);
-      setValue('toDate', to);
+        setValue('fromDate', from, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+        setValue('toDate', to, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+
     },
     [setValue, selectedTimezone]
   );
@@ -217,12 +225,13 @@ const Transfer = () => {
 
   const onFindHandler = useCallback(
     (values: ITransferValues, currentPage = 1, currentSize = 10) => {
+          start();
+           setRunButtonState(false);
 
-      values.fromDate = moment.tz(values.fromDate, selectedTZString).utc()
-        .utc()
+    // Convert dates to UTC
+    values.fromDate = moment.tz(values.fromDate, selectedTZString).utc()
         .format();
       values.toDate = moment.tz(values.toDate, selectedTZString).utc()
-        .utc()
         .format();
       values.timezone = timezone;
 
@@ -254,6 +263,7 @@ const Transfer = () => {
         })
         .finally(() => {
           complete();
+                  setRunButtonState(true);
         });
     },
     [selectedTZString,complete, start, toast, pageIndex, pageSize]
@@ -337,9 +347,9 @@ const Transfer = () => {
         ),
         accessor: 'payerDfspName',
         Cell: ({ value }) => (
-        <Box maxW="200px"             
+        <Box maxW="200px"
               whiteSpace="normal"
-              wordBreak="break-word" 
+              wordBreak="break-word"
               overflowWrap="break-word">
             {value}
         </Box>
@@ -357,9 +367,9 @@ const Transfer = () => {
         ),
         accessor: 'payeeDfspName',
         Cell: ({ value }) => (
-        <Box maxW="200px"             
+        <Box maxW="200px"
               whiteSpace="normal"
-              wordBreak="break-word" 
+              wordBreak="break-word"
               overflowWrap="break-word">
                 {value}
         </Box>)
@@ -368,7 +378,12 @@ const Transfer = () => {
         Header: () => (
           <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Window ID</Text>
         ),
-        accessor: 'windowId'
+        accessor: 'windowId',
+         Cell: ({ value }) => (
+          <Text textAlign="right">
+            {value}
+          </Text>
+        ),
       },
       {
         Header: () => (
@@ -518,8 +533,8 @@ const Transfer = () => {
                       disabled={dateRange !== 'custom' ? true : false}
                       value={value}
                       onChange={(event) => {
-                        trigger('fromDate')
                         onChange(event.target.value);
+                        trigger('toDate');
                       }}
                       borderWidth="1px"
                       _disabled={{
@@ -544,8 +559,8 @@ const Transfer = () => {
                       disabled={dateRange !== 'custom' ? true : false}
                       value={value}
                       onChange={(event) => {
-                        trigger('toDate')
                          onChange(event.target.value);
+                         trigger('fromDate');
                       }}
                       borderWidth="1px"
                       _disabled={{
@@ -825,6 +840,7 @@ const Transfer = () => {
         <Button
           color="white"
           bg="primary"
+          isDisabled={!isValid || !runButtonState}
           _hover={{
             bg: 'primary',
             opacity: 0.4

@@ -518,8 +518,14 @@ const FinalizeSettlement = () => {
 
             setDateRange(range);
 
-            setValue('fromDate', from);
-            setValue('toDate', to);
+            setValue('fromDate', from, {
+              shouldValidate: true,
+              shouldDirty: true,
+            });
+            setValue('toDate', to, {
+              shouldValidate: true,
+              shouldDirty: true,
+            });
         },
         [setValue, selectedTimezone]
     );
@@ -593,8 +599,8 @@ const FinalizeSettlement = () => {
                                                     disabled={dateRange !== 'custom' ? true : false}
                                                     value={value}
                                                     onChange={(event) => {
-                                                        trigger('fromDate')
                                                         onChange(event.target.value);
+                                                        trigger('toDate');
                                                     }}
                                                _disabled={{
                                                 cursor: 'not-allowed',
@@ -619,8 +625,8 @@ const FinalizeSettlement = () => {
                                                     disabled={dateRange !== 'custom' ? true : false}
                                                     value={value}
                                                     onChange={(event) => {
-                                                        trigger('toDate')
                                                         onChange(event.target.value);
+                                                        trigger('fromDate');
                                                     }}
                                                 _disabled={{
                                                     cursor: 'not-allowed',
