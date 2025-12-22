@@ -400,7 +400,10 @@ export class OrganizationHelper extends FormHelper {
       participantName: z.string().optional(),
       description: z.string().optional(),
       address: z.string().optional(),
-      mobile: z.string().optional(),
+      mobile: z.string().optional().refine(
+        (val) => !val || /^\+[^a-zA-Z]*$/.test(val), 
+        { message: 'Please include the country code (e.g., +1…)' }
+      ),
       logoFileType: z.string().nullable().optional(),
       logo: z.string().optional(),
       createdDate: z.number().optional(),
