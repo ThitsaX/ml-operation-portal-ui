@@ -27,7 +27,7 @@ import {
   Icon,
 } from '@chakra-ui/react';
 import { useCallback } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm ,useWatch} from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { TransferHelper } from '@helpers/form';
 import { omitBy, isEmpty } from 'lodash-es';
@@ -271,6 +271,10 @@ const Transfer = () => {
 
   const onCancelHandler = useCallback(() => {
     onSelectedTimezoneChange();
+    reset({
+    ...initialValues,
+    transferId: '',
+    });
     if (!isHubUser) {
       onChangeTransferType('inbound');
     }
@@ -431,6 +435,22 @@ const Transfer = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+    const transferIdValue = useWatch({
+      control,
+      name: 'transferId',
+    });
+
+    const isTransferIdLocked = Boolean(transferIdValue?.trim());
+
+    useEffect(() => {
+      if (isTransferIdLocked) {
+        reset({
+          ...initialValues,
+          transferId: transferIdValue,
+        });
+      }
+    }, [isTransferIdLocked]);
+
 
   const dateRangeOptions = [
     { value: 'oneDay', label: 'Past 24 Hours' },
@@ -485,6 +505,7 @@ const Transfer = () => {
               name="transferStateId"
               render={({ field }) => (
                 <CustomSelect
+                  isDisabled={isTransferIdLocked}
                   isMulti={false}
                   maxMenuHeight={300}
                   isClearable={true}
@@ -513,6 +534,7 @@ const Transfer = () => {
           <Box display={{ base: "none", md: "block" }} />
 
           <CustomSelect
+            isDisabled={isTransferIdLocked}
             placeholder="Date Range"
             options={dateRangeOptions}
             value={dateRangeOptions.find(option => option.value === dateRange) || null}
@@ -577,7 +599,7 @@ const Transfer = () => {
           </FormControl>
 
           <CustomSelect
-            isDisabled={isHubUser}
+            isDisabled={isTransferIdLocked || isHubUser}
             placeholder="Transfer Type"
             options={transferTypeOptions.map(option => ({
               value: option.value,
@@ -597,6 +619,7 @@ const Transfer = () => {
               name="currencyId"
               render={({ field }) => (
                 <CustomSelect
+                  isDisabled={isTransferIdLocked}
                   isMulti={false}
                   maxMenuHeight={300}
                   isClearable={true}
@@ -629,6 +652,7 @@ const Transfer = () => {
                 name="payerFspId"
                 render={({ field }) => (
                   <CustomSelect placeholder="Payer FSP ID"
+                    isDisabled={isTransferIdLocked}
                     isMulti={false}
                     maxMenuHeight={300}
                     isClearable={true}
@@ -676,6 +700,7 @@ const Transfer = () => {
               name="payerIdentifierTypeId"
               render={({ field }) => (
                 <CustomSelect
+                  isDisabled={isTransferIdLocked}
                   isMulti={false}
                   maxMenuHeight={300}
                   isClearable={true}
@@ -703,6 +728,7 @@ const Transfer = () => {
 
           <FormControl isInvalid={!isEmpty(errors.payerIdentifierValue)}>
             <Input
+             isDisabled={isTransferIdLocked}
               type="input"
               placeholder="Payer ID Value"
               {...register('payerIdentifierValue')}
@@ -719,6 +745,7 @@ const Transfer = () => {
                 name="payeeFspId"
                 render={({ field }) => (
                   <CustomSelect
+                    isDisabled={isTransferIdLocked}
                     isMulti={false}
                     maxMenuHeight={300}
                     isClearable={true}
@@ -753,6 +780,7 @@ const Transfer = () => {
               transferType === 'inbound' ? (
                 <Input
                   type="input"
+                  isDisabled={isTransferIdLocked}
                   {...register('payeeFspId')}
                   value={user.data?.participantName || ''}
                   readOnly
@@ -763,6 +791,7 @@ const Transfer = () => {
                   name="payeeFspId"
                   render={({ field }) => (
                     <CustomSelect
+                      isDisabled={isTransferIdLocked}
                       isMulti={false}
                       maxMenuHeight={300}
                       isClearable={true}
@@ -795,6 +824,7 @@ const Transfer = () => {
               name="payeeIdentifierTypeId"
               render={({ field }) => (
                 <CustomSelect
+                  isDisabled={isTransferIdLocked}
                   isMulti={false}
                   maxMenuHeight={300}
                   isClearable={true}
@@ -822,6 +852,7 @@ const Transfer = () => {
 
           <FormControl isInvalid={!isEmpty(errors.payeeIdentifierValue)}>
             <Input
+             isDisabled={isTransferIdLocked}
               type="input"
               placeholder="Payee ID Value"
               {...register('payeeIdentifierValue')}
