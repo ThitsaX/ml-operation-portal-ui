@@ -131,10 +131,30 @@ const FinalizeSettlement = () => {
         mode: 'onChange'
     });
 
-      useEffect(() => {
+    useEffect(() => {
         setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'));
         setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'));
-      }, [selectedTZString, setValue]);
+    }, [selectedTZString, setValue]);
+
+    const formatDateTime = useCallback((date?: string) => {
+        if (!date) return '';
+        return moment(date).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ');
+    }, [selectedTZString]);
+
+    const formatChangedDateOrBlank = useCallback((changedDate?: string, createdDate?: string) => {
+        if (!changedDate) return '';
+        if (!createdDate) return formatDateTime(changedDate);
+
+        const changedUtcMs = moment.parseZone(changedDate).utc().valueOf();
+        const createdUtcMs = moment.parseZone(createdDate).utc().valueOf();
+
+        // If createdDate and changedDate are the same instant, show blank
+        if (Number.isFinite(changedUtcMs) && Number.isFinite(createdUtcMs) && changedUtcMs === createdUtcMs) {
+            return '';
+        }
+
+        return formatDateTime(changedDate);
+    }, [formatDateTime]);
 
     const onSearchHandler = (values: IFinalizeSettlementForm) => {
         const currentTimeZone = moment.tz.guess();
@@ -390,16 +410,14 @@ const FinalizeSettlement = () => {
         {
             Header: 'Settlement Created Date',
             accessor: 'createdDate',
-            Cell: ({ value }) => (
-                <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}</Text>
-            ),
+            Cell: ({ value }) => <Text>{formatDateTime(value)}</Text>,
         },
         {
             Header: 'Settlement Finalize Date',
             accessor: 'changedDate',
-            Cell: ({ value }) => (
-                <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}</Text>
-            )
+            Cell: ({ row, value }: any) => (
+                <Text>{formatChangedDateOrBlank(value, row.original?.createdDate)}</Text>
+            ),
         }];
 
             const actionColumn = hasActionPermission("FinalizeSettlement")
@@ -946,7 +964,7 @@ const FinalizeSettlement = () => {
                                         {
                                             (
                                                 selectedSettlement?.createdDate ? 
-                                                moment(selectedSettlement.createdDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')
+                                                formatDateTime(selectedSettlement.createdDate)
                                                 :
                                                 ""
                                             )
@@ -959,7 +977,7 @@ const FinalizeSettlement = () => {
                                         {
                                             (
                                                 selectedSettlement?.changedDate ? 
-                                                moment(selectedSettlement.changedDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')
+                                                formatChangedDateOrBlank(selectedSettlement.changedDate, selectedSettlement.createdDate)
                                                 :
                                                 ""
                                             )
