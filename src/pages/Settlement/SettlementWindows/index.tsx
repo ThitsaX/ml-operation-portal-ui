@@ -251,7 +251,7 @@ const SettlementWindows = () => {
         const data = {
             settlementWindowId: selectedWindow.settlementWindowId,
             state: 'CLOSED',
-            reason: selectedWindow.reason
+            reason: 'Business Operations Portal Request'
         }
 
         setBtnWinCloseDisabled(true);
