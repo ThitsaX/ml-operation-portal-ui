@@ -227,6 +227,7 @@ const Transfer = () => {
     (values: ITransferValues, currentPage = 1, currentSize = 10) => {
           start();
            setRunButtonState(false);
+    values.transferId = values.transferId?.trim() || '';
 
     // Convert dates to UTC
     values.fromDate = moment.tz(values.fromDate, selectedTZString).utc()
@@ -494,9 +495,7 @@ const Transfer = () => {
               type="input"
               placeholder="Transfer ID"
               borderColor="gray.300"
-                {...register('transferId', {
-                setValueAs: (v) => v?.trim() || '',
-                })}
+              {...register('transferId')}
             />
             <FormErrorMessage>{errors.transferId?.message}</FormErrorMessage>
           </FormControl>
