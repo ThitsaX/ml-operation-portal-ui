@@ -501,38 +501,7 @@ const Transfer = () => {
             <FormErrorMessage>{errors.transferId?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.transferStateId)}>
-            <Controller
-              control={control}
-              name="transferStateId"
-              render={({ field }) => (
-                <CustomSelect
-                  isDisabled={isTransferIdLocked}
-                  isMulti={false}
-                  maxMenuHeight={300}
-                  isClearable={true}
-                  placeholder="Transfer State"
-                  options={tranStateRes?.data?.transferStateInfoList?.map((item) => ({
-                    value: item.transferStateId,
-                    label: item.transferState
-                  })) || []}
-                  value={field.value
-                    ? {
-                      value: field.value,
-                      label: field.value
-                    }
-                    : null}
-                  onChange={(selectedOption) => {
-                    field.onChange(selectedOption?.value || '');
-                  }}
-                />
-              )}
-            />
-            <FormErrorMessage>
-              {errors?.transferStateId?.message}
-            </FormErrorMessage>
-          </FormControl>
-
+          <Box display={{ base: "none", md: "block" }} />
           <Box display={{ base: "none", md: "block" }} />
 
           <CustomSelect
@@ -554,6 +523,7 @@ const Transfer = () => {
                 render={({ field: { value, onChange } }) => {
                   return (
                     <CustomDateTimePicker
+                      locked={isTransferIdLocked}
                       disabled={dateRange !== 'custom' ? true : false}
                       value={value}
                       onChange={(event) => {
@@ -580,6 +550,7 @@ const Transfer = () => {
                 render={({ field: { value, onChange } }) => {
                   return (
                     <CustomDateTimePicker
+                      locked={isTransferIdLocked}
                       disabled={dateRange !== 'custom' ? true : false}
                       value={value}
                       onChange={(event) => {
@@ -645,7 +616,37 @@ const Transfer = () => {
             <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
           </FormControl>
 
-          <Box display={{ base: "none", md: "block" }} />
+            <FormControl isInvalid={!isEmpty(errors.transferStateId)}>
+            <Controller
+              control={control}
+              name="transferStateId"
+              render={({ field }) => (
+                <CustomSelect
+                  isDisabled={isTransferIdLocked}
+                  isMulti={false}
+                  maxMenuHeight={300}
+                  isClearable={true}
+                  placeholder="Transfer State"
+                  options={tranStateRes?.data?.transferStateInfoList?.map((item) => ({
+                    value: item.transferStateId,
+                    label: item.transferState
+                  })) || []}
+                  value={field.value
+                    ? {
+                      value: field.value,
+                      label: field.value
+                    }
+                    : null}
+                  onChange={(selectedOption) => {
+                    field.onChange(selectedOption?.value || '');
+                  }}
+                />
+              )}
+            />
+            <FormErrorMessage>
+              {errors?.transferStateId?.message}
+            </FormErrorMessage>
+          </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
             {(isHubUser || transferType === 'inbound') ? (

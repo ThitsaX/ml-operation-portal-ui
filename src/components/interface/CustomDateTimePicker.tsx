@@ -28,6 +28,7 @@ interface Props {
   onBlur?: () => void;
   type?: string;
   disabled?: boolean;
+  locked?: boolean;
   placeholder?: string;
   required?: boolean;
   readOnly?: boolean;
@@ -102,6 +103,7 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
       value,
       onChange,
       disabled = false,
+      locked = false,
       placeholder = "Select date and time",
       ...props
     },
@@ -109,6 +111,14 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
   ) => {
   const [isOpen, setIsOpen] = useState(false);
   const inputSize = useBreakpointValue({ base: "sm", md: "md" });
+
+    const lockedStyles = locked
+      ? {
+          bg: "#f2f2f2",
+          color: "#999999",
+          borderColor: "#d9d9d9",
+        }
+      : {};
 
   // Date State Management
   const initialDate = useMemo(() => value ? new Date(value) : null, [value]);
@@ -328,9 +338,10 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 className="date-time-input"
                 fontSize="sm"
+                {...lockedStyles}
                 placeholder={placeholder}
                 isDisabled={disabled} // Chakra UI disabled prop
-                opacity={disabled ? 0.6 : 1}
+                opacity={disabled ? 0.6 : locked ? 0.7 : 1}
                 {...props} // Spread other props like borderWidth, etc.
               />
               <InputRightElement>
