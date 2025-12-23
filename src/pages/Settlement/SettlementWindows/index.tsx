@@ -1157,7 +1157,7 @@ const SettlementWindows = () => {
                     <ModalCloseButton />
                     <ModalBody>
                         <Stack spacing={4}>
-                            <SimpleGrid columns={{ base: 1, md: 5 }} spacing={3} textAlign="center">
+                            <SimpleGrid columns={{ base: 1, md: 4 }} spacing={3} textAlign="center">
                                 <Box>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window ID</Text>
                                     <Text fontSize="0.8rem">{selectedWindow?.settlementWindowId}</Text>
