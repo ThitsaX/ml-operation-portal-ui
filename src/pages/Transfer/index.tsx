@@ -440,7 +440,7 @@ const Transfer = () => {
       name: 'transferId',
     });
 
-    const isTransferIdLocked = Boolean(transferIdValue?.trim());
+    const isTransferIdLocked = Boolean(transferIdValue);
 
     useEffect(() => {
       if (isTransferIdLocked) {
@@ -494,7 +494,9 @@ const Transfer = () => {
               type="input"
               placeholder="Transfer ID"
               borderColor="gray.300"
-              {...register('transferId')}
+                {...register('transferId', {
+                setValueAs: (v) => v?.trim() || '',
+                })}
             />
             <FormErrorMessage>{errors.transferId?.message}</FormErrorMessage>
           </FormControl>
