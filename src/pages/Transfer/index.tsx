@@ -452,6 +452,15 @@ const Transfer = () => {
       }
     }, [isTransferIdLocked]);
 
+    const disabledInputStyles = {
+      bg: "#f2f2f2",
+      color: "#787878",
+      borderColor: "#d9d9d9"
+    } as const;
+
+    const disabledPlaceholderStyles = {
+      color: "#787878"
+    } as const;
 
   const dateRangeOptions = [
     { value: 'oneDay', label: 'Past 24 Hours' },
@@ -731,6 +740,8 @@ const Transfer = () => {
           <FormControl isInvalid={!isEmpty(errors.payerIdentifierValue)}>
             <Input
              isDisabled={isTransferIdLocked}
+             _disabled={disabledInputStyles}
+             _placeholder={disabledPlaceholderStyles}
               type="input"
               placeholder="Payer ID Value"
               {...register('payerIdentifierValue')}
@@ -783,6 +794,7 @@ const Transfer = () => {
                 <Input
                   type="input"
                   isDisabled={isTransferIdLocked}
+                  _disabled={disabledInputStyles}
                   {...register('payeeFspId')}
                   value={user.data?.participantName || ''}
                   readOnly
@@ -857,6 +869,8 @@ const Transfer = () => {
              isDisabled={isTransferIdLocked}
               type="input"
               placeholder="Payee ID Value"
+             _disabled={disabledInputStyles}
+             _placeholder={disabledPlaceholderStyles}
               {...register('payeeIdentifierValue')}
             />
             <FormErrorMessage>
