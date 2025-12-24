@@ -418,15 +418,17 @@ const SettlementWindows = () => {
             Header: 'Closed Date',
             accessor: 'closedDate',
             Cell: ({ row, value }) => {
-                if (row.original.state === 'OPEN') {
-                    return <></>;
-                }
+                if (row.original.state === 'OPEN') return <></>;
+
+                if (!value) return <Text></Text>;
+
+                const m = moment(value);
+                if (!m.isValid()) return <Text></Text>;
 
                 return (
-                    <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}</Text>
+                  <Text>{m.tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}</Text>
                 );
             },
-
         }];
 
         const actionColumn = hasActionPermission("CloseSettlementWindows")
