@@ -27,7 +27,7 @@ import {
   Icon,
 } from '@chakra-ui/react';
 import { useCallback } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm ,useWatch} from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { TransferHelper } from '@helpers/form';
 import { omitBy, isEmpty } from 'lodash-es';
@@ -227,6 +227,7 @@ const Transfer = () => {
     (values: ITransferValues, currentPage = 1, currentSize = 10) => {
           start();
            setRunButtonState(false);
+    values.transferId = values.transferId?.trim() || '';
 
     // Convert dates to UTC
     values.fromDate = moment.tz(values.fromDate, selectedTZString).utc()
@@ -271,6 +272,10 @@ const Transfer = () => {
 
   const onCancelHandler = useCallback(() => {
     onSelectedTimezoneChange();
+    reset({
+    ...initialValues,
+    transferId: '',
+    });
     if (!isHubUser) {
       onChangeTransferType('inbound');
     }
@@ -431,6 +436,31 @@ const Transfer = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+    const transferIdValue = useWatch({
+      control,
+      name: 'transferId',
+    });
+
+    const isTransferIdLocked = Boolean(transferIdValue);
+
+    useEffect(() => {
+      if (isTransferIdLocked) {
+        reset({
+          ...initialValues,
+          transferId: transferIdValue,
+        });
+      }
+    }, [isTransferIdLocked]);
+
+    const disabledInputStyles = {
+      bg: "#f2f2f2",
+      color: "#787878",
+      borderColor: "#d9d9d9"
+    } as const;
+
+    const disabledPlaceholderStyles = {
+      color: "#787878"
+    } as const;
 
   const dateRangeOptions = [
     { value: 'oneDay', label: 'Past 24 Hours' },
@@ -479,40 +509,11 @@ const Transfer = () => {
             <FormErrorMessage>{errors.transferId?.message}</FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={!isEmpty(errors.transferStateId)}>
-            <Controller
-              control={control}
-              name="transferStateId"
-              render={({ field }) => (
-                <CustomSelect
-                  isMulti={false}
-                  maxMenuHeight={300}
-                  isClearable={true}
-                  placeholder="Transfer State"
-                  options={tranStateRes?.data?.transferStateInfoList?.map((item) => ({
-                    value: item.transferStateId,
-                    label: item.transferState
-                  })) || []}
-                  value={field.value
-                    ? {
-                      value: field.value,
-                      label: field.value
-                    }
-                    : null}
-                  onChange={(selectedOption) => {
-                    field.onChange(selectedOption?.value || '');
-                  }}
-                />
-              )}
-            />
-            <FormErrorMessage>
-              {errors?.transferStateId?.message}
-            </FormErrorMessage>
-          </FormControl>
-
+          <Box display={{ base: "none", md: "block" }} />
           <Box display={{ base: "none", md: "block" }} />
 
           <CustomSelect
+            isDisabled={isTransferIdLocked}
             placeholder="Date Range"
             options={dateRangeOptions}
             value={dateRangeOptions.find(option => option.value === dateRange) || null}
@@ -530,6 +531,7 @@ const Transfer = () => {
                 render={({ field: { value, onChange } }) => {
                   return (
                     <CustomDateTimePicker
+                      locked={isTransferIdLocked}
                       disabled={dateRange !== 'custom' ? true : false}
                       value={value}
                       onChange={(event) => {
@@ -556,6 +558,7 @@ const Transfer = () => {
                 render={({ field: { value, onChange } }) => {
                   return (
                     <CustomDateTimePicker
+                      locked={isTransferIdLocked}
                       disabled={dateRange !== 'custom' ? true : false}
                       value={value}
                       onChange={(event) => {
@@ -577,7 +580,7 @@ const Transfer = () => {
           </FormControl>
 
           <CustomSelect
-            isDisabled={isHubUser}
+            isDisabled={isTransferIdLocked || isHubUser}
             placeholder="Transfer Type"
             options={transferTypeOptions.map(option => ({
               value: option.value,
@@ -597,6 +600,7 @@ const Transfer = () => {
               name="currencyId"
               render={({ field }) => (
                 <CustomSelect
+                  isDisabled={isTransferIdLocked}
                   isMulti={false}
                   maxMenuHeight={300}
                   isClearable={true}
@@ -620,7 +624,37 @@ const Transfer = () => {
             <FormErrorMessage>{errors.currencyId?.message}</FormErrorMessage>
           </FormControl>
 
-          <Box display={{ base: "none", md: "block" }} />
+            <FormControl isInvalid={!isEmpty(errors.transferStateId)}>
+            <Controller
+              control={control}
+              name="transferStateId"
+              render={({ field }) => (
+                <CustomSelect
+                  isDisabled={isTransferIdLocked}
+                  isMulti={false}
+                  maxMenuHeight={300}
+                  isClearable={true}
+                  placeholder="Transfer State"
+                  options={tranStateRes?.data?.transferStateInfoList?.map((item) => ({
+                    value: item.transferStateId,
+                    label: item.transferState
+                  })) || []}
+                  value={field.value
+                    ? {
+                      value: field.value,
+                      label: field.value
+                    }
+                    : null}
+                  onChange={(selectedOption) => {
+                    field.onChange(selectedOption?.value || '');
+                  }}
+                />
+              )}
+            />
+            <FormErrorMessage>
+              {errors?.transferStateId?.message}
+            </FormErrorMessage>
+          </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.payerFspId)}>
             {(isHubUser || transferType === 'inbound') ? (
@@ -629,6 +663,7 @@ const Transfer = () => {
                 name="payerFspId"
                 render={({ field }) => (
                   <CustomSelect placeholder="Payer FSP ID"
+                    isDisabled={isTransferIdLocked}
                     isMulti={false}
                     maxMenuHeight={300}
                     isClearable={true}
@@ -676,6 +711,7 @@ const Transfer = () => {
               name="payerIdentifierTypeId"
               render={({ field }) => (
                 <CustomSelect
+                  isDisabled={isTransferIdLocked}
                   isMulti={false}
                   maxMenuHeight={300}
                   isClearable={true}
@@ -703,6 +739,9 @@ const Transfer = () => {
 
           <FormControl isInvalid={!isEmpty(errors.payerIdentifierValue)}>
             <Input
+             isDisabled={isTransferIdLocked}
+             _disabled={disabledInputStyles}
+             _placeholder={disabledPlaceholderStyles}
               type="input"
               placeholder="Payer ID Value"
               {...register('payerIdentifierValue')}
@@ -719,6 +758,7 @@ const Transfer = () => {
                 name="payeeFspId"
                 render={({ field }) => (
                   <CustomSelect
+                    isDisabled={isTransferIdLocked}
                     isMulti={false}
                     maxMenuHeight={300}
                     isClearable={true}
@@ -753,6 +793,8 @@ const Transfer = () => {
               transferType === 'inbound' ? (
                 <Input
                   type="input"
+                  isDisabled={isTransferIdLocked}
+                  _disabled={disabledInputStyles}
                   {...register('payeeFspId')}
                   value={user.data?.participantName || ''}
                   readOnly
@@ -763,6 +805,7 @@ const Transfer = () => {
                   name="payeeFspId"
                   render={({ field }) => (
                     <CustomSelect
+                      isDisabled={isTransferIdLocked}
                       isMulti={false}
                       maxMenuHeight={300}
                       isClearable={true}
@@ -795,6 +838,7 @@ const Transfer = () => {
               name="payeeIdentifierTypeId"
               render={({ field }) => (
                 <CustomSelect
+                  isDisabled={isTransferIdLocked}
                   isMulti={false}
                   maxMenuHeight={300}
                   isClearable={true}
@@ -822,8 +866,11 @@ const Transfer = () => {
 
           <FormControl isInvalid={!isEmpty(errors.payeeIdentifierValue)}>
             <Input
+             isDisabled={isTransferIdLocked}
               type="input"
               placeholder="Payee ID Value"
+             _disabled={disabledInputStyles}
+             _placeholder={disabledPlaceholderStyles}
               {...register('payeeIdentifierValue')}
             />
             <FormErrorMessage>
