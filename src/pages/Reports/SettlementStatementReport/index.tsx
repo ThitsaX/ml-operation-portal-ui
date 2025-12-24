@@ -103,8 +103,8 @@ const SettlementStatementReport = () => {
   const { control, trigger, setValue, getValues, formState: { errors, isValid } } = useForm<ISettlementStatementReport>({
     resolver: zodResolver(settlementStatementReportHelper.schema),
     defaultValues: {
-      startDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
-      endDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'),
+      startDate: moment().tz(selectedTZString).startOf('day').format('YYYY-MM-DDTHH:mm:ss'),
+      endDate: moment().tz(selectedTZString).endOf('day').format('YYYY-MM-DDTHH:mm:ss'),
       fspId: 'ALL',
       currencyId: 'ALL',
       fileType: 'xlsx'
@@ -113,8 +113,8 @@ const SettlementStatementReport = () => {
   })
 
   useEffect(() => {
-    setValue('startDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'));
-    setValue('endDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'));
+    setValue('startDate', moment().tz(selectedTZString).startOf('day').format('YYYY-MM-DDTHH:mm:ss'));
+    setValue('endDate', moment().tz(selectedTZString).endOf('day').format('YYYY-MM-DDTHH:mm:ss'));
 
   }, [selectedTimezone, setValue]);
 

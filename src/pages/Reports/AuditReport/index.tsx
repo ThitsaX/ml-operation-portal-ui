@@ -68,8 +68,8 @@ const AuditReport = () => {
         reset
     } = useForm<IGetAuditReport>({
         defaultValues: {
-            fromDate: moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'),
-            toDate: moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'),
+            fromDate: moment().tz(selectedTZString).startOf('day').format('YYYY-MM-DDTHH:mm:ss'),
+            toDate: moment().tz(selectedTZString).endOf('day').format('YYYY-MM-DDTHH:mm:ss'),
             userId: '',
             actionId: '',
             fileType: 'xlsx',
@@ -80,8 +80,8 @@ const AuditReport = () => {
     });
 
     useEffect(() => {
-        setValue('fromDate', moment().tz(selectedTZString).subtract(1, 'days').format('YYYY-MM-DDTHH:mm:ss'));
-        setValue('toDate', moment().tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ss'));
+        setValue('fromDate', moment().tz(selectedTZString).startOf('day').format('YYYY-MM-DDTHH:mm:ss'));
+        setValue('toDate', moment().tz(selectedTZString).endOf('day').format('YYYY-MM-DDTHH:mm:ss'));
 
     }, [selectedTimezone, user?.participantId, setValue]);
 
