@@ -106,7 +106,7 @@ const SettlementBankReport = () => {
       ? '0000'
       : moment().tz(selectedTimezone?.value).format('ZZ').replace('+', '');
 
-    getSettlementIds(user, StartDate, EndDate, tzOffSet)
+    getSettlementIds(user, StartDate, EndDate,'', tzOffSet)
       .then((data: IGetSettlementIds) => {
         if (data.settlementIdDataList?.length === 0) {
           toast({

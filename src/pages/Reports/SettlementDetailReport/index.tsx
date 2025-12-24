@@ -25,7 +25,7 @@ import { type ISettlementDetailReport } from '@typescript/form/report';
 import { isEmpty } from 'lodash-es';
 import moment from 'moment-timezone';
 import { useMemo, memo, useEffect, useCallback, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { IGetSettlementIds } from "@typescript/services/report";
 import { useLoadingContext } from "@contexts/hooks";
 import { ITimezoneOption } from "react-timezone-select";
@@ -49,7 +49,6 @@ const SettlementDetailReport = () => {
 
 
   const [settlementId, setSettlementId] = useState("");
-  const [fspId, setFspId] = useState("");
 
 
   // Redux
@@ -85,6 +84,22 @@ const SettlementDetailReport = () => {
     mode: 'onChange'
   });
 
+  const fspIdValue = useWatch({
+    control,
+    name: 'fspId',
+  });
+
+  const currentParticipantDfspId = useMemo(() => {
+    const foundParticipant = participantList?.find(
+        participant => participant.participantName === fspIdValue
+    );
+  
+    const dfspId = foundParticipant?.dfspId;
+    const result = dfspId ? String(dfspId) : ''; 
+    return result;
+    
+  }, [fspIdValue, participantList]);
+
   useEffect(() => {
     setValue('startDate', moment().tz(selectedTZString).startOf('day').format('YYYY-MM-DDTHH:mm:ss'));
     setValue('endDate', moment().tz(selectedTZString).endOf('day').format('YYYY-MM-DDTHH:mm:ss'));
@@ -97,11 +112,9 @@ const SettlementDetailReport = () => {
 
   useEffect(() => {
     if (isHubUser) {
-      setFspId('');
       setValue('fspId', '');
     } else {
       const participantName = user?.data?.participantName || '';
-      setFspId(participantName);
       setValue('fspId', participantName);
     }
   }, [isHubUser, user, setValue]);
@@ -168,7 +181,7 @@ const SettlementDetailReport = () => {
       ? '0000'
       : moment().tz(selectedTimezone?.value).format('ZZ').replace('+', '');
 
-    getSettlementIds(user, StartDate, EndDate, tzOffSet)
+    getSettlementIds(user, StartDate, EndDate,currentParticipantDfspId, tzOffSet)
       .then((data: IGetSettlementIds) => {
         if (data.settlementIdDataList?.length === 0) {
           toast({
@@ -204,7 +217,7 @@ const SettlementDetailReport = () => {
         setRunButtonState(true);
         complete();
       });
-  }, [complete, getValues, start, toast, user, selectedTimezone]);
+  }, [complete, getValues, start, toast, user, selectedTimezone, currentParticipantDfspId]);
 
   const onSearchClick = useCallback(() => {
     search();
@@ -266,7 +279,8 @@ const SettlementDetailReport = () => {
                     onChange={(selected: OptionType | null) => {
                       const value = selected?.value || '';
                       field.onChange(value);
-                      setFspId(value);
+                      setSettlementIdOptions([]);
+                      setSettlementId("");
                     }}
                   />
 
@@ -334,7 +348,7 @@ const SettlementDetailReport = () => {
           >
             <Button
               onClick={handleSubmit(onSearchClick)}
-              isDisabled={!isValid}
+              isDisabled={!currentParticipantDfspId || !isValid}
               colorScheme="blue"
               gap="2"
               size="md"
@@ -418,7 +432,7 @@ const SettlementDetailReport = () => {
               <Button
                 flex={{ base: '1', md: '0 0 50%' }}
                 colorScheme="blue"
-                isDisabled={!fspId || !settlementId || !runButtonState}
+                isDisabled={!fspIdValue || !settlementId || !runButtonState}
                 onClick={onDownloadChangeHandler}
               >
                 Download
