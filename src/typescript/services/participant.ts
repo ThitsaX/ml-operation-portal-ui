@@ -64,6 +64,7 @@ export interface IParticipantInfo {
 export interface IParticipantProfile {
   participantId: string;
   participantName: string;
+  dfspId?:string;
   description: string;
   address?: string;
   mobile?: string;

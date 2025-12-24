@@ -213,6 +213,7 @@ export const getSettlementIds = async (
   user: IUserState,
   startDate: string,
   endDate: string,
+  dfspId: string,
   tzOffSet: string
 ) => {
   /** Generate Access Token */
@@ -228,6 +229,7 @@ export const getSettlementIds = async (
       params: {
         startDate: startDate,
         endDate: endDate,
+        dfspId: dfspId,
         timezoneOffset: tzOffSet
       }
     })
