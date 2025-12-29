@@ -1152,7 +1152,7 @@ const SettlementWindows = () => {
                 </ModalContent>
             </Modal>
 
-            <Modal isOpen={isDetailOpen} onClose={onDetailClose} size="4xl" isCentered>
+            <Modal isOpen={isDetailOpen} onClose={onDetailClose} size="6xl" isCentered>
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>Settlement Details</ModalHeader>
