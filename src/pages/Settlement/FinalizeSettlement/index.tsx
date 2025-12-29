@@ -936,7 +936,7 @@ const FinalizeSettlement = () => {
                 </ModalContent>
             </Modal>
 
-            <Modal isOpen={isDetailOpen} onClose={onDetailClose} size="4xl" isCentered>
+            <Modal isOpen={isDetailOpen} onClose={onDetailClose} size="6xl" isCentered>
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>Settlement Details</ModalHeader>
@@ -944,7 +944,7 @@ const FinalizeSettlement = () => {
                     <ModalBody>
                         <Stack spacing={4}>
                             <SimpleGrid
-                                columns={{ base: 1, md: 2, lg: 5 }}
+                                columns={{ base: 1, md: 3, lg: 5 }}
                                 columnGap={{ base: 6, md: 8 }}
                                 rowGap={{ base: 4, md: 6 }}
                                 w="full"
