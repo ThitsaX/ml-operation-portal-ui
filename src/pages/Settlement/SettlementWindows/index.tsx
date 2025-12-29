@@ -1159,41 +1159,75 @@ const SettlementWindows = () => {
                     <ModalCloseButton />
                     <ModalBody>
                         <Stack spacing={4}>
-                            <SimpleGrid columns={{ base: 1, md: 4 }} spacing={3} textAlign="center">
-                                <Box>
-                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window ID</Text>
-                                    <Text fontSize="0.8rem">{selectedWindow?.settlementWindowId}</Text>
-                                </Box>
-                                <Box>
-                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window State</Text>
-                                    <Text fontSize="xs">{selectedWindow?.state}</Text>
-                                </Box>
-                                <Box>
-                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window Open Date</Text>
-                                    <Text fontSize="xs">
-                                        {
-                                            (
-                                                selectedWindow?.createdDate ?
-                                                moment(selectedWindow.createdDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')
-                                                :
-                                                ""
-                                            )
-                                        }
+                            <SimpleGrid
+                                columns={{ base: 1, md: 4 }}
+                                spacing={8}
+                                w="full"
+                                textAlign="left"
+                                pb={3}
+                                borderBottomWidth="1px"
+                                borderColor="gray.100"
+                            >
+                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px">
+                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">
+                                        Window ID
                                     </Text>
-                                </Box>
-                                <Box>
-                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window Close Date</Text>
-                                    <Text fontSize="xs">
-                                        {
-                                            selectedWindow?.state !== 'OPEN' && (
-                                                selectedWindow?.closedDate ?
-                                                moment(selectedWindow.closedDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')
-                                                :
-                                                ""
-                                            )
-                                        }
+                                    <Text fontSize="sm" fontWeight="medium">
+                                        {selectedWindow?.settlementWindowId ?? '—'}
                                     </Text>
-                                </Box>
+                                </Flex>
+
+                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px">
+                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">
+                                        Window State
+                                    </Text>
+                                    <Text fontSize="sm" fontWeight="medium">
+                                        {selectedWindow?.state ?? '—'}
+                                    </Text>
+                                </Flex>
+
+                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px">
+                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">
+                                        Window Open Date
+                                    </Text>
+                                    {selectedWindow?.createdDate ? (
+                                        <Text
+                                            fontSize="xs"
+                                            fontWeight="medium"
+                                            noOfLines={1}
+                                            title={moment(selectedWindow.createdDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}
+                                        >
+                                            {moment(selectedWindow.createdDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}
+                                        </Text>
+                                    ) : (
+                                        <Text fontSize="xs" fontWeight="medium">—</Text>
+                                    )}
+                                </Flex>
+                                <Flex
+                                    direction="column"
+                                    justify="space-between"
+                                    minH="56px"
+                                    justifySelf={{ base: "start", md: "end" }}
+                                    align={{ base: "flex-start", md: "flex-end" }}
+                                    textAlign={{ base: "left", md: "right" }}
+                                >
+                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">
+                                        Window Close Date
+                                    </Text>
+
+                                    {selectedWindow?.state !== "OPEN" && selectedWindow?.closedDate ? (
+                                        <Text
+                                            fontSize="xs"
+                                            fontWeight="medium"
+                                            noOfLines={1}
+                                            title={moment(selectedWindow.closedDate).tz(selectedTZString).format("YYYY-MM-DDTHH:mm:ssZ")}
+                                        >
+                                            {moment(selectedWindow.closedDate).tz(selectedTZString).format("YYYY-MM-DDTHH:mm:ssZ")}
+                                        </Text>
+                                    ) : (
+                                        <Text fontSize="xs" fontWeight="medium">—</Text>
+                                    )}
+                                </Flex>
                             </SimpleGrid>
 
 

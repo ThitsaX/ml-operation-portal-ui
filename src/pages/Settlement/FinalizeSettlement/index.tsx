@@ -29,6 +29,7 @@ import {
     ModalFooter,
     ModalCloseButton,
     SimpleGrid,
+    Flex,
 } from '@chakra-ui/react';
 import { FinalizeSettlementHelper } from '@helpers/form';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
@@ -941,49 +942,68 @@ const FinalizeSettlement = () => {
                     <ModalCloseButton />
                     <ModalBody>
                         <Stack spacing={4}>
-                            <SimpleGrid columns={{ base: 1, md: 5 }} spacing={3} textAlign="center">
-                                <Box>
-                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">Settlement ID</Text>
-                                    <Text fontSize=" 0.8rem">{selectedSettlement?.settlementId}</Text>
-                                </Box>
-                                <Box>
-                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">Window ID</Text>
-                                    <Text fontSize=" 0.8rem">
-                                        { 
-                                            selectedSettlement?.settlementWindowList?.map((window) => window.settlementWindowId).join(', ')
-                                        }
+                            <SimpleGrid
+                                columns={{ base: 1, md: 5 }}
+                                spacing={8}
+                                w="full"
+                                textAlign="left"
+                                pb={3}
+                                borderBottomWidth="1px"
+                                borderColor="gray.100"
+                            >
+                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px">
+                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">
+                                        Settlement ID
                                     </Text>
-                                </Box>
-                                <Box>
-                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">Settlement State</Text>
-                                    <Text fontSize="xs" >{selectedSettlement?.state}</Text>
-                                </Box>
-                                <Box>
-                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">Created Date</Text>
-                                    <Text fontSize="xs">
-                                        {
-                                            (
-                                                selectedSettlement?.createdDate ? 
-                                                formatDateTime(selectedSettlement.createdDate)
-                                                :
-                                                ""
-                                            )
-                                        }
+                                    <Text fontSize="xs" fontWeight="medium">
+                                        {selectedSettlement?.settlementId ?? '—'}
                                     </Text>
-                                </Box>
-                                <Box>
-                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">Finalized Date</Text>
-                                    <Text fontSize="xs">
-                                        {
-                                            (
-                                                selectedSettlement?.changedDate ? 
-                                                formatChangedDateOrBlank(selectedSettlement.changedDate, selectedSettlement.createdDate)
-                                                :
-                                                ""
-                                            )
-                                        }
+                                </Flex>
+
+                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px">
+                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">
+                                        Window ID
                                     </Text>
-                                </Box>
+                                    <Text fontSize="xs" fontWeight="medium" noOfLines={1}>
+                                        {selectedSettlement?.settlementWindowList?.map((w) => w.settlementWindowId).join(', ') ?? '—'}
+                                    </Text>
+                                </Flex>
+
+                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px">
+                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">
+                                        Settlement State
+                                    </Text>
+                                    <Text fontSize="xs" fontWeight="medium">
+                                        {selectedSettlement?.state ?? '—'}
+                                    </Text>
+                                </Flex>
+
+                                <Flex direction="column" align="flex-start" justify="space-between">
+                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">
+                                        Created Date
+                                    </Text>
+                                    <Text fontSize="xs" fontWeight="medium" noOfLines={1}>
+                                        {selectedSettlement?.createdDate ? formatDateTime(selectedSettlement.createdDate) : '—'}
+                                    </Text>
+                                </Flex>
+
+                                <Flex
+                                    direction="column"
+                                    justify="space-between"
+                                    minH="56px"
+                                    justifySelf={{ base: 'start', md: 'end' }}
+                                    align={{ base: 'flex-start', md: 'flex-end' }}
+                                    textAlign={{ base: 'left', md: 'right' }}
+                                >
+                                    <Text fontWeight="semibold" fontSize="sm" color="gray.500">
+                                        Finalized Date
+                                    </Text>
+                                    <Text fontSize="xs" fontWeight="medium" noOfLines={1}>
+                                        {selectedSettlement?.changedDate
+                                            ? formatChangedDateOrBlank(selectedSettlement.changedDate, selectedSettlement.createdDate)
+                                            : '—'}
+                                    </Text>
+                                </Flex>
                             </SimpleGrid>
 
 
