@@ -718,6 +718,7 @@ const SettlementWindows = () => {
     const onClearHandler = useCallback(() => {
         reset()
         onChangeDateRange('oneDay');
+        setSettlementWindows([]);
         // onSelectedTimezoneChange();
     }, [onChangeDateRange, reset, selectedTimezone]);
 

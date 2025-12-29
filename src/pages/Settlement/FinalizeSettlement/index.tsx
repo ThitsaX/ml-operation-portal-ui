@@ -567,6 +567,7 @@ const FinalizeSettlement = () => {
     const onClearHandler = useCallback(() => {
         reset()
         onChangeDateRange('oneDay');
+        setFinalizeSettlements([]);
         // onSelectedTimezoneChange();
     }, [onChangeDateRange, reset, selectedTimezone]);
 
