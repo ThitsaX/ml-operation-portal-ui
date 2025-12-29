@@ -943,46 +943,61 @@ const FinalizeSettlement = () => {
                     <ModalBody>
                         <Stack spacing={4}>
                             <SimpleGrid
-                                columns={{ base: 1, md: 5 }}
-                                spacing={8}
+                                columns={{ base: 1, md: 2, lg: 5 }}
+                                columnGap={{ base: 6, md: 8 }}
+                                rowGap={{ base: 4, md: 6 }}
                                 w="full"
                                 textAlign="left"
                                 pb={3}
                                 borderBottomWidth="1px"
                                 borderColor="gray.100"
                             >
-                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px">
+                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
                                         Settlement ID
                                     </Text>
-                                    <Text fontSize="xs" fontWeight="medium">
+                                    <Text fontSize="xs" fontWeight="medium" isTruncated title={String(selectedSettlement?.settlementId ?? '—')}>
                                         {selectedSettlement?.settlementId ?? '—'}
                                     </Text>
                                 </Flex>
 
-                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px">
+                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
                                         Window ID
                                     </Text>
-                                    <Text fontSize="xs" fontWeight="medium" noOfLines={1}>
+                                    <Text
+                                        fontSize="xs"
+                                        fontWeight="medium"
+                                        isTruncated
+                                        title={
+                                            selectedSettlement?.settlementWindowList
+                                                ? selectedSettlement.settlementWindowList.map((w) => w.settlementWindowId).join(', ')
+                                                : '—'
+                                        }
+                                    >
                                         {selectedSettlement?.settlementWindowList?.map((w) => w.settlementWindowId).join(', ') ?? '—'}
                                     </Text>
                                 </Flex>
 
-                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px">
+                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
                                         Settlement State
                                     </Text>
-                                    <Text fontSize="xs" fontWeight="medium">
+                                    <Text fontSize="xs" fontWeight="medium" isTruncated title={String(selectedSettlement?.state ?? '—')}>
                                         {selectedSettlement?.state ?? '—'}
                                     </Text>
                                 </Flex>
 
-                                <Flex direction="column" align="flex-start" justify="space-between">
+                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
                                         Created Date
                                     </Text>
-                                    <Text fontSize="xs" fontWeight="medium" noOfLines={1}>
+                                    <Text
+                                        fontSize="xs"
+                                        fontWeight="medium"
+                                        isTruncated
+                                        title={selectedSettlement?.createdDate ? formatDateTime(selectedSettlement.createdDate) : '—'}
+                                    >
                                         {selectedSettlement?.createdDate ? formatDateTime(selectedSettlement.createdDate) : '—'}
                                     </Text>
                                 </Flex>
@@ -991,14 +1006,24 @@ const FinalizeSettlement = () => {
                                     direction="column"
                                     justify="space-between"
                                     minH="56px"
-                                    justifySelf={{ base: 'start', md: 'end' }}
-                                    align={{ base: 'flex-start', md: 'flex-end' }}
-                                    textAlign={{ base: 'left', md: 'right' }}
+                                    minW={0}
+                                    justifySelf={{ base: 'start', lg: 'end' }}
+                                    align={{ base: 'flex-start', lg: 'flex-end' }}
+                                    textAlign={{ base: 'left', lg: 'right' }}
                                 >
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
                                         Finalized Date
                                     </Text>
-                                    <Text fontSize="xs" fontWeight="medium" noOfLines={1}>
+                                    <Text
+                                        fontSize="xs"
+                                        fontWeight="medium"
+                                        isTruncated
+                                        title={
+                                            selectedSettlement?.changedDate
+                                                ? formatChangedDateOrBlank(selectedSettlement.changedDate, selectedSettlement.createdDate)
+                                                : '—'
+                                        }
+                                    >
                                         {selectedSettlement?.changedDate
                                             ? formatChangedDateOrBlank(selectedSettlement.changedDate, selectedSettlement.createdDate)
                                             : '—'}
@@ -1007,7 +1032,8 @@ const FinalizeSettlement = () => {
                             </SimpleGrid>
 
 
-                            <TableContainer mt={4}>
+
+                            <TableContainer mt={4} w='full'>
                                 <Table variant="simple" size="sm">
                                     <Thead bg="gray.100">
                                         <Tr>

@@ -1160,78 +1160,87 @@ const SettlementWindows = () => {
                     <ModalBody>
                         <Stack spacing={4}>
                             <SimpleGrid
-                                columns={{ base: 1, md: 4 }}
-                                spacing={8}
+                                columns={{ base: 1, md: 2, lg: 4 }}
+                                columnGap={{ base: 6, md: 8 }}
+                                rowGap={{ base: 4, md: 6 }}
                                 w="full"
                                 textAlign="left"
                                 pb={3}
                                 borderBottomWidth="1px"
                                 borderColor="gray.100"
                             >
-                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px">
+                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
                                         Window ID
                                     </Text>
-                                    <Text fontSize="sm" fontWeight="medium">
+                                    <Text fontSize="xs" fontWeight="medium" isTruncated title={String(selectedWindow?.settlementWindowId ?? '—')}>
                                         {selectedWindow?.settlementWindowId ?? '—'}
                                     </Text>
                                 </Flex>
 
-                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px">
+                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
                                         Window State
                                     </Text>
-                                    <Text fontSize="sm" fontWeight="medium">
+                                    <Text fontSize="xs" fontWeight="medium" isTruncated title={String(selectedWindow?.state ?? '—')}>
                                         {selectedWindow?.state ?? '—'}
                                     </Text>
                                 </Flex>
 
-                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px">
+                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
                                         Window Open Date
                                     </Text>
+
                                     {selectedWindow?.createdDate ? (
                                         <Text
                                             fontSize="xs"
                                             fontWeight="medium"
-                                            noOfLines={1}
+                                            isTruncated
                                             title={moment(selectedWindow.createdDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}
                                         >
                                             {moment(selectedWindow.createdDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}
                                         </Text>
                                     ) : (
-                                        <Text fontSize="xs" fontWeight="medium">—</Text>
+                                        <Text fontSize="xs" fontWeight="medium">
+                                            —
+                                        </Text>
                                     )}
                                 </Flex>
+
                                 <Flex
                                     direction="column"
                                     justify="space-between"
                                     minH="56px"
-                                    justifySelf={{ base: "start", md: "end" }}
-                                    align={{ base: "flex-start", md: "flex-end" }}
-                                    textAlign={{ base: "left", md: "right" }}
+                                    minW={0}
+                                    justifySelf={{ base: 'start', lg: 'end' }}
+                                    align={{ base: 'flex-start', lg: 'flex-end' }}
+                                    textAlign={{ base: 'left', lg: 'right' }}
                                 >
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
                                         Window Close Date
                                     </Text>
 
-                                    {selectedWindow?.state !== "OPEN" && selectedWindow?.closedDate ? (
+                                    {selectedWindow?.state !== 'OPEN' && selectedWindow?.closedDate ? (
                                         <Text
                                             fontSize="xs"
                                             fontWeight="medium"
-                                            noOfLines={1}
-                                            title={moment(selectedWindow.closedDate).tz(selectedTZString).format("YYYY-MM-DDTHH:mm:ssZ")}
+                                            isTruncated
+                                            title={moment(selectedWindow.closedDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}
                                         >
-                                            {moment(selectedWindow.closedDate).tz(selectedTZString).format("YYYY-MM-DDTHH:mm:ssZ")}
+                                            {moment(selectedWindow.closedDate).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}
                                         </Text>
                                     ) : (
-                                        <Text fontSize="xs" fontWeight="medium">—</Text>
+                                        <Text fontSize="xs" fontWeight="medium">
+                                            —
+                                        </Text>
                                     )}
                                 </Flex>
                             </SimpleGrid>
 
 
-                            <TableContainer mt={4}>
+
+                            <TableContainer mt={4} w='full'>
                                 <Table variant="simple" size="sm">
                                     <Thead bg="gray.100">
                                         <Tr>
