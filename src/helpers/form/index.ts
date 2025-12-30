@@ -341,8 +341,10 @@ export class AuditHelper extends FormHelper {
   get schema() {
     return z
       .object({
-        fromDate: z.string({ required_error: 'Required' }),
-        toDate: z.string({ required_error: 'Required' }),
+        fromDate: z.string({ required_error: 'Required' })
+        .min(1, 'Invalid date'),
+        toDate: z.string({ required_error: 'Required' })
+        .min(1, 'Invalid date'),
         actionId: z.string().optional(),
         userId: z.string().optional(),
       })
@@ -361,8 +363,10 @@ export class AuditReportHelper extends FormHelper {
   get schema() {
     return z
       .object({
-        fromDate: z.string({ required_error: 'Required' }),
-        toDate: z.string({ required_error: 'Required' }),
+        fromDate: z.string({ required_error: 'Required' })
+        .min(1, 'Invalid date'),
+        toDate: z.string({ required_error: 'Required' })
+        .min(1, 'Invalid date'),
         userId: z.string().optional(),
         action: z.string().optional(),
         fileType: z.string().optional(),
@@ -382,8 +386,10 @@ export class SettlementAuditReportHelper extends FormHelper {
   get schema() {
     return z
       .object({
-        startDate: z.string({ required_error: 'Required' }),
-        endDate: z.string({ required_error: 'Required' }),
+        startDate: z.string({ required_error: 'Required' })
+        .min(1, 'Invalid date'),
+        endDate: z.string({ required_error: 'Required' })
+        .min(1, 'Invalid date'),
         dfspId: z.string().optional(),
         currencyId: z.string().optional(),
         fileType: z.string().optional(),
