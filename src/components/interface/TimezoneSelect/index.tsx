@@ -15,7 +15,8 @@ export interface ITimezoneSelectProps extends Omit<SelectProps, 'onChange'> {
 
 const labelStyle = 'original';
 const timezones = {
-  ...allTimezones
+  ...allTimezones,
+  [defaultOption.value]: defaultOption.altName
   // other custom timezone goes here
 };
 
@@ -25,32 +26,34 @@ const TimezoneSelect = ({ onChange, value, ...rest }: ITimezoneSelectProps) => {
     timezones,
   });
 
+  const timezoneOptions = [defaultOption, ...options];
+
   // State to control default timezone
   const [removeDefault, setRemoveDefault] = useState(false)
   const [selectedTimezone, setSelectedTimezone] = useState(value || null);
 
   // Add the "Browser timezone" default option
 
-  const updatedOptions = [defaultOption, ...options];
 
   return (
     <CustomSelect
       isMulti={false}
       placeholder="Select Timezone"
-      options={
-          removeDefault? options.map(option => ({
-              value: option.value,
-              label: option.label,
-            }))
-          :updatedOptions.map(option => ({
-            ...option,
-            hidden: option.label === defaultOption.label
-      }))}
-      value={selectedTimezone ? options.find(opt => opt.value === selectedTimezone) || null : null}
-     onChange={(selected) => {
-        setRemoveDefault(true);
+      options={timezoneOptions}
+      value={selectedTimezone ? timezoneOptions.find(opt => opt.value === selectedTimezone) || null : null}
+      onChange={(selected) => {
         setSelectedTimezone(selected?.value || null);
-        onChange(parseTimezone(selected?.value || ''));
+        if (selected?.value === defaultOption.value) {
+          onChange(defaultOption);
+        } else {
+          const parsed = parseTimezone(selected?.value || '');
+          if (parsed) {
+            onChange(parsed);
+          } else {
+            onChange(defaultOption);
+          }
+        }
+
       }}
     />
   );
