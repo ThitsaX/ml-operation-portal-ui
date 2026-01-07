@@ -377,81 +377,91 @@ const FinalizeSettlement = () => {
     }
 
     const columns = useMemo<Column<IFinalizeSettlement>[]>(() => {
-                const baseColumns: Column<IFinalizeSettlement>[] = [
-        {
-            Header: 'Settlement ID',
-            accessor: 'settlementId',
-            Cell: ({ row, value }: any) => (
-                <Box
-                    color="blue.600"
-                    fontWeight="bold"
-                    cursor="pointer"
-                    _hover={{ textDecoration: 'underline' }}
-                    onClick={() => onTrClickHandler(row.original)}
-                >
-                    {value}
-                </Box>)
-        },
-        {
-            Header: 'Window ID',
-            accessor: 'settlementWindowList',
-            Cell: ({ row }) => {
-                const windows = row.original.settlementWindowList || [];
-                return (
-                    <Text>
-                        {windows.map(w => w.settlementWindowId).join(', ')}
-                    </Text>
-                );
+        const baseColumns: Column<IFinalizeSettlement>[] = [
+            {
+                Header: 'Settlement ID',
+                accessor: 'settlementId',
+                Cell: ({ row, value }: any) => (
+                    <Box
+                        color="blue.600"
+                        fontWeight="bold"
+                        cursor="pointer"
+                        _hover={{ textDecoration: 'underline' }}
+                        onClick={() => onTrClickHandler(row.original)}
+                    >
+                        {value}
+                    </Box>)
             },
-        },
-        {
-            Header: 'State',
-            accessor: 'state',
-        },
-        {
-            Header: 'Settlement Created Date',
-            accessor: 'createdDate',
-            Cell: ({ value }) => <Text>{formatDateTime(value)}</Text>,
-        },
-        {
-            Header: 'Settlement Finalize Date',
-            accessor: 'changedDate',
-            Cell: ({ row, value }: any) => (
-                <Text>{formatChangedDateOrBlank(value, row.original?.createdDate)}</Text>
-            ),
-        }];
+            {
+                Header: 'Window ID',
+                accessor: 'settlementWindowList',
+                Cell: ({ row }) => {
+                    const windows = row.original.settlementWindowList || [];
+                    const text = windows.map(w => w.settlementWindowId).join(', ');
 
-            const actionColumn = hasActionPermission("FinalizeSettlement")
-                            ? [
-                                {
-                                    Header: 'Action',
-                                    id: 'action',
-                                    disableSortBy: true,
-                                    Cell: ({ row }: any) => {
-                                        if (!['SETTLED', 'ABORTED'].includes(row.original.state)) {
-                                            return (
-                                                <HStack spacing={4}>
-                                                    <Button
-                                                        isDisabled={btnFindDisabled}
-                                                        size="sm"
-                                                        colorScheme="green"
-                                                        variant="solid"
-                                                        onClick={() => handleFinalize(row.original)}>
-                                                        Finalize
-                                                    </Button>
-                                                </HStack>
-                                            );
-                                        }
+                    return (
+                        <Text
+                            maxW="260px"
+                            noOfLines={1}
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            whiteSpace="nowrap"
+                            title={text}
+                        >
+                            {text}
+                        </Text>
+                    );
+                },
+            },
 
-                                        return <></>;
-                                    }
-                                } as Column<IFinalizeSettlement>,
-                                ]
-                            : []
-        
-            return [...baseColumns, ...actionColumn];
+            {
+                Header: 'State',
+                accessor: 'state',
+            },
+            {
+                Header: 'Settlement Created Date',
+                accessor: 'createdDate',
+                Cell: ({ value }) => <Text>{formatDateTime(value)}</Text>,
+            },
+            {
+                Header: 'Settlement Finalize Date',
+                accessor: 'changedDate',
+                Cell: ({ row, value }: any) => (
+                    <Text>{formatChangedDateOrBlank(value, row.original?.createdDate)}</Text>
+                ),
+            }];
+
+        const actionColumn = hasActionPermission("FinalizeSettlement")
+            ? [
+                {
+                    Header: 'Action',
+                    id: 'action',
+                    disableSortBy: true,
+                    Cell: ({ row }: any) => {
+                        if (!['SETTLED', 'ABORTED'].includes(row.original.state)) {
+                            return (
+                                <HStack spacing={4}>
+                                    <Button
+                                        isDisabled={btnFindDisabled}
+                                        size="sm"
+                                        colorScheme="green"
+                                        variant="solid"
+                                        onClick={() => handleFinalize(row.original)}>
+                                        Finalize
+                                    </Button>
+                                </HStack>
+                            );
+                        }
+
+                        return <></>;
+                    }
+                } as Column<IFinalizeSettlement>,
+            ]
+            : []
+
+        return [...baseColumns, ...actionColumn];
     }, [finalizeSettlements, selectedTZString, btnFindDisabled]);
-        
+
 
     const {
         getTableProps,
@@ -953,7 +963,7 @@ const FinalizeSettlement = () => {
                                 borderBottomWidth="1px"
                                 borderColor="gray.100"
                             >
-                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0}>
+                                <Flex direction="column" align="flex-start" justify="flex-start" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
                                         Settlement ID
                                     </Text>
@@ -962,14 +972,17 @@ const FinalizeSettlement = () => {
                                     </Text>
                                 </Flex>
 
-                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0}>
+                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0} w="full">
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
                                         Window ID
                                     </Text>
+
                                     <Text
                                         fontSize="xs"
                                         fontWeight="medium"
-                                        isTruncated
+                                        w="full"
+                                        noOfLines={2}
+                                        overflowWrap="anywhere"
                                         title={
                                             selectedSettlement?.settlementWindowList
                                                 ? selectedSettlement.settlementWindowList.map((w) => w.settlementWindowId).join(', ')
@@ -980,7 +993,7 @@ const FinalizeSettlement = () => {
                                     </Text>
                                 </Flex>
 
-                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0}>
+                                <Flex direction="column" align="flex-start" justify="flex-start" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
                                         Settlement State
                                     </Text>
@@ -989,7 +1002,7 @@ const FinalizeSettlement = () => {
                                     </Text>
                                 </Flex>
 
-                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0}>
+                                <Flex direction="column" align="flex-start" justify="flex-start" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
                                         Created Date
                                     </Text>
@@ -1005,7 +1018,7 @@ const FinalizeSettlement = () => {
 
                                 <Flex
                                     direction="column"
-                                    justify="space-between"
+                                    justify="flex-start"
                                     minH="56px"
                                     minW={0}
                                     justifySelf={{ base: 'start', lg: 'end' }}
