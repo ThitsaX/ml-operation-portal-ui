@@ -1,8 +1,26 @@
 import moment from 'moment-timezone'
 
-const defaultValue = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const FALLBACK_TIMEZONE = 'UTC';
 
-export const defaultOption = { value: defaultValue, label: moment?.tz(defaultValue).format('([GMT]Z)') + ' Local Timezone' };
+function resolveSystemTimezone(): string {
+  const systemTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  return systemTZ && moment.tz.zone(systemTZ)
+    ? systemTZ
+    : FALLBACK_TIMEZONE;
+}
+
+const defaultTimezone = resolveSystemTimezone();
+const tzMoment = moment.tz(defaultTimezone);
+
+export const defaultOption = {
+  value: defaultTimezone,
+  label: `(GMT${tzMoment.format('Z')}) ${defaultTimezone}`,
+  offset: tzMoment.utcOffset() / 60,
+  abbrev: tzMoment.format('z'),
+  altName: tzMoment.format('z'),
+};
+
 
 export const WINDOW_STATE_OPTIONS = [
     "OPEN", "CLOSED", "PENDING_SETTLEMENT", "SETTLED"
