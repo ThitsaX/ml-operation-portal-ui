@@ -186,6 +186,18 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
                 to: 'reports/audit-report',
                 menuId: 'audit_report',
               },
+              {
+                id: 'transactionDetailReport',
+                label: 'Transaction Detail Report',
+                to: 'reports/transaction-detail-report',
+                menuId: 'transaction_detail_report',
+              },
+              {
+                id: 'ManagementSummaryReport',
+                label: 'Management Summary Report',
+                to: 'reports/management-summary-report',
+                menuId: 'management_summary_report',
+              },
             ]}
           />
 

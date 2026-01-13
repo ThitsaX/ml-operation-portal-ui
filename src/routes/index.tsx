@@ -6,7 +6,7 @@ import ErrorPage from '@pages/ErrorPage';
 import Login from '@pages/Login';
 import ChangePassword from '@pages/ChangePassword';
 import { SettlementBankReport,SettlementDetailReport, SettlementSummaryReport, 
- SettlementStatementReport, SettlementAuditReport, AuditReport } from '@pages/Reports';
+ SettlementStatementReport, SettlementAuditReport, AuditReport, TransactionDetailReport, ManagementSummaryReport } from '@pages/Reports';
 import Transfer from '@pages/Transfer';
 import User from '@pages/UserManagement/User';
 import Home from '@pages/Home';
@@ -156,9 +156,34 @@ export const router = createBrowserRouter([
               </ProtectedRoute>
             ),
           },
+          {
+            path: "transaction-detail-report",
+            element: (
+              <ProtectedRoute allowedMenuId="transaction_detail_report">
+                <TransactionDetailReport />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "management-summary-report",
+            element: (
+              <ProtectedRoute allowedMenuId="management_summary_report">
+                <ManagementSummaryReport />
+              </ProtectedRoute>
+            ),
+          },
         ],
       },
       {
+        path: "pending-approvals",
+        caseSensitive: true,
+        element: (
+          <ProtectedRoute allowedMenuId="pending_approvals">
+            <PendingApprovals />
+          </ProtectedRoute>
+        ),
+      },
+            {
         path: "pending-approvals",
         caseSensitive: true,
         element: (

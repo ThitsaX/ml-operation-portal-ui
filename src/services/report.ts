@@ -247,6 +247,72 @@ export const getSettlementIds = async (
     });
 };
 
+export const generateTransactionDetailReport = async (
+  user: IUserState,
+  params: any
+) => {
+
+
+  const accessToken = await generateAccessToken({
+    method: 'POST',
+    uri: routes.generateTransactionDetailReport,
+    secret: user.auth?.secretKey as string
+  });
+
+  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
+  return axios
+    .post<any>(routes.generateTransactionDetailReport, null, {
+      params
+    })
+    .then((d) => {
+      return d.data;
+    })
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
+};
+
+export const generateManagementSummaryReport = async (
+  user: IUserState,
+  params: any
+) => {
+
+
+  const accessToken = await generateAccessToken({
+    method: 'POST',
+    uri: routes.generateManagementSummaryReport,
+    secret: user.auth?.secretKey as string
+  });
+
+  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
+  return axios
+    .post<any>(routes.generateManagementSummaryReport, null, {
+      params
+    })
+    .then((d) => {
+      return d.data;
+    })
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
+};
+
 
 export const downloadFile = (
   initialFileName: string,
