@@ -207,6 +207,56 @@ export class SettlementSummaryReportHelper extends FormHelper {
   }
 }
 
+export class TransactionDetailReportHelper extends FormHelper {
+  get schema() {
+    return z
+      .object({
+        startDate: z.coerce.date({
+          required_error: 'Required'
+        }),
+        endDate: z.coerce.date({
+          required_error: 'Required'
+        }),
+        state: z.string().optional(),
+        dfspId: z.string().optional(),
+        fileType: z.string().optional(),
+        timezoneOffset: z.string().optional()
+      })
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be less than end date',
+        path: ['startDate']
+      })
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be greater than start date',
+        path: ['endDate']
+      });
+  }
+}
+
+export class ManagementSummaryReportHelper extends FormHelper {
+  get schema() {
+    return z
+      .object({
+        startDate: z.coerce.date({
+          required_error: 'Required'
+        }),
+        endDate: z.coerce.date({
+          required_error: 'Required'
+        }),
+        fileType: z.string().optional(),
+        timezoneOffset: z.string().optional()
+      })
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be less than end date',
+        path: ['startDate']
+      })
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be greater than start date',
+        path: ['endDate']
+      });
+  }
+}
+
 export class SettlementStatementReportHelper extends FormHelper {
   get schema() {
     return z

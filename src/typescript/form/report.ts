@@ -40,6 +40,21 @@ export interface ISettlementSummaryReport {
   currencyId: string
 }
 
+export interface ITransactionDetailReport {
+  startDate: string
+  endDate: string
+  state: string
+  timezoneOffset: string
+  fileType: string
+}
+
+export interface IManagementSummaryReport {
+  startDate: string
+  endDate: string
+  timezoneOffset: string
+  fileType: string
+}
+
 export interface ISettlementStatementReport {
   fspId: string
   startDate: string
