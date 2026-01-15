@@ -75,7 +75,6 @@ const TimezoneSelect = ({ onChange, value, date = new Date(), ...rest }: ITimezo
         }
 
       }}
-      {...rest}
     />
   );
 };
