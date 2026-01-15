@@ -160,9 +160,7 @@ const SettlementBankReport = () => {
     generateSettlementBankReport(user, {
       settlementId: formData.settlementId,
       currencyId: formData.currency,
-      timezoneOffset: selectedTimezone.offset === 0
-        ? "0000"
-        : moment().tz(selectedTZString).format('ZZ').replace('+', ''),
+      timezoneOffset: moment().tz(selectedTZString).format('ZZ').replace('+', ''),
       fileType: fileType
     })
       .then((res: any) => {

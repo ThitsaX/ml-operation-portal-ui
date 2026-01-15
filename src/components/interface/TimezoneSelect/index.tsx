@@ -17,7 +17,6 @@ export interface ITimezoneSelectProps extends Omit<SelectProps, 'onChange'> {
 const labelStyle = 'original';
 const timezones = {
   ...allTimezones,
-  [defaultOption.value]: defaultOption.altName
   // other custom timezone goes here
 };
 

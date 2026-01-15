@@ -62,9 +62,7 @@ const SettlementStatementReport = () => {
     const EndDate = moment.tz(formData.endDate, selectedTimezone?.value)
       .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
-    let tzOffSet: string = selectedTimezone.offset === 0
-      ? "0000"
-      : moment().tz(selectedTZString).format('ZZ').replace('+', '');
+    let tzOffSet: string = moment().tz(selectedTZString).format('ZZ').replace('+', '');
 
     generateSettlementStatementReport(user, {
       startDate: StartDate,
