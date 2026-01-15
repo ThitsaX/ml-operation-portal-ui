@@ -31,7 +31,6 @@ const TimezoneSelect = ({ onChange, value, date = new Date(), ...rest }: ITimezo
     s.replace(/^\(GMT[+\-−]\d{1,2}:\d{2}\)\s*/i, '');
 
   const getOffsetForZoneAtDate = (timeZone: string, at: Date): string => {
-    try {
       // Newer engines (support 'shortOffset'
       const fmt = new Intl.DateTimeFormat('en-US', {
         timeZone,
@@ -45,27 +44,6 @@ const TimezoneSelect = ({ onChange, value, date = new Date(), ...rest }: ITimezo
       const hh = String(Number(m?.[2] ?? '0')).padStart(2, '0');
       const mm = String(m?.[3] ?? '00').padStart(2, '0');
       return `${sign}${hh}:${mm}`;
-    } catch {
-      // Fallback: try 'short' and parse "GMT+X" // for older safari 2022 releases
-      try {
-        const fmt2 = new Intl.DateTimeFormat('en-US', {
-          timeZone,
-          timeZoneName: 'short',
-          hour: '2-digit',
-          minute: '2-digit',
-        });
-        const tzName = fmt2.formatToParts(at).find(p => p.type === 'timeZoneName')?.value ?? '';
-        const m2 = tzName.match(/GMT([+-]\d{1,2})(?::?(\d{2}))?/i);
-        if (!m2) return '+00:00';
-        const hh = String(Number(m2[1])).padStart(2, '0').replace(/^(-?)0?/, '$1'); // keep sign
-        const sign = hh.startsWith('-') ? '-' : '+';
-        const absHH = String(Math.abs(Number(hh))).padStart(2, '0');
-        const mm = String(m2[2] ?? '00').padStart(2, '0');
-        return `${sign}${absHH}:${mm}`;
-      } catch {
-        return '+00:00';
-      }
-    }
   };
 
   const timezoneOptions = useMemo(() => {
