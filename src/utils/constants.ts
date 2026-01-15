@@ -1,6 +1,6 @@
 import moment from 'moment-timezone'
 
-const FALLBACK_TIMEZONE = 'UTC';
+const FALLBACK_TIMEZONE = 'Etc/GMT';
 
 function resolveSystemTimezone(): string {
   const systemTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
