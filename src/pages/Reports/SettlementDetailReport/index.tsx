@@ -127,9 +127,7 @@ const SettlementDetailReport = () => {
     const fileType = formData.fileType;
 
     const selectedTZString = selectedTimezone.value;
-    let tzOffSet: string = selectedTimezone.offset === 0
-      ? "0000"
-      : moment().tz(selectedTZString).format('ZZ').replace('+', '');
+    let tzOffSet: string = moment().tz(selectedTZString).format('ZZ').replace('+', '');
 
     generateSettlementDetailReport({
       settlementId: formData.settlementId,

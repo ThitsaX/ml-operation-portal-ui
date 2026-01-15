@@ -16,9 +16,6 @@ const tzMoment = moment.tz(defaultTimezone);
 export const defaultOption = {
   value: defaultTimezone,
   label: `(GMT${tzMoment.format('Z')}) ${defaultTimezone}`,
-  offset: tzMoment.utcOffset() / 60,
-  abbrev: tzMoment.format('z'),
-  altName: tzMoment.format('z'),
 };
 
 
