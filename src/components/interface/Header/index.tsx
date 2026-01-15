@@ -25,7 +25,7 @@ import { useAuth } from '@hooks/auth';
 import { useGetProfile } from '@hooks/services';
 import { useAppDispatch } from '@store';
 import { UserActions } from '@store/features/user';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ITimezone } from 'react-timezone-select';
 import { RootState } from '@store';
@@ -66,6 +66,13 @@ const Header = () => {
   const selectedTimezone = useSelector<RootState, ITimezone>(
     (s) => s.app.selectedTimezone
   );
+
+  const timezoneIana = useMemo(() => {
+    if (isObject(selectedTimezone)) {
+      return String((selectedTimezone as any).value || 'UTC');
+    }
+    return String(selectedTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
+  }, [selectedTimezone]);
 
   const handleTimezone = useCallback(
     (e: ITimezone) => {
@@ -163,12 +170,9 @@ const Header = () => {
                 <PopoverBody>
                   <Box mb={2}>
                     <TimezoneSelect
-                      value={
-                        isObject(selectedTimezone)
-                          ? selectedTimezone.value
-                          : selectedTimezone
-                      }
+                      value={timezoneIana}
                       onChange={handleTimezone}
+                      date={new Date()}
                     />
                   </Box>
                   <Button
