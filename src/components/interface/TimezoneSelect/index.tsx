@@ -66,9 +66,9 @@ const TimezoneSelect = ({ onChange, value, date = new Date(), ...rest }: ITimezo
         if (selected?.value === defaultOption.value) {
           onChange(defaultOption);
         } else {
-          const parsed = parseTimezone(selected?.value || '');
+          const parsed = selected?.value || '';
           if (parsed) {
-            onChange(parsed);
+            onChange({value: parsed, label: selected?.label || parsed});
           } else {
             onChange(defaultOption);
           }
