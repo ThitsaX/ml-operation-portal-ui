@@ -52,7 +52,7 @@ const TimezoneSelect = ({ onChange, value, date = new Date(), ...rest }: ITimezo
       const clean = stripLeadingGMT(String(o.label));
       return { value: iana, label: `(GMT${off}) ${clean}` };
     });
-    return [defaultOption, ...rewritten];
+    return [defaultOption, ...rewritten.filter(o => o.value !== defaultOption.value)];
   }, [options, date]);
 
   return (
@@ -62,16 +62,12 @@ const TimezoneSelect = ({ onChange, value, date = new Date(), ...rest }: ITimezo
       options={timezoneOptions}
       value={value ? timezoneOptions.find(opt => opt.value === value) || null : null}
       onChange={(selected) => {
-        if (selected?.value === defaultOption.value) {
-          onChange(defaultOption);
-        } else {
           const parsed = selected?.value || '';
           if (parsed) {
             onChange({value: parsed, label: selected?.label || parsed});
           } else {
             onChange(defaultOption);
           }
-        }
 
       }}
     />
