@@ -4,6 +4,9 @@ const FALLBACK_TIMEZONE = 'Etc/GMT';
 
 function resolveSystemTimezone(): string {
   const systemTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (!systemTZ || systemTZ === 'UTC') {
+    return FALLBACK_TIMEZONE;
+  }
 
   return systemTZ && moment.tz.zone(systemTZ)
     ? systemTZ
