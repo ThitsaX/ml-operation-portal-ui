@@ -99,9 +99,7 @@ const Transfer = () => {
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
   //Selected timezone offset
   const selectedTZString = selectedTimezone.value;
-  const timezone = selectedTimezone.offset === 0
-    ? "0000"
-    : moment().tz(selectedTZString).format('ZZ').replace('+', '');
+  const timezone = moment().tz(selectedTZString).format('ZZ').replace('+', '');
 
   //Form initial values
   const initialValues = {
