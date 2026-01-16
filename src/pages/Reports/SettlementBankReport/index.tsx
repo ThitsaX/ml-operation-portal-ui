@@ -36,6 +36,8 @@ import { getErrorMessage } from '@helpers/errors';
 import { CustomSelect } from '@components/interface';
 import { OptionType } from '@components/interface/CustomSelect';
 import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
+import { REPORT_NOT_FOUND_ERROR } from '@helpers';
+import { showDataNotFound } from '@utils';
 
 const settlementBankReport = new SettlementBankReportHelper();
 const initialFileName = 'SettlementBankReport';
@@ -109,13 +111,7 @@ const SettlementBankReport = () => {
     getSettlementIds(user, StartDate, EndDate,'', tzOffSet)
       .then((data: IGetSettlementIds) => {
         if (data.settlementIdDataList?.length === 0) {
-          toast({
-            position: 'top',
-            description: 'No data found',
-            status: 'warning',
-            isClosable: true,
-            duration: 3000
-          });
+          showDataNotFound(toast);
         }
 
         let options: any[] = [];
@@ -129,15 +125,20 @@ const SettlementBankReport = () => {
         setValue('settlementId', '');
         setValue('fileType', 'xlsx');
       })
-        .catch((error: IApiErrorResponse) => {
+      .catch((error: IApiErrorResponse) => {
+        if (error.error_code === REPORT_NOT_FOUND_ERROR) {
+          showDataNotFound(toast);
+          return;
+        } else {
           toast({
             position: 'top',
             title: getErrorMessage(error),
             status: 'error',
             isClosable: true,
             duration: 3000
-          });
-        })
+          })
+        }
+      })
       .finally(() => {
         setRunButtonState(true);
         complete();
