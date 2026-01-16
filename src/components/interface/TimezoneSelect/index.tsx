@@ -5,9 +5,8 @@ import {
   ITimezoneOption
 } from 'react-timezone-select';
 import { useMemo } from 'react';
-import { defaultOption } from '@utils/constants';
 import { CustomSelect } from '@components/interface';
-
+import { FALLBACK_TIMEZONE } from '@utils/constants';
 export interface ITimezoneSelectProps extends Omit<SelectProps, 'onChange'> {
   onChange: (timezone: ITimezoneOption) => void;
   value?: string; // Accept timezone string as value
@@ -52,7 +51,7 @@ const TimezoneSelect = ({ onChange, value, date = new Date(), ...rest }: ITimezo
       const clean = stripLeadingGMT(String(o.label));
       return { value: iana, label: `(GMT${off}) ${clean}` };
     });
-    return [defaultOption, ...rewritten.filter(o => o.value !== defaultOption.value)];
+    return [ ...rewritten];
   }, [options, date]);
 
   return (
@@ -60,13 +59,13 @@ const TimezoneSelect = ({ onChange, value, date = new Date(), ...rest }: ITimezo
       isMulti={false}
       placeholder="Select Timezone"
       options={timezoneOptions}
-      value={value ? timezoneOptions.find(opt => opt.value === value) || null : null}
+      value={value ? timezoneOptions.find(opt => opt.value === value) || FALLBACK_TIMEZONE : FALLBACK_TIMEZONE}
       onChange={(selected) => {
           const parsed = selected?.value || '';
           if (parsed) {
             onChange({value: parsed, label: selected?.label || parsed});
           } else {
-            onChange(defaultOption);
+            onChange(FALLBACK_TIMEZONE);
           }
 
       }}
