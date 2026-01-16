@@ -1,5 +1,6 @@
 import { thousandSeparatorRegex } from '@helpers'
 import { capitalize, snakeCase, trim } from 'lodash-es'
+import { useToast } from '@chakra-ui/react'
 
 export function humanize(str: string): string {
   return capitalize(trim(snakeCase(str).replace(/_id$/, '').replace(/_/g, ' ')))
@@ -52,4 +53,14 @@ export const formatNumberWithCommas = (
   if (value === null || value === undefined || isNaN(num)) return '-';
 
   return num.toLocaleString('en-US', options);
+};
+
+export const showDataNotFound = (toast: ReturnType<typeof useToast>) => {
+  toast({
+    position: 'top',
+    description: 'No data found',
+    status: 'warning',
+    isClosable: true,
+    duration: 3000,
+  });
 };

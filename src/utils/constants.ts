@@ -1,16 +1,21 @@
 import moment from 'moment-timezone'
 
-const FALLBACK_TIMEZONE = 'Etc/GMT';
+const DEFAULT_TIMEZONE = 'Etc/GMT';
+
+export const FALLBACK_TIMEZONE = {
+  value: DEFAULT_TIMEZONE,
+  label: '(GMT+00:00) UTC'
+}
 
 function resolveSystemTimezone(): string {
   const systemTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (!systemTZ || systemTZ === 'UTC') {
-    return FALLBACK_TIMEZONE;
+    return DEFAULT_TIMEZONE;
   }
 
   return systemTZ && moment.tz.zone(systemTZ)
     ? systemTZ
-    : FALLBACK_TIMEZONE;
+    : DEFAULT_TIMEZONE;
 }
 
 const defaultTimezone = resolveSystemTimezone();

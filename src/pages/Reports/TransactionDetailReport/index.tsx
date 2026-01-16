@@ -32,6 +32,8 @@ import { getErrorMessage } from '@helpers/errors';
 import { OptionType } from '@components/interface/CustomSelect';
 import { CustomSelect } from '@components/interface';
 import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
+import { REPORT_NOT_FOUND_ERROR } from '@helpers';
+import { showDataNotFound } from '@utils';
 
 const transactionDetailReportHelper = new TransactionDetailReportHelper();
 const initialFileName = 'TransactionDetailReport';
@@ -107,23 +109,22 @@ const TransactionDetailReport = () => {
         if (res?.rptByte?.length > 0) {
           downloadFile(initialFileName, fileType, res?.rptByte);
         } else {
+          showDataNotFound(toast);
+        }
+      })
+      .catch((error: IApiErrorResponse) => {
+        if (error.error_code === REPORT_NOT_FOUND_ERROR) {
+          showDataNotFound(toast);
+          return;
+        } else {
           toast({
             position: 'top',
-            description: 'No data found',
-            status: 'warning',
+            description: getErrorMessage(error) || 'Faield to download',
+            status: 'error',
             isClosable: true,
             duration: 3000
           });
         }
-      })
-      .catch((error: IApiErrorResponse) => {
-        toast({
-          position: 'top',
-          description: getErrorMessage(error) || 'Faield to download',
-          status: 'error',
-          isClosable: true,
-          duration: 3000
-        });
       })
       .finally(() => {
         setRunButtonState(true);
