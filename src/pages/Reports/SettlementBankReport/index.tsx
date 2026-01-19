@@ -178,13 +178,18 @@ const SettlementBankReport = () => {
         }
       })
       .catch((error: IApiErrorResponse) => {
-        toast({
-          position: 'top',
-          description: getErrorMessage(error) || 'Faield to download',
-          status: 'error',
-          isClosable: true,
-          duration: 3000
-        });
+        if (error.error_code === REPORT_NOT_FOUND_ERROR) {
+          showDataNotFound(toast);
+          return;
+        } else {
+          toast({
+            position: 'top',
+            description: getErrorMessage(error) || 'Faield to download',
+            status: 'error',
+            isClosable: true,
+            duration: 3000
+          })
+        }
       })
       .finally(() => {
         complete();
