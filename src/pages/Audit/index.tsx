@@ -227,6 +227,12 @@ const Audit = () => {
           return <Text fontSize="sm">{getDisplayMadeBy(madeBy, action)}</Text>;
         },
       },
+      {
+        Header: () => (
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Trace ID</Text>
+        ),
+        accessor: 'traceId',
+      },
     ],
     []
   );
