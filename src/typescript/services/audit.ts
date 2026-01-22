@@ -9,6 +9,7 @@ export interface AuditInfo {
   date: string;
   action: string;
   madeBy: number;
+  traceId: string;
 }
 
 export interface IMadeByList {
