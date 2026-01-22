@@ -972,7 +972,7 @@ const FinalizeSettlement = () => {
                                     </Text>
                                 </Flex>
 
-                                <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0} w="full">
+                                <Flex direction="column" align="flex-start" justify="flex-start" minH="56px" minW={0} w="full">
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
                                         Window ID
                                     </Text>
