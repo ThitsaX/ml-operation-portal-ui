@@ -456,11 +456,15 @@ const Audit = () => {
                     cursor="pointer"
                     _hover={{ bg: 'muted.50' }}
                     {...row.getRowProps()}
-                    onClick={() => handleRowClick(row.original.auditId)}
+                    
                   >
 
                     {row.cells.map((cell) => (
-                      <Td {...cell.getCellProps()} py={2}>
+                      <Td {...cell.getCellProps()} py={2}
+                        onClick={() => {
+                          if (cell.column.id === 'traceId') return;
+                          handleRowClick(row.original.auditId);
+                        }}>
                         {cell.column.id === 'action' || cell.column.id === 'madeBy'
                           ? cell.render('Cell')
                           : isNumber(cell.value)
