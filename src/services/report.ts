@@ -339,3 +339,34 @@ export const downloadFile = (
   downloadLink.target = '_blank';
   downloadLink.click();
 };
+
+export const downloadFileTest = async (response: Response) => {
+  const blob = await response.blob(); // ✅ now it's a Blob
+
+  const contentDisposition = response.headers.get("Content-Disposition");
+  let fileName = "download";
+
+  if (contentDisposition) {
+    const match = contentDisposition.match(/filename="?(.+)"?/);
+    if (match?.[1]) fileName = match[1];
+  }
+
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  a.click();
+
+  window.URL.revokeObjectURL(url);
+};
+
+
+
+
+
+ 
+
+
+
+
+
