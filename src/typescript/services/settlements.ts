@@ -90,6 +90,7 @@ export interface INetTransferDetail {
     currency: string;
     participantBalance: number;
     participantLimit: number;
+    ndcPercent: number;
 }
 
 export interface INetTransferAmount {
