@@ -278,10 +278,13 @@ const FinalizeSettlement = () => {
                     result.mode = 1;
                     result.dfsps = [dfsp.participantName];
                     break;
-                } else if (dfsp.participantLimit > (Math.abs(dfsp.participantBalance) - dfsp.creditAmount)) {
-                    // Set the result mode to warning but keep going to find out more error/warnings
-                    result.mode = 2;
-                    result.dfsps.push(dfsp.participantName);
+                } else if (dfsp.ndcPercent <= 0) {
+                    // Only check if NDC is not percentage based
+                    if (dfsp.participantLimit > (Math.abs(dfsp.participantBalance) - dfsp.creditAmount)) {
+                        // Set the result mode to warning but keep going to find out more error/warnings
+                        result.mode = 2;
+                        result.dfsps.push(dfsp.participantName);
+                    }
                 }
             }
 
