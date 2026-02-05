@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 import { TransactionDetailReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { downloadFile, generateTransactionDetailReport, getSettlementIds } from '@services/report';
+import { downloadFile,downloadFileTest, generateTransactionDetailReport, getSettlementIds } from '@services/report';
 
 import { useGetUserState } from '@store/hooks';
 import { type ITransactionDetailReport } from '@typescript/form/report';
@@ -106,8 +106,9 @@ const TransactionDetailReport = () => {
       dfspId: isHubUser ? 'all' : user?.data?.participantName
     })
       .then((res: any) => {
-        if (res?.rptByte?.length > 0) {
-          downloadFile(initialFileName, fileType, res?.rptByte);
+        if (res) {
+          console.log('Report generated successfully, starting download...', res);
+          downloadFileTest( res);
         } else {
           showDataNotFound(toast);
         }
