@@ -38,6 +38,7 @@ export const privateRoutes = {
   generateSettlementReport: '/secured/generateSettlementReport',
   generateSettlementStatementReport: '/secured/generateSettlementStatementReport',
   generateTransactionDetailReport: '/secured/generateTransactionDetailReport',
+  downloadTransactionDetailReport: '/secured/downloadTransactionDetailReport',
   generateManagementSummaryReport: '/secured/generateManagementSummaryReport',
   getUserListByParticipant: '/secured/getUserListByParticipant',
   getRoleListByParticipant: '/secured/getRoleListByParticipant',

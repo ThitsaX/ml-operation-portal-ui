@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 import { TransactionDetailReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { downloadFile,downloadFileTest, generateTransactionDetailReport, getSettlementIds } from '@services/report';
+import { downloadFile,downloadFileTest, generateTransactionDetailReport,generateTransactionDetailReportTest, getSettlementIds } from '@services/report';
 
 import { useGetUserState } from '@store/hooks';
 import { type ITransactionDetailReport } from '@typescript/form/report';
@@ -98,6 +98,56 @@ const TransactionDetailReport = () => {
     let tzOffSet: string = moment().tz(selectedTZString).format('ZZ').replace('+', '');
 
     generateTransactionDetailReport(user, {
+      startDate: StartDate,
+      endDate: EndDate,
+      state: formData.state,
+      fileType: fileType,
+      timezoneOffset: tzOffSet,
+      dfspId: isHubUser ? 'all' : user?.data?.participantName
+    })
+      .then((res: any) => {
+        if (res?.rptByte?.length > 0) {
+          downloadFile(initialFileName, fileType, res?.rptByte);
+        } else {
+          showDataNotFound(toast);
+        }
+      })
+      .catch((error: IApiErrorResponse) => {
+        if (error.error_code === REPORT_NOT_FOUND_ERROR) {
+          showDataNotFound(toast);
+          return;
+        } else {
+          toast({
+            position: 'top',
+            description: getErrorMessage(error) || 'Faield to download',
+            status: 'error',
+            isClosable: true,
+            duration: 3000
+          });
+        }
+      })
+      .finally(() => {
+        setRunButtonState(true);
+        complete();
+      });
+  };
+
+  const onDownloadChangeHandlerTest = (e: any) => {
+    start();
+    setRunButtonState(false);
+
+    const formData = getValues();
+    const fileType = formData.fileType;
+
+    const StartDate = moment.tz(formData.startDate, selectedTimezone?.value)
+      .format('YYYY-MM-DDTHH:mm:ss[Z]');
+
+    const EndDate = moment.tz(formData.endDate, selectedTimezone?.value)
+      .format('YYYY-MM-DDTHH:mm:ss[Z]');
+
+    let tzOffSet: string = moment().tz(selectedTZString).format('ZZ').replace('+', '');
+
+    generateTransactionDetailReportTest(user, {
       startDate: StartDate,
       endDate: EndDate,
       state: formData.state,
@@ -261,6 +311,25 @@ const TransactionDetailReport = () => {
             >
               Download
             </Button>
+
+
+          </FormControl>
+                    <FormControl w="100%"
+            display="flex"
+            justifyContent={{ base: "stretch", md: "flex-end" }}
+            alignItems="flex-end"
+          >
+            <Button
+              flex={{ base: '1', md: '0 0 50%' }}
+              colorScheme="blue"
+              isDisabled={!isValid || !runButtonState}
+              onClick={onDownloadChangeHandlerTest}
+              w={{ base: "100%", sm: "auto" }}
+            >
+              DownloadTest
+            </Button>
+
+
           </FormControl>
         </SimpleGrid>
 
