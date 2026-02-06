@@ -293,24 +293,49 @@ export const generateTransactionDetailReportTest = async (
   });
 
   const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
-  return axios
-    .post<any>(routes.downloadTransactionDetailReport, null, {
-      params
-    })
-    .then((d) => {
-      return d.data;
-    })
-    .catch((error: AxiosError<IApiErrorResponse>) => {
-      const { code, message, ...rest } = axiosErrorHandler(error);
-      if (code && message) {
-        throw {
-          error_code: code,
-          default_error_message: getErrorMessageByCode(code),
-          i18n_error_messages: null
-        };
+  try {
+    const res = await axios.post(
+      routes.downloadTransactionDetailReport,
+      {
+        params,
+        responseType: 'blob',
       }
-      throw rest;
-    });
+    );
+    // Determine filename
+    const contentDisposition = res.headers?.['content-disposition'] || '';
+    // const serverFilename = getFilenameFromDisposition(contentDisposition);
+    const fallbackFilename = params.fileType?.toLowerCase() === 'csv'
+      ? 'TransactionDetailReport.csv'
+      : 'TransactionDetailReport.xlsx';
+
+    const filename = fallbackFilename;
+    // Create and trigger download
+    const contentType = res.headers?.['content-type'] ||
+      (params.fileType === 'csv'
+        ? 'text/csv;charset=utf-8'
+        : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    const blob = new Blob([res.data], { type: contentType });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+    return {
+      success: true,
+      filename,
+      message: 'Download started successfully'
+    };
+  } catch (error) {
+    console.error('Error downloading report:', error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to download report'
+    };
+  }
+
 };
 
 export const generateManagementSummaryReport = async (
@@ -358,9 +383,9 @@ export const downloadFile = (
     downloadContentType = contentTypes.csv;
   } else if (fileType == 'xlsx') {
     downloadContentType = contentTypes.xlsx;
-  }else if (fileType == 'pdf') {
+  } else if (fileType == 'pdf') {
     downloadContentType = contentTypes.pdf;
-  } 
+  }
   else {
     throw 'Content type not supported';
   }
@@ -397,7 +422,7 @@ export const downloadFileTest = async (response: Response) => {
 
 
 
- 
+
 
 
 
