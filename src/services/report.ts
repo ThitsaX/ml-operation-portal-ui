@@ -294,7 +294,7 @@ export const generateTransactionDetailReportTest = async (
 
   const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
   return axios
-    .post<any>(routes.generateTransactionDetailReport, null, {
+    .post<any>(routes.downloadTransactionDetailReport, null, {
       params
     })
     .then((d) => {
