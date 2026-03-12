@@ -358,7 +358,11 @@ const SettlementWindows = () => {
                     }
                     onChange={(e) => {
                         if (e.target.checked) {
-                            setSelectedRowIds(settlementWindows.map((row) => row.settlementWindowId));
+                            setSelectedRowIds(
+                                settlementWindows
+                                    .filter((row) => row.state === "CLOSED")
+                                    .map((row) => row.settlementWindowId)
+                            );
                         } else {
                             setSelectedRowIds([]);
                         }
