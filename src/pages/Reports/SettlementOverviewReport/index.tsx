@@ -41,9 +41,9 @@ import { showDataNotFound } from '@utils';
 import { useGetParticipantList } from '@hooks/services/participant';
 
 const settlementBankReport = new SettlementBankReportHelper();
-const initialFileName = 'SettlementBankOverviewReport';
+const initialFileName = 'DFSPSettlementOverviewReport';
 
-const SettlementBankOverviewReport = () => {
+const SettlementOverviewReport = () => {
 
   const [runButtonState, setRunButtonState] = useState(true);
   const [settlementIdOptions, setSettlementIdOptions] = useState<any[]>([]);
@@ -213,7 +213,7 @@ const SettlementBankOverviewReport = () => {
 
     <VStack align="flex-start" w="full" h="full" p="3" mt={10}>
       <Stack>
-        <Heading fontSize="2xl" fontWeight="bold" mb={6}>Settlement Bank Overview Report</Heading>
+        <Heading fontSize="2xl" fontWeight="bold" mb={6}>DFSP Settlement Overview Report</Heading>
       </Stack>
 
       <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
@@ -406,4 +406,4 @@ const SettlementBankOverviewReport = () => {
   );
 };
 
-export default memo(SettlementBankOverviewReport);
+export default memo(SettlementOverviewReport);

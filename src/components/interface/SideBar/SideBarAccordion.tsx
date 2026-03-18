@@ -29,7 +29,6 @@ const SideBarAccordion = ({
   collapsed = false,
   ...props
 }: SideBarAccordionProps) => {
-
   const { data } = useGetUserState();
   const [menuList, setMenuList] = useState<number[]>([]);
   const [accordionIndex, setAccordionIndex] = useState<number | null>(null);
@@ -47,13 +46,19 @@ const SideBarAccordion = ({
     return menuList?.includes(id);
   };
 
+  const isItemAllowed = (item: SideBarItemProps) => {
+    const id = menuIds[item.menuId];
+    return typeof id === 'number' && menuList?.includes(id);
+  };
+
   const handleClick = () => {
-    if (collapsed && items.length > 0) {
-      navigate(items[0].to);
-    }
+    if (!collapsed) return;
+    const firstAllowedItem = items.find(isItemAllowed);
+    if (firstAllowedItem) navigate(firstAllowedItem.to);
   };
 
   const handleAccordionChange = (index: number | number[] | undefined) => {
+    if (collapsed) return;
     if (typeof index === 'number') {
       setAccordionIndex(accordionIndex === index ? null : index);
     } else {

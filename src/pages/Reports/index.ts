@@ -3,14 +3,14 @@ import SettlementSummaryReport from './SettlementSummaryReport'
 import SettlementStatementReport from './SettlementStatementReport'
 import SettlementAuditReport from './SettlementAuditReport'
 import SettlementBankReport from './SettlementBankReport'
-import SettlementBankOverviewReport from './SettlementBankOverviewReport'
+import SettlementOverviewReport from './SettlementOverviewReport'
 import AuditReport from './AuditReport'
 import TransactionDetailReport from './TransactionDetailReport'
 import ManagementSummaryReport from './ManagementSummaryReport'
 
 export {
   SettlementBankReport,
-  SettlementBankOverviewReport,
+  SettlementOverviewReport,
   SettlementDetailReport,
   SettlementSummaryReport,
   SettlementStatementReport,
