@@ -213,7 +213,7 @@ const SettlementBankOverviewReport = () => {
 
     <VStack align="flex-start" w="full" h="full" p="3" mt={10}>
       <Stack>
-        <Heading fontSize="2xl" fontWeight="bold" mb={6}>Settlement Bank Overview Report</Heading>
+        <Heading fontSize="2xl" fontWeight="bold" mb={6}>DFSP Settlement Overview Report</Heading>
       </Stack>
 
       <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">

@@ -158,7 +158,7 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
               },
               {
                 id: 'settlementBankOverviewReport',
-                label: 'Settlement Bank Overview Report',
+                label: 'DFSP Settlement Overview Report',
                 to: 'reports/settlement-bank-overview-report',
                 menuId: 'settlement_bank_overview_report',
               },
