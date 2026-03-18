@@ -49,6 +49,7 @@ export const privateRoutes = {
   modifyUser: '/secured/modifyUser',
   modifyUserStatus: '/secured/modifyUserStatus',
   generateSettlementBankReport: '/secured/generateSettlementBankReport',
+  generateSettlementBankOverviewReport: '/secured/generateSettlementBankOverviewReport',
 
   resetPassword: '/secured/resetPassword',
   getAllIdType: '/secured/getAllIdType',

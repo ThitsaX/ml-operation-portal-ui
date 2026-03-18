@@ -5,7 +5,7 @@ import { Auth, Main } from '@layouts';
 import ErrorPage from '@pages/ErrorPage';
 import Login from '@pages/Login';
 import ChangePassword from '@pages/ChangePassword';
-import { SettlementBankReport,SettlementDetailReport, SettlementSummaryReport, 
+import { SettlementBankReport,SettlementBankOverviewReport, SettlementDetailReport, SettlementSummaryReport, 
  SettlementStatementReport, SettlementAuditReport, AuditReport, TransactionDetailReport, ManagementSummaryReport } from '@pages/Reports';
 import Transfer from '@pages/Transfer';
 import User from '@pages/UserManagement/User';
@@ -113,6 +113,14 @@ export const router = createBrowserRouter([
             element: (
               <ProtectedRoute allowedMenuId="settlement_bank_report">
                 <SettlementBankReport />
+              </ProtectedRoute>
+            ),
+          },
+           {
+            path: "settlement-bank-overview-report",
+            element: (
+              <ProtectedRoute allowedMenuId="settlement_bank_overview_report">
+                <SettlementBankOverviewReport />
               </ProtectedRoute>
             ),
           },

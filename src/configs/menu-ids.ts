@@ -21,5 +21,6 @@ export const menuIds : Record<string, number>= {
     'audit': 21,
     'support_center': 22,
     'transaction_detail_report': 23,
-    'management_summary_report': 24    
+    'management_summary_report': 24,
+    'settlement_bank_overview_report':25 
 }
