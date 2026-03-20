@@ -16,7 +16,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   downloadFile,
   generateSettlementBankOverviewReport,
-  getSettlementIds
+  getSettlementIdWithParentParticipant
 } from '@services/report';
 
 import { useGetUserState } from '@store/hooks';
@@ -120,7 +120,8 @@ const SettlementOverviewReport = () => {
     const tzOffSet = selectedTimezone?.offset === 0
       ? '0000'
       : moment().tz(selectedTimezone?.value).format('ZZ').replace('+', '');
-    getSettlementIds(user, StartDate, EndDate, currentParticipantDfspId, tzOffSet)
+
+    getSettlementIdWithParentParticipant(user, StartDate, EndDate, currentParticipantDfspId, tzOffSet)
       .then((data: IGetSettlementIds) => {
         if (data.settlementIdDataList?.length === 0) {
           showDataNotFound(toast);
