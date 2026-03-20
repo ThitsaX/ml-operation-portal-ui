@@ -285,6 +285,44 @@ export const getSettlementIds = async (
     });
 };
 
+export const getSettlementIdWithParentParticipant = async (
+  user: IUserState,
+  startDate: string,
+  endDate: string,
+  dfspId: string,
+  tzOffSet: string
+) => {
+  /** Generate Access Token */
+  const accessToken = await generateAccessToken({
+    method: 'GET',
+    uri: routes.getSettlementIdWithParentParticipant,
+    secret: user.auth?.secretKey as string
+  });
+
+  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
+  return axios
+    .get<IGetSettlementIds>(routes.getSettlementIdWithParentParticipant, {
+      params: {
+        startDate: startDate,
+        endDate: endDate,
+        dfspId: dfspId,
+        timezoneOffset: tzOffSet
+      }
+    })
+    .then((d) => d.data)
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
+};
+
 export const generateTransactionDetailReport = async (
   user: IUserState,
   params: any

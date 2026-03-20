@@ -32,6 +32,7 @@ export const privateRoutes = {
   getNetTransferAmountBySettlementId: '/secured/getNetTransferAmountBySettlementId',
 
   getSettlementId: '/secured/getSettlementId',
+  getSettlementIdWithParentParticipant:'/secured/getSettlementIdWithParentParticipant',
   generateDetailReport: '/secured/generateDetailReport',
   generateAuditReport: '/secured/generateAuditReport',
   generateSettlementAuditReport: '/secured/generateSettlementAuditReport',
