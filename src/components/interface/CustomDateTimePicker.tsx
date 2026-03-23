@@ -282,12 +282,12 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
 
   // Helper Functions
   const getCurrentHours12 = () => {
-    const currentHours = selectedDate?.getHours() || new Date().getHours();
+    const currentHours = selectedDate?.getHours() ?? new Date().getHours();
     return currentHours % 12 || 12;
   };
 
   const getSelectedAmPm = () => {
-    const currentHours = selectedDate?.getHours() || new Date().getHours();
+    const currentHours = selectedDate?.getHours() ?? new Date().getHours();
     return currentHours >= 12 ? "PM" : "AM";
   };
 
