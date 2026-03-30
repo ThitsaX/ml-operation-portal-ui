@@ -22,6 +22,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { CustomSelect } from '@components/interface';
 import { isEmpty } from 'lodash-es';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface BusinessContactModalProps {
   isOpen: boolean;
@@ -42,6 +43,7 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
   isEdit,
   isSaving
 }) => {
+  const { t } = useTranslation();
 
   const contactHelper = new ContactHelper();
 
@@ -73,13 +75,13 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} size="lg">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{isEdit ? 'Edit Contact' : 'Add Contact'}</ModalHeader>
+        <ModalHeader>{isEdit ? t('ui.edit_contact') : t('ui.add_contact')}</ModalHeader>
         <ModalCloseButton />
 
         <ModalBody>
           <VStack spacing={4}>
             <FormControl isInvalid={!isEmpty(errors.contactType)} isRequired>
-              <FormLabel>Contact Type</FormLabel>
+              <FormLabel>{t('ui.contact_type')}</FormLabel>
               <Controller
                 name="contactType"
                 control={control}
@@ -98,7 +100,7 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
                     onChange={(selectedOption) => {
                       field.onChange(selectedOption ? selectedOption.value : '');
                     }}
-                    placeholder="Select Contact Type"
+                    placeholder={t('ui.select_contact_type')}
                   />
                 )}
               />
@@ -106,48 +108,48 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
             </FormControl>
 
             <FormControl isInvalid={!isEmpty(errors.name)} isRequired>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>{t('ui.name')}</FormLabel>
               <Controller
                 name="name"
                 control={control}
                 render={({ field }) => (
-                  <Input {...field} placeholder="Name" value={field.value ?? ''} />
+                  <Input {...field} placeholder={t('ui.name')} value={field.value ?? ''} />
                 )}
               />
               <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
             </FormControl>
 
             <FormControl isInvalid={!isEmpty(errors.position)} isRequired>
-              <FormLabel>Position</FormLabel>
+              <FormLabel>{t('ui.position')}</FormLabel>
               <Controller
                 name="position"
                 control={control}
                 render={({ field }) => (
-                  <Input {...field} placeholder="Position" value={field.value ?? ''} />
+                  <Input {...field} placeholder={t('ui.position')} value={field.value ?? ''} />
                 )}
               />
               <FormErrorMessage>{errors.position?.message}</FormErrorMessage>
             </FormControl>
 
             <FormControl isInvalid={!isEmpty(errors.email)} isRequired>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>{t('ui.email')}</FormLabel>
               <Controller
                 name="email"
                 control={control}
                 render={({ field }) => (
-                  <Input {...field} type="email" placeholder="Email" value={field.value ?? ''} />
+                  <Input {...field} type="email" placeholder={t('ui.email')} value={field.value ?? ''} />
                 )}
               />
               <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
             </FormControl>
 
             <FormControl isInvalid={!isEmpty(errors.mobile)} isRequired>
-              <FormLabel>Contact Number</FormLabel>
+              <FormLabel>{t('ui.contact_number')}</FormLabel>
               <Controller
                 name="mobile"
                 control={control}
                 render={({ field }) => (
-                  <Input {...field} placeholder="Contact Number" value={field.value ?? ''} />
+                  <Input {...field} placeholder={t('ui.contact_number')} value={field.value ?? ''} />
                 )}
               />
               <FormErrorMessage>{errors.mobile?.message}</FormErrorMessage>
@@ -157,16 +159,16 @@ const BusinessContactModal: React.FC<BusinessContactModalProps> = ({
 
         <ModalFooter display="flex" gap={3}>
           <Button variant="ghost" onClick={onClose}>
-            Cancel
+            {t('ui.cancel')}
           </Button>
           <Button
             type="submit"
             colorScheme="blue"
             isDisabled={!isDirty || !isValid}
             isLoading={isSaving}
-            loadingText={isEdit ? "Saving..." : "Adding..."}
+            loadingText={isEdit ? t('ui.saving') : t('ui.adding')}
             onClick={handleSubmit(contactHandler)} mr={3}>
-            {isEdit ? 'Save' : 'Add'}
+            {isEdit ? t('ui.save') : t('ui.add')}
           </Button>
         </ModalFooter>
       </ModalContent>

@@ -30,8 +30,10 @@ import { getParticipantListIncludingHub } from '@services/participant';
 import { Spinner } from '@chakra-ui/react';
 import { getDisputeLink, getServiceRequestLink } from '@services/support-center';
 import { Avatar } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 
 const SupportCenter = () => {
+  const { t } = useTranslation();
   const toast = useToast();
 
   const [selectedParticipant, setSelectedParticipant] = useState<IParticipantOrganization>();
@@ -56,7 +58,7 @@ const SupportCenter = () => {
       if (!url) {
         toast({
           position: "top",
-          description: "This feature is currently unavailable.",
+          description: t('ui.this_feature_is_currently_unavailable'),
           status: "warning",
           duration: 3000,
           isClosable: true,
@@ -83,7 +85,7 @@ const SupportCenter = () => {
       if (!url) {
         toast({
           position: "top",
-          description: "This feature is currently unavailable.",
+          description: t('ui.this_feature_is_currently_unavailable'),
           status: "warning",
           duration: 3000,
           isClosable: true,
@@ -113,7 +115,7 @@ const SupportCenter = () => {
       if (!data?.length) {
         toast({
           position: "top",
-          description: "No data found",
+          description: t('ui.no_data_found'),
           status: "warning",
           isClosable: true,
           duration: 3000,
@@ -176,36 +178,36 @@ const SupportCenter = () => {
 
   return (
     <VStack align="flex-start" w="full" h="full" p="3" mt={10}>
-      <Heading fontSize="2xl" fontWeight="bold" mb={6}>Support Center</Heading>
+      <Heading fontSize="2xl" fontWeight="bold" mb={6}>{t('ui.support_center')}</Heading>
 
       <Flex w="full" wrap="wrap" justify="center" gap={6} pb={4}>
         <SupportCard
           icon={<TbGavel size={60} />}
-          title="Dispute"
-          description="Raise an issue or challenge"
-          actionLabel={"Submit Dispute"}
+          title={t('ui.dispute')}
+          description={t('ui.raise_an_issue_or_challenge')}
+          actionLabel={t('ui.submit_dispute')}
           color="orange.700"
           onClick={handleDisputeClick}
           isLoading={isLoadingDispute}
-          tooltipLabel="Fetching dispute link… Please wait."
+          tooltipLabel={t('ui.fetching_dispute_link_please_wait')}
         />
 
         <SupportCard
           icon={<GrServices size={60} />}
-          title="Service Request"
-          description="Request assistance or information"
-          actionLabel={"Service Request"}
+          title={t('ui.service_request')}
+          description={t('ui.request_assistance_or_information')}
+          actionLabel={t('ui.service_request')}
           color="blue.700"
           onClick={handleServiceClick}
           isLoading={isLoadingService}
-          tooltipLabel="Fetching service request link… Please wait."
+          tooltipLabel={t('ui.fetching_service_request_link_please_wait')}
         />
 
         <SupportCard
           icon={<ImUsers size={60} />}
-          title="Support Contacts"
-          description="View focal contacts for support"
-          actionLabel="View List"
+          title={t('ui.support_contacts')}
+          description={t('ui.view_focal_contacts_for_support')}
+          actionLabel={t('ui.view_list')}
           onClick={handleViewListClick}
           color="gray.600"
           isLoading={isLoadingList}
@@ -222,7 +224,7 @@ const SupportCenter = () => {
           flexDirection="column"
           borderRadius="lg">
           <ModalHeader>
-            DFSP List
+            {t('ui.dfsp_list')}
           </ModalHeader>
           <ModalCloseButton zIndex={3} />
 
@@ -247,7 +249,7 @@ const SupportCenter = () => {
               >
                 <VStack spacing={4} align="center">
                   <Spinner size="xl" color="blue.500" />
-                  <Text color="gray.600">Loading dfsp list</Text>
+                  <Text color="gray.600">{t('ui.loading_dfsp_list')}</Text>
                 </VStack>
               </Box>
             ) : (
@@ -297,7 +299,7 @@ const SupportCenter = () => {
           </ModalBody>
 
           <ModalFooter>
-            <Button colorScheme='blue' onClick={onListClose}>Close</Button>
+            <Button colorScheme='blue' onClick={onListClose}>{t('ui.close')}</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
@@ -306,7 +308,7 @@ const SupportCenter = () => {
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
-            Contact List
+            {t('ui.contact_list')}
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody  onWheel={wheelFallback} textAlign="center" maxH="70vh" overflowY="auto">
@@ -325,14 +327,14 @@ const SupportCenter = () => {
               <Text fontWeight="bold" fontSize="lg">
                 {selectedParticipant?.participantName ? selectedParticipant.participantDescription ?
                   `${selectedParticipant.participantName} (${selectedParticipant.participantDescription})`
-                  : selectedParticipant.participantName : 'Participant'}
+                  : selectedParticipant.participantName : t('ui.participant')}
               </Text>
             </Flex>
 
             {isLoadingContacts ? (
               <VStack spacing={4} py={10}>
                 <Spinner size="xl" color="blue.500" />
-                <Text color="gray.600">Loading contact list...</Text>
+                <Text color="gray.600">{t('ui.loading_contact_list')}</Text>
               </VStack>
             ) : (
               <>
@@ -346,10 +348,10 @@ const SupportCenter = () => {
                       <>
                         {contacts.map((info) => (
                           <VStack key={info.contactId} spacing={2} align="start" mb={4}>
-                            <Text><b>Contact Person Name:</b> {info.name}</Text>
-                            <Text><b>Position:</b> {info.position}</Text>
-                            <Text><b>Email:</b> {info.email}</Text>
-                            <Text><b>Contact Number:</b> {info.mobile}</Text>
+                            <Text><b>{t('ui.person_name')}:</b> {info.name}</Text>
+                            <Text><b>{t('ui.position')}:</b> {info.position}</Text>
+                            <Text><b>{t('ui.email')}:</b> {info.email}</Text>
+                            <Text><b>{t('ui.contact_number')}:</b> {info.mobile}</Text>
                           </VStack>
                         ))}
                       </>
@@ -360,7 +362,7 @@ const SupportCenter = () => {
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="blue" onClick={onDetailClose}>
-              Close
+              {t('ui.close')}
             </Button>
           </ModalFooter>
         </ModalContent>

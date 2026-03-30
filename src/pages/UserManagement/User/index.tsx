@@ -49,8 +49,10 @@ import { store } from '@store'
 import { getErrorMessage } from '@helpers/errors';
 import { CustomSelect } from '@components/interface';
 import { hasActionPermission } from '@helpers/permissions';
+import { useTranslation } from 'react-i18next';
 
 const User = () => {
+  const { t } = useTranslation();
   const [filterStatus, setFilterStatus] = useState('ACTIVE');
   const [filteredUsers, setFilteredUsers] = useState([] as IParticipantUser[]);
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -69,15 +71,15 @@ const User = () => {
     useEffect(() => {
       if (isError) {
         toast({
-          title: 'Failed to fetch users',
+          title: t('ui.failed_to_fetch_users'),
           position: 'top',
-          description: getErrorMessage(error as IApiErrorResponse) || 'Something went wrong. Please try again.',
+          description: getErrorMessage(error as IApiErrorResponse) || t('ui.something_went_wrong'),
           status: 'error',
           duration: 3000,
           isClosable: true,
         });
       }
-    }, [isError, error, toast]);
+    }, [isError, error, toast, t]);
 
   const handleResetClick = (user: IParticipantUser) => {
     setResetUser({ userId: user.userId, email: user.email });
@@ -95,7 +97,7 @@ const User = () => {
       await modifyUserStatus(userId, newStatus);
       toast({
         position: 'top',
-        description: 'User status updated successfully',
+        description: t('ui.user_status_updated_successfully'),
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -104,7 +106,7 @@ const User = () => {
     } catch (error) {
       toast({
         position: 'top',
-        description: getErrorMessage(error as IApiErrorResponse) || 'Failed to update user status',
+        description: getErrorMessage(error as IApiErrorResponse) || t('ui.failed_to_update_user_status'),
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -117,13 +119,13 @@ const User = () => {
     return [
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Email</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.email')}</Text>
         ),
         accessor: "email",
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Organization</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.organization')}</Text>
         ),
         accessor: "participantName",
         Cell: ({ row }: CellProps<IParticipantUser>) => {
@@ -141,13 +143,13 @@ const User = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Name</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.name')}</Text>
         ),
         accessor: "name",
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Role</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.role')}</Text>
         ),
         accessor: "roleList",
         Cell: ({ value }: CellProps<IParticipantUser, string[]>) => {
@@ -165,7 +167,7 @@ const User = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Status</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.status')}</Text>
         ),
         accessor: "status",
         disableSortBy: true,
@@ -177,7 +179,7 @@ const User = () => {
       },
       {
         Header: () => (
-          <Text flex={1} textAlign={'center'} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Action</Text>
+          <Text flex={1} textAlign={'center'} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.action')}</Text>
         ),
         id: "id",
         disableSortBy: true,
@@ -187,20 +189,20 @@ const User = () => {
 
           return (
             <HStack justify="center" spacing={3}>
-              <Tooltip label="Reset Password" placement="top">
+              <Tooltip label={t('ui.reset_password')} placement="top">
                 <IconButton
                   icon={<GrPowerReset />}
-                  aria-label="Reset Password"
+                  aria-label={t('ui.reset_password')}
                   size="md"
                   onClick={() => handleResetClick(row.original)}
                   variant="ghost"
                   isDisabled={isSelfUser || !hasActionPermission("ResetCurrentPassword")}
                 />
               </Tooltip>
-              <Tooltip label="Edit User" placement="top">
+              <Tooltip label={t('ui.edit_user')} placement="top">
                 <IconButton
                   icon={<FaRegEdit />}
-                  aria-label="Edit"
+                  aria-label={t('ui.edit')}
                   size="md"
                   onClick={() => handleEditClick(row.original)}
                   variant="ghost"
@@ -221,7 +223,7 @@ const User = () => {
         }
       },
     ];
-  }, []);
+  }, [t]);
 
 
 
@@ -298,7 +300,7 @@ const User = () => {
       .then(() => {
         toast({
           position: 'top',
-          description: isEdit ? 'User updated successfully' : 'User created successfully',
+          description: isEdit ? t('ui.user_updated_successfully') : t('ui.user_created_successfully'),
           status: 'success',
           duration: 3000,
           isClosable: true,
@@ -310,7 +312,7 @@ const User = () => {
       .catch((error: IApiErrorResponse) => {
         toast({
           position: 'top',
-          description: getErrorMessage(error) || 'Something went wrong',
+          description: getErrorMessage(error) || t('ui.something_went_wrong'),
           status: 'error',
           duration: 3000,
           isClosable: true,
@@ -318,7 +320,7 @@ const User = () => {
       }).finally(() => {
       setIsSaving(false);
     });
-  }, [isEdit, toast, refetch, selectedUser]);
+  }, [isEdit, toast, refetch, selectedUser, t]);
 
   const handlePageValidation = (value: string) => {
     if (Number(value) > pageOptions.length) {
@@ -330,15 +332,15 @@ const User = () => {
     }
   }
   const statusOptions = [
-    { value: 'All', label: 'All' },
-    { value: 'ACTIVE', label: 'Active' },
-    { value: 'INACTIVE', label: 'Inactive' },
+    { value: 'All', label: t('ui.all') },
+    { value: 'ACTIVE', label: t('ui.active') },
+    { value: 'INACTIVE', label: t('ui.inactive') },
   ];
 
   return (
 
     <VStack align="flex-start" w="full" h="full" p="3" spacing={0} mt={10}>
-      <Heading fontSize="2xl" fontWeight="bold" mb={6}>User Management</Heading>
+      <Heading fontSize="2xl" fontWeight="bold" mb={6}>{t('ui.user_management')}</Heading>
 
       <Stack
         w="full"
@@ -354,7 +356,7 @@ const User = () => {
             onChange={(selectedOption) => {
               setFilterStatus(selectedOption?.value || '');
             }}
-            placeholder="Select status"
+            placeholder={t('ui.select_status')}
             includeAllOption={false}
           />
         </Box>
@@ -363,7 +365,7 @@ const User = () => {
             colorScheme="blue"
             onClick={handleNewClick}
             w={{ base: "full", sm: "auto" }}>
-            New User
+            {t('ui.add_new_user')}
           </Button>
         )}
       </Stack>
@@ -450,28 +452,28 @@ const User = () => {
              px={4} py={3} bg="gray.50" borderTopWidth="1px">
             <HStack flex={2}>
               <IconButton
-                aria-label="Skip to start"
+                aria-label={t('ui.skip_to_start')}
                 variant="ghost"
                 icon={<TfiAngleDoubleLeft />}
                 isDisabled={!canPreviousPage}
                 onClick={() => gotoPage(0)}
               />
               <IconButton
-                aria-label="Go Previous"
+                aria-label={t('ui.go_previous')}
                 variant="ghost"
                 icon={<TfiAngleLeft />}
                 isDisabled={!canPreviousPage}
                 onClick={previousPage}
               />
               <IconButton
-                aria-label="Go Next"
+                aria-label={t('ui.go_next')}
                 variant="ghost"
                 icon={<TfiAngleRight />}
                 isDisabled={!canNextPage}
                 onClick={nextPage}
               />
               <IconButton
-                aria-label="Skip to end"
+                aria-label={t('ui.skip_to_end')}
                 variant="ghost"
                 icon={<TfiAngleDoubleRight />}
                 isDisabled={!canNextPage}
@@ -479,16 +481,16 @@ const User = () => {
               />
             </HStack>
             <Text>
-              Page{' '}
+              {t('ui.page')}{' '}
               <strong>
-                {pageIndex + 1} of {pageOptions.length || 1}
+                {pageIndex + 1} {t('ui.of')} {pageOptions.length || 1}
               </strong>
             </Text>
             <Box h="6">
               <Divider orientation="vertical" />
             </Box>
             <HStack>
-              <Text> Go to page : </Text>
+              <Text>{t('ui.go_to_page')}</Text>
               <Input
                 value={pageNumber ? Number(pageNumber) : ''}
                 textAlign="center"

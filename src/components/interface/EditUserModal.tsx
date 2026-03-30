@@ -35,6 +35,7 @@ import { syncHubParticipantsToPortal } from '@services/participant';
 import { UserStatus } from '@typescript/form';
 import { getRoleListByParticipant } from '@services/participant';
 import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5';
+import { useTranslation } from 'react-i18next';
 
 const userSchema = new UserManagementHelper();
 
@@ -58,6 +59,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   onSave,
   isSaving,
 }) => {
+  const { t } = useTranslation();
   const [roleList, setRoleList] = useState<IParticipantUserRole[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -170,7 +172,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         overflow="hidden"
         boxShadow="2xl"
       >
-        <ModalHeader textAlign="center">{isEdit ? 'Edit User' : 'Add New User'}</ModalHeader>
+      <ModalHeader textAlign="center">{isEdit ? t('ui.edit_user') : t('ui.add_new_user')}</ModalHeader>
         <ModalCloseButton />
         <ModalBody pb={10}>
           {!formReady ? (
@@ -183,7 +185,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             >
               <VStack spacing={4} align="center">
                 <Spinner size="xl" color="blue.500" />
-                <Text color="gray.600">Loading user details...</Text>
+                <Text color="gray.600">{t('ui.loading_user_details')}</Text>
               </VStack>
             </Box>
           ):(
@@ -191,19 +193,19 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             <HStack spacing={5} align="start">
               <SimpleGrid columns={2} spacing={6} width="100%">
                 <FormControl isInvalid={!isEmpty(errors.firstName)} isRequired>
-                  <Input placeholder="First Name*" {...register('firstName')} />
+                  <Input placeholder={t('ui.first_name')} {...register('firstName')} />
                   <FormErrorMessage>{errors.firstName?.message}</FormErrorMessage>
                 </FormControl>
 
                 <FormControl isInvalid={!isEmpty(errors.lastName)} isRequired>
-                  <Input placeholder="Last Name*" {...register('lastName')} />
+                  <Input placeholder={t('ui.last_name')} {...register('lastName')} />
                   <FormErrorMessage>{errors.lastName?.message}</FormErrorMessage>
                 </FormControl>
               </SimpleGrid>
             </HStack>
 
             <FormControl isInvalid={!isEmpty(errors.email)} isRequired>
-              <Input placeholder="Email*" {...register('email')} disabled={isEdit} />
+              <Input placeholder={t('ui.email_required')} {...register('email')} disabled={isEdit} />
               <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
             </FormControl>
 
@@ -215,7 +217,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                   render={({ field }) => (
                     <CustomSelect
                     menuPortalTarget={true}
-                    placeholder="Select Organization*"
+                    placeholder={t('ui.select_organization')}
                       options={participantInfoList?.map(org => ({
                         value: org.participantId,
                         label: org.participantDescription
@@ -244,7 +246,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                     />
                   )}
                 />
-                <Tooltip label="Sync Participant" placement="top">
+                <Tooltip label={t('ui.sync_participant')} placement="top">
                 <Button
                   leftIcon={<IoReload />}
                   colorScheme="teal"
@@ -252,7 +254,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                   onClick={() => syncHubParticipantsToPortal()}
                   minW="40px"
                   px={2}
-                  aria-label="Sync Organizations"
+                  aria-label={t('ui.sync_organizations')}
                 />
                 </Tooltip>
               </HStack>
@@ -276,15 +278,19 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
                         .map(role => ({ value: role.roleId, label: role.name }))
                     }
                     onChange={(selected: OptionType[]) => field.onChange(selected.map(s => s.value))}
-                    placeholder="Select Role*"
+                    placeholder={t('ui.select_role')}
                   />
                 )}
               />
-              <FormErrorMessage>{errors.roleIdList?.message}</FormErrorMessage>
+              <FormErrorMessage>
+                {errors.roleIdList?.message === 'Select at least one role'
+                  ? t('ui.select_at_least_one_role')
+                  : errors.roleIdList?.message}
+              </FormErrorMessage>
             </FormControl>
 
             <FormControl isInvalid={!isEmpty(errors.jobTitle)}>
-              <Input placeholder="Job Title" {...register('jobTitle')} />
+              <Input placeholder={t('ui.job_title')} {...register('jobTitle')} />
               <FormErrorMessage>{errors.jobTitle?.message}</FormErrorMessage>
             </FormControl>
 
@@ -292,11 +298,11 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
               <>
                 <FormControl isInvalid={!isEmpty(errors.password)}>
                   <InputGroup>
-                    <Input type={showPassword ? "text" : "password"} placeholder="Password*" {...register('password')} />
+                    <Input type={showPassword ? "text" : "password"} placeholder={t('ui.password_required')} {...register('password')} />
                     <InputRightElement>
                       <IconButton
                         variant="ghost"
-                        aria-label="Show password"
+                        aria-label={t('ui.show_password_aria')}
                         icon={showPassword ? <IoEyeOffOutline /> : <IoEyeOutline />}
                         bg="transparent"
                         rounded="full"
@@ -313,11 +319,11 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
                 <FormControl isInvalid={!isEmpty(errors.confirmPassword)}>
                   <InputGroup>
-                    <Input type={showConfirmPassword  ? "text" : "password"} placeholder="Confirm Password*" {...register('confirmPassword')} />
+                    <Input type={showConfirmPassword  ? "text" : "password"} placeholder={t('ui.confirm_password')} {...register('confirmPassword')} />
                     <InputRightElement>
                       <IconButton
                         variant="ghost"
-                        aria-label= "Show password"
+                        aria-label={t('ui.show_password_aria')}
                         icon={showConfirmPassword  ? <IoEyeOffOutline /> : <IoEyeOutline />}
                         bg="transparent"
                         rounded="full"
@@ -338,13 +344,13 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
 
         <ModalFooter display="flex" gap={3}>
           <Button variant="ghost" onClick={onClose}>
-            Cancel
+            {t('ui.cancel')}
           </Button>
           <Button colorScheme="blue" onClick={handleSubmit(handleFormSubmit)}
            isLoading={isSaving}
-           loadingText={isEdit ? "Updating..." : "Saving..."}
+           loadingText={isEdit ? `${t('ui.update')}...` : t('ui.saving')}
            isDisabled={!isValid || isSaving || isRoleLoading}>
-            {isEdit ? 'Update' : 'Save'}
+            {isEdit ? t('ui.update') : t('ui.save')}
           </Button>
         </ModalFooter>
       </ModalContent>

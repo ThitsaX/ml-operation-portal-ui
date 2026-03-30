@@ -10,8 +10,10 @@ import { useGetAllAnnouncement } from '@hooks/services';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store';
 import { ITimezoneOption } from 'react-timezone-select';
+import { useTranslation } from 'react-i18next';
 
 const Home = () => {
+  const { t } = useTranslation();
 
   /* React Query */
 
@@ -32,7 +34,7 @@ function changeDateMonthFormat(timestamp: number) {
 
   return (
     <VStack align="flex-start" w="full" h="full" p="3" spacing={4} mt={10}>
-      <Heading fontSize="2xl" fontWeight="bold" mb={6}>Home</Heading>
+      <Heading fontSize="2xl" fontWeight="bold" mb={6}>{t('ui.home')}</Heading>
 
       <VStack
         align="flex-start"
@@ -47,10 +49,10 @@ function changeDateMonthFormat(timestamp: number) {
         mb={8}
       >
         <Heading as="h2" fontSize="xl" fontWeight="bold" color="black.200">
-          Welcome to the Operation Portal!
+          {t('ui.welcome_to_the_operation_portal')}
         </Heading>
         <Text fontSize="md" color="gray.700">
-          This is the main page of the portal. Use the navigation on the left to access different sections and perform various operations.
+          {t('ui.this_is_the_main_page_of_the_portal_use_the_navigation_on_the_left_to_access_different_sections_and_perform_various_operations')}
         </Text>
       </VStack>
       <Box h={8} />
@@ -63,7 +65,7 @@ function changeDateMonthFormat(timestamp: number) {
         alignSelf="flex-start"
         color="black.600"
       >
-        Latest Announcement
+        {t('ui.latest_announcement')}
       </Heading>
 
       <VStack align="flex-start" bg="white" w="full" spacing={2} mb={8}>

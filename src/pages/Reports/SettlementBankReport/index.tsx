@@ -38,6 +38,7 @@ import { OptionType } from '@components/interface/CustomSelect';
 import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 import { REPORT_NOT_FOUND_ERROR } from '@helpers';
 import { showDataNotFound } from '@utils';
+import { useTranslation } from 'react-i18next';
 
 const settlementBankReport = new SettlementBankReportHelper();
 const initialFileName = 'SettlementBankReport';
@@ -52,6 +53,7 @@ const SettlementBankReport = () => {
   // Redux
   const user = useGetUserState();
   const toast = useToast();
+  const { t } = useTranslation();
   const { start, complete } = useLoadingContext();
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
 
@@ -184,7 +186,7 @@ const SettlementBankReport = () => {
         } else {
           toast({
             position: 'top',
-            description: getErrorMessage(error) || 'Faield to download',
+            description: getErrorMessage(error) || t('ui.failed_to_download'),
             status: 'error',
             isClosable: true,
             duration: 3000
@@ -201,7 +203,7 @@ const SettlementBankReport = () => {
 
     <VStack align="flex-start" w="full" h="full" p="3" mt={10}>
       <Stack>
-        <Heading fontSize="2xl" fontWeight="bold" mb={6}>Settlement Bank Report</Heading>
+        <Heading fontSize="2xl" fontWeight="bold" mb={6}>{t('ui.settlement_bank_report')}</Heading>
       </Stack>
 
       <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
@@ -214,7 +216,7 @@ const SettlementBankReport = () => {
           <FormControl
             isInvalid={!isEmpty(errors.startDate)} position="relative" pb={3}
           >
-            <FormLabel>Start Date</FormLabel>
+            <FormLabel>{t('ui.start_date')}</FormLabel>
             <Controller
               control={control}
               name="startDate"
@@ -236,7 +238,7 @@ const SettlementBankReport = () => {
           <FormControl
             isInvalid={!isEmpty(errors.endDate)} position="relative" pb={3}
           >
-            <FormLabel>End Date</FormLabel>
+            <FormLabel>{t('ui.end_date')}</FormLabel>
             <Controller
               control={control}
               name="endDate"
@@ -269,9 +271,7 @@ const SettlementBankReport = () => {
               size="md"
               mb={2}
               w={{ base: "100%", md: "50%" }}
-            >
-              Search
-            </Button>
+            >{t('ui.search_button')}</Button>
           </FormControl>
 
         </SimpleGrid>
@@ -287,7 +287,7 @@ const SettlementBankReport = () => {
             w="100%"
             isInvalid={!isEmpty(errors.settlementId)}
           >
-            <FormLabel>Settlement ID:</FormLabel>
+            <FormLabel>{t('ui.settlement_id')}:</FormLabel>
             <Controller
               name="settlementId"
               control={control}
@@ -309,7 +309,7 @@ const SettlementBankReport = () => {
                     field.onChange(selected?.value || '');
                     setSettlementId(selected?.value || '');
                   }}
-                  placeholder="Select Settlement ID"
+                  placeholder={t('ui.select_settlement_id')}
                 />
 
               )}
@@ -320,7 +320,7 @@ const SettlementBankReport = () => {
             w="100%"
             isInvalid={!isEmpty(errors.currency)}
           >
-            <FormLabel>Currency</FormLabel>
+            <FormLabel>{t('ui.currency')}</FormLabel>
             <Controller
               name="currency"
               control={control}
@@ -347,7 +347,7 @@ const SettlementBankReport = () => {
                       : null
                   }
                   onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                  placeholder="Select Currency"
+                  placeholder={t('ui.select_currency')}
                 />
               )}
             />
@@ -366,7 +366,7 @@ const SettlementBankReport = () => {
                   ]}
                   value={field ? { value: field.value, label: field.value.toUpperCase() } : null}
                   onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                  placeholder="Choose Format"
+                  placeholder={t('ui.choose_format')}
                 />
               )}
             />
@@ -382,9 +382,7 @@ const SettlementBankReport = () => {
               onClick={onDownloadChangeHandler}
               isDisabled={!settlementId || !runButtonState}
               w={{ base: "100%", md: "50%" }}
-            >
-              Download
-            </Button>
+            >{t('ui.download')}</Button>
           </FormControl>
         </SimpleGrid>
       </Stack>

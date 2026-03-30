@@ -67,6 +67,7 @@ import CustomSelect from '@components/interface/CustomSelect';
 import { hasActionPermission } from '@helpers/permissions';
 import { getErrorMessage } from '@helpers/errors';
 import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
+import { useTranslation } from 'react-i18next';
 
 const finalizeSettlementHelper = new FinalizeSettlementHelper();
 
@@ -76,6 +77,7 @@ type settlementValidationResult = {
 }
 
 const FinalizeSettlement = () => {
+    const { t } = useTranslation();
 
     const [dateRange, setDateRange] = useState<Ranges>('oneDay');
     const { start, complete } = useLoadingContext();
@@ -180,7 +182,7 @@ const FinalizeSettlement = () => {
                 if (data.length === 0) {
                     toast({
                         position: 'top',
-                        description: 'No data found',
+                        description: t('ui.no_data_found'),
                         status: 'warning',
                         isClosable: true,
                         duration: 3000
@@ -194,7 +196,7 @@ const FinalizeSettlement = () => {
                 if (err.error_code === '3100') {
                     toast({
                         position: 'top',
-                        description: 'No data found',
+                        description: t('ui.no_data_found'),
                         status: 'warning',
                         isClosable: true,
                         duration: 3000
@@ -203,7 +205,7 @@ const FinalizeSettlement = () => {
                 } else {
                     toast({
                         position: 'top',
-                        description: err.default_error_message || "Internal error",
+                        description: err.default_error_message || t('ui.internal_error'),
                         status: 'error',
                         isClosable: true,
                         duration: 3000
@@ -229,7 +231,7 @@ const FinalizeSettlement = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: getErrorMessage(err) || 'Cannot retrieve net transfer amount',
+                description: getErrorMessage(err) || t('ui.cannot_retrieve_net_transfer_amount'),
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -292,7 +294,7 @@ const FinalizeSettlement = () => {
         } catch(err: any) {
             toast({
                 position: 'top',
-                description: getErrorMessage(err) || 'Cannot retrieve net transfer amount',
+                description: getErrorMessage(err) || t('ui.cannot_retrieve_net_transfer_amount'),
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -314,7 +316,7 @@ const FinalizeSettlement = () => {
             if (data.finalized) {
                 toast({
                     position: 'top',
-                    description: 'Settlement finalized successfully',
+                    description: t('ui.settlement_finalized_successfully'),
                     status: 'success',
                     isClosable: true,
                 });
@@ -325,7 +327,7 @@ const FinalizeSettlement = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: getErrorMessage(err) || 'Failed to finalize the settlement',
+                description: getErrorMessage(err) || t('ui.failed_to_finalize_the_settlement'),
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -382,7 +384,7 @@ const FinalizeSettlement = () => {
     const columns = useMemo<Column<IFinalizeSettlement>[]>(() => {
         const baseColumns: Column<IFinalizeSettlement>[] = [
             {
-                Header: 'Settlement ID',
+                Header: t('ui.settlement_id'),
                 accessor: 'settlementId',
                 Cell: ({ row, value }: any) => (
                     <Box
@@ -396,7 +398,7 @@ const FinalizeSettlement = () => {
                     </Box>)
             },
             {
-                Header: 'Window ID',
+                Header: t('ui.window_id'),
                 accessor: 'settlementWindowList',
                 Cell: ({ row }) => {
                     const windows = row.original.settlementWindowList || [];
@@ -418,16 +420,16 @@ const FinalizeSettlement = () => {
             },
 
             {
-                Header: 'State',
+                Header: t('ui.state'),
                 accessor: 'state',
             },
             {
-                Header: 'Settlement Created Date',
+                Header: t('ui.settlement_created_date'),
                 accessor: 'createdDate',
                 Cell: ({ value }) => <Text>{formatDateTime(value)}</Text>,
             },
             {
-                Header: 'Settlement Finalize Date',
+                Header: t('ui.settlement_finalize_date'),
                 accessor: 'changedDate',
                 Cell: ({ row, value }: any) => (
                     <Text>{formatChangedDateOrBlank(value, row.original?.createdDate)}</Text>
@@ -437,7 +439,7 @@ const FinalizeSettlement = () => {
         const actionColumn = hasActionPermission("FinalizeSettlement")
             ? [
                 {
-                    Header: 'Action',
+                    Header: t('ui.action'),
                     id: 'action',
                     disableSortBy: true,
                     Cell: ({ row }: any) => {
@@ -450,7 +452,7 @@ const FinalizeSettlement = () => {
                                         colorScheme="green"
                                         variant="solid"
                                         onClick={() => handleFinalize(row.original)}>
-                                        Finalize
+                                        {t('ui.finalize')}
                                     </Button>
                                 </HStack>
                             );
@@ -463,7 +465,7 @@ const FinalizeSettlement = () => {
             : []
 
         return [...baseColumns, ...actionColumn];
-    }, [finalizeSettlements, selectedTZString, btnFindDisabled]);
+    }, [finalizeSettlements, selectedTZString, btnFindDisabled, t]);
 
 
     const {
@@ -594,20 +596,20 @@ const FinalizeSettlement = () => {
         }
     }
     const dateRangeOptions = [
-        { value: 'oneDay', label: 'Past 24 Hours' },
-        { value: 'today', label: 'Today' },
-        { value: 'twoDay', label: 'Past 48 Hours' },
-        { value: 'oneWeek', label: 'Past Week' },
-        { value: 'oneMonth', label: 'Past Month' },
-        { value: 'oneYear', label: 'Past Year' },
-        { value: 'custom', label: 'Custom Range' },
+        { value: 'oneDay', label: t('ui.past_24_hours') },
+        { value: 'today', label: t('ui.today') },
+        { value: 'twoDay', label: t('ui.past_48_hours') },
+        { value: 'oneWeek', label: t('ui.past_week') },
+        { value: 'oneMonth', label: t('ui.past_month') },
+        { value: 'oneYear', label: t('ui.past_year') },
+        { value: 'custom', label: t('ui.custom_range') },
     ];
 
     return (
         <VStack align="flex-start" h="full" p="3" mt={10} w="full">
 
                 <Heading fontSize="2xl" fontWeight="bold" mb={6}>
-                    Finalize Settlement
+                    {t('ui.finalize_settlement')}
                 </Heading>
             <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
                     <SimpleGrid columns={{ base: 1, md: 3, lg: 4 }} spacing={4} w="full">
@@ -621,9 +623,7 @@ const FinalizeSettlement = () => {
                                 }}
                             />
 
-                            <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
-                                {/* <FormLabel fontSize="sm">Start Date</FormLabel> */}
-                                {selectedTZString ?
+                            <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>                                {selectedTZString ?
                                     <Controller
                                         control={control}
                                         render={({ field: { value, onChange } }) => {
@@ -643,13 +643,11 @@ const FinalizeSettlement = () => {
                                             );
                                         }}
                                         name="fromDate"
-                                    /> : <p>Loading</p>}
+                                    /> : <p>{t('ui.loading')}</p>}
                                 <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
                             </FormControl>
 
-                            <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
-                                {/* <FormLabel fontSize="sm">End Date</FormLabel> */}
-                                {selectedTZString ?
+                            <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>                                {selectedTZString ?
                                     <Controller
                                         control={control}
                                         render={({ field: { value, onChange } }) => {
@@ -670,7 +668,7 @@ const FinalizeSettlement = () => {
                                         }}
                                         name="toDate"
                                     />
-                                    : <p>Loading</p>}
+                                    : <p>{t('ui.loading')}</p>}
                                 <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
                             </FormControl>
                             <Box display={{ base: "none", md: "block" }}/>
@@ -680,7 +678,7 @@ const FinalizeSettlement = () => {
                             name="state"
                             render={({ field }) => (
                                 <CustomSelect
-                                    placeholder="All States"
+                                    placeholder={t('ui.all_states')}
                                     isClearable={true}
                                     options={ 
                                         stateList?.map(({ settlementStateId, enumeration }) => ({
@@ -704,7 +702,7 @@ const FinalizeSettlement = () => {
                                 name="currency"
                                 render={({ field }) => (
                                     <CustomSelect
-                                        placeholder="All Currency"
+                                        placeholder={t('ui.all_currency')}
                                         isClearable={true}
                                         options={
                                             currencyList?.map((item) => ({
@@ -733,7 +731,7 @@ const FinalizeSettlement = () => {
                             mb={1}
                         >
                             <Button fontSize="sm" minW="min-content" w={{ base: "100%" ,md:"50%"}} onClick={onClearHandler}>
-                            Clear Filters
+                            {t('ui.clear_filter')}
                         </Button>
                         <Button
                             isDisabled={btnFindDisabled}
@@ -746,7 +744,7 @@ const FinalizeSettlement = () => {
                             }}
                             onClick={handleSubmit(onSearchHandler)}>
 
-                            Find
+                            {t('ui.search_button')}
                         </Button>
                         </FormControl>
                       </SimpleGrid>
@@ -830,28 +828,28 @@ const FinalizeSettlement = () => {
                          px={4} py={3} bg="gray.50" borderTopWidth="1px">
                         <HStack flex={2}>
                             <IconButton
-                                aria-label="Skip to start"
+                                aria-label={t('ui.skip_to_start')}
                                 variant="ghost"
                                 icon={<TfiAngleDoubleLeft />}
                                 isDisabled={!canPreviousPage}
                                 onClick={() => gotoPage(0)}
                             />
                             <IconButton
-                                aria-label="Go Previous"
+                                aria-label={t('ui.go_previous')}
                                 variant="ghost"
                                 icon={<TfiAngleLeft />}
                                 isDisabled={!canPreviousPage}
                                 onClick={previousPage}
                             />
                             <IconButton
-                                aria-label="Go Next"
+                                aria-label={t('ui.go_next')}
                                 variant="ghost"
                                 icon={<TfiAngleRight />}
                                 isDisabled={!canNextPage}
                                 onClick={nextPage}
                             />
                             <IconButton
-                                aria-label="Skip to end"
+                                aria-label={t('ui.skip_to_end')}
                                 variant="ghost"
                                 icon={<TfiAngleDoubleRight />}
                                 isDisabled={!canNextPage}
@@ -859,16 +857,16 @@ const FinalizeSettlement = () => {
                             />
                         </HStack>
                         <Text>
-                            Page{' '}
+                            {t('ui.page')}{' '}
                             <strong>
-                                {pageIndex + 1} of {pageOptions.length || 1}
+                                {pageIndex + 1} {t('ui.of')} {pageOptions.length || 1}
                             </strong>
                         </Text>
                         <Box h="6">
                             <Divider orientation="vertical" />
                         </Box>
                         <HStack>
-                            <Text> Go to page : </Text>
+                            <Text>{t('ui.go_to_page')}</Text>
                             <Input
                                 value={pageNumber ? Number(pageNumber) : ''}
                                 textAlign="center"
@@ -891,18 +889,18 @@ const FinalizeSettlement = () => {
             <Modal isOpen={isFinalizeOpen} onClose={onFinalizeClose} closeOnOverlayClick={false} isCentered size="lg">
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>Finalize Settlement ID: <strong>{selectedSettlement?.settlementId}</strong></ModalHeader>
+                    <ModalHeader>{t('ui.finalize_settlement_id')} <strong>{selectedSettlement?.settlementId}</strong></ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        Are you sure you want to finalize?
+                        {t('ui.are_you_sure_you_want_to_finalize')}
                     </ModalBody>
 
                     <ModalFooter>
                         <Button variant="ghost" mr={3} onClick={onFinalizeClose}>
-                            Cancel
+                            {t('ui.cancel')}
                         </Button>
                         <Button colorScheme="green" isDisabled={btnDgFinalizeDisabled} onClick={handleConfirmedFinalize}>
-                            Yes, Finalize
+                            {t('ui.yes_finalize')}
                         </Button>
                     </ModalFooter>
                 </ModalContent>
@@ -911,20 +909,20 @@ const FinalizeSettlement = () => {
             <Modal isOpen={isWarnOpen} onClose={onWarnClose} closeOnOverlayClick={false} isCentered size="lg">
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>Proceed with Settlement ID: <strong>{selectedSettlement?.settlementId}</strong></ModalHeader>
+                    <ModalHeader>{t('ui.proceed_with_settlement_id')} <strong>{selectedSettlement?.settlementId}</strong></ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        For the following organization(s): 
+                        {t('ui.for_the_following_organizations')}
                         {produceWarnDfsps()}
-                        this settlement will result in their balance falling below the NDC value. Do you wish to proceed?
+                        {t('ui.this_settlement_will_result_in_their_balance_falling_below_the_ndc_value_do_you_wish_to_proceed')}
                     </ModalBody>
 
                     <ModalFooter>
                         <Button variant="ghost" mr={3} onClick={onWarnClose}>
-                            No
+                            {t('ui.no')}
                         </Button>
                         <Button colorScheme="green" isDisabled={btnDgFinalizeDisabled} onClick={() => proceedWithFinalization(selectedSettlement?.settlementId || "")}>
-                            Yes, Proceed
+                            {t('ui.yes_proceed')}
                         </Button>
                     </ModalFooter>
                 </ModalContent>
@@ -933,17 +931,17 @@ const FinalizeSettlement = () => {
             <Modal isOpen={isErrorOpen} onClose={onErrorClose} isCentered size="lg">
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>Finalize Settlement ID: <strong>{selectedSettlement?.settlementId}</strong></ModalHeader>
+                    <ModalHeader>{t('ui.finalize_settlement_id')} <strong>{selectedSettlement?.settlementId}</strong></ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        Error: 
+                        {t('ui.error')}:
                         {produceWarnDfsps()}
-                        The above organization does not have sufficient balance to perform this action.
+                        {t('ui.the_above_organization_does_not_have_sufficient_balance_to_perform_this_action')}
                     </ModalBody>
 
                     <ModalFooter>
                         <Button colorScheme="red" mr={3} onClick={onErrorClose}>
-                            Close
+                            {t('ui.close')}
                         </Button>
                     </ModalFooter>
                 </ModalContent>
@@ -952,7 +950,7 @@ const FinalizeSettlement = () => {
             <Modal isOpen={isDetailOpen} onClose={onDetailClose} size="6xl" isCentered>
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>Settlement Details</ModalHeader>
+                    <ModalHeader>{t('ui.settlement_details')}</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
                         <Stack spacing={4}>
@@ -968,7 +966,7 @@ const FinalizeSettlement = () => {
                             >
                                 <Flex direction="column" align="flex-start" justify="flex-start" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
-                                        Settlement ID
+                                        {t('ui.settlement_id')}
                                     </Text>
                                     <Text fontSize="xs" fontWeight="medium" isTruncated title={String(selectedSettlement?.settlementId ?? '—')}>
                                         {selectedSettlement?.settlementId ?? '—'}
@@ -977,7 +975,7 @@ const FinalizeSettlement = () => {
 
                                 <Flex direction="column" align="flex-start" justify="flex-start" minH="56px" minW={0} w="full">
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
-                                        Window ID
+                                        {t('ui.window_id')}
                                     </Text>
 
                                     <Text
@@ -998,7 +996,7 @@ const FinalizeSettlement = () => {
 
                                 <Flex direction="column" align="flex-start" justify="flex-start" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
-                                        Settlement State
+                                        {t('ui.settlement_state')}
                                     </Text>
                                     <Text fontSize="xs" fontWeight="medium" isTruncated title={String(selectedSettlement?.state ?? '—')}>
                                         {selectedSettlement?.state ?? '—'}
@@ -1007,7 +1005,7 @@ const FinalizeSettlement = () => {
 
                                 <Flex direction="column" align="flex-start" justify="flex-start" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
-                                        Created Date
+                                        {t('ui.created_date')}
                                     </Text>
                                     <Text
                                         fontSize="xs"
@@ -1029,7 +1027,7 @@ const FinalizeSettlement = () => {
                                     textAlign={{ base: 'left', lg: 'right' }}
                                 >
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
-                                        Finalized Date
+                                        {t('ui.finalized_date')}
                                     </Text>
                                     <Text
                                         fontSize="xs"
@@ -1054,10 +1052,10 @@ const FinalizeSettlement = () => {
                                 <Table variant="simple" size="sm">
                                     <Thead bg="gray.100">
                                         <Tr>
-                                            <Th py={3}>DFSP</Th>
-                                            <Th py={3}>Currency</Th>
-                                            <Th py={3} isNumeric>Debit</Th>
-                                            <Th py={3} isNumeric>Credit</Th>
+                                            <Th py={3}>{t('ui.dfsp')}</Th>
+                                            <Th py={3}>{t('ui.currency')}</Th>
+                                            <Th py={3} isNumeric>{t('ui.debit')}</Th>
+                                            <Th py={3} isNumeric>{t('ui.credit')}</Th>
                                         </Tr>
                                     </Thead>
                                     <Tbody>
@@ -1076,7 +1074,7 @@ const FinalizeSettlement = () => {
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button onClick={onDetailClose} variant="outline" colorScheme="blue">Close</Button>
+                        <Button onClick={onDetailClose} variant="outline" colorScheme="blue">{t('ui.close')}</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>

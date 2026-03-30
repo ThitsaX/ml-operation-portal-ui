@@ -39,6 +39,7 @@ import { ISettlementScheduleForm, ISettlementScheduleFormResponse } from '@types
 import { ISettlementModel } from '@typescript/services';
 import { allTimezones, useTimezoneSelect } from 'react-timezone-select';
 import { getNextRunInfo, formatCountdown } from '@utils/schedule';
+import { useTranslation } from 'react-i18next';
 
 interface SettlementModalProps {
   isOpen: boolean;
@@ -49,6 +50,7 @@ interface SettlementModalProps {
 
 const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, settlementModel, onUpdated }) => {
   const toast = useToast();
+  const { t } = useTranslation();
   // which row (key) are we about to delete?
   const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
   const { isOpen: isConfirmOpen, onOpen: openConfirm, onClose: closeConfirm } = useDisclosure();
@@ -118,9 +120,9 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
 
   const humanDays = (days: Day[]) => {
     const set = new Set(days);
-    if (set.size === 7) return 'Daily';
-    if (set.size === 5 && !set.has('Sat') && !set.has('Sun')) return 'Weekdays';
-    if (set.size === 2 && set.has('Sat') && set.has('Sun')) return 'Weekends';
+    if (set.size === 7) return t('ui.daily');
+    if (set.size === 5 && !set.has('Sat') && !set.has('Sun')) return t('ui.weekdays');
+    if (set.size === 2 && set.has('Sat') && set.has('Sun')) return t('ui.weekends');
     return days.join('_');
   };
 
@@ -137,9 +139,9 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
     const set = setOverride ?? matrix[key] ?? new Set<Day>();
     const days = Array.from(set);
     const when = humanDays(days);
-    const model = settlementModel.name || 'Settlement Model';
-    const base = `Run for ${model} at ${time}`;
-    const repeat = when ? ` every ${when}` : '';
+    const model = settlementModel.name || t('ui.settlement_model');
+    const base = `${t('ui.run_for')} ${model} ${t('ui.at')} ${time}`;
+    const repeat = when ? ` ${t('ui.every')} ${when}` : '';
     return `${base}${repeat}`;
   };
 
@@ -273,7 +275,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
         }
 
       } catch (e) {
-        toast({ status: 'error', title: 'Load failed', description: 'Could not fetch scheduler.', isClosable: true });
+        toast({ status: 'error', title: t('ui.load_failed'), description: t('ui.could_not_fetch_scheduler'), isClosable: true });
         setRows([]);
         setMatrix({});
         setRowIdMap({});
@@ -420,8 +422,8 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
 
       toast({
         status: 'success',
-        title: 'Auto-close enabled',
-        description: 'Model is now configured to close windows automatically.',
+        title: t('ui.auto_close_enabled'),
+        description: t('ui.model_is_now_configured_to_close_windows_automatically'),
         isClosable: true,
       });
     }
@@ -488,7 +490,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
               (matrix[k]?.size ?? 0) > 0
           );
 
-          toast({ status: 'info', title: 'Removed', description: `${nameForKey(key)} cleared.` , isClosable: true,});
+          toast({ status: 'info', title: t('ui.removed'), description: `${nameForKey(key)} ${t('ui.cleared')}.` , isClosable: true,});
 
           if (!otherHasActive && (autoCloseWindow || settlementModel.autoCloseWindow)) {
             try {
@@ -507,8 +509,8 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
               settlementModel.autoCloseWindow = false;
               toast({ 
                 status: 'info', 
-                title: 'Auto-close disabled', 
-                description: 'No schedules remain for this model.',
+                title: t('ui.auto_close_disabled'), 
+                description: t('ui.no_schedules_remain_for_this_model'),
                 isClosable: true,
               });
             } catch { }
@@ -542,10 +544,10 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
             [key]: true,
           }));
         } else{
-          throw "Scheduler Config Id not found"
+          throw new Error(t('ui.scheduler_config_id_not_found'))
         }
         
-        toast({ status: 'success', title: 'Created', description: `${nameForKey(key)} saved.` , isClosable: true,});
+        toast({ status: 'success', title: t('ui.created'), description: `${nameForKey(key)} ${t('ui.saved')}.` , isClosable: true,});
       } else {
         await modifySettlementScheduler({
           ...payload,
@@ -557,12 +559,12 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
           ...prev,
           [key]: new Set(set),
         }));
-        toast({ status: 'success', title: 'Updated', description: `${nameForKey(key)} updated.` , isClosable: true});
+        toast({ status: 'success', title: t('ui.updated'), description: `${nameForKey(key)} ${t('ui.updated').toLowerCase()}.` , isClosable: true});
       }
 
     } catch (e: any) {
-      const msg = e?.default_error_message || e?.description || 'Failed to save schedule.';
-      toast({ status: 'error', title: 'Error', description: String(msg), isClosable: true });
+      const msg = e?.default_error_message || e?.description || t('ui.failed_to_save_schedule');
+      toast({ status: 'error', title: t('ui.error'), description: String(msg), isClosable: true });
     } finally {
       setIsSubmitting(false);
     }
@@ -571,16 +573,16 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
   const addRow = () => {
     const time = normalizeTime(newHour, newMinute);
     if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)) {
-      toast({ status: 'warning', title: 'Invalid time', description: 'Use HH:mm (24-hour).', isClosable: true, });
+      toast({ status: 'warning', title: t('ui.invalid_time'), description: t('ui.use_hh_mm_24_hour'), isClosable: true, });
       return;
     }
     if (!/^[+-]\d{2}:\d{2}$/.test(currentOffset)) {
-      toast({ status: 'warning', title: 'Invalid timezone', description: 'Offset must be ±HH:mm.', isClosable: true });
+      toast({ status: 'warning', title: t('ui.invalid_timezone'), description: t('ui.offset_must_be_hh_mm'), isClosable: true });
       return;
     }
     const key = makeKey(time);
     if (rows.includes(key)) {
-      toast({ status: 'info', title: 'Duplicate row', description: `${time} already exists.` , isClosable: true});
+      toast({ status: 'info', title: t('ui.duplicate_row'), description: `${time} ${t('ui.already_exists')}.` , isClosable: true});
       return;
     }
     setRows(r => [...r, key]);
@@ -598,7 +600,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       const sid = rowIdMap[key];
       if (sid) {
         await removeSettlementScheduler({ settlementModelId: settlementModel.settlementModelId, schedulerConfigId: sid } as any);
-        toast({ status: 'info', title: 'Deleted', description: `${nameForKey(key)} removed.` , isClosable: true});
+        toast({ status: 'info', title: t('ui.deleted'), description: `${nameForKey(key)} ${t('ui.removed').toLowerCase()}.` , isClosable: true});
 
         const { hasActive } = await refreshSchedules();
         if (!hasActive && (autoCloseWindow || settlementModel.autoCloseWindow)) {
@@ -616,12 +618,12 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
             onUpdated?.({ ...settlementModel, autoCloseWindow: false });
             settlementModel.autoCloseWindow = false;
 
-            toast({ status: 'info', title: 'Auto-close disabled', description: 'No schedules remain for this model.',isClosable: true });
+            toast({ status: 'info', title: t('ui.auto_close_disabled'), description: t('ui.no_schedules_remain_for_this_model'),isClosable: true });
           } catch (e: any) {
             toast({ 
               status: 'warning', 
-              title: 'Could not disable auto-close', 
-              description: e?.default_error_message || e?.description || 'Please try again.', 
+              title: t('ui.could_not_disable_auto_close'), 
+              description: e?.default_error_message || e?.description || t('ui.please_try_again'), 
               isClosable: true 
             });
           }
@@ -641,8 +643,8 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
         });
       }
     } catch (e: any) {
-      const msg = e?.default_error_message || e?.description || 'Failed to remove schedule.';
-      toast({ status: 'error', title: 'Error', description: String(msg), isClosable: true });
+      const msg = e?.default_error_message || e?.description || t('ui.failed_to_remove_schedule');
+      toast({ status: 'error', title: t('ui.error'), description: String(msg), isClosable: true });
     } finally {
       setIsSubmitting(false);
     }
@@ -744,10 +746,10 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       settlementModel.manualCloseWindow = checked;
       settlementModel.zoneId = currentOffset;
 
-      toast({ status: 'success', title: 'Updated', description: `Manual close ${checked ? 'enabled' : 'disabled'}.` , isClosable: true });
+      toast({ status: 'success', title: t('ui.updated'), description: `${t('ui.manual_close')} ${checked ? t('ui.enabled') : t('ui.disabled')}.` , isClosable: true });
     } catch (err: any) {
       setManualCloseWindow(!checked); // revert UI
-      toast({ status: 'error', title: 'Failed', description: err?.default_error_message || err?.description || 'Unable to modify settlement model.', isClosable: true });
+      toast({ status: 'error', title: t('ui.failed'), description: err?.default_error_message || err?.description || t('ui.unable_to_modify_settlement_model'), isClosable: true });
     }
   }
 
@@ -785,10 +787,10 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
 
         await refreshSchedules(); // when disabling the rows should disabled(updated) by backend.. so we fetched again
  
-        toast({ status: 'success', title: 'Updated', description: 'Auto-close disabled.', isClosable: true });
+        toast({ status: 'success', title: t('ui.updated'), description: t('ui.auto_close_disabled_with_dot'), isClosable: true });
       } catch (e: any) {
         setAutoCloseWindow(true); // revert
-        toast({ status: 'error', title: 'Failed', description: e?.default_error_message || e?.description || 'Unable to modify settlement model.', isClosable: true });
+        toast({ status: 'error', title: t('ui.failed'), description: e?.default_error_message || e?.description || t('ui.unable_to_modify_settlement_model'), isClosable: true });
       }
       return;
     }
@@ -804,15 +806,15 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
 
         toast({
           status: 'success',
-          title: 'Updated',
-          description: `Auto-close window ${checked ? 'enabled' : 'disabled'}.`,
+          title: t('ui.updated'),
+          description: `${t('ui.auto_close_window')} ${checked ? t('ui.enabled') : t('ui.disabled')}.`,
           isClosable: true
         });
       } catch (e: any) {
         toast({
           status: 'error',
-          title: 'Failed',
-          description: e?.default_error_message || e?.description || 'Unable to modify settlement model.',
+          title: t('ui.failed'),
+          description: e?.default_error_message || e?.description || t('ui.unable_to_modify_settlement_model'),
           isClosable: true
         });
       }
@@ -837,9 +839,9 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       setSavedTz(selectedTz); // mark clean
       onUpdated?.({ ...settlementModel, autoCloseWindow, manualCloseWindow, zoneId: currentOffset } as any);
 
-      toast({ status: 'success', title: 'Saved', description: `Timezone updated to (GMT${currentOffset}) ${selectedTz}` , isClosable: true});
+      toast({ status: 'success', title: t('ui.saved'), description: `${t('ui.timezone_updated_to')} (GMT${currentOffset}) ${selectedTz}` , isClosable: true});
     } catch (e: any) {
-      toast({ status: 'error', title: 'Save failed', description: e?.default_error_message || e?.description || 'Unable to update timezone.', isClosable: true });
+      toast({ status: 'error', title: t('ui.save_failed'), description: e?.default_error_message || e?.description || t('ui.unable_to_update_timezone'), isClosable: true });
     } finally {
       setIsSubmitting(false);
     }
@@ -858,7 +860,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       const schedulerConfigId = rowIdMap[key];
 
       if (!schedulerConfigId) {
-        toast({ status: 'warning', title: 'Not created yet', description: 'Save the row first before toggling.', isClosable: true });
+        toast({ status: 'warning', title: t('ui.not_created_yet'), description: t('ui.save_the_row_first_before_toggling'), isClosable: true });
         return;
       }
 
@@ -888,22 +890,22 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
           setAutoCloseWindow(false);
           onUpdated?.({ ...settlementModel, autoCloseWindow: false });
           settlementModel.autoCloseWindow = false;
-          toast({ status: 'info', title: 'Auto-close disabled', description: 'No active schedules remain.', isClosable: true });
+          toast({ status: 'info', title: t('ui.auto_close_disabled'), description: t('ui.no_active_schedules_remain'), isClosable: true });
         } catch (e: any) {
-          toast({ status: 'warning', title: 'Could not disable auto-close', description: e?.default_error_message || e?.description || 'Please try again.', isClosable: true });
+          toast({ status: 'warning', title: t('ui.could_not_disable_auto_close'), description: e?.default_error_message || e?.description || t('ui.please_try_again'), isClosable: true });
         }
       } else {
         await ensureAutoCloseEnabled();
 
         toast({
           status: 'success',
-          title: !currentActive ? 'Activated' : 'Deactivated',
+          title: !currentActive ? t('ui.activated') : t('ui.deactivated'),
           description: nameForKey(key),
           isClosable: true
         });
       }
     } catch (e: any) {
-      toast({ status: 'error', title: 'Toggle failed', description: e?.default_error_message || e?.description || 'Unable to change status.', isClosable: true });
+      toast({ status: 'error', title: t('ui.toggle_failed'), description: e?.default_error_message || e?.description || t('ui.unable_to_change_status'), isClosable: true });
     } finally {
       setIsSubmitting(false);
       setTogglingKey(null);  // NEW
@@ -941,28 +943,28 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
       <ModalOverlay />
       <ModalContent>
         <ModalHeader textAlign="left" fontSize="xl" fontWeight="bold" textDecoration="underline">
-          Settlement Models
+          {t('ui.settlement_models')}
         </ModalHeader>
         <ModalCloseButton isDisabled={mustAddScheduleNow} />
 
         <ModalBody>
           <VStack spacing={4} align="stretch">
             <Flex align="center">
-              <Text w="230px" fontWeight="semibold">Settlement Model Name:</Text>
+              <Text w="230px" fontWeight="semibold">{t('ui.settlement_model_name')}</Text>
               <Input ml="2" value={settlementModel.name ?? ''} isDisabled flex="1" maxW="60%" />
             </Flex>
 
             <Flex align="center">
-              <Text w="230px" fontWeight="semibold">Settlement Model Type:</Text>
+              <Text w="230px" fontWeight="semibold">{t('ui.settlement_model_type')}</Text>
               <Input ml="2" value={settlementModel.type ?? ''} isDisabled flex="1" maxW="60%" />
             </Flex>
 
             <Flex align="center">
-              <Text w="230px" fontWeight="semibold">Settlement Model Currency:</Text>
-              <Input ml="2" value={settlementModel.currencyId ?? 'N/A'} isDisabled flex="1" maxW="60%" />
+              <Text w="230px" fontWeight="semibold">{t('ui.settlement_model_currency')}</Text>
+              <Input ml="2" value={settlementModel.currencyId ?? t('ui.not_available')} isDisabled flex="1" maxW="60%" />
             </Flex>
             <Flex align="center">
-              <Text w="230px" fontWeight="semibold">Close Window Manually: </Text>
+              <Text w="230px" fontWeight="semibold">{t('ui.close_window_manually')}</Text>
               <Switch
                 ml="2"
                 isChecked={manualCloseWindow}
@@ -971,7 +973,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                   const next = e.target.checked;
                   // enforce at least one ON
                   if (!next && mustKeepOneOn('manual')) {
-                    toast({ status: 'warning', title: 'At least one must be ON', description: 'Auto or Manual must stay enabled.', isClosable: true });
+                    toast({ status: 'warning', title: t('ui.at_least_one_must_be_on'), description: t('ui.auto_or_manual_must_stay_enabled'), isClosable: true });
                     return;
                   }
                   handleManualCloseToggle(next);
@@ -979,7 +981,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
               />
             </Flex>
             <Flex align="center">
-              <Text w="230px" fontWeight="semibold">Close Window Automatically: </Text>
+              <Text w="230px" fontWeight="semibold">{t('ui.close_window_automatically')}</Text>
               <Switch
                 ml="2"
                 isChecked={autoCloseWindow}
@@ -987,7 +989,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                 onChange={(e) => {
                   const next = e.target.checked;
                   if (!next && mustKeepOneOn('auto')) {
-                    toast({ status: 'warning', title: 'At least one must be ON', description: 'Auto or Manual must stay enabled.', isClosable: true });
+                    toast({ status: 'warning', title: t('ui.at_least_one_must_be_on'), description: t('ui.auto_or_manual_must_stay_enabled'), isClosable: true });
                     return;
                   }
                   handleAutoCloseToggle(next);
@@ -996,14 +998,14 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
               {mustAddScheduleNow && (
                 <Box mt={2}>
                   <Box border="1px solid" borderColor="orange.300" bg="orange.50" color="orange.800" rounded="md" p={3} ml={2} fontSize="sm">
-                    Auto-close is ON, but there’s no active schedule yet. <br />
-                    Add a time row and tick at least one day to enable saving.
+                    {t('ui.auto_close_is_on_but_theres_no_active_schedule_yet')} <br />
+                    {t('ui.add_a_time_row_and_tick_at_least_one_day_to_enable_saving')}
                   </Box>
                 </Box>
               )}
             </Flex>
             <Flex align="center">
-              <Text w="230px" fontWeight="semibold">Choose Timezone:</Text>
+              <Text w="230px" fontWeight="semibold">{t('ui.choose_timezone')}</Text>
               <Box flex="1" maxW="60%">
                 <CustomSelect
                   options={tzOptions}
@@ -1014,14 +1016,14 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                 />
                 {tzDirty && (
                   <Text fontSize="sm" color="orange.500" mt={1}>
-                    Timezone changed — click Save to apply.
+                    {t('ui.timezone_changed_click_save_to_apply')}
                   </Text>
                 )}
               </Box>
             </Flex>
               <Box mb={2}>
                 <Text fontSize="lg" fontWeight="semibold">
-                  Window will close in: <Box as="span" color="blue.600">{nextCountdown}</Box>
+                  {t('ui.window_will_close_in')}: <Box as="span" color="blue.600">{nextCountdown}</Box>
                 </Text>
               </Box>
             <Box
@@ -1044,7 +1046,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                         onClick={toggleTimeSort}
                       >
                         <HStack justify="center" spacing={1}>
-                          <Text>HH:MM</Text>
+                          <Text>{t('ui.hh_mm')}</Text>
                           {timeSortDir === 'asc' ? (
                             <TriangleUpIcon/>
                           ) : (
@@ -1082,13 +1084,13 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                           <Td textAlign="center">
                             <HStack justify="center">
                               <ActionBtn
-                                label="Update"
+                                label={t('ui.update')}
                                 icon={<FiSave />}
                                 colorScheme="blue"
                                 size="sm"
                                 onClick={() => saveRow(key)}
                                 isDisabled={!canUpdate(key) || isSubmitting}
-                                tooltip="Update schedule"
+                                tooltip={t('ui.update_schedule')}
                               />
 
                               <HStack spacing={2}>
@@ -1103,7 +1105,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                               </HStack>
 
                               <ActionBtn
-                                label="Delete"
+                                label={t('ui.delete')}
                                 icon={<FiTrash2 />}
                                 colorScheme="red"
                                 variant="solid"
@@ -1119,7 +1121,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                     })}
 
                     <Tr>
-                      <Td bg="gray.100" fontWeight="semibold" textAlign="center">Select Time</Td>
+                      <Td bg="gray.100" fontWeight="semibold" textAlign="center">{t('ui.select_time')}</Td>
 
                       <Td colSpan={days.length + 1}>
                         <HStack spacing={3}>
@@ -1144,7 +1146,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
                             />
                           </Box>
 
-                          <Button ml="auto" colorScheme="green" onClick={addRow}>ADD</Button>
+                          <Button ml="auto" colorScheme="green" onClick={addRow}>{t('ui.add')}</Button>
                         </HStack>
                       </Td>
                     </Tr>
@@ -1163,7 +1165,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
             onClick={handleSaveTimezone}
             isDisabled={!tzDirty || isSubmitting}
           >
-            Save
+            {t('ui.save')}
           </Button>
           <Button
             variant="outline"
@@ -1171,7 +1173,7 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
             onClick={onClose}
             isDisabled={isSubmitting || mustAddScheduleNow}
           >
-            Close
+            {t('ui.close')}
           </Button>
         </ModalFooter>
       </ModalContent>
@@ -1185,27 +1187,27 @@ const SettlementModal: React.FC<SettlementModalProps> = ({ isOpen, onClose, sett
         <AlertDialogOverlay>
           <AlertDialogContent>
             <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Delete schedule?
+              {t('ui.delete_schedule_question')}
             </AlertDialogHeader>
 
             <AlertDialogBody>
               {pendingDeleteKey ? (
                 <>
-                  Are you sure you want to delete <b>{nameForKey(pendingDeleteKey)}</b>?
+                  {t('ui.are_you_sure_you_want_to_delete')} <b>{nameForKey(pendingDeleteKey)}</b>?
                   <br />
-                  This action cannot be undone.
+                  {t('ui.this_action_cannot_be_undone')}.
                 </>
               ) : (
-                'Are you sure you want to delete this schedule?'
+                t('ui.are_you_sure_you_want_to_delete_this_schedule')
               )}
             </AlertDialogBody>
 
             <AlertDialogFooter>
               <Button ref={cancelRef} onClick={closeConfirm} variant="outline">
-                Cancel
+                {t('ui.cancel')}
               </Button>
               <Button colorScheme="red" onClick={deleteRow} ml={3} isLoading={isSubmitting}>
-                Delete
+                {t('ui.delete')}
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>

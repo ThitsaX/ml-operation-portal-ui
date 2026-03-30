@@ -28,10 +28,14 @@ import { useAppDispatch } from '@store';
 import { IAuthResponse } from '@typescript/services';
 import { UserActions } from '@store/features/user';
 import { getErrorMessage } from '@helpers/errors'
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 const authHelper = new AuthHelper()
 
 const ChangePassword = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const dispatch = useAppDispatch();
   const toast = useToast()
@@ -56,8 +60,8 @@ const ChangePassword = () => {
       dispatch(UserActions.updateAuth(data));
       toast({
         position: 'top',
-        title: 'Success',
-        description: 'Password change successful',
+        title: t('ui.success'),
+        description: t('ui.password_change_successful'),
         status: 'success',
         isClosable: true,
         duration: 3000
@@ -92,7 +96,8 @@ const ChangePassword = () => {
       newPassword: '',
       confirmPassword: ''
     })
-  }, [reset])
+    navigate('/home', { replace: true });
+  }, [navigate, reset])
 
   // Use effect hook
   useEffect(() => {
@@ -116,7 +121,7 @@ const ChangePassword = () => {
         textAlign={"center"}
         w="full"
       >
-        Change Password
+        {t('ui.change_password')}
       </Heading>
 
       <VStack
@@ -135,7 +140,7 @@ const ChangePassword = () => {
       >
         {/* Old Password */}
         <FormControl isInvalid={!isEmpty(formState.errors.oldPassword)} isRequired>
-          <FormLabel fontSize={{ base: "sm", md: "md" }}>Old Password</FormLabel>
+          <FormLabel fontSize={{ base: "sm", md: "md" }}>{t('ui.old_password')}</FormLabel>
           <InputGroup>
             <Input
               {...register("oldPassword")}
@@ -144,7 +149,7 @@ const ChangePassword = () => {
             <InputRightElement>
               <IconButton
                 icon={showPassword ? <IoEyeOffOutline /> : <IoEyeOutline />}
-                aria-label="Show Password"
+                aria-label={t('ui.show_password_aria')}
                 bg="transparent"
                 rounded="full"
                 size="sm"
@@ -158,7 +163,7 @@ const ChangePassword = () => {
 
         {/* New Password */}
         <FormControl isInvalid={!isEmpty(formState.errors.newPassword)} isRequired>
-          <FormLabel fontSize={{ base: "sm", md: "md" }}>New Password</FormLabel>
+          <FormLabel fontSize={{ base: "sm", md: "md" }}>{t('ui.new_password')}</FormLabel>
           <InputGroup>
             <Input
               {...register("newPassword")}
@@ -167,7 +172,7 @@ const ChangePassword = () => {
             <InputRightElement>
               <IconButton
                 icon={showPassword ? <IoEyeOffOutline /> : <IoEyeOutline />}
-                aria-label="Show Password"
+                aria-label={t('ui.show_password_aria')}
                 bg="transparent"
                 rounded="full"
                 size="sm"
@@ -181,7 +186,7 @@ const ChangePassword = () => {
 
         {/* Confirm Password */}
         <FormControl isInvalid={!isEmpty(formState.errors.confirmPassword)} isRequired>
-          <FormLabel fontSize={{ base: "sm", md: "md" }}>Confirm Password</FormLabel>
+          <FormLabel fontSize={{ base: "sm", md: "md" }}>{t('ui.confirm_password')}</FormLabel>
           <InputGroup>
             <Input
               {...register("confirmPassword")}
@@ -190,7 +195,7 @@ const ChangePassword = () => {
             <InputRightElement>
               <IconButton
                 icon={showPassword ? <IoEyeOffOutline /> : <IoEyeOutline />}
-                aria-label="Show Password"
+                aria-label={t('ui.show_password_aria')}
                 bg="transparent"
                 rounded="full"
                 size="sm"
@@ -217,15 +222,14 @@ const ChangePassword = () => {
             _hover={{ bg: "primary", opacity: 0.85 }}
             onClick={handleSubmit(onSubmitHandler)}
           >
-            Submit
+            {t('ui.submit')}
           </Button>
 
           <Button
             w="full"
-            isDisabled={!formState.isDirty}
             onClick={onCancelHandler}
           >
-            Cancel
+            {t('ui.cancel')}
           </Button>
         </Flex>
       </VStack>

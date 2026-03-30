@@ -7,6 +7,7 @@ import {
 import { useMemo } from 'react';
 import { CustomSelect } from '@components/interface';
 import { FALLBACK_TIMEZONE } from '@utils/constants';
+import { useTranslation } from 'react-i18next';
 export interface ITimezoneSelectProps extends Omit<SelectProps, 'onChange'> {
   onChange: (timezone: ITimezoneOption) => void;
   value?: string; // Accept timezone string as value
@@ -20,6 +21,7 @@ const timezones = {
 };
 
 const TimezoneSelect = ({ onChange, value, date = new Date(), ...rest }: ITimezoneSelectProps) => {
+  const { t } = useTranslation();
   const { options, parseTimezone } = useTimezoneSelect({
     labelStyle,
     timezones,
@@ -57,7 +59,7 @@ const TimezoneSelect = ({ onChange, value, date = new Date(), ...rest }: ITimezo
   return (
     <CustomSelect
       isMulti={false}
-      placeholder="Select Timezone"
+      placeholder={t('ui.select_timezone')}
       options={timezoneOptions}
       value={value ? timezoneOptions.find(opt => opt.value === value) || FALLBACK_TIMEZONE : FALLBACK_TIMEZONE}
       onChange={(selected) => {

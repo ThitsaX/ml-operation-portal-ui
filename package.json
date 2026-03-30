@@ -3,16 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
+    "i18n:validate": "node scripts/validate-locales-jsonc.mjs",
+    "i18n:sync": "node scripts/sync-locales-jsonc.mjs && npm run i18n:validate",
+    "dev": "npm run i18n:sync && vite",
+    "build": "npm run i18n:sync && tsc && vite build",
+    "preview": "npm run i18n:sync && vite preview",
     "gen:theme-typings": "chakra-cli tokens ./src/theme/index.ts",
     "postinstall": "yarn run gen:theme-typings && husky install",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
+    "@chakra-ui/accordion": "^2.3.1",
     "@chakra-ui/icons": "^2.2.4",
     "@chakra-ui/react": "^2.5.5",
+    "@chakra-ui/system": "^2.6.2",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@fontsource/dm-sans": "^4.5.9",

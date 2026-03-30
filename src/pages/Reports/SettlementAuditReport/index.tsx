@@ -36,6 +36,7 @@ import { OptionType } from '@components/interface/CustomSelect';
 import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 import { REPORT_NOT_FOUND_ERROR } from '@helpers';
 import { showDataNotFound } from '@utils';
+import { useTranslation } from 'react-i18next';
 
 const settlementAuditReportHelper = new SettlementAuditReportHelper();
 const initialFileName = 'SettlementAuditReport';
@@ -43,6 +44,7 @@ const initialFileName = 'SettlementAuditReport';
 const SettlementAuditReport = () => {
 
   const toast = useToast();
+  const { t } = useTranslation();
   const { start, complete } = useLoadingContext();
   const [runButtonState, setRunButtonState] = useState(true);
 
@@ -125,7 +127,7 @@ const SettlementAuditReport = () => {
         } else {
           toast({
             position: 'top',
-            description: getErrorMessage(error) || 'Failed to download',
+            description: getErrorMessage(error) || t('ui.failed_to_download'),
             status: 'error',
             isClosable: true,
             duration: 3000
@@ -143,7 +145,7 @@ const SettlementAuditReport = () => {
   return (
     <VStack align="flex-start" h="full" p="3" mt={10} w="full">
       <Heading fontSize="2xl" fontWeight="bold" mb={6}>
-        Settlement Audit Report
+        {t('ui.settlement_audit_report')}
       </Heading>
 
       <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
@@ -153,14 +155,14 @@ const SettlementAuditReport = () => {
           w="full"
         >
           <FormControl isInvalid={!isEmpty(errors.dfspId)}>
-            <FormLabel>DFSP Name</FormLabel>
+            <FormLabel>{t('ui.dfsp_name')}</FormLabel>
             <Controller
               name="dfspId"
               control={control}
               render={({ field }) => (
                 <CustomSelect
                   includeAllOption={true}
-                  placeholder="Select DFSP"
+                  placeholder={t('ui.select_dfsp')}
                   options={(participantList ?? []).map(
                     (item): OptionType => ({
                       value: item.participantName,
@@ -197,7 +199,7 @@ const SettlementAuditReport = () => {
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.startDate)}>
-            <FormLabel>Start Date</FormLabel>
+            <FormLabel>{t('ui.start_date')}</FormLabel>
             <Controller
               control={control}
               name="startDate"
@@ -215,7 +217,7 @@ const SettlementAuditReport = () => {
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.endDate)}>
-            <FormLabel>End Date</FormLabel>
+            <FormLabel>{t('ui.end_date')}</FormLabel>
             <Controller
               control={control}
               name="endDate"
@@ -233,7 +235,7 @@ const SettlementAuditReport = () => {
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.currencyId)}>
-            <FormLabel>Currency</FormLabel>
+            <FormLabel>{t('ui.currency')}</FormLabel>
             <Controller
               name="currencyId"
               control={control}
@@ -260,7 +262,7 @@ const SettlementAuditReport = () => {
                       : null
                   }
                   onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                  placeholder="Select Currency"
+                  placeholder={t('ui.select_currency')}
                 />
               )}
             />
@@ -292,7 +294,7 @@ const SettlementAuditReport = () => {
                       : null
                   }
                   onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                  placeholder="Choose Format"
+                  placeholder={t('ui.choose_format')}
                 />
               )}
             />
@@ -310,9 +312,7 @@ const SettlementAuditReport = () => {
             isDisabled={!isValid || !runButtonState}
             onClick={onDownloadChangeHandler}
             w={{ base: "100%", sm: "auto" }}
-          >
-            Download
-          </Button>
+          >{t('ui.download')}</Button>
           </FormControl>
         </SimpleGrid>
       </Stack>

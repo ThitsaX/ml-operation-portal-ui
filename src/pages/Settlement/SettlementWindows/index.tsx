@@ -75,8 +75,10 @@ import { useNavigate } from "react-router-dom";
 import { hasActionPermission } from '@helpers/permissions';
 import { getErrorMessage } from '@helpers/errors';
 import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
+import { useTranslation } from 'react-i18next';
 
 const SettlementWindows = () => {
+    const { t } = useTranslation();
     const { start, complete } = useLoadingContext();
     const toast = useToast();
     const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
@@ -171,7 +173,7 @@ const SettlementWindows = () => {
                 if (data.length === 0) {
                     toast({
                         position: 'top',
-                        description: 'No data found',
+                        description: t('ui.no_data_found'),
                         status: 'warning',
                         isClosable: true,
                         duration: 3000
@@ -185,7 +187,7 @@ const SettlementWindows = () => {
                 if (err.error_code === '3100') {
                     toast({
                         position: 'top',
-                        description: 'No data found',
+                        description: t('ui.no_data_found'),
                         status: 'warning',
                         isClosable: true,
                         duration: 3000
@@ -194,7 +196,7 @@ const SettlementWindows = () => {
                 } else {
                     toast({
                         position: 'top',
-                        description: getErrorMessage(err) || "Internal error",
+                        description: getErrorMessage(err) || t('ui.internal_error'),
                         status: 'error',
                         isClosable: true,
                         duration: 3000
@@ -220,7 +222,7 @@ const SettlementWindows = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: getErrorMessage(err) || 'Cannot retrieve net transfer amount',
+                description: getErrorMessage(err) || t('ui.cannot_retrieve_net_transfer_amount'),
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -260,7 +262,7 @@ const SettlementWindows = () => {
         closeSettlementWindow(data).then(() => {
             toast({
                 position: 'top',
-                description: 'Settlement Window Closed Successfully',
+                description: t('ui.settlement_window_closed_successfully'),
                 status: 'success',
                 isClosable: true,
                 duration: 3000
@@ -272,7 +274,7 @@ const SettlementWindows = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: getErrorMessage(err) || 'Failed to close Settlement Window',
+                description: getErrorMessage(err) || t('ui.failed_to_close_settlement_window'),
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -298,7 +300,7 @@ const SettlementWindows = () => {
 
         const formData: ISettlementWindowCreateForm = {
             settlementModel: settlementModel,
-            reason: "Create settlement via Operation Portal",
+            reason: t('ui.create_settlement_via_operation_portal'),
             settlementWindowIdList: selectedRowIds.map((id) => ({ id })),
         }
 
@@ -308,7 +310,7 @@ const SettlementWindows = () => {
         createSettlementWindow(formData).then(() => {
             toast({
                 position: 'top',
-                description: 'Settlement Created Successfully',
+                description: t('ui.settlement_created_successfully'),
                 status: 'success',
                 isClosable: true,
                 duration: 3000
@@ -320,7 +322,7 @@ const SettlementWindows = () => {
         .catch((err) => {
             toast({
                 position: 'top',
-                description: getErrorMessage(err) || 'Failed to create settlement',
+                description: getErrorMessage(err) || t('ui.failed_to_create_settlement'),
                 status: 'error',
                 isClosable: true,
                 duration: 3000
@@ -394,7 +396,7 @@ const SettlementWindows = () => {
         },
 
         {
-            Header: 'Window ID',
+            Header: t('ui.window_id'),
             accessor: 'settlementWindowId',
             Cell: ({ row, value }: any) => (
                 <Box
@@ -408,18 +410,18 @@ const SettlementWindows = () => {
                 </Box>)
         },
         {
-            Header: 'State',
+            Header: t('ui.state'),
             accessor: 'state',
         },
         {
-            Header: 'Open Date',
+            Header: t('ui.open_date'),
             accessor: 'createdDate',
             Cell: ({ value }) => (
                 <Text>{moment(value).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')}</Text>
             ),
         },
         {
-            Header: 'Closed Date',
+            Header: t('ui.closed_date'),
             accessor: 'closedDate',
             Cell: ({ row, value }) => {
                 if (row.original.state === 'OPEN') return <></>;
@@ -438,7 +440,7 @@ const SettlementWindows = () => {
         const actionColumn = hasActionPermission("CloseSettlementWindows")
                 ? [
                     {
-                        Header: 'Action',
+                        Header: t('ui.action'),
                         id: 'action',
                         disableSortBy: true,
                         Cell: ({ row }: any) => {
@@ -452,12 +454,12 @@ const SettlementWindows = () => {
                                     <HStack spacing={4}>
                                         <Button
                                             isDisabled={!canCloseManual}
-                                            title={ !canCloseManual ? "Disabled due to not allowing manual closing" : "" }
+                                            title={ !canCloseManual ? t('ui.disabled_due_to_not_allowing_manual_closing') : "" }
                                             size="sm"
                                             colorScheme="green"
                                             variant="solid"
                                             onClick={() => handleClose(row.original)}>
-                                            Close Window
+                                            {t('ui.close_window')}
                                         </Button>
                                     </HStack>
                                 );
@@ -470,7 +472,7 @@ const SettlementWindows = () => {
                 : []
 
             return [...baseColumns, ...actionColumn];
-        }, [settlementWindows, selectedRowIds, selectedTZString]);
+        }, [settlementWindows, selectedRowIds, selectedTZString, t, modelList]);
 
 
     const {
@@ -737,20 +739,20 @@ const SettlementWindows = () => {
         }
     }
     const dateRangeOptions = [
-        { value: 'oneDay', label: 'Past 24 Hours' },
-        { value: 'today', label: 'Today' },
-        { value: 'twoDay', label: 'Past 48 Hours' },
-        { value: 'oneWeek', label: 'Past Week' },
-        { value: 'oneMonth', label: 'Past Month' },
-        { value: 'oneYear', label: 'Past Year' },
-        { value: 'custom', label: 'Custom Range' },
+        { value: 'oneDay', label: t('ui.past_24_hours') },
+        { value: 'today', label: t('ui.today') },
+        { value: 'twoDay', label: t('ui.past_48_hours') },
+        { value: 'oneWeek', label: t('ui.past_week') },
+        { value: 'oneMonth', label: t('ui.past_month') },
+        { value: 'oneYear', label: t('ui.past_year') },
+        { value: 'custom', label: t('ui.custom_range') },
     ];
 
     return (
         <VStack align="flex-start" h="full" p="3" mt={10} w="full">
 
          <Heading fontSize="2xl" fontWeight="bold" mb={6}>
-            Settlement Windows
+            {t('ui.settlement_windows')}
             </Heading>
              <Stack
                 w="100%"
@@ -770,9 +772,7 @@ const SettlementWindows = () => {
                                 }}
                             />
 
-                            <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>
-                            {/* <FormLabel fontSize="sm">Start Date</FormLabel> */}
-                                {selectedTZString ?
+                            <FormControl isInvalid={!isEmpty(errors.fromDate)} isRequired>                                {selectedTZString ?
                                     <Controller
                                         control={control}
                                         render={({ field: { value, onChange } }) => {
@@ -792,13 +792,11 @@ const SettlementWindows = () => {
                                             );
                                         }}
                                         name="fromDate"
-                                    /> : <p>Loading</p>}
+                                    /> : <p>{t('ui.loading')}</p>}
                                 <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
                             </FormControl>
 
-                            <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>
-                            {/* <FormLabel fontSize="sm">End Date</FormLabel> */}
-                                {selectedTZString ?
+                            <FormControl isInvalid={!isEmpty(errors.toDate)} isRequired>                                {selectedTZString ?
                                     <Controller
                                         control={control}
                                         render={({ field: { value, onChange } }) => {
@@ -819,7 +817,7 @@ const SettlementWindows = () => {
                                         }}
                                         name="toDate"
                                     />
-                                    : <p>Loading</p>}
+                                    : <p>{t('ui.loading')}</p>}
                                 <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
                             </FormControl>
                             <Box display={{ base: "none", md: "block" }}/>
@@ -829,7 +827,7 @@ const SettlementWindows = () => {
                             name="state"
                             render={({ field }) => (
                                 <CustomSelect
-                                    placeholder="All States"
+                                    placeholder={t('ui.all_states')}
                                     isClearable={true}
                                     options={
                                         stateList?.map((item) => ({
@@ -853,7 +851,7 @@ const SettlementWindows = () => {
                                 name="currency"
                                 render={({ field }) => (
                                     <CustomSelect
-                                        placeholder="All Currencies"
+                                        placeholder={t('ui.all_currencies')}
                                         isClearable={true}
                                         options={
                                             currencyList?.map((item) => ({
@@ -882,7 +880,7 @@ const SettlementWindows = () => {
                             mb={1}
                         >
                           <Button fontSize="sm" minW="min-content" w={{ base: "100%", md: "50%"   }} onClick={onClearHandler}>
-                            Clear Filters
+                            {t('ui.clear_filter')}
                         </Button>
                         <Button
                             isDisabled={btnFindDisabled}
@@ -896,7 +894,7 @@ const SettlementWindows = () => {
 
                             onClick={handleSubmit(onSearchHandler)}>
 
-                            Find
+                            {t('ui.search_button')}
                         </Button>
                         </FormControl>
                     </SimpleGrid>
@@ -919,7 +917,7 @@ const SettlementWindows = () => {
                                     <Text as="span" fontWeight="semibold">
                                         Countdown timer is not configured.
                                     </Text>{" "}
-                                    Please contact the system administrator or check configuration settings.
+                                    {t('ui.please_contact_the_system_administrator_or_check_configuration_settings')}
                                 </Text>
                             </Box>
                         )}
@@ -937,7 +935,7 @@ const SettlementWindows = () => {
                                 color="green.800"
                             >
                                 <Text fontWeight="semibold">
-                                    Window will close in{" "}
+                                    {t('ui.window_will_close_in')}{" "}
                                     <Box as="span" color="green.700">
                                         {countdownText}
                                     </Box>
@@ -948,7 +946,7 @@ const SettlementWindows = () => {
 
                     <HStack>
                         <CustomSelect
-                            placeholder="Choose Settlement Model"
+                            placeholder={t('ui.choose_settlement_model')}
                             isClearable={true}
                             width={"16em"}
                             options={
@@ -977,7 +975,7 @@ const SettlementWindows = () => {
                                 _hover={{ bg: "primary", opacity: 0.4 }}
                                 onClick={createSettlement}
                             >
-                                Create Settlement
+                                {t('ui.create_settlement')}
                             </Button>
                         )}
                     </HStack>
@@ -1060,28 +1058,28 @@ const SettlementWindows = () => {
                      px={4} py={3} bg="gray.50" borderTopWidth="1px">
                         <HStack flex={2}>
                             <IconButton
-                                aria-label="Skip to start"
+                                aria-label={t('ui.skip_to_start')}
                                 variant="ghost"
                                 icon={<TfiAngleDoubleLeft />}
                                 isDisabled={!canPreviousPage}
                                 onClick={() => gotoPage(0)}
                             />
                             <IconButton
-                                aria-label="Go Previous"
+                                aria-label={t('ui.go_previous')}
                                 variant="ghost"
                                 icon={<TfiAngleLeft />}
                                 isDisabled={!canPreviousPage}
                                 onClick={previousPage}
                             />
                             <IconButton
-                                aria-label="Go Next"
+                                aria-label={t('ui.go_next')}
                                 variant="ghost"
                                 icon={<TfiAngleRight />}
                                 isDisabled={!canNextPage}
                                 onClick={nextPage}
                             />
                             <IconButton
-                                aria-label="Skip to end"
+                                aria-label={t('ui.skip_to_end')}
                                 variant="ghost"
                                 icon={<TfiAngleDoubleRight />}
                                 isDisabled={!canNextPage}
@@ -1089,16 +1087,16 @@ const SettlementWindows = () => {
                             />
                         </HStack>
                         <Text>
-                            Page{' '}
+                            {t('ui.page')}{' '}
                             <strong>
-                                {pageIndex + 1} of {pageOptions.length || 1}
+                                {pageIndex + 1} {t('ui.of')} {pageOptions.length || 1}
                             </strong>
                         </Text>
                         <Box h="6">
                             <Divider orientation="vertical" />
                         </Box>
                         <HStack>
-                            <Text> Go to page : </Text>
+                            <Text>{t('ui.go_to_page')}</Text>
                             <Input
                                 value={pageNumber ? Number(pageNumber) : ''}
                                 textAlign="center"
@@ -1122,15 +1120,15 @@ const SettlementWindows = () => {
             <Modal isOpen={isMoveOnOpen} onClose={onMoveOnClose} isCentered>
                 <ModalOverlay />
                 <ModalContent paddingBottom={"1em"}>
-                    <ModalHeader>Settlement(s) Submitted</ModalHeader>
+                    <ModalHeader>{t('ui.settlements_submitted')}</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
                         <VStack spacing={3} flex={1}>
                             <Button w="100%" colorScheme="green" onClick={moveToSettlementFinalize}>
-                                View Submitted Settlements
+                                {t('ui.view_submitted_settlements')}
                             </Button>
                             <Button w="100%" colorScheme="red" onClick={onMoveOnClose}>
-                                Continue Viewing Windows
+                                {t('ui.continue_viewing_windows')}
                             </Button>
                         </VStack>
                     </ModalBody>
@@ -1140,18 +1138,18 @@ const SettlementWindows = () => {
             <Modal isOpen={isFinalizeOpen} onClose={onFinalizeClose} closeOnOverlayClick={false} isCentered>
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>Close Settlement Window ID: <strong>{selectedWindow?.settlementWindowId}</strong></ModalHeader>
+                    <ModalHeader>{t('ui.close_settlement_window_id')} <strong>{selectedWindow?.settlementWindowId}</strong></ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        Are you sure you want to proceed?
+                        {t('ui.are_you_sure_you_want_to_proceed')}
                     </ModalBody>
 
                     <ModalFooter>
                         <Button variant="ghost" mr={3} onClick={onFinalizeClose}>
-                            Cancel
+                            {t('ui.cancel')}
                         </Button>
                         <Button colorScheme="green" isDisabled={btnWinCloseDisabled} onClick={closeSettlement}>
-                            Yes, Close
+                            {t('ui.yes_close')}
                         </Button>
                     </ModalFooter>
                 </ModalContent>
@@ -1160,7 +1158,7 @@ const SettlementWindows = () => {
             <Modal isOpen={isDetailOpen} onClose={onDetailClose} size="6xl" isCentered>
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>Settlement Details</ModalHeader>
+                    <ModalHeader>{t('ui.settlement_details')}</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
                         <Stack spacing={4}>
@@ -1176,7 +1174,7 @@ const SettlementWindows = () => {
                             >
                                 <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
-                                        Window ID
+                                        {t('ui.window_id')}
                                     </Text>
                                     <Text fontSize="xs" fontWeight="medium" isTruncated title={String(selectedWindow?.settlementWindowId ?? '—')}>
                                         {selectedWindow?.settlementWindowId ?? '—'}
@@ -1185,7 +1183,7 @@ const SettlementWindows = () => {
 
                                 <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
-                                        Window State
+                                        {t('ui.window_state')}
                                     </Text>
                                     <Text fontSize="xs" fontWeight="medium" isTruncated title={String(selectedWindow?.state ?? '—')}>
                                         {selectedWindow?.state ?? '—'}
@@ -1194,7 +1192,7 @@ const SettlementWindows = () => {
 
                                 <Flex direction="column" align="flex-start" justify="space-between" minH="56px" minW={0}>
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
-                                        Window Open Date
+                                        {t('ui.window_open_date')}
                                     </Text>
 
                                     {selectedWindow?.createdDate ? (
@@ -1223,7 +1221,7 @@ const SettlementWindows = () => {
                                     textAlign={{ base: 'left', lg: 'right' }}
                                 >
                                     <Text fontWeight="semibold" fontSize="sm" color="gray.500">
-                                        Window Close Date
+                                        {t('ui.window_close_date')}
                                     </Text>
 
                                     {selectedWindow?.state !== 'OPEN' && selectedWindow?.closedDate ? (
@@ -1249,10 +1247,10 @@ const SettlementWindows = () => {
                                 <Table variant="simple" size="sm">
                                     <Thead bg="gray.100">
                                         <Tr>
-                                            <Th>DFSP</Th>
-                                            <Th>Currency</Th>
-                                            <Th isNumeric>Debit</Th>
-                                            <Th isNumeric>Credit</Th>
+                                            <Th>{t('ui.dfsp')}</Th>
+                                            <Th>{t('ui.currency')}</Th>
+                                            <Th isNumeric>{t('ui.debit')}</Th>
+                                            <Th isNumeric>{t('ui.credit')}</Th>
                                         </Tr>
                                     </Thead>
                                     <Tbody>
@@ -1271,7 +1269,7 @@ const SettlementWindows = () => {
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button onClick={onDetailClose} variant="outline" colorScheme="blue">Close</Button>
+                        <Button onClick={onDetailClose} variant="outline" colorScheme="blue">{t('ui.close')}</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>

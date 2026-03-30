@@ -26,6 +26,7 @@ import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 import { RxCrossCircled } from "react-icons/rx";
 import { hasActionPermission } from '@helpers/permissions';
+import { useTranslation } from 'react-i18next';
 
 interface OrganizationProfileProps {
   participantId: string;
@@ -42,6 +43,7 @@ const defaultFormValues: IParticipantProfile = {
 };
 
 const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId }) => {
+  const { t } = useTranslation();
 
   const toast = useToast();
   const [preview, setPreview] = useState<string | null>(null);
@@ -91,13 +93,13 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
         })
         .catch(err => {
           toast({
-            title: 'Error',
-            description: getErrorMessage(err) || 'Failed to load profile',
+            title: t('ui.error'),
+            description: getErrorMessage(err) || t('ui.failed_to_load_profile'),
             status: 'error',
           });
         }).finally(() => setIsLoading(false));
     }
-  }, [participantId, reset, setValue, toast]);
+  }, [participantId, reset, setValue, t, toast]);
 
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,8 +111,8 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
 
     if (!ALLOWED_TYPES.includes(file.type.toLowerCase())) {
       toast({
-        title: 'Invalid file type',
-        description: `Only PNG and JPEG formats are allowed. File: ${file.name}`,
+        title: t('ui.invalid_file_type'),
+        description: t('ui.only_png_and_jpeg_formats_are_allowed_file_name', { fileName: file.name }),
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -122,8 +124,8 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
 
     if (file.size > MAX_FILE_SIZE) {
       toast({
-        title: 'File too large',
-        description: `Please upload an image smaller than 1MB. File: ${file.name}`,
+        title: t('ui.file_too_large'),
+        description: t('ui.please_upload_an_image_smaller_than_1mb_file_name', { fileName: file.name }),
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -165,9 +167,9 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
     try {
       await modifyParticipant(values);
       toast({
-        title: 'Profile updated',
+        title: t('ui.profile_updated'),
         position: 'top',
-        description: 'Organization profile updated successfully.',
+        description: t('ui.organization_profile_updated_successfully'),
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -177,9 +179,9 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
     } catch (error: any) {
       const err = error as IApiErrorResponse;
       toast({
-        title: 'Update failed',
+        title: t('ui.update_failed'),
         position: 'top',
-        description: getErrorMessage(err) || 'Failed to update organization profile.',
+        description: getErrorMessage(err) || t('ui.failed_to_update_organization_profile'),
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -201,14 +203,14 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
     >
       <Box mb={6}>
         <Heading fontSize="lg" fontWeight="bold">
-          Organization Profile
+          {t('ui.organization_profile')}
         </Heading>
       </Box>
 
       <VStack spacing={4} align="stretch" opacity={isLoading || !hasEditPermission ? 0.8 : 1} pointerEvents={isLoading ? 'none' : 'auto'}>
         <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
           <FormControl isInvalid={!isEmpty(errors.description)} flex={1} isDisabled={!hasEditPermission}>
-            <FormLabel fontSize="sm" fontWeight="semibold">Description</FormLabel>
+            <FormLabel fontSize="sm" fontWeight="semibold">{t('ui.description')}</FormLabel>
             <Controller
               name="description" 
               control={control}
@@ -220,7 +222,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.address)} flex={1} isDisabled={!hasEditPermission}>
-            <FormLabel fontSize="sm" fontWeight="semibold">Address</FormLabel>
+            <FormLabel fontSize="sm" fontWeight="semibold">{t('ui.address')}</FormLabel>
             <Controller
               name='address'
               control={control}
@@ -234,7 +236,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
 
         <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
           <FormControl isInvalid={!isEmpty(errors.mobile)} flex={1} isDisabled={!hasEditPermission}>
-            <FormLabel fontSize="sm" fontWeight="semibold">Contact Number</FormLabel>
+            <FormLabel fontSize="sm" fontWeight="semibold">{t('ui.contact_number')}</FormLabel>
             <Controller
               name='mobile'
               control={control}
@@ -246,7 +248,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
           </FormControl>
 
           <FormControl flex={1} isDisabled={!hasEditPermission}>
-            <FormLabel fontSize="sm" fontWeight="semibold">Logo</FormLabel>
+            <FormLabel fontSize="sm" fontWeight="semibold">{t('ui.logo')}</FormLabel>
             <Flex direction={{ base: 'column', md: 'row' }} gap={4} align={{ base: 'flex-start', md: 'center' }}>
               <Box flex={{ base: '1 0 100%', sm: 1 }} w={{ base: '100%', sm: 'auto' }}>
                 <Input
@@ -260,7 +262,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
                   onChange={handleFileChange}
                 />
                 <FormHelperText id="logo-helper-text" fontSize="xs">
-                  Accepted formats: PNG, JPEG. Max size: 1MB.
+                  {t('ui.accepted_formats_png_jpeg_max_size_1mb')}
                 </FormHelperText>
                 <input type="hidden" {...register('logo')} />
                 <input type="hidden" {...register('logoFileType')} />
@@ -287,13 +289,13 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
                 >
                   <Image
                     src={`data:${fileType};base64,${preview}`}
-                    alt="Logo Preview"
+                    alt={t('ui.logo_preview')}
                     maxHeight="50px"
                     objectFit="contain"
                     _hover={{ transform: 'none' }}
                   />
                   <IconButton
-                    aria-label="Remove logo"
+                    aria-label={t('ui.remove_logo')}
                     icon={<RxCrossCircled size={18} />}
                     size="xs"
                     position="absolute"
@@ -329,7 +331,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
               size="md"
               minW="120px"
             >
-              Save Profile
+              {t('ui.save_profile')}
             </Button>
           </Flex>
         )}

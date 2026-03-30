@@ -8,6 +8,7 @@ import { AiOutlineAudit } from 'react-icons/ai';
 import { MdPendingActions } from 'react-icons/md';
 import { FaHandshake } from 'react-icons/fa';
 import { IoPeopleCircle } from 'react-icons/io5';
+import { useTranslation } from 'react-i18next';
 
 const DEFAULT_WIDTH = 260;
 const COLLAPSED_WIDTH = 64;
@@ -20,6 +21,8 @@ interface SideBarProps {
 }
 
 const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeight }: SideBarProps) => {
+  const { t } = useTranslation();
+
   return (
     <Box
       position="absolute"
@@ -52,13 +55,13 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
               letterSpacing="widest"
               textTransform="uppercase"
             >
-              Operational Portal
+              {t('ui.operational_portal')}
             </Box>
           </Box>
         )}
 
         <IconButton
-          aria-label="Toggle sidebar"
+          aria-label={t('ui.toggle_sidebar_aria')}
           icon={<FiMenu />}
           size="sm"
           variant="ghost"
@@ -73,20 +76,20 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
             to="/home"
             id="1"
             icon={<FiHome />}
-            label="Home"
+            label={t('ui.home')}
             collapsed={collapsed}
             menuId="home"
           />
 
           <SideBarAccordion
             icon={<HiOutlineBuildingLibrary />}
-            label="Participant"
+            label={t('ui.participant')}
             collapsed={collapsed}
             menuId="participants"
             items={[
               {
                 id: 'position',
-                label: 'Participant Positions',
+                label: t('ui.participant_positions'),
                 to: '/participant/position',
                 menuId: 'participant_positions',
               },
@@ -95,13 +98,13 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
 
           <SideBarAccordion
             icon={<IoPeopleCircle />}
-            label="User Management"
+            label={t('ui.user_management')}
             collapsed={collapsed}
             menuId="user_management"
             items={[
               {
                 id: 'user',
-                label: 'User',
+                label: t('ui.user'),
                 to: '/user-management/user',
                 menuId: 'users',
               },
@@ -112,32 +115,32 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
             to="/transfers"
             id="3"
             icon={<FiRepeat />}
-            label="Transfers"
+            label={t('ui.transfers')}
             collapsed={collapsed}
             menuId="transfers"
           />
 
           <SideBarAccordion
             icon={<FaHandshake />}
-            label="Settlement"
+            label={t('ui.settlement')}
             collapsed={collapsed}
             menuId="settlement"
             items={[
               {
                 id: 'settlementModels',
-                label: 'Settlement Models',
+                label: t('ui.settlement_models'),
                 to: 'settlement/settlement-models',
                 menuId: 'settlement_models',
               },
               {
                 id: 'settlementWindows',
-                label: 'Settlement Windows',
+                label: t('ui.settlement_windows'),
                 to: 'settlement/settlement-windows',
                 menuId: 'settlement_windows',
               },
               {
                 id: 'finalizeSettlement',
-                label: 'Finalize Settlements',
+                label: t('ui.finalize_settlements'),
                 to: 'settlement/finalize-settlement',
                 menuId: 'finalize_settlement',
               },
@@ -146,61 +149,61 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
 
           <SideBarAccordion
             icon={<FiBarChart2 />}
-            label="Reports"
+            label={t('ui.reports')}
             collapsed={collapsed}
             menuId="reports"
             items={[
               {
                 id: 'settlementBankReport',
-                label: 'Settlement Bank Report',
+                label: t('ui.settlement_bank_report'),
                 to: 'reports/settlement-bank-report',
                 menuId: 'settlement_bank_report',
               },
               {
                 id: 'settlementOverviewReport',
-                label: 'DFSP Settlement Overview Report',
+                label: t('ui.dfsp_settlement_overview_report'),
                 to: 'reports/dfsp-settlement-overview-report',
                 menuId: 'dfsp_settlement_overview_report',
               },
               {
                 id: 'settlementDetailReport',
-                label: 'Settlement Detail Report',
+                label: t('ui.settlement_detail_report'),
                 to: 'reports/settlement-detail-report',
                 menuId: 'settlement_detail_report',
               },
               {
                 id: 'settlementSummary',
-                label: 'Settlement Summary Report',
+                label: t('ui.settlement_summary_report'),
                 to: 'reports/settlement-summary-report',
                 menuId: 'settlement_summary_report',
               },
               {
                 id: 'settlementStatementReport',
-                label: 'Settlement Statement Report',
+                label: t('ui.settlement_statement_report'),
                 to: 'reports/settlement-statement-report',
                 menuId: 'settlement_statement_report',
               },
               {
                 id: 'settlementAuditReport',
-                label: 'Settlement Audit Report',
+                label: t('ui.settlement_audit_report'),
                 to: 'reports/settlement-audit-report',
                 menuId: 'settlement_audit_report',
               },
               {
                 id: 'auditReport',
-                label: 'Audit Report',
+                label: t('ui.audit_report'),
                 to: 'reports/audit-report',
                 menuId: 'audit_report',
               },
               {
                 id: 'transactionDetailReport',
-                label: 'Transaction Detail Report',
+                label: t('ui.transaction_detail_report'),
                 to: 'reports/transaction-detail-report',
                 menuId: 'transaction_detail_report',
               },
               {
                 id: 'ManagementSummaryReport',
-                label: 'Management Summary Report',
+                label: t('ui.management_summary_report'),
                 to: 'reports/management-summary-report',
                 menuId: 'management_summary_report',
               },
@@ -211,7 +214,7 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
             to="/pending-approvals"
             id="5"
             icon={<MdPendingActions />}
-            label="Pending Approvals"
+            label={t('ui.pending_approvals')}
             collapsed={collapsed}
             menuId="pending_approvals"
           />
@@ -220,7 +223,7 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
             to="/audit"
             id="6"
             icon={<AiOutlineAudit />}
-            label="Audit"
+            label={t('ui.audit')}
             collapsed={collapsed}
             menuId="audit"
           />
@@ -229,7 +232,7 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
             to="/support-center"
             id="7"
             icon={<FiHelpCircle />}
-            label="Support Center"
+            label={t('ui.support_center')}
             collapsed={collapsed}
             menuId="support_center"
           />
@@ -240,7 +243,7 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
       {!collapsed && (
         <Box px={4} py={3}>
           <Box fontSize="xs" fontWeight="medium" color="gray.600">
-            Powered by{' '}
+            {t('ui.powered_by')}{' '}
             <Link href="https://www.thitsaworks.com/" isExternal fontWeight="semibold" color="teal.600">
               ThitsaWorks
             </Link>

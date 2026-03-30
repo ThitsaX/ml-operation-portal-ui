@@ -40,8 +40,10 @@ import SettlementModal from '@components/interface/SettlementModels/SettlementMo
 import { ISettlementModel } from '@typescript/services';
 import { getSettlementModelList } from '@services/settlements';
 import { hasActionPermission } from '@helpers/permissions';
+import { useTranslation } from 'react-i18next';
 
 const SettlementModels = () => {
+    const { t } = useTranslation();
     const [models, setModels] = useState<ISettlementModel[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -56,7 +58,7 @@ const SettlementModels = () => {
         if (!rowItem) {
             toast({
                 position: 'top',
-                description: 'Settlement model not found or missing ID.',
+                description: t('ui.settlement_model_not_found_or_missing_id'),
                 status: 'warning',
                 isClosable: true,
                 duration: 3000
@@ -65,7 +67,7 @@ const SettlementModels = () => {
             }
         setSettlementModelToEdit(rowItem);
         setIsOpen(true);
-    }, []);
+    }, [t, toast]);
 
     const applyModelPatch = (updated: ISettlementModel) => {
       setModels((prev) =>
@@ -92,7 +94,7 @@ const SettlementModels = () => {
                 if (!data || data.length === 0) {
                     toast({
                         position: 'top',
-                        description: 'No data found',
+                        description: t('ui.no_data_found'),
                         status: 'warning',
                         isClosable: true,
                         duration: 3000
@@ -102,7 +104,7 @@ const SettlementModels = () => {
             } catch (e: any) {
                 if (!ignore) {
                     console.error('[SettlementModels] fetch failed:', e);
-                    setError(e?.message || 'Failed to load settlement models');
+                    setError(e?.message || t('ui.failed_to_load_settlement_models'));
                 }
             } finally {
                 if (!ignore) setLoading(false);
@@ -113,25 +115,25 @@ const SettlementModels = () => {
         return () => {
             ignore = true;
         };
-    }, [toast]);
+    }, [t, toast]);
 
     const columns = useMemo<Column<ISettlementModel>[]>(() => {
         const baseColumns: Column<ISettlementModel>[] = [
             {
-                Header: 'Model Name',
+                Header: t('ui.model_name'),
                 accessor: 'name'
             },
             {
-                Header: 'Model Type',
+                Header: t('ui.model_type'),
                 accessor: 'type'
             },
             {
-                Header: 'Currency',
+                Header: t('ui.currency'),
                 accessor: 'currencyId',
                 Cell: ({
                     value
                 }: CellProps<ISettlementModel, string | undefined | null>) => (
-                    <Text>{value ?? 'N/A'}</Text>
+                    <Text>{value ?? t('ui.not_available')}</Text>
                 )
             },
         ];
@@ -139,13 +141,13 @@ const SettlementModels = () => {
         const actionColumn = hasActionPermission("ModifySettlementModel")
             ? [
                 {
-                    Header: 'Action',
+                    Header: t('ui.action'),
                     id: 'action',
                     disableSortBy: true,
                     Cell: ({ row }: { row: Row<ISettlementModel> }) => (
                         <HStack spacing={3}>
                             <Button colorScheme="blue" size="sm" onClick={() => handleEditClick(row.original)}>
-                                Edit
+                                {t('ui.edit')}
                             </Button>
                         </HStack>
                     ),
@@ -154,7 +156,7 @@ const SettlementModels = () => {
             : []
 
         return [...baseColumns, ...actionColumn];
-    }, [handleEditClick]);
+    }, [handleEditClick, t]);
 
     const data = useMemo<ISettlementModel[]>(
         () => (models && models.length ? models : []),
@@ -202,7 +204,7 @@ const SettlementModels = () => {
     return (
         <VStack align="flex-start" w="full" h="full" p="3" mt={10}>
             <Stack>
-                <Heading fontSize="2xl" fontWeight="bold" mb={6}>Settlement Models</Heading>
+                <Heading fontSize="2xl" fontWeight="bold" mb={6}>{t('ui.settlement_models')}</Heading>
             </Stack>
             <Box w="full">
                 <TableContainer
@@ -290,28 +292,28 @@ const SettlementModels = () => {
                          px={4} py={3} bg="gray.50" borderTopWidth="1px">
                         <HStack flex={2}>
                             <IconButton
-                                aria-label="Skip to start"
+                                aria-label={t('ui.skip_to_start')}
                                 variant="ghost"
                                 icon={<TfiAngleDoubleLeft />}
                                 isDisabled={!canPreviousPage}
                                 onClick={() => gotoPage(0)}
                             />
                             <IconButton
-                                aria-label="Go Previous"
+                                aria-label={t('ui.go_previous')}
                                 variant="ghost"
                                 icon={<TfiAngleLeft />}
                                 isDisabled={!canPreviousPage}
                                 onClick={previousPage}
                             />
                             <IconButton
-                                aria-label="Go Next"
+                                aria-label={t('ui.go_next')}
                                 variant="ghost"
                                 icon={<TfiAngleRight />}
                                 isDisabled={!canNextPage}
                                 onClick={nextPage}
                             />
                             <IconButton
-                                aria-label="Skip to end"
+                                aria-label={t('ui.skip_to_end')}
                                 variant="ghost"
                                 icon={<TfiAngleDoubleRight />}
                                 isDisabled={!canNextPage}
@@ -319,16 +321,16 @@ const SettlementModels = () => {
                             />
                         </HStack>
                         <Text>
-                            Page{' '}
+                            {t('ui.page')}{' '}
                             <strong>
-                                {pageIndex + 1} of {pageOptions.length || 1}
+                                {pageIndex + 1} {t('ui.of')} {pageOptions.length || 1}
                             </strong>
                         </Text>
                         <Box h="6">
                             <Divider orientation="vertical" />
                         </Box>
                         <HStack>
-                            <Text> Go to page : </Text>
+                            <Text>{t('ui.go_to_page')}</Text>
                             <Input
                                 value={pageNumber ? Number(pageNumber) : ''}
                                 textAlign="center"

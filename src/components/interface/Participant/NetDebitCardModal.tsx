@@ -17,6 +17,7 @@ import { useState, useEffect } from "react";
 import CustomSelect from "../CustomSelect";
 import { validateAmount } from "@helpers/validation";
 import { numericInputRegex } from "@helpers";
+import { useTranslation } from 'react-i18next';
 
 interface NetDebitCapModalProps {
     isOpen: boolean;
@@ -30,13 +31,14 @@ const netDebitCardList = [
 ];
 
 const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) => {
+    const { t } = useTranslation();
     const [selectedType, setSelectedType] = useState<"fixed" | "percentage" | "">("");
     const [fixedAmount, setFixedAmount] = useState<string>("");
     const [percentage, setPercentage] = useState<string>("");
     const [isTouched, setIsTouched] = useState(false);
 
     const inputValue = selectedType === "fixed" ? fixedAmount : percentage;
-    const inputLabel = selectedType === "fixed" ? "Amount" : "Percentage";
+    const inputLabel = selectedType === "fixed" ? t('ui.amount') : t('ui.percentage');
 
     const { isValid, errorMessage } = validateAmount( inputValue, inputLabel, selectedType === "percentage" ? "100.00" : undefined);
 
@@ -75,14 +77,14 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
                 mx="auto"
             >
                 <form onSubmit={handleFormSubmit}>
-                    <ModalHeader textAlign="center">Net Debit Cap</ModalHeader>
+                    <ModalHeader textAlign="center">{t('ui.net_debit_cap')}</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
                         <Box mb={4}>
                             <FormControl mb={4} isRequired>
-                                <FormLabel>Type</FormLabel>
+                                <FormLabel>{t('ui.type')}</FormLabel>
                                 <CustomSelect
-                                    placeholder="Choose Fixed/Percentage"
+                                    placeholder={t('ui.choose_fixed_percentage')}
                                     options={netDebitCardList.map(item => ({ value: item.value, label: item.label }))}
                                     value={netDebitCardList
                                         .map(item => ({ value: item.value, label: item.label }))
@@ -96,9 +98,9 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
 
                             {selectedType === "fixed" && (
                                 <FormControl isInvalid={isTouched && !!errorMessage} mb={4} isRequired>
-                                    <FormLabel>Fixed</FormLabel>
+                                    <FormLabel>{t('ui.fixed')}</FormLabel>
                                     <Input
-                                        placeholder="Enter Amount..."
+                                        placeholder={t('ui.enter_amount')}
                                         type="text"
                                         name="fixedAmount"
                                         value={fixedAmount}
@@ -110,9 +112,9 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
 
                             {selectedType === "percentage" && (
                                 <FormControl isInvalid={isTouched && !!errorMessage} mb={4} isRequired>
-                                    <FormLabel>Percentage</FormLabel>
+                                    <FormLabel>{t('ui.percentage')}</FormLabel>
                                     <Input
-                                        placeholder="Enter Percentage..."
+                                        placeholder={t('ui.enter_percentage')}
                                         type="text"
                                         name="percentage"
                                         value={percentage}

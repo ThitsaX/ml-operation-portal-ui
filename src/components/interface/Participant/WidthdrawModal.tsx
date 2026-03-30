@@ -7,6 +7,7 @@ import {
 import { useEffect } from "react";
 import { validateAmount } from "@helpers/validation";
 import { numericInputRegex } from "@helpers";
+import { useTranslation } from 'react-i18next';
 
 interface WithdrawModalProps {
     isOpen: boolean;
@@ -15,8 +16,9 @@ interface WithdrawModalProps {
 }
 
 const WidthdrawMoal: React.FC<WithdrawModalProps> = ({ isOpen, onClose, onSubmit }) => {
+    const { t } = useTranslation();
     const [amount, setAmount] = useState<string>("");
-    const { isValid, errorMessage } = validateAmount(amount, "Amount");
+    const { isValid, errorMessage } = validateAmount(amount, t('ui.amount'));
     const [isTouched, setIsTouched] = useState(false);
 
     const handleSubmit = () => {
@@ -47,14 +49,14 @@ const WidthdrawMoal: React.FC<WithdrawModalProps> = ({ isOpen, onClose, onSubmit
                 maxW="90%"                       
                 mx="auto"                       
             >
-                <ModalHeader textAlign="center">Widthdraw Funds</ModalHeader>
+                <ModalHeader textAlign="center">{t('ui.withdraw_funds')}</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
                     <Box mb={4}>
                         <FormControl isInvalid={isTouched && !!errorMessage} isRequired>
-                            <FormLabel>Amount</FormLabel>
+                            <FormLabel>{t('ui.amount')}</FormLabel>
                             <Input
-                                placeholder="Enter Amount..."
+                                placeholder={t('ui.enter_amount')}
                                 type="text"
                                 min={1}
                                 value={amount}
@@ -69,9 +71,9 @@ const WidthdrawMoal: React.FC<WithdrawModalProps> = ({ isOpen, onClose, onSubmit
                     </Box>
                 </ModalBody>
                 <ModalFooter>
-                    <Button variant="ghost" onClick={onClose} mr={3}>Cancel</Button>
+                    <Button variant="ghost" onClick={onClose} mr={3}>{t('ui.cancel')}</Button>
                     <Button colorScheme="blue" isDisabled={!isValid} onClick={handleSubmit}>
-                        Submit
+                        {t('ui.submit')}
                     </Button>
                 </ModalFooter>
             </ModalContent>

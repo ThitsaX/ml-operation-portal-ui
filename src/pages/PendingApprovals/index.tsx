@@ -38,8 +38,10 @@ import { CustomSelect } from '@components/interface';
 import { OptionType } from '@components/interface/CustomSelect';
 import GlobalFilter from '@components/interface/GlobalFilter';
 import { formatNumberWithCommas } from '@utils';
+import { useTranslation } from 'react-i18next';
 
 const PendingApprovals = () => {
+  const { t } = useTranslation();
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
   const [filterStatus, setFilterStatus] = useState('PENDING');
   const [filteredRequests, setFilteredRequests] = useState([] as IPendingApproval[]);
@@ -53,15 +55,15 @@ const PendingApprovals = () => {
   useEffect(() => {
     if (isError) {
       toast({
-        title: 'Failed to fetch pending approvals',
+        title: t('ui.failed_to_fetch_pending_approvals'),
         position: 'top',
-        description: getErrorMessage(error as IApiErrorResponse) || 'Something went wrong. Please try again.',
+        description: getErrorMessage(error as IApiErrorResponse) || t('ui.something_went_wrong'),
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
     }
-  }, [isError, error, toast]);
+  }, [isError, error, toast, t]);
 
   // State
   const [pageNumber, setPageNumber] = useState<String>('1');
@@ -72,7 +74,7 @@ const PendingApprovals = () => {
 
   useEffect(() => {
     const filtered = data?.filter(request =>
-      filterStatus === 'PENDING ' ? true : request.action === filterStatus
+      filterStatus === 'PENDING' ? true : request.action === filterStatus
     ) ?? [];
     setFilteredRequests(filtered);
   }, [filterStatus, data])
@@ -104,7 +106,7 @@ const PendingApprovals = () => {
         toast({
           title: `${actionType}`,
           position: 'top',
-          description: `${row.requestedBy}'s request ${actionType?.toLowerCase()}.`,
+          description: `${row.requestedBy}'s ${t('ui.request').toLowerCase()} ${actionType?.toLowerCase()}.`,
           status: 'success',
           duration: 3000,
           isClosable: true,
@@ -113,7 +115,7 @@ const PendingApprovals = () => {
       })
       .catch((error: IApiErrorResponse) => {
         toast({
-          title: 'Error',
+          title: t('ui.error'),
           position: 'top',
           description: getErrorMessage(error) || `Failed to ${actionType?.toLowerCase()} request.`,
           status: 'error',
@@ -128,19 +130,19 @@ const PendingApprovals = () => {
     const baseColumns: Column<IPendingApproval>[] = [
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Requested Action</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.requested_action')}</Text>
         ),
         accessor: 'requestedAction'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm">DFSP</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm">{t('ui.dfsp')}</Text>
         ),
         accessor: 'participantName'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Currency</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.currency')}</Text>
         ),
         accessor: 'currency',
         Cell: ({ value }) => (
@@ -151,7 +153,7 @@ const PendingApprovals = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Amount/Percentage</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.amount_percentage')}</Text>
         ),
         accessor: 'amount',
         Cell: ({ value }: any) => (
@@ -163,20 +165,20 @@ const PendingApprovals = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Requested By</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.requested_by')}</Text>
         ),
         accessor: 'requestedBy'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Requested Date Time</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.requested_date_time')}</Text>
         ),
         accessor: 'requestedDateTime',
         Cell: ({ value }: any) => formatEpochToTZ(value, selectedTZString, "YYYY-MM-DDTHH:mm:ssZ")
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Status</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.status')}</Text>
         ),
         accessor: 'action'
       },
@@ -186,7 +188,7 @@ const PendingApprovals = () => {
       filterStatus === 'PENDING' && hasActionPermission("ModifyApprovalAction")
         ? [
           {
-            Header: () => <Text fontWeight="semibold" fontSize="sm" textTransform="none">Action</Text>,
+            Header: () => <Text fontWeight="semibold" fontSize="sm" textTransform="none">{t('ui.action')}</Text>,
             id: 'id',
             disableSortBy: true,
             Cell: ({ row }: any) => (
@@ -216,7 +218,7 @@ const PendingApprovals = () => {
         : [];
 
     return [...baseColumns, ...statusColumn];
-  }, [filterStatus, selectedTZString]) as Column<IPendingApproval>[];;
+  }, [filterStatus, selectedTZString, t]) as Column<IPendingApproval>[];;
 
 
   const {
@@ -266,17 +268,24 @@ const PendingApprovals = () => {
   return (
 
     <VStack align="flex-start" w="full" h="full" p="3" spacing={0} mt={10}>
-      <Heading fontSize="2xl" fontWeight="bold" mb={6}>Pending Approvals</Heading>
+      <Heading fontSize="2xl" fontWeight="bold" mb={6}>{t('ui.pending_approvals')}</Heading>
 
       <HStack w="full" justifyContent="space-between">
         <CustomSelect
           width="200px"
           options={[
-            { value: 'PENDING', label: 'PENDING' },
-            { value: 'APPROVED', label: 'APPROVED' },
-            { value: 'REJECTED', label: 'REJECTED' },
+            { value: 'PENDING', label: t('ui.pending') },
+            { value: 'APPROVED', label: t('ui.approved') },
+            { value: 'REJECTED', label: t('ui.rejected') },
           ]}
-          value={{ value: filterStatus, label: filterStatus }}
+          value={{
+            value: filterStatus,
+            label:
+              filterStatus === 'PENDING' ? t('ui.pending')
+                : filterStatus === 'APPROVED' ? t('ui.approved')
+                  : filterStatus === 'REJECTED' ? t('ui.rejected')
+                    : filterStatus
+          }}
           onChange={(selectedOption: OptionType | null) => setFilterStatus(selectedOption?.value || 'PENDING')}
         />
 
@@ -364,28 +373,28 @@ const PendingApprovals = () => {
             px={4} py={3} bg="gray.50" borderTopWidth="1px">
             <HStack flex={2}>
               <IconButton
-                aria-label="Skip to start"
+                aria-label={t('ui.skip_to_start')}
                 variant="ghost"
                 icon={<TfiAngleDoubleLeft />}
                 isDisabled={!canPreviousPage}
                 onClick={() => gotoPage(0)}
               />
               <IconButton
-                aria-label="Go Previous"
+                aria-label={t('ui.go_previous')}
                 variant="ghost"
                 icon={<TfiAngleLeft />}
                 isDisabled={!canPreviousPage}
                 onClick={previousPage}
               />
               <IconButton
-                aria-label="Go Next"
+                aria-label={t('ui.go_next')}
                 variant="ghost"
                 icon={<TfiAngleRight />}
                 isDisabled={!canNextPage}
                 onClick={nextPage}
               />
               <IconButton
-                aria-label="Skip to end"
+                aria-label={t('ui.skip_to_end')}
                 variant="ghost"
                 icon={<TfiAngleDoubleRight />}
                 isDisabled={!canNextPage}
@@ -393,16 +402,16 @@ const PendingApprovals = () => {
               />
             </HStack>
             <Text>
-              Page{' '}
+              {t('ui.page')}{' '}
               <strong>
-                {pageIndex + 1} of {pageOptions.length || 1}
+                {pageIndex + 1} {t('ui.of')} {pageOptions.length || 1}
               </strong>
             </Text>
             <Box h="6">
               <Divider orientation="vertical" />
             </Box>
             <HStack>
-              <Text> Go to page : </Text>
+              <Text>{t('ui.go_to_page')}</Text>
               <Input
                 value={pageNumber ? Number(pageNumber) : ''}
                 textAlign="center"
@@ -424,16 +433,16 @@ const PendingApprovals = () => {
       </VStack>
       <ConfirmDialog
         isOpen={isDialogOpen}
-        title={actionType === PendingApprovalStatus.APPROVED ? "Approve Request" : "Reject Request"}
+        title={actionType === PendingApprovalStatus.APPROVED ? t('ui.approve_request') : t('ui.reject_request')}
         message={
           selectedRow
-            ? `Are you sure you want to ${actionType?.toLowerCase()} the request from ${selectedRow.requestedBy}?`
+            ? `${t('ui.are_you_sure_you_want_to')} ${actionType?.toLowerCase()} ${t('ui.the_request_from')} ${selectedRow.requestedBy}?`
             : ""
         }
         onConfirm={handleConfirmAction}
         onCancel={closeConfirmDialog}
-        confirmText={actionType === PendingApprovalStatus.APPROVED ? "Approve" : "Reject"}
-        cancelText="Cancel"
+        confirmText={actionType === PendingApprovalStatus.APPROVED ? t('ui.approve') : t('ui.reject')}
+        cancelText={t('ui.cancel')}
       />
     </VStack>
   );

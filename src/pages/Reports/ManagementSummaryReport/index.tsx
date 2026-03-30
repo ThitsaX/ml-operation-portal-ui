@@ -27,6 +27,7 @@ import { CustomSelect } from '@components/interface';
 import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 import { REPORT_NOT_FOUND_ERROR } from '@helpers';
 import { showDataNotFound } from '@utils';
+import { useTranslation } from 'react-i18next';
 
 const managementSummaryReportHelper = new ManagementSummaryReportHelper()
 const initialFileName = 'ManagementSummaryReport'
@@ -34,6 +35,7 @@ const initialFileName = 'ManagementSummaryReport'
 const ManagementSummaryReport = () => {
   const { start, complete } = useLoadingContext();
   const toast = useToast();
+  const { t } = useTranslation();
   const [runButtonState, setRunButtonState] = useState(true);
   // Redux
   const user = useGetUserState()
@@ -76,7 +78,7 @@ const ManagementSummaryReport = () => {
         } else {
           toast({
             position: 'top',
-            description: getErrorMessage(error) || 'Failed to download',
+            description: getErrorMessage(error) || t('ui.failed_to_download'),
             status: 'error',
             isClosable: true,
             duration: 3000
@@ -108,7 +110,7 @@ const ManagementSummaryReport = () => {
 
     <VStack align="flex-start" h="full" p="3" mt={10} w="full">
       <Heading fontSize="2xl" fontWeight="bold" mb={6}>
-        Management Summary Report
+{t('ui.management_summary_report')}
       </Heading>
 
       <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
@@ -118,7 +120,7 @@ const ManagementSummaryReport = () => {
           w="full"
         >
           <FormControl isInvalid={!isEmpty(errors.startDate)} pb="1">
-            <FormLabel>Start Date</FormLabel>
+            <FormLabel>{t('ui.start_date')}</FormLabel>
             <Controller
               control={control}
               render={({ field: { value, onChange, onBlur } }) => {
@@ -138,7 +140,7 @@ const ManagementSummaryReport = () => {
             <FormErrorMessage>{errors.startDate?.message}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!isEmpty(errors.endDate)} pb="1">
-            <FormLabel>End Date</FormLabel>
+            <FormLabel>{t('ui.end_date')}</FormLabel>
             <Controller
               control={control}
               render={({
@@ -180,7 +182,7 @@ const ManagementSummaryReport = () => {
                       : null
                   }
                   onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                  placeholder="Choose Format"
+                  placeholder={t('ui.choose_format')}
                 />
               )}
             />
@@ -207,9 +209,7 @@ const ManagementSummaryReport = () => {
               isDisabled={!isValid || !runButtonState}
               onClick={onDownloadChangeHandler}
               w={{ base: "100%", sm: "auto" }}
-            >
-              Download
-            </Button>
+            >{t('ui.download')}</Button>
           </FormControl>
         </SimpleGrid>
       </Stack>

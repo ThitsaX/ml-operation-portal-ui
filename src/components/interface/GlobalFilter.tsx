@@ -1,6 +1,7 @@
 import React from 'react';
 import { InputGroup, InputLeftElement, Input, Box } from '@chakra-ui/react';
 import { TbSearch } from 'react-icons/tb';
+import { useTranslation } from 'react-i18next';
 
 interface GlobalFilterProps {
   globalFilter: string | undefined;
@@ -15,6 +16,8 @@ const GlobalFilter: React.FC<GlobalFilterProps> = ({
   mt = 0,
   ml = 0,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Box mt={mt} ml={ml} w="250px">
       <InputGroup>
@@ -22,7 +25,7 @@ const GlobalFilter: React.FC<GlobalFilterProps> = ({
           <TbSearch color="gray.400" />
         </InputLeftElement>
         <Input
-          placeholder="Search..."
+          placeholder={t('ui.search')}
           value={globalFilter || ''}
           onChange={(e) => setGlobalFilter(e.target.value || undefined)}
           variant="flushed"

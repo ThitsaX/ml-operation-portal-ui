@@ -68,11 +68,13 @@ import { CustomSelect } from '@components/interface';
 import { useGetActionList, useGetMadeByList } from '@hooks/services';
 import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 import { PAGE_SIZE_OPTIONS } from '@utils/constants';
+import { useTranslation } from 'react-i18next';
 
 const auditHelper = new AuditHelper();
 
 const Audit = () => {
   const toast = useToast();
+  const { t } = useTranslation();
   const [tableData, setTableData] = useState<AuditInfo[]>([]);
 
   const [pageNumber, setPageNumber] = useState(1);
@@ -141,7 +143,7 @@ const Audit = () => {
         if (!response?.auditInfoList?.length) {
           toast({
             position: 'top',
-            description: 'No data found',
+            description: t('ui.no_data_found'),
             status: 'warning',
             isClosable: true,
             duration: 3000,
@@ -155,7 +157,7 @@ const Audit = () => {
         const err = error as IApiErrorResponse;
         toast({
           position: 'top',
-          description: getErrorMessage(err) || 'Failed to fetch data',
+          description: getErrorMessage(err) || t('ui.failed_to_fetch_data'),
           status: 'error',
           duration: 3000,
           isClosable: true,
@@ -176,7 +178,7 @@ const Audit = () => {
     } catch (error) {
       toast({
         position: 'top',
-        description: getErrorMessage(error as IApiErrorResponse) || 'Failed to fetch audit details',
+        description: getErrorMessage(error as IApiErrorResponse) || t('ui.failed_to_fetch_audit_details'),
         status: 'error',
         duration: 3000,
         isClosable: true,
@@ -193,9 +195,9 @@ const Audit = () => {
   };
 
   const getDisplayMadeBy = (madeBy?: string, action?: string) => {
-    if (!madeBy || madeBy.trim() === '') {
+      if (!madeBy || madeBy.trim() === '') {
       if (action && action.endsWith('Scheduler')) {
-        return action.replace(/Scheduler$/, 'Automatically');
+        return action.replace(/Scheduler$/, t('ui.automatically'));
       }
       return '—';
     }
@@ -207,19 +209,19 @@ const Audit = () => {
     () => [
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Date</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.date')}</Text>
         ),
         accessor: 'date'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Action</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.action')}</Text>
         ),
         accessor: 'action',
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Made By</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.made_by')}</Text>
         ),
         accessor: 'madeBy',
         Cell: ({ row }: any) => {
@@ -229,12 +231,12 @@ const Audit = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Trace ID</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.trace_id')}</Text>
         ),
         accessor: 'traceId',
       },
     ],
-    []
+    [t]
   );
 
   const {
@@ -262,7 +264,7 @@ const Audit = () => {
       spacing={2}
       mt={10}
     >
-      <Heading fontSize="2xl" fontWeight="bold" mb={6}>Audit</Heading>
+      <Heading fontSize="2xl" fontWeight="bold" mb={6}>{t('ui.audit')}</Heading>
 
       {/* Search Filters */}
       <Stack
@@ -276,7 +278,7 @@ const Audit = () => {
           w="full"
         >
           <FormControl isInvalid={!isEmpty(errors.fromDate)}>
-            <FormLabel>From</FormLabel>
+            <FormLabel>{t('ui.from')}</FormLabel>
             <Controller
               control={control}
               name="fromDate"
@@ -294,7 +296,7 @@ const Audit = () => {
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.toDate)}>
-            <FormLabel>To</FormLabel>
+            <FormLabel>{t('ui.to')}</FormLabel>
             <Controller
               control={control}
               name="toDate"
@@ -312,7 +314,7 @@ const Audit = () => {
           </FormControl>
 
           <FormControl>
-            <FormLabel>Action</FormLabel>
+            <FormLabel>{t('ui.action')}</FormLabel>
             <Controller
               control={control}
               name="actionId"
@@ -337,14 +339,14 @@ const Audit = () => {
                       : null
                   }
                   onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                  placeholder="All"
+                  placeholder={t('ui.all')}
                 />
               )}
             />
           </FormControl>
 
           <FormControl>
-            <FormLabel>Made By</FormLabel>
+            <FormLabel>{t('ui.made_by')}</FormLabel>
             <Controller
               control={control}
               name="userId"
@@ -369,7 +371,7 @@ const Audit = () => {
                       : null
                   }
                   onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                  placeholder="All"
+                  placeholder={t('ui.all')}
                 />
               )}
             />
@@ -392,7 +394,7 @@ const Audit = () => {
               size="md"
               w={{ base: "full", md: "auto" }}
             >
-              <FaSearch /> Search
+              <FaSearch /> {t('ui.search_button')}
             </Button>
           </FormControl>
         </SimpleGrid>
@@ -484,28 +486,28 @@ const Audit = () => {
                  px={4} py={3} bg="gray.50" borderTopWidth="1px">
             <HStack flex={2}>
               <IconButton
-                aria-label="Skip to start"
+                aria-label={t('ui.skip_to_start')}
                 variant="ghost"
                 icon={<TfiAngleDoubleLeft />}
                 onClick={() => onSearchHandler(getValues(), 1, pageSize)}
                 isDisabled={pageNumber === 1}
               />
               <IconButton
-                aria-label="Go Previous"
+                aria-label={t('ui.go_previous')}
                 variant="ghost"
                 icon={<TfiAngleLeft />}
                 onClick={() => onSearchHandler(getValues(), pageNumber - 1, pageSize)}
                 isDisabled={pageNumber === 1}
               />
               <IconButton
-                aria-label="Go Next"
+                aria-label={t('ui.go_next')}
                 variant="ghost"
                 icon={<TfiAngleRight />}
                 onClick={() => onSearchHandler(getValues(), pageNumber + 1, pageSize)}
                 isDisabled={pageNumber === totalPages}
               />
               <IconButton
-                aria-label="Skip to end"
+                aria-label={t('ui.skip_to_end')}
                 variant="ghost"
                 icon={<TfiAngleDoubleRight />}
                 onClick={() => onSearchHandler(getValues(), totalPages, pageSize)}
@@ -514,13 +516,13 @@ const Audit = () => {
             </HStack>
 
             <Text>
-              Page <strong>{pageNumber}</strong> of <strong>{totalPages}</strong>
+              {t('ui.page')} <strong>{pageNumber}</strong> {t('ui.of')} <strong>{totalPages}</strong>
             </Text>
 
             <Box h="6"><Divider orientation="vertical" /></Box>
             {/* Rows per page */}
-            <HStack spacing={2}>
-              <Text>Rows:</Text>
+            <HStack spacing={2} minW="120px" flexShrink={0}>
+              <Text whiteSpace="nowrap">{t('ui.rows')}</Text>
               <CustomSelect
                 options={PAGE_SIZE_OPTIONS}
                 value={PAGE_SIZE_OPTIONS.find(opt => opt.value === pageSize.toString()) || null}
@@ -536,7 +538,7 @@ const Audit = () => {
               />
             </HStack>
             <HStack>
-              <Text>Go to page :</Text>
+              <Text>{t('ui.go_to_page')}</Text>
               <Input
                 value={pageNumber ? Number(pageNumber) : ''}
                 textAlign="center"
@@ -570,7 +572,7 @@ const Audit = () => {
           maxW="90%"
           mx="auto">
           <ModalHeader borderBottom="1px solid" borderColor="gray.200">
-            Audit Details
+            {t('ui.audit_details')}
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody maxH="70vh" minH="400px" overflowY="auto" bg="gray.50" p={6}>
@@ -584,7 +586,7 @@ const Audit = () => {
               >
                 <VStack spacing={4} align="center">
                   <Spinner size="xl" color="blue.500" />
-                  <Text color="gray.600">Loading audit details...</Text>
+                  <Text color="gray.600">{t('ui.loading_audit_details')}</Text>
                 </VStack>
               </Box>
             ) : auditDetail ? (
@@ -598,7 +600,7 @@ const Audit = () => {
                   boxShadow="sm"
                 >
                   <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3}>
-                    Request
+                    {t('ui.request')}
                   </Text>
                   <JsonViewer value={auditDetail.inputInfo} />
                 </Box>
@@ -611,7 +613,7 @@ const Audit = () => {
                   boxShadow="sm"
                 >
                   <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3}>
-                    Response
+                    {t('ui.response')}
                   </Text>
                   {auditDetail.outputInfo ? (<JsonViewer value={auditDetail.outputInfo} />)
                     : (<JsonViewer
@@ -624,13 +626,13 @@ const Audit = () => {
               </VStack>
             ) : (
               <Text color="gray.600" textAlign="center" py={8}>
-                No details available
+                {t('ui.no_details_available')}
               </Text>
             )}
           </ModalBody>
           <ModalFooter bg="gray.100" borderTop="1px solid" borderColor="gray.200">
             <Button colorScheme="blue" onClick={handleCloseModal}>
-              Close
+              {t('ui.close')}
             </Button>
           </ModalFooter>
         </ModalContent>

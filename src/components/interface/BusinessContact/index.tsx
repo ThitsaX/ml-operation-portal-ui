@@ -29,12 +29,14 @@ import { ConfirmDialog } from '../ConfirmationDialog';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
 import { hasActionPermission } from '@helpers/permissions';
+import { useTranslation } from 'react-i18next';
 
 interface BusinessContactProps {
     participantId: string;
 }
 
 const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
+    const { t } = useTranslation();
     const defaultForm: IBusinessContact = {
         participantId: participantId,
         name: '',
@@ -74,9 +76,9 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
         action
             .then(() => {
                 toast({
-                    title: 'Success',
+                    title: t('ui.success'),
                     position: 'top',
-                    description: isEdit ? 'Contact updated successfully' : 'Contact created successfully',
+                    description: isEdit ? t('ui.contact_updated_successfully') : t('ui.contact_created_successfully'),
                     status: 'success',
                     duration: 3000,
                     isClosable: true,
@@ -92,7 +94,7 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
             .catch((err: IApiErrorResponse) => {
                 toast({
                     position: 'top',
-                    description: getErrorMessage(err) || 'Failed to save contact',
+                    description: getErrorMessage(err) || t('ui.failed_to_save_contact'),
                     status: 'error',
                     duration: 3000,
                     isClosable: true,
@@ -132,7 +134,7 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
             .then(() => {
                 toast({
                     position: 'top',
-                    description: 'User deleted successfully',
+                    description: t('ui.contact_deleted_successfully'),
                     status: 'success',
                     isClosable: true,
                     duration: 3000
@@ -142,7 +144,7 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
             .catch((err: IApiErrorResponse) => {
                 toast({
                     position: 'top',
-                    description: getErrorMessage(err) || 'Failed to delete contact',
+                    description: getErrorMessage(err) || t('ui.failed_to_delete_contact'),
                     status: 'error',
                     isClosable: true,
                     duration: 3000
@@ -167,7 +169,7 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
         <VStack align="flex-start" spacing={4} w="full">
             <HStack justify="space-between" align="center" w="full">
                 <Text fontSize="lg" fontWeight="bold" lineHeight="1.2">
-                    Contacts
+                    {t('ui.contacts')}
                 </Text>
                 {hasActionPermission("CreateContact") && (
                     <Button colorScheme="blue" size="md" onClick={() => {
@@ -178,7 +180,7 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
                         setIsEdit(false);
                         onOpen();
                     }}>
-                        Add
+                        {t('ui.add')}
                     </Button>
                 )}
             </HStack>
@@ -197,14 +199,14 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
                 <Table variant="unstyled">
                     <Thead bg={headerBg}>
                         <Tr>
-                            <HeaderCell borderColor={borderColor}> Contact Type</HeaderCell>
-                            <HeaderCell borderColor={borderColor}>Person Name</HeaderCell>
-                            <HeaderCell borderColor={borderColor}>Position</HeaderCell>
-                            <HeaderCell borderColor={borderColor}>Email</HeaderCell>
-                            <HeaderCell borderColor={borderColor}>Contact Number</HeaderCell>
+                            <HeaderCell borderColor={borderColor}>{t('ui.contact_type')}</HeaderCell>
+                            <HeaderCell borderColor={borderColor}>{t('ui.person_name')}</HeaderCell>
+                            <HeaderCell borderColor={borderColor}>{t('ui.position')}</HeaderCell>
+                            <HeaderCell borderColor={borderColor}>{t('ui.email')}</HeaderCell>
+                            <HeaderCell borderColor={borderColor}>{t('ui.contact_number')}</HeaderCell>
                             {(hasActionPermission("ModifyContact") || hasActionPermission("RemoveContact")) && (
                                 <HeaderCell borderColor={borderColor}>
-                                      Action
+                                      {t('ui.action')}
                                 </HeaderCell>
                             )}
                         </Tr>
@@ -212,7 +214,7 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
                     <Tbody>
                         {data?.length === 0 && !isLoading && (
                             <Tr>
-                                <Cell colSpan={6}>No contacts found</Cell>
+                                <Cell colSpan={6}>{t('ui.no_contacts_found')}</Cell>
                             </Tr>
                         )}
                         {data?.map((item) => (
@@ -231,10 +233,10 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
                                 <Td border={`1px solid ${borderColor}`} px={4} py={2}>
                                     <HStack spacing={3} justify="center">
                                         {hasActionPermission("ModifyContact") && (
-                                            <Tooltip label='Edit Contact' bg='white' color='black'>
+                                            <Tooltip label={t('ui.edit_contact')} bg='white' color='black'>
                                                 <IconButton
                                                     icon={<FiEdit2 />}
-                                                    aria-label="Edit"
+                                                    aria-label={t('ui.edit')}
                                                     variant="ghost"
                                                     size="sm"
                                                     onClick={() => handleEdit(item)}
@@ -243,10 +245,10 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
                                         )}
 
                                         {hasActionPermission("RemoveContact") && (
-                                            <Tooltip label='Delete Contact' bg='white' color='black'>
+                                            <Tooltip label={t('ui.delete_contact')} bg='white' color='black'>
                                                 <IconButton
                                                     icon={<FiTrash2 />}
-                                                    aria-label="Delete"
+                                                    aria-label={t('ui.delete')}
                                                     variant="ghost"
                                                     size="sm"
                                                     onClick={() => handleDeleteClick(item)}
@@ -264,8 +266,8 @@ const BusinessContact: React.FC<BusinessContactProps> = ({ participantId }) => {
 
             <ConfirmDialog
                 isOpen={isConfirmOpen}
-                title="Delete Contact"
-                message="Are you sure you want to delete this contact?"
+                title={t('ui.delete_contact')}
+                message={t('ui.are_you_sure_you_want_to_delete_this_contact')}
                 onConfirm={confirmDelete}
                 onCancel={() => setIsConfirmOpen(false)} />
 

@@ -29,6 +29,7 @@ import { CustomSelect } from '@components/interface';
 import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 import { REPORT_NOT_FOUND_ERROR } from "@helpers";
 import { showDataNotFound } from '@utils';
+import { useTranslation } from 'react-i18next';
 
 const settlementStatementReportHelper = new SettlementStatementReportHelper()
 const initialFileName = 'DFSPSettlementStatementReport'
@@ -36,6 +37,7 @@ const initialFileName = 'DFSPSettlementStatementReport'
 const SettlementStatementReport = () => {
   const { start, complete } = useLoadingContext();
   const toast = useToast();
+  const { t } = useTranslation();
   const [runButtonState, setRunButtonState] = useState(true);
   const { data: participantList } = useGetParticipantList();
 
@@ -87,7 +89,7 @@ const SettlementStatementReport = () => {
         } else {
           toast({
             position: 'top',
-            description: getErrorMessage(error) || 'Failed to download',
+            description: getErrorMessage(error) || t('ui.failed_to_download'),
             status: 'error',
             isClosable: true,
             duration: 3000
@@ -121,8 +123,7 @@ const SettlementStatementReport = () => {
 
     <VStack align="flex-start" h="full" p="3" mt={10} w="full">
       <Heading fontSize="2xl" fontWeight="bold" mb={6}>
-        Settlement Statement Report
-      </Heading>
+        {t('ui.settlement_statement_report')}</Heading>
 
       <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
         <SimpleGrid
@@ -131,7 +132,7 @@ const SettlementStatementReport = () => {
           w="full"
         >
           <FormControl isInvalid={!isEmpty(errors.fspId)}>
-            <FormLabel>DFSP Name</FormLabel>
+            <FormLabel>{t('ui.dfsp_name')}</FormLabel>
 
             {isHubUser ? (
               <Controller
@@ -140,7 +141,7 @@ const SettlementStatementReport = () => {
                 render={({ field }) => (
                   <CustomSelect
                     includeAllOption={true}
-                    placeholder="Select DFSP"
+                    placeholder={t('ui.select_dfsp')}
                     options={(participantList ?? []).map(
                       (item): OptionType => ({
                         value: item.participantName,
@@ -186,7 +187,7 @@ const SettlementStatementReport = () => {
             <FormErrorMessage>{errors.fspId?.message}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!isEmpty(errors.startDate)} pb="1">
-            <FormLabel>Start Date</FormLabel>
+            <FormLabel>{t('ui.start_date')}</FormLabel>
             <Controller
               control={control}
               render={({ field: { value, onChange, onBlur } }) => {
@@ -206,7 +207,7 @@ const SettlementStatementReport = () => {
             <FormErrorMessage>{errors.startDate?.message}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!isEmpty(errors.endDate)} pb="1">
-            <FormLabel>End Date</FormLabel>
+            <FormLabel>{t('ui.end_date')}</FormLabel>
             <Controller
               control={control}
               render={({
@@ -229,7 +230,7 @@ const SettlementStatementReport = () => {
             <FormErrorMessage>{errors.endDate?.message}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!isEmpty(errors.currencyId)}>
-            <FormLabel>Currency</FormLabel>
+            <FormLabel>{t('ui.currency')}</FormLabel>
             <Controller
               name="currencyId"
               control={control}
@@ -256,7 +257,7 @@ const SettlementStatementReport = () => {
                       : null
                   }
                   onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                  placeholder="Select Currency"
+                  placeholder={t('ui.select_currency')}
                 />
               )}
             />
@@ -289,7 +290,7 @@ const SettlementStatementReport = () => {
                       : null
                   }
                   onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                  placeholder="Choose Format"
+                  placeholder={t('ui.choose_format')}
                 />
               )}
             />
@@ -305,9 +306,7 @@ const SettlementStatementReport = () => {
             flex={{ base: '1', md: '0 0 50%' }}
             isDisabled={!isValid || !runButtonState}
             onClick={onDownloadChangeHandler}
-            w={{ base: "100%", sm: "auto" }}>
-            Download
-          </Button>
+            w={{ base: "100%", sm: "auto" }}>{t('ui.download')}</Button>
           </FormControl>
         </SimpleGrid>
       </Stack>
