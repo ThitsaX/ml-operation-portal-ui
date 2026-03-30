@@ -32,11 +32,13 @@ import { CustomSelect } from '@components/interface';
 import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 import { REPORT_NOT_FOUND_ERROR } from '@helpers';
 import { showDataNotFound } from '@utils';
+import { useTranslation } from 'react-i18next';
 
 const auditHelper = new AuditReportHelper();
 
 const AuditReport = () => {
     const toast = useToast();
+  const { t } = useTranslation();
 
     const { start, complete } = useLoadingContext();
     const [runButtonState, setRunButtonState] = useState(true);
@@ -129,7 +131,7 @@ const AuditReport = () => {
                 } else {
                     toast({
                         position: 'top',
-                        description: getErrorMessage(error) || 'Failed to download',
+                        description: getErrorMessage(error) || t('ui.failed_to_download'),
                         status: 'error',
                         isClosable: true,
                         duration: 3000
@@ -146,7 +148,7 @@ const AuditReport = () => {
     return (
         <VStack align="flex-start" h="full" p="3" mt={10} w="full">
             <Heading fontSize="2xl" fontWeight="bold" mb={6}>
-                Audit Report
+{t('ui.audit_report')}
             </Heading>
 
             <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
@@ -157,7 +159,7 @@ const AuditReport = () => {
                     w="full"
                 >
                     <FormControl isInvalid={!isEmpty(errors.fromDate)}>
-                        <FormLabel>Start Date</FormLabel>
+                        <FormLabel>{t('ui.start_date')}</FormLabel>
                         <Controller
                             control={control}
                             name="fromDate"
@@ -175,7 +177,7 @@ const AuditReport = () => {
                     </FormControl>
 
                     <FormControl isInvalid={!isEmpty(errors.toDate)}>
-                        <FormLabel>End Date</FormLabel>
+                        <FormLabel>{t('ui.end_date')}</FormLabel>
                         <Controller
                             control={control}
                             name="toDate"
@@ -193,7 +195,7 @@ const AuditReport = () => {
                     </FormControl>
 
                     <FormControl>
-                        <FormLabel>Action</FormLabel>
+                        <FormLabel>{t('ui.action')}</FormLabel>
                         <Controller
                             control={control}
                             name="actionId"
@@ -218,14 +220,14 @@ const AuditReport = () => {
                                             : null
                                     }
                                     onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                                    placeholder="All"
+                                    placeholder={t('ui.all')}
                                 />
                             )}
                         />
                     </FormControl>
 
                     <FormControl>
-                        <FormLabel>Made By</FormLabel>
+                        <FormLabel>{t('ui.made_by')}</FormLabel>
                         <Controller
                             control={control}
                             name="userId"
@@ -250,7 +252,7 @@ const AuditReport = () => {
                                             : null
                                     }
                                     onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                                    placeholder="All"
+                                    placeholder={t('ui.all')}
                                 />
                             )}
                         />
@@ -293,9 +295,7 @@ const AuditReport = () => {
                         isDisabled={!isValid || !runButtonState}
                         onClick={onDownloadChangeHandler}
                         w={{ base: "100%", sm: "auto" }}
-                    >
-                        Download
-                    </Button>
+                    >{t('ui.download')}</Button>
                     </FormControl>
                 </SimpleGrid>
             </Stack>

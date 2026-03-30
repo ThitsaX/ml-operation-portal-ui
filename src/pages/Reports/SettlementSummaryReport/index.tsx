@@ -36,6 +36,7 @@ import { CustomSelect } from '@components/interface';
 import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 import { REPORT_NOT_FOUND_ERROR } from '@helpers';
 import { showDataNotFound } from '@utils';
+import { useTranslation } from 'react-i18next';
 
 const settlementSummaryReportHelper = new SettlementSummaryReportHelper();
 const initialFileName = 'DFSPSettlementReport';
@@ -43,6 +44,7 @@ const initialFileName = 'DFSPSettlementReport';
 const SettlementSummaryReport = () => {
   const { start, complete } = useLoadingContext();
   const toast = useToast();
+  const { t } = useTranslation();
   const [runButtonState, setRunButtonState] = useState(true);
   const [settlementIdOptions, setSettlementIdOptions] = useState<any[]>([]);
 
@@ -148,7 +150,7 @@ const SettlementSummaryReport = () => {
         } else {
           toast({
             position: 'top',
-            description: getErrorMessage(error) || 'Faield to download',
+            description: getErrorMessage(error) || t('ui.failed_to_download'),
             status: 'error',
             isClosable: true,
             duration: 3000
@@ -226,7 +228,7 @@ const SettlementSummaryReport = () => {
   return (
     <VStack align="flex-start" h="full" p="3" mt={10} w="full">
       <Heading fontSize="2xl" fontWeight="bold" mb={6}>
-        Settlement Summary Report
+{t('ui.settlement_summary_report')}
       </Heading>
 
       <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
@@ -238,7 +240,7 @@ const SettlementSummaryReport = () => {
         >
 
           <FormControl isInvalid={!isEmpty(errors.fspId)}>
-            <FormLabel>DFSP Name</FormLabel>
+            <FormLabel>{t('ui.dfsp_name')}</FormLabel>
 
             {isHubUser ? (
               <Controller
@@ -247,7 +249,7 @@ const SettlementSummaryReport = () => {
                 render={({ field }) => (
                   <CustomSelect
                     isClearable
-                    placeholder="Select DFSP"
+                    placeholder={t('ui.select_dfsp')}
                     options={
                       (participantList ?? []).map(
                         (item): OptionType => ({
@@ -295,7 +297,7 @@ const SettlementSummaryReport = () => {
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.startDate)} position="relative" pb={3}>
-            <FormLabel>Start Date</FormLabel>
+            <FormLabel>{t('ui.start_date')}</FormLabel>
             <Controller
               control={control}
               name="startDate"
@@ -316,7 +318,7 @@ const SettlementSummaryReport = () => {
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.endDate)} position="relative" pb={3}>
-            <FormLabel>End Date</FormLabel>
+            <FormLabel>{t('ui.end_date')}</FormLabel>
             <Controller
               control={control}
               name="endDate"
@@ -350,9 +352,7 @@ const SettlementSummaryReport = () => {
               size="md"
               mb={2}
               w={{ base: "100%", md: "50%" }}
-            >
-              Search
-            </Button>
+            >{t('ui.search_button')}</Button>
           </FormControl>
         </SimpleGrid>
       </Stack>
@@ -367,7 +367,7 @@ const SettlementSummaryReport = () => {
           >
             <FormControl isInvalid={!isEmpty(errors.settlementId)}
               w="100%">
-              <FormLabel>Settlement ID:</FormLabel>
+              <FormLabel>{t('ui.settlement_id')}:</FormLabel>
               <Controller
                 name="settlementId"
                 control={control}
@@ -388,7 +388,7 @@ const SettlementSummaryReport = () => {
                       field.onChange(selected?.value || '');
                       setSettlementId(selected?.value || '');
                     }}
-                    placeholder="Select Settlement ID"
+                    placeholder={t('ui.select_settlement_id')}
                   />
                 )}
               />
@@ -413,7 +413,7 @@ const SettlementSummaryReport = () => {
                         : null
                     }
                     onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                    placeholder="Choose Format"
+                    placeholder={t('ui.choose_format')}
                   />
                 )}
               />
@@ -430,9 +430,7 @@ const SettlementSummaryReport = () => {
                 colorScheme="blue"
                 isDisabled={!fspIdValue || !settlementId || !runButtonState}
                 onClick={onDownloadChangeHandler}
-              >
-                Download
-              </Button>
+              >{t('ui.download')}</Button>
             </FormControl>
           </SimpleGrid>
 

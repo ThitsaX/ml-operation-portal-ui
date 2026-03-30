@@ -12,7 +12,8 @@ import {
   FormLabel,
   FormErrorMessage,
   useToast,
-  VStack
+  VStack,
+  HStack
 } from '@chakra-ui/react';
 import { type ISignInValues } from '@typescript/form';
 import { useForm } from 'react-hook-form';
@@ -25,10 +26,13 @@ import { useAppDispatch } from '@store';
 import { UserActions } from '@store/features/user';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
+import { useTranslation } from 'react-i18next';
+import LanguageDropdown from '@components/common/LanguageDropdown';
 
 const authHelper = new AuthHelper();
 
 const Login = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -65,14 +69,15 @@ const Login = () => {
       .catch((e: IApiErrorResponse) => {
         toast({
           position: 'top',
-          description: getErrorMessage(e) || 'Login failed',
+          description: getErrorMessage(e) || t('ui.login_failed'),
           status: 'error',
           isClosable: true,
           duration: 3000
         });
         reset();
       });
-  }, []);
+  }, [dispatch, navigate, reset, toast, t]);
+
 
   useEffect(() => {
     setFocus('email');
@@ -88,7 +93,7 @@ const Login = () => {
       bg="primary">
       <Box mb="10">
         <Heading color="white" fontSize="2xl" textAlign="center">
-          Operation Portal
+          {t('ui.operation_portal')}
         </Heading>
       </Box>
 
@@ -101,18 +106,21 @@ const Login = () => {
           p="5"
           spacing="3"
           zIndex={1}>
+          <HStack justify="flex-end">
+            <LanguageDropdown size="xs" showCode={true} showName={false} />
+          </HStack>
           <Box>
             <Heading color="trueGray.600" fontSize="m" textAlign="center">
-              Sign In to your account
+              {t('ui.sign_in_to_your_account')}
             </Heading>
           </Box>
           <FormControl isInvalid={!isEmpty(errors.email)} isRequired>
-            <FormLabel>Email</FormLabel>
+            <FormLabel>{t('ui.email')}</FormLabel>
             <Input type="email" {...register('email')} />
             <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
           </FormControl>
           <FormControl isInvalid={!isEmpty(errors.password)} isRequired>
-            <FormLabel>Password</FormLabel>
+            <FormLabel>{t('ui.password')}</FormLabel>
             <InputGroup>
               <Input
                 {...register('password')}
@@ -121,7 +129,7 @@ const Login = () => {
               <InputRightElement>
                 <IconButton
                   icon={showPassword ? <IoEyeOffOutline /> : <IoEyeOutline />}
-                  aria-label="Show Password"
+                  aria-label={t('ui.show_password_aria')}
                   bg="transparent"
                   rounded="full"
                   size="sm"
@@ -145,7 +153,7 @@ const Login = () => {
               bg: 'primary',
               opacity: 0.4
             }}>
-            Sign in
+            {t('ui.sign_in')}
           </Button>
         </VStack>
       </form>

@@ -1,6 +1,0 @@
-{
-  "ECONNABORTED": "Please check your internet connection",
-  "ECONNABORTED_TITLE": "Connection Timeout",
-  "ERR_NETWORK": "Check your internet connection and try again",
-  "ERR_NETWORK_TITLE": "Connection Failed"
-}

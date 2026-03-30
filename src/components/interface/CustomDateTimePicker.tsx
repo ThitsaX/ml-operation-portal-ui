@@ -18,6 +18,7 @@ import {
 import { DayPicker } from "react-day-picker";
 import { CalendarIcon } from "@chakra-ui/icons";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 import "react-day-picker/style.css";
 import CustomSelect from "./CustomSelect";
 import "./CustomDateTimeStyle.css";
@@ -104,11 +105,13 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
       onChange,
       disabled = false,
       locked = false,
-      placeholder = "Select date and time",
+      placeholder,
       ...props
     },
     ref
   ) => {
+  const { t } = useTranslation();
+  const resolvedPlaceholder = placeholder ?? t('ui.select_date_and_time');
   const [isOpen, setIsOpen] = useState(false);
   const inputSize = useBreakpointValue({ base: "sm", md: "md" });
 
@@ -339,14 +342,14 @@ export const CustomDateTimePicker = React.forwardRef<HTMLInputElement, Props>(
                 className="date-time-input"
                 fontSize="sm"
                 {...lockedStyles}
-                placeholder={placeholder}
+                placeholder={resolvedPlaceholder}
                 isDisabled={disabled} // Chakra UI disabled prop
                 opacity={disabled ? 0.6 : locked ? 0.7 : 1}
                 {...props} // Spread other props like borderWidth, etc.
               />
               <InputRightElement>
                 <IconButton
-                  aria-label="Select date and time"
+                  aria-label={t('ui.select_date_and_time')}
                   icon={<CalendarIcon />}
                   size={inputSize}
                   variant="ghost"

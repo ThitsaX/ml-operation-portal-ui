@@ -27,6 +27,7 @@ import { useEffect, useState } from "react";
 import { type IApiErrorResponse } from "@typescript/services";
 import { getErrorMessage } from "@helpers/errors";
 import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5';
+import { useTranslation } from 'react-i18next';
 
 const participantUser = new ParticipantHelper()
 
@@ -44,6 +45,7 @@ export default function ResetPasswordModal({
     onSuccess,
 }: ResetPasswordModalProps) {
     const toast = useToast();
+    const { t } = useTranslation();
     const [isSaving, setIsSaving] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -80,7 +82,7 @@ export default function ResetPasswordModal({
             toast({
                 position: "top",
                 status: "success",
-                description: "Password reset successfully",
+                description: t('ui.password_reset_successfully'),
                 duration: 3000,
                 isClosable: true,
             });
@@ -92,7 +94,7 @@ export default function ResetPasswordModal({
             toast({
                 position: "top",
                 status: "error",
-                description: getErrorMessage(err) || "Failed to reset password",
+                description: getErrorMessage(err) || t('ui.failed_to_reset_password'),
                 duration: 3000,
                 isClosable: true,
             });
@@ -114,24 +116,24 @@ export default function ResetPasswordModal({
                 maxW="90%"
                 mx="auto"
             >
-                <ModalHeader>Reset Password</ModalHeader>
+                <ModalHeader>{t('ui.reset_password')}</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
                     <VStack spacing={4} align="stretch">
                         <FormControl isInvalid={!isEmpty(errors.email)}>
-                            <FormLabel>Email</FormLabel>
+                            <FormLabel>{t('ui.email')}</FormLabel>
                             <Input type="text" {...register("email")} isDisabled />
                             <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
                         </FormControl>
 
                         <FormControl isInvalid={!isEmpty(errors.newPassword)} isRequired>
-                            <FormLabel>New Password</FormLabel>
+                            <FormLabel>{t('ui.new_password')}</FormLabel>
                             <InputGroup>
                                 <Input type={showPassword ? "text" : "password"} {...register("newPassword")} />
                                 <InputRightElement>
                                     <IconButton
                                         variant="ghost"
-                                        aria-label="Show password"
+                                        aria-label={t('ui.show_password')}
                                         icon={showPassword ? <IoEyeOffOutline /> : <IoEyeOutline />}
                                         bg="transparent"
                                         rounded="full"
@@ -147,13 +149,13 @@ export default function ResetPasswordModal({
                         </FormControl>
 
                         <FormControl isInvalid={!isEmpty(errors.confirmPassword)} isRequired>
-                            <FormLabel>Confirm Password</FormLabel>
+                            <FormLabel>{t('ui.confirm_password')}</FormLabel>
                             <InputGroup>
                                 <Input type={showConfirmPassword  ? "text" : "password"} {...register("confirmPassword")} />
                                 <InputRightElement>
                                 <IconButton
                                     variant="ghost"
-                                    aria-label= "Show password"
+                                    aria-label={t('ui.show_password')}
                                     icon={showConfirmPassword  ? <IoEyeOffOutline /> : <IoEyeOutline />}
                                     bg="transparent"
                                     rounded="full"
@@ -171,16 +173,16 @@ export default function ResetPasswordModal({
                 </ModalBody>
                 <ModalFooter display="flex" gap={3}>
                     <Button variant="ghost" onClick={handleCancel}>
-                        Cancel
+                        {t('ui.cancel')}
                     </Button>
                     <Button
                         colorScheme="blue"
                         onClick={handleSubmit(onSubmitHandler)}
                         isDisabled={!isDirty || !isValid}
                         isLoading={isSaving}
-                        loadingText="Saving..."
+                        loadingText={t('ui.saving')}
                     >
-                        Save
+                        {t('ui.save')}
                     </Button>
                 </ModalFooter>
             </ModalContent>

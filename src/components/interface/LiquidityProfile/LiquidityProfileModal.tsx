@@ -23,6 +23,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CustomSelect } from '@components/interface';
 import { isEmpty } from 'lodash-es';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
     isOpen: boolean;
@@ -42,6 +43,7 @@ const LiquidityProfileModal: React.FC<Props> = ({
     setForm,
     isEdit,
     isSaving}) => {
+    const { t } = useTranslation();
 
     const { data } = useGetParticipantCurrencyList();
 
@@ -82,7 +84,7 @@ const LiquidityProfileModal: React.FC<Props> = ({
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>
-                    {isEdit ? 'Edit Liquidity Profile' : 'Add Liquidity Profile'}
+                    {isEdit ? t('ui.edit_liquidity_profile') : t('ui.add_liquidity_profile')}
                 </ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
@@ -97,43 +99,43 @@ const LiquidityProfileModal: React.FC<Props> = ({
                         )}
 
                         <FormControl isInvalid={!isEmpty(errors.bankName)} isRequired>
-                            <FormLabel>Bank Name</FormLabel>
+                            <FormLabel>{t('ui.bank_name')}</FormLabel>
                             <Controller
                                 name="bankName"
                                 control={control}
                                 render={({ field }) => (
-                                    <Input {...field} placeholder="Bank Name" value={field.value ?? ''} />
+                                    <Input {...field} placeholder={t('ui.bank_name')} value={field.value ?? ''} />
                                 )}
                             />
                             <FormErrorMessage>{errors.bankName?.message}</FormErrorMessage>
                         </FormControl>
 
                         <FormControl isInvalid={!isEmpty(errors.accountName)} isRequired>
-                            <FormLabel>Account Name</FormLabel>
+                            <FormLabel>{t('ui.account_name')}</FormLabel>
                             <Controller
                                 name="accountName"
                                 control={control}
                                 render={({ field }) => (
-                                    <Input {...field} placeholder="Account Name" value={field.value ?? ''} />
+                                    <Input {...field} placeholder={t('ui.account_name')} value={field.value ?? ''} />
                                 )}
                             />
                             <FormErrorMessage>{errors.accountName?.message}</FormErrorMessage>
                         </FormControl>
 
                         <FormControl isInvalid={!isEmpty(errors.accountNumber)} isRequired>
-                            <FormLabel>Account Number</FormLabel>
+                            <FormLabel>{t('ui.account_number')}</FormLabel>
                             <Controller
                                 name="accountNumber"
                                 control={control}
                                 render={({ field }) => (
-                                    <Input {...field} placeholder="Account Number" value={field.value ?? ''} />
+                                    <Input {...field} placeholder={t('ui.account_number')} value={field.value ?? ''} />
                                 )}
                             />
                             <FormErrorMessage>{errors.accountNumber?.message}</FormErrorMessage>
                         </FormControl>
 
                         <FormControl isInvalid={!isEmpty(errors.currency)} isRequired>
-                            <FormLabel>Currency</FormLabel>
+                            <FormLabel>{t('ui.currency')}</FormLabel>
                             <Controller
                                 name="currency"
                                 control={control}
@@ -151,7 +153,7 @@ const LiquidityProfileModal: React.FC<Props> = ({
                                         onChange={(selectedOption) => {
                                             field.onChange(selectedOption?.value);
                                         }}
-                                        placeholder="Select Currency"
+                                        placeholder={t('ui.select_currency')}
                                     />
 
                                 )}
@@ -162,15 +164,15 @@ const LiquidityProfileModal: React.FC<Props> = ({
                 </ModalBody>
                 <ModalFooter display="flex" gap={3}>
                     <Button variant="ghost" onClick={onClose}>
-                        Cancel
+                        {t('ui.cancel')}
                     </Button>
                     <Button
                         isDisabled={!isDirty || !isValid}
                         isLoading={isSaving}
-                        loadingText={isEdit ? 'Saving...' : 'Adding...'}
+                        loadingText={isEdit ? t('ui.saving') : t('ui.adding')}
                         onClick={handleSubmit(liquidityHandler)}
                         colorScheme="blue" mr={3}>
-                        {isEdit ? 'Save' : 'Add'}
+                        {isEdit ? t('ui.save') : t('ui.add')}
                     </Button>
                 </ModalFooter>
             </ModalContent>

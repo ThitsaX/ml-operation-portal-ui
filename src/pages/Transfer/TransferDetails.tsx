@@ -24,6 +24,7 @@ import { RootState } from '@store';
 import { getErrorMessage } from '@helpers/errors';
 import { IGetTransferDetails, IApiErrorResponse } from '@typescript/services';
 import { Spinner } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
 
 interface IModalProps extends Omit<ModalProps, 'children'> {
   transferId: string;
@@ -66,6 +67,7 @@ const defaultTransferDetails: IGetTransferDetails = {
 };
 
 const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
+  const { t } = useTranslation();
 
   const [data, setData] = useState<IGetTransferDetails>(defaultTransferDetails);
   const [loading, setLoading] = useState(false);
@@ -116,7 +118,7 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
         boxShadow="2xl"
       >
         <ModalHeader bg="gray.100" borderTop="1px solid" borderColor="gray.200">
-          Transfer Details - {transferId}
+          {t('ui.transfer_details')} - {transferId}
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody maxH="70vh" overflowY="auto" bg="gray.50">
@@ -130,7 +132,7 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
             >
               <VStack spacing={4} align="center">
                 <Spinner size="xl" color="blue.500" />
-                <Text color="gray.600">Loading transfer details...</Text>
+                <Text color="gray.600">{t('ui.loading_transfer_details')}</Text>
               </VStack>
             </Box>
           ) : (
@@ -146,25 +148,25 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
                 boxShadow="sm"
               >
                 <Text fontWeight="bold" fontSize="lg" mb={4}>
-                  General Information:
+                  {t('ui.general_information')}:
                 </Text>
                 <VStack spacing={2} align="start">
                   {[
-                    ['Transfer ID', data?.transferDetails.transferId],
-                    ['Quote ID', data?.transferDetails.quoteId],
-                    ['Transfer State', data?.transferDetails.transferState],
-                    ['Transfer Type', data?.transferDetails.transferType],
-                    ['Use Case', data?.transferDetails.subScenario],
-                    ['Currency', data?.transferDetails.currency],
-                    ['Amount Type', data?.transferDetails.amountType],
-                    ['Quote Amount', data?.transferDetails.quoteAmount],
-                    ['Transfer Amount', data?.transferDetails.transferAmount],
-                    ['Payee Receive Amount', data?.transferDetails.payeeReceivedAmount],
-                    ['Payee DFSP Fee', data?.transferDetails.payeeDfspFeeAmount],
-                    ['Payee DFSP Commission', data?.transferDetails.payeeDfspCommissionAmount],
-                    ['Submitted Date', data?.transferDetails.submittedOnDate],
-                    ['Window ID', data?.transferDetails.windowId],
-                    ['Settlement ID', data?.transferDetails.settlementId],
+                    [t('ui.transfer_id'), data?.transferDetails.transferId],
+                    [t('ui.quote_id'), data?.transferDetails.quoteId],
+                    [t('ui.transfer_state'), data?.transferDetails.transferState],
+                    [t('ui.transfer_type'), data?.transferDetails.transferType],
+                    [t('ui.use_case'), data?.transferDetails.subScenario],
+                    [t('ui.currency'), data?.transferDetails.currency],
+                    [t('ui.amount_type'), data?.transferDetails.amountType],
+                    [t('ui.quote_amount'), data?.transferDetails.quoteAmount],
+                    [t('ui.transfer_amount'), data?.transferDetails.transferAmount],
+                    [t('ui.payee_receive_amount'), data?.transferDetails.payeeReceivedAmount],
+                    [t('ui.payee_dfsp_fee'), data?.transferDetails.payeeDfspFeeAmount],
+                    [t('ui.payee_dfsp_commission'), data?.transferDetails.payeeDfspCommissionAmount],
+                    [t('ui.submitted_date'), data?.transferDetails.submittedOnDate],
+                    [t('ui.window_id'), data?.transferDetails.windowId],
+                    [t('ui.settlement_id'), data?.transferDetails.settlementId],
                   ].map(([label, value]) => (
                     <HStack key={label} align="start">
                       <Text minW="200px" fontWeight="bold">{label}:</Text>
@@ -185,13 +187,13 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
                   boxShadow="sm"
                 >
                   <Text fontWeight="bold" fontSize="lg" mb={4}>
-                    Payer Information:
+                    {t('ui.payer_information')}:
                   </Text>
                   <VStack spacing={2} align="start">
-                    <Text><b>ID Type:</b> {data?.payerInformation.idType}</Text>
-                    <Text><b>ID Value:</b> {data?.payerInformation.idValue}</Text>
-                    <Text><b>DFSP ID:</b> {data?.payerInformation.dfspId}</Text>
-                    <Text><b>Name:</b> {data?.payerInformation.name}</Text>
+                    <Text><b>{t('ui.id_type')}:</b> {data?.payerInformation.idType}</Text>
+                    <Text><b>{t('ui.id_value')}:</b> {data?.payerInformation.idValue}</Text>
+                    <Text><b>{t('ui.dfsp_id')}:</b> {data?.payerInformation.dfspId}</Text>
+                    <Text><b>{t('ui.name')}:</b> {data?.payerInformation.name}</Text>
                   </VStack>
                 </Box>
 
@@ -204,13 +206,13 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
                   boxShadow="sm"
                 >
                   <Text fontWeight="bold" fontSize="lg" mb={4}>
-                    Payee Information:
+                    {t('ui.payee_information')}:
                   </Text>
                   <VStack spacing={2} align="start">
-                    <Text><b>ID Type:</b> {data?.payeeInformation.idType}</Text>
-                    <Text><b>ID Value:</b> {data?.payeeInformation.idValue}</Text>
-                    <Text><b>DFSP ID:</b> {data?.payeeInformation.dfspId}</Text>
-                    <Text><b>Name:</b> {data?.payeeInformation.name}</Text>
+                    <Text><b>{t('ui.id_type')}:</b> {data?.payeeInformation.idType}</Text>
+                    <Text><b>{t('ui.id_value')}:</b> {data?.payeeInformation.idValue}</Text>
+                    <Text><b>{t('ui.dfsp_id')}:</b> {data?.payeeInformation.dfspId}</Text>
+                    <Text><b>{t('ui.name')}:</b> {data?.payeeInformation.name}</Text>
                   </VStack>
                 </Box>
 
@@ -223,11 +225,11 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
                   boxShadow="sm"
                 >
                   <Text fontWeight="bold" fontSize="lg" mb={4}>
-                    Error Information:
+                    {t('ui.error_information')}:
                   </Text>
                   <VStack spacing={2} align="start">
-                    <Text><b>Error Code:</b> {data?.errorInformation?.errorCode || '-'}</Text>
-                    <Text><b>Error Description:</b> {data?.errorInformation?.errorDescription || '-'}</Text>
+                    <Text><b>{t('ui.error_code')}:</b> {data?.errorInformation?.errorCode || '-'}</Text>
+                    <Text><b>{t('ui.error_description')}:</b> {data?.errorInformation?.errorDescription || '-'}</Text>
                   </VStack>
                 </Box>
               </VStack>
@@ -235,7 +237,7 @@ const TransferDetails = ({ isOpen, onClose, transferId }: IModalProps) => {
         </ModalBody>
         <ModalFooter bg="gray.100" borderTop="1px solid" borderColor="gray.200">
           <Button colorScheme="blue" onClick={onClose}>
-            Close
+            {t('ui.close')}
           </Button>
         </ModalFooter>
       </ModalContent>

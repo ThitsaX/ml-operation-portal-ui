@@ -8,6 +8,7 @@ import {
     Button
 } from '@chakra-ui/react';
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmDialogProps {
     isOpen: boolean;
@@ -22,15 +23,20 @@ interface ConfirmDialogProps {
 
 export const ConfirmDialog = ({
     isOpen,
-    title = "Confirm",
-    message = "Are you sure?",
+    title,
+    message,
     onConfirm,
     onCancel,
-    confirmText = "Confirm",
-    cancelText = "Cancel",
+    confirmText,
+    cancelText,
     isLoading = false
 }: ConfirmDialogProps) => {
+    const { t } = useTranslation();
     const cancelRef = useRef<HTMLButtonElement>(null);
+    const resolvedTitle = title ?? t('ui.confirm');
+    const resolvedMessage = message ?? t('ui.are_you_sure');
+    const resolvedConfirmText = confirmText ?? t('ui.confirm');
+    const resolvedCancelText = cancelText ?? t('ui.cancel');
 
     return (
         <AlertDialog
@@ -40,14 +46,14 @@ export const ConfirmDialog = ({
             <AlertDialogOverlay>
                 <AlertDialogContent>
                     <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                        {title}
+                        {resolvedTitle}
                     </AlertDialogHeader>
 
-                    <AlertDialogBody>{message}</AlertDialogBody>
+                    <AlertDialogBody>{resolvedMessage}</AlertDialogBody>
 
                     <AlertDialogFooter>
                         <Button ref={cancelRef} onClick={onCancel}>
-                            {cancelText}
+                            {resolvedCancelText}
                         </Button>
                         <Button
                             colorScheme="blue"
@@ -55,7 +61,7 @@ export const ConfirmDialog = ({
                             ml={3}
                             isLoading={isLoading}
                         >
-                            {confirmText}
+                            {resolvedConfirmText}
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>

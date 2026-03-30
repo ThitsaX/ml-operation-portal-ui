@@ -5,6 +5,7 @@ import Select, {
   MenuPlacement,
   components,
 } from "react-select";
+import { useTranslation } from 'react-i18next';
 
 export type OptionType = {
   value: string;
@@ -41,6 +42,8 @@ interface MultiSelectProps extends BaseProps {
 type UnifiedSelectProps = SingleSelectProps | MultiSelectProps;
 
 const CustomSelect: React.FC<UnifiedSelectProps> = (props) => {
+  const { t } = useTranslation();
+
   const {
     options,
     value,
@@ -60,7 +63,7 @@ const CustomSelect: React.FC<UnifiedSelectProps> = (props) => {
   } = props;
 
   const finalOptions = includeAllOption
-    ? [{ value: 'ALL', label: 'ALL' }, ...options]
+    ? [{ value: 'ALL', label: t('ui.all') }, ...options]
     : options;
 
   const handleChange = (
@@ -188,7 +191,7 @@ const WheelMenuList = (menuProps: any) => {
       options={finalOptions}
       value={value}
       onChange={handleChange}
-      placeholder={placeholder || 'Select...'}
+      placeholder={placeholder || t('ui.select')}
       isClearable={isClearable}
       isDisabled={isDisabled}
       isLoading={isLoading}

@@ -34,8 +34,12 @@ import { AppMode } from '@store/features/app';
 import TimezoneSelect from '../TimezoneSelect';
 import { isObject } from 'lodash';
 import { MdLogout, MdLockOutline } from 'react-icons/md';
+import { useTranslation } from 'react-i18next';
+import LanguageDropdown from '@components/common/LanguageDropdown';
 
 const Header = () => {
+  const { t, i18n } = useTranslation();
+
   // Navigation
   const navigate = useNavigate();
 
@@ -86,6 +90,7 @@ const Header = () => {
   const handleChangePassword = useCallback(() => {
     navigate('change-password');
   }, [navigate]);
+
 
   const handleClick = (participantName: string, participantId: string) => {
       navigate(`/participant/position/${participantName}`, {
@@ -144,7 +149,7 @@ const Header = () => {
               />
             </PopoverTrigger>
             <Portal>
-              <PopoverContent outline="none">
+              <PopoverContent outline="none" minW={{ base: '300px', md: '340px' }}>
                 <PopoverArrow />
                 <PopoverCloseButton />
                 <PopoverHeader>
@@ -168,13 +173,24 @@ const Header = () => {
                   </HStack>
                 </PopoverHeader>
                 <PopoverBody>
-                  <Box mb={2}>
-                    <TimezoneSelect
-                      value={timezoneIana}
-                      onChange={handleTimezone}
-                      date={new Date()}
-                    />
-                  </Box>
+                  <VStack spacing={3} align="stretch">
+                    <Box>
+                      <Text fontSize="sm" color="gray.600" mb={1}>
+                        {t('ui.language')}
+                      </Text>
+                      <LanguageDropdown size="xs" showCode={true} showName={false} />
+                    </Box>
+                    <Box>
+                      <Text fontSize="sm" color="gray.600" mb={1}>
+                        {t('ui.timezone')}
+                      </Text>
+                      <TimezoneSelect
+                        value={timezoneIana}
+                        onChange={handleTimezone}
+                        date={new Date()}
+                      />
+                    </Box>
+                  </VStack>
                   <Button
                     variant="ghost"
                     colorScheme="muted"
@@ -182,7 +198,7 @@ const Header = () => {
                     justifyContent="flex-start"
                     leftIcon={<MdLockOutline size={18} />}
                     onClick={handleChangePassword}>
-                    Change Password
+                    {t('ui.change_password')}
                   </Button>
                 </PopoverBody>
                 <PopoverFooter>
@@ -193,7 +209,7 @@ const Header = () => {
                     justifyContent="flex-start"
                     leftIcon={<MdLogout size={18} />}
                     onClick={logout}>
-                    Logout
+                    {t('ui.logout')}
                   </Button>
                 </PopoverFooter>
               </PopoverContent>

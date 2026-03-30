@@ -49,8 +49,10 @@ import { hasActionPermission } from '@helpers/permissions';
 import { formatNumberWithCommas } from '@utils';
 import Decimal from 'decimal.js';
 import { MdWarningAmber } from "react-icons/md";
+import { useTranslation } from 'react-i18next';
 
 const ParticipantPositions = () => {
+    const { t } = useTranslation();
 
     const [pageNumber, setPageNumber] = useState<String>('1');
     const [tableData, setTableData] = useState<IParticipantPositionData[]>([]);
@@ -91,9 +93,9 @@ const ParticipantPositions = () => {
         } catch (error: any) {
             const err = error as IApiErrorResponse;
             toast({
-                title: 'Failed to fetch participant positions',
+                title: t('ui.failed_to_fetch_participant_positions'),
                 position: 'top',
-                description: getErrorMessage(err as IApiErrorResponse) || 'Something went wrong. Please try again.',
+                description: getErrorMessage(err as IApiErrorResponse) || t('ui.something_went_wrong'),
                 status: 'error',
                 duration: 3000,
                 isClosable: true,
@@ -107,7 +109,7 @@ const ParticipantPositions = () => {
             await syncHubParticipantsToPortal();
             await getPositionList();
             toast({
-                title: 'Data refreshed',
+                title: t('ui.data_refreshed'),
                 position: 'top',
                 status: 'success',
                 duration: 3000,
@@ -115,9 +117,9 @@ const ParticipantPositions = () => {
             });
         } catch (error) {
             toast({
-                title: 'Error refreshing data',
+                title: t('ui.error_refreshing_data'),
                 position: 'top',
-                description: getErrorMessage(error as IApiErrorResponse) || 'Something went wrong. Please try again.',
+                description: getErrorMessage(error as IApiErrorResponse) || t('ui.something_went_wrong'),
                 status: 'error',
                 duration: 3000,
                 isClosable: true,
@@ -148,7 +150,7 @@ const ParticipantPositions = () => {
             const baseColumns = [
                 {
                     Header: () => (
-                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">DFSP ID</Text>
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">{t('ui.dfsp_id')}</Text>
                     ),
                     accessor: 'participantName',
                     Cell: ({ row }: any) => (
@@ -165,7 +167,7 @@ const ParticipantPositions = () => {
                 },
                 {
                     Header: () => (
-                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">DFSP Name</Text>
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">{t('ui.dfsp_name')}</Text>
                     ),
                     accessor: 'description',
                     minWidth:250,
@@ -179,7 +181,7 @@ const ParticipantPositions = () => {
                 },
                 {
                     Header: () => (
-                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Currency</Text>
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">{t('ui.currency')}</Text>
                     ),
                     accessor: 'currency',
                     Cell: ({ value }: any) => (
@@ -190,7 +192,7 @@ const ParticipantPositions = () => {
                 },
                 {
                     Header: () => (
-                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Balance</Text>
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">{t('ui.balance')}</Text>
                     ),
                     accessor: 'balance',
                     Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
@@ -220,7 +222,7 @@ const ParticipantPositions = () => {
                 },
                 {
                     Header: () => (
-                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Current Position</Text>
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">{t('ui.current_position')}</Text>
                     ),
                     accessor: 'currentPosition',
                     Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
@@ -235,7 +237,7 @@ const ParticipantPositions = () => {
                 },
                 {
                     Header: () => (
-                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC %</Text>
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">{t('ui.ndc_percent')}</Text>
                     ),
                     accessor: 'ndcPercent',
                     Cell: ({ value }: any) => (
@@ -246,7 +248,7 @@ const ParticipantPositions = () => {
                 },
                 {
                     Header: () => (
-                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC</Text>
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">{t('ui.ndc')}</Text>
                     ),
                     accessor: 'ndc',
                     Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
@@ -275,7 +277,7 @@ const ParticipantPositions = () => {
                 },
                 {
                     Header: () => (
-                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">NDC Used %</Text>
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">{t('ui.ndc_used_percent')}</Text>
                     ),
                     accessor: 'ndcUsed',
                     Cell: ({ row }: { row: Row<IParticipantPositionData> }) => {
@@ -300,7 +302,7 @@ const ParticipantPositions = () => {
                 },
                 {
                     Header: () => (
-                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Enable/Disable</Text>
+                        <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">{t('ui.enable_disable')}</Text>
                     ),
                     id: "isActive",
                     disableSortBy: true,
@@ -321,7 +323,7 @@ const ParticipantPositions = () => {
 
             const actionColumn = hasActionPermission("CreateApprovalRequest") ? [{
                 Header: () => (
-                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">Action</Text>
+                    <Text flex={1} fontWeight="bold" fontSize="sm" textTransform="capitalize">{t('ui.action')}</Text>
                 ),
                 id: "action",
                 disableSortBy: true,
@@ -340,7 +342,7 @@ const ParticipantPositions = () => {
                             py={2}
                             mr={8}
                         >
-                            UPDATE
+                            {t('ui.update').toUpperCase()}
                         </MenuButton>
                         <MenuList
                             border="1px solid"
@@ -359,7 +361,7 @@ const ParticipantPositions = () => {
                                     onDepositOpen();
                                 }}
                             >
-                                Deposit
+                                {t('ui.deposit')}
                             </MenuItem>
                             <Divider my={1} />
                             <MenuItem
@@ -369,7 +371,7 @@ const ParticipantPositions = () => {
                                     onWithdrawOpen();
                                 }}
                             >
-                                Withdraw
+                                {t('ui.withdraw')}
                             </MenuItem>
                             <Divider my={1} />
                             <MenuItem
@@ -379,7 +381,7 @@ const ParticipantPositions = () => {
                                     onNdcOpen();
                                 }}
                             >
-                                Net Debit Cap
+                                {t('ui.net_debit_cap')}
                             </MenuItem>
                         </MenuList>
                     </Menu>
@@ -388,7 +390,7 @@ const ParticipantPositions = () => {
 
             return [...baseColumns, ...actionColumn];
         },
-        []
+        [t]
     ) as Column<IParticipantPositionData>[];
 
     useEffect(() => {
@@ -425,8 +427,8 @@ const ParticipantPositions = () => {
                 position: 'top',
                 description:
                     data.requestedAction === PositionActionType.UPDATE_NDC_PERCENTAGE
-                        ? `Percentage: ${data.amount}% ${data.currency}`
-                        : `Amount: ${data.amount} ${data.currency}`,
+                        ? `${t('ui.percentage')}: ${data.amount}% ${data.currency}`
+                        : `${t('ui.amount')}: ${data.amount} ${data.currency}`,
                 status: 'success',
                 duration: 3000,
                 isClosable: true,
@@ -438,7 +440,7 @@ const ParticipantPositions = () => {
             toast({
                 title: `Failed to ${actionLabel}`,
                 position: 'top',
-                description: getErrorMessage(error) || 'Something went wrong',
+                description: getErrorMessage(error) || t('ui.something_went_wrong'),
                 status: 'error',
                 duration: 3000,
                 isClosable: true,
@@ -447,7 +449,7 @@ const ParticipantPositions = () => {
     };
 
     const handleDeposit = (amountStr: string) => {
-        const message = `Deposit request created and awaiting approval`;
+        const message = t('ui.deposit_request_created_and_awaiting_approval');
         const amountDec = new Decimal(amountStr);
         const data: IApprovalRequest = {
             requestedAction: PositionActionType.DEPOSIT,
@@ -464,7 +466,7 @@ const ParticipantPositions = () => {
         
         if (!selectedParticipant) return;
 
-        const message = `Withdraw request created and awaiting approval`;
+        const message = t('ui.withdraw_request_created_and_awaiting_approval');
         const amountDec = new Decimal(amountStr);
         const data: IApprovalRequest = {
             requestedAction: PositionActionType.WITHDRAW,
@@ -487,19 +489,19 @@ const ParticipantPositions = () => {
         const ndc = new Decimal(selectedParticipant.ndc || 0);
 
             if (amountDec.greaterThan(participantBalance)) {
-                return showError(`Amount is invalid. Transaction amount cannot exceed the available balance.`);
+                return showError(t('ui.amount_is_invalid_transaction_amount_cannot_exceed_the_available_balance'));
             }
 
             if (!ndcPercent && remainingBalance.lessThan(ndc)) {
-                return showError(`Amount is invalid. Balance after this transaction cannot be lower than the NDC.`);
+                return showError(t('ui.amount_is_invalid_balance_after_this_transaction_cannot_be_lower_than_the_ndc'));
             }
 
             if (rawCurrentPosition.isNegative() && remainingBalance.lessThan(absoluteCurrentPosition)) {
-                return showError(`Amount is invalid. Balance after this transaction cannot be lower than the Current Position.`);
+                return showError(t('ui.amount_is_invalid_balance_after_this_transaction_cannot_be_lower_than_the_current_position'));
             }
 
             if(ndcPercent && rawCurrentPosition.isNegative() && ndcAfterWithdraw!.lessThan(absoluteCurrentPosition)){
-                return showError(`Amount is invalid. This transaction amount results in NDC lower than the Current Position.`);
+                return showError(t('ui.amount_is_invalid_this_transaction_amount_results_in_ndc_lower_than_the_current_position'));
             }
 
             approvalRequest(data, message, onWithdrawClose);
@@ -507,7 +509,7 @@ const ParticipantPositions = () => {
 
     const showError = (description: string) => {
         toast({
-            title: 'Rejected Withdraw',
+            title: t('ui.rejected_withdraw'),
             description,
             status: 'error',
             duration: 3000,
@@ -517,7 +519,7 @@ const ParticipantPositions = () => {
     };
 
     const handleNetDebitCard = (type: 'fixed' | 'percentage', amountStr: string) => {
-        const message = `NDC update request created and awaiting approval`;
+        const message = t('ui.ndc_update_request_created_and_awaiting_approval');
         let amountDec = new Decimal(amountStr);
         const data: IApprovalRequest = {
             requestedAction:
@@ -538,8 +540,8 @@ const ParticipantPositions = () => {
         amountDec = type === 'percentage' ? participantBalanceDec.mul(amountDec.div(100)).toDecimalPlaces(2, Decimal.ROUND_DOWN): amountDec ;
         if(rawCurrentPosition.isNegative() && amountDec.lessThan(absoluteCurrentPosition)){
             toast({
-                title: 'Invalid NDC Amount',
-                description: `NDC value cannot be lower than the Current Position.`,
+                title: t('ui.invalid_ndc_amount'),
+                description: t('ui.ndc_value_cannot_be_lower_than_the_current_position'),
                 status: 'error',
                 duration: 3000,
                 isClosable: true,
@@ -549,8 +551,8 @@ const ParticipantPositions = () => {
         }
         else if (type === 'fixed' && amountDec.greaterThan(participantBalance)) {
             toast({
-            title: 'Invalid NDC Amount',
-            description: `NDC value cannot exceed the participant’s Balance.`,
+            title: t('ui.invalid_ndc_amount'),
+            description: t('ui.ndc_value_cannot_exceed_the_participants_balance'),
             status: 'error',
             duration: 3000,
             isClosable: true,
@@ -573,9 +575,9 @@ const ParticipantPositions = () => {
         try {
             await updateParticipantStatus(values);
             toast({
-                title: `Success`,
+                title: t('ui.success'),
                 position: 'top',
-                description: `Participant status ${values.activeStatus} updated successfully`,
+                description: `${t('ui.participant_status')} ${values.activeStatus} ${t('ui.updated_successfully')}`,
                 status: 'success',
                 duration: 3000,
                 isClosable: true,
@@ -584,9 +586,9 @@ const ParticipantPositions = () => {
         } catch (error: any) {
             const err = error as IApiErrorResponse;
             toast({
-                title: 'Error',
+                title: t('ui.error'),
                 position: 'top',
-                description: getErrorMessage(err) || 'Failed to update status.',
+                description: getErrorMessage(err) || t('ui.failed_to_update_status'),
                 status: 'error',
                 duration: 3000,
                 isClosable: true,
@@ -628,21 +630,21 @@ const ParticipantPositions = () => {
     return (
 
         <VStack align="flex-start" w="full" h="full" p="3" spacing={0} mt={10}>
-            <Heading fontSize="2xl" fontWeight="bold" mb={6}>Participant Positions</Heading>
+            <Heading fontSize="2xl" fontWeight="bold" mb={6}>{t('ui.participant_positions')}</Heading>
 
             <HStack align="center">
-                <Tooltip label='Refresh' bg='white' color='black'>
+                <Tooltip label={t('ui.refresh_data')} bg='white' color='black'>
                     <IconButton
                         colorScheme="muted"
                         variant="ghost"
-                        aria-label="Refresh data"
+                        aria-label={t('ui.refresh_data')}
                         icon={<IoReload />}
                         onClick={handleRefresh}
                     />
                 </Tooltip>
 
                 <Text fontSize="sm" color="muted.700">
-                    Last Updated at {`${stringDateTime} ${selectedTimezone.label}`}
+                    {t('ui.last_updated_at')} {`${stringDateTime} ${selectedTimezone.label}`}
                 </Text>
             </HStack>
 
@@ -726,28 +728,28 @@ const ParticipantPositions = () => {
                      px={4} py={3} bg="gray.50" borderTopWidth="1px">
                         <HStack flex={2}>
                             <IconButton
-                                aria-label="Skip to start"
+                                aria-label={t('ui.skip_to_start')}
                                 variant="ghost"
                                 icon={<TfiAngleDoubleLeft />}
                                 isDisabled={!canPreviousPage}
                                 onClick={() => gotoPage(0)}
                             />
                             <IconButton
-                                aria-label="Go Previous"
+                                aria-label={t('ui.go_previous')}
                                 variant="ghost"
                                 icon={<TfiAngleLeft />}
                                 isDisabled={!canPreviousPage}
                                 onClick={previousPage}
                             />
                             <IconButton
-                                aria-label="Go Next"
+                                aria-label={t('ui.go_next')}
                                 variant="ghost"
                                 icon={<TfiAngleRight />}
                                 isDisabled={!canNextPage}
                                 onClick={nextPage}
                             />
                             <IconButton
-                                aria-label="Skip to end"
+                                aria-label={t('ui.skip_to_end')}
                                 variant="ghost"
                                 icon={<TfiAngleDoubleRight />}
                                 isDisabled={!canNextPage}
@@ -755,16 +757,16 @@ const ParticipantPositions = () => {
                             />
                         </HStack>
                         <Text>
-                            Page{' '}
+                            {t('ui.page')}{' '}
                             <strong>
-                                {pageIndex + 1} of {pageOptions.length || 1}
+                                {pageIndex + 1} {t('ui.of')} {pageOptions.length || 1}
                             </strong>
                         </Text>
                         <Box h="6">
                             <Divider orientation="vertical" />
                         </Box>
                         <HStack>
-                            <Text> Go to page : </Text>
+                            <Text>{t('ui.go_to_page')}</Text>
                             <Input
                                 value={pageNumber ? Number(pageNumber) : ''}
                                 textAlign="center"

@@ -60,6 +60,7 @@ import { RootState } from '@store';
 import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 import { PAGE_SIZE_OPTIONS } from '@utils/constants';
 import { formatNumberWithCommas } from '@utils';
+import { useTranslation } from 'react-i18next';
 
 const TransferDetails = lazy(() => import('./TransferDetails'));
 
@@ -67,6 +68,7 @@ const transferHelper = new TransferHelper();
 
 const Transfer = () => {
   const toast = useToast();
+  const { t } = useTranslation();
   const { start, complete } = useLoadingContext();
   const [runButtonState, setRunButtonState] = useState(true);
 
@@ -240,7 +242,7 @@ const Transfer = () => {
           if (!data?.transferInfoList?.length) {
             toast({
               position: 'top',
-              description: 'No data found',
+              description: t('ui.no_data_found'),
               status: 'warning',
               isClosable: true,
               duration: 3000
@@ -305,20 +307,20 @@ const Transfer = () => {
     () => [
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Transfer ID</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.transfer_id')}</Text>
         ),
         accessor: 'transferId',
         disableSortBy: true
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">State</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.state')}</Text>
         ),
         accessor: 'state'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Currency</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.currency')}</Text>
         ),
         accessor: 'currency',
         Cell: ({ value }) => (
@@ -329,7 +331,7 @@ const Transfer = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Amount</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.amount')}</Text>
         ),
         accessor: 'amount',
         Cell: ({ value }) => (
@@ -340,13 +342,13 @@ const Transfer = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Payer DFSP ID</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.payer_dfsp_id')}</Text>
         ),
         accessor: 'payerDfsp'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Payer DFSP Name</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.payer_dfsp_name')}</Text>
         ),
         accessor: 'payerDfspName',
         Cell: ({ value }) => (
@@ -360,13 +362,13 @@ const Transfer = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Payee DFSP ID</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.payee_dfsp_id')}</Text>
         ),
         accessor: 'payeeDfsp'
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Payee DFSP Name</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.payee_dfsp_name')}</Text>
         ),
         accessor: 'payeeDfspName',
         Cell: ({ value }) => (
@@ -379,7 +381,7 @@ const Transfer = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Window ID</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.window_id')}</Text>
         ),
         accessor: 'windowId',
          Cell: ({ value }) => (
@@ -390,7 +392,7 @@ const Transfer = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Settlement ID</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.settlement_id')}</Text>
         ),
         accessor: 'settlementBatch',
         Cell: ({ value }) => (
@@ -401,12 +403,12 @@ const Transfer = () => {
       },
       {
         Header: () => (
-          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Submitted Date</Text>
+          <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.submitted_date')}</Text>
         ),
         accessor: 'submittedOnDate'
       }
     ],
-    []
+    [t]
   );
 
   const {
@@ -461,18 +463,18 @@ const Transfer = () => {
     } as const;
 
   const dateRangeOptions = [
-    { value: 'oneDay', label: 'Past 24 Hours' },
-    { value: 'today', label: 'Today' },
-    { value: 'twoDay', label: 'Past 48 Hours' },
-    { value: 'oneWeek', label: 'Past Week' },
-    { value: 'oneMonth', label: 'Past Month' },
-    { value: 'oneYear', label: 'Past Year' },
-    { value: 'custom', label: 'Custom Range' },
+    { value: 'oneDay', label: t('ui.past_24_hours') },
+    { value: 'today', label: t('ui.today') },
+    { value: 'twoDay', label: t('ui.past_48_hours') },
+    { value: 'oneWeek', label: t('ui.past_week') },
+    { value: 'oneMonth', label: t('ui.past_month') },
+    { value: 'oneYear', label: t('ui.past_year') },
+    { value: 'custom', label: t('ui.custom_range') },
   ];
 
   const transferTypeOptions = [
-    { value: 'inbound', label: 'Inbound' },
-    { value: 'outbound', label: 'Outbound' },
+    { value: 'inbound', label: t('ui.inbound') },
+    { value: 'outbound', label: t('ui.outbound') },
   ];
 
   return (
@@ -488,7 +490,7 @@ const Transfer = () => {
       )}
 
       <VStack align="flex-start" w="full" h="full" py="2" px="1" mt={9}>
-        <Heading fontSize="2xl" fontWeight="bold" mb={6}>Transfer Overview</Heading>
+        <Heading fontSize="2xl" fontWeight="bold" mb={6}>{t('ui.transfer_overview')}</Heading>
       </VStack>
 
       <Stack py="2" px="1" spacing={0} w="full">
@@ -500,7 +502,7 @@ const Transfer = () => {
           <FormControl isInvalid={!isEmpty(errors.transferId)}>
             <Input
               type="input"
-              placeholder="Transfer ID"
+              placeholder={t('ui.transfer_id')}
               borderColor="gray.300"
               {...register('transferId')}
             />
@@ -512,7 +514,7 @@ const Transfer = () => {
 
           <CustomSelect
             isDisabled={isTransferIdLocked}
-            placeholder="Date Range"
+            placeholder={t('ui.date_range')}
             options={dateRangeOptions}
             value={dateRangeOptions.find(option => option.value === dateRange) || null}
             onChange={(selectedOption) => {
@@ -545,7 +547,7 @@ const Transfer = () => {
                   );
                 }}
                 name="fromDate"
-              /> : <p>Loading</p>}
+              /> : <p>{t('ui.loading')}</p>}
             <FormErrorMessage>{errors.fromDate?.message}</FormErrorMessage>
           </FormControl>
 
@@ -573,13 +575,13 @@ const Transfer = () => {
                 }}
                 name="toDate"
               />
-              : <p>Loading</p>}
+              : <p>{t('ui.loading')}</p>}
             <FormErrorMessage>{errors.toDate?.message}</FormErrorMessage>
           </FormControl>
 
           <CustomSelect
             isDisabled={isTransferIdLocked || isHubUser}
-            placeholder="Transfer Type"
+            placeholder={t('ui.transfer_type')}
             options={transferTypeOptions.map(option => ({
               value: option.value,
               label: option.label
@@ -602,7 +604,7 @@ const Transfer = () => {
                   isMulti={false}
                   maxMenuHeight={300}
                   isClearable={true}
-                  placeholder="Select Currency"
+                  placeholder={t('ui.select_currency')}
                   options={currencyList?.map((item) => ({
                     value: item.currency,
                     label: item.currency
@@ -632,7 +634,7 @@ const Transfer = () => {
                   isMulti={false}
                   maxMenuHeight={300}
                   isClearable={true}
-                  placeholder="Transfer State"
+                  placeholder={t('ui.transfer_state')}
                   options={tranStateRes?.data?.transferStateInfoList?.map((item) => ({
                     value: item.transferStateId,
                     label: item.transferState
@@ -660,7 +662,7 @@ const Transfer = () => {
                 control={control}
                 name="payerFspId"
                 render={({ field }) => (
-                  <CustomSelect placeholder="Payer FSP ID"
+                  <CustomSelect placeholder={t('ui.payer_fsp_id')}
                     isDisabled={isTransferIdLocked}
                     isMulti={false}
                     maxMenuHeight={300}
@@ -713,7 +715,7 @@ const Transfer = () => {
                   isMulti={false}
                   maxMenuHeight={300}
                   isClearable={true}
-                  placeholder="Select Payer ID Type"
+                  placeholder={t('ui.select_payer_id_type')}
                   options={idTypeRes?.data?.idTypeInfoList?.map((item) => ({
                     value: item.partyIdentifierTypeId,
                     label: item.name
@@ -741,7 +743,7 @@ const Transfer = () => {
              _disabled={disabledInputStyles}
              _placeholder={disabledPlaceholderStyles}
               type="input"
-              placeholder="Payer ID Value"
+              placeholder={t('ui.payer_id_value')}
               {...register('payerIdentifierValue')}
             />
             <FormErrorMessage>
@@ -760,7 +762,7 @@ const Transfer = () => {
                     isMulti={false}
                     maxMenuHeight={300}
                     isClearable={true}
-                    placeholder="Payee FSP ID"
+                    placeholder={t('ui.payee_fsp_id')}
                     options={
                       participantRes?.data?.participantInfoList?.map((item) => ({
                         value: item.participantName,
@@ -807,7 +809,7 @@ const Transfer = () => {
                       isMulti={false}
                       maxMenuHeight={300}
                       isClearable={true}
-                      placeholder="Payee FSP ID"
+                      placeholder={t('ui.payee_fsp_id')}
                       options={
                         participantRes?.data?.participantInfoList?.map((item) => ({
                           value: item.participantName,
@@ -840,7 +842,7 @@ const Transfer = () => {
                   isMulti={false}
                   maxMenuHeight={300}
                   isClearable={true}
-                  placeholder="Select Payee ID Type"
+                  placeholder={t('ui.select_payee_id_type')}
                   options={idTypeRes?.data?.idTypeInfoList?.map((item) => ({
                     value: item.partyIdentifierTypeId,
                     label: item.name
@@ -866,7 +868,7 @@ const Transfer = () => {
             <Input
              isDisabled={isTransferIdLocked}
               type="input"
-              placeholder="Payee ID Value"
+              placeholder={t('ui.payee_id_value')}
              _disabled={disabledInputStyles}
              _placeholder={disabledPlaceholderStyles}
               {...register('payeeIdentifierValue')}
@@ -880,7 +882,7 @@ const Transfer = () => {
       </Stack>
 
       <Flex justify="flex-end" align="center" px={1} pt={4} pb={2} gap={4}>
-        <Button onClick={onCancelHandler}>Clear Filter</Button>
+        <Button onClick={onCancelHandler}>{t('ui.clear_filter')}</Button>
 
         <Button
           color="white"
@@ -891,7 +893,7 @@ const Transfer = () => {
             opacity: 0.4
           }}
           onClick={handleSubmit((values) => onFindHandler(values, 1, pageSize))}>
-          Find Transfer
+          {t('ui.find_transfer')}
         </Button>
 
       </Flex>
@@ -973,7 +975,7 @@ const Transfer = () => {
              px={4} py={3} bg="gray.50" borderTopWidth="1px">
           <HStack flex={2}>
             <IconButton
-              aria-label="Skip to start"
+              aria-label={t('ui.skip_to_start')}
               variant="ghost"
               icon={<TfiAngleDoubleLeft />}
               isDisabled={pageIndex === 1}
@@ -983,7 +985,7 @@ const Transfer = () => {
               }}
             />
             <IconButton
-              aria-label="Go Previous"
+              aria-label={t('ui.go_previous')}
               variant="ghost"
               icon={<TfiAngleLeft />}
               isDisabled={pageIndex === 1}
@@ -994,7 +996,7 @@ const Transfer = () => {
               }}
             />
             <IconButton
-              aria-label="Go Next"
+              aria-label={t('ui.go_next')}
               variant="ghost"
               icon={<TfiAngleRight />}
               isDisabled={pageIndex === totalPages}
@@ -1005,7 +1007,7 @@ const Transfer = () => {
               }}
             />
             <IconButton
-              aria-label="Skip to end"
+              aria-label={t('ui.skip_to_end')}
               variant="ghost"
               icon={<TfiAngleDoubleRight />}
               isDisabled={pageIndex === totalPages}
@@ -1016,9 +1018,9 @@ const Transfer = () => {
             />
           </HStack>
           <Text>
-            Page{' '}
+            {t('ui.page')}{' '}
             <strong>
-              {pageIndex} of {totalPages || 1}
+              {pageIndex} {t('ui.of')} {totalPages || 1}
             </strong>
           </Text>
           <Box h="6">
@@ -1026,8 +1028,8 @@ const Transfer = () => {
           </Box>
 
           {/* Page size selector */}
-          <HStack spacing={2}>
-            <Text>Rows:</Text>
+          <HStack spacing={2} minW="120px" flexShrink={0}>
+            <Text whiteSpace="nowrap">{t('ui.rows')}</Text>
             <CustomSelect
               options={PAGE_SIZE_OPTIONS}
               value={PAGE_SIZE_OPTIONS.find(opt => opt.value === pageSize.toString()) || null}
@@ -1047,7 +1049,7 @@ const Transfer = () => {
           </HStack>
 
           <HStack>
-            <Text> Go to page : </Text>
+            <Text>{t('ui.go_to_page')}</Text>
             <Input
               value={pageNumber ? Number(pageNumber) : ''}
               textAlign="center"

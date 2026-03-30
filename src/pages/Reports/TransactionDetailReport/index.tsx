@@ -34,6 +34,7 @@ import { CustomSelect } from '@components/interface';
 import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker';
 import { REPORT_NOT_FOUND_ERROR } from '@helpers';
 import { showDataNotFound } from '@utils';
+import { useTranslation } from 'react-i18next';
 
 const transactionDetailReportHelper = new TransactionDetailReportHelper();
 const initialFileName = 'TransactionDetailReport';
@@ -42,6 +43,7 @@ const TransactionDetailReport = () => {
   const tranStateRes = useGetAllTransferStates();
   const { start, complete } = useLoadingContext();
   const toast = useToast();
+  const { t } = useTranslation();
   const [runButtonState, setRunButtonState] = useState(true);
 
   // Redux
@@ -119,7 +121,7 @@ const TransactionDetailReport = () => {
         } else {
           toast({
             position: 'top',
-            description: getErrorMessage(error) || 'Faield to download',
+            description: getErrorMessage(error) || t('ui.failed_to_download'),
             status: 'error',
             isClosable: true,
             duration: 3000
@@ -135,7 +137,7 @@ const TransactionDetailReport = () => {
   return (
     <VStack align="flex-start" h="full" p="3" mt={10} w="full">
       <Heading fontSize="2xl" fontWeight="bold" mb={6}>
-        Transaction Detail Report
+{t('ui.transaction_detail_report')}
       </Heading>
 
       <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
@@ -146,7 +148,7 @@ const TransactionDetailReport = () => {
           pb={2}
         >
           <FormControl isInvalid={!isEmpty(errors.startDate)} position="relative" pb={3}>
-            <FormLabel>Start Date</FormLabel>
+            <FormLabel>{t('ui.start_date')}</FormLabel>
             <Controller
               control={control}
               name="startDate"
@@ -165,7 +167,7 @@ const TransactionDetailReport = () => {
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.endDate)} position="relative" pb={3}>
-            <FormLabel>End Date</FormLabel>
+            <FormLabel>{t('ui.end_date')}</FormLabel>
             <Controller
               control={control}
               name="endDate"
@@ -184,7 +186,7 @@ const TransactionDetailReport = () => {
           </FormControl>
 
           <FormControl isInvalid={!isEmpty(errors.state)}>
-            <FormLabel>Status</FormLabel>
+            <FormLabel>{t('ui.status')}</FormLabel>
             <Controller
               control={control}
               name="state"
@@ -193,7 +195,7 @@ const TransactionDetailReport = () => {
                   isMulti={false}
                   includeAllOption={true}
                   maxMenuHeight={300}
-                  placeholder="Transfer State"
+                  placeholder={t('ui.transfer_state')}
                   options={tranStateRes?.data?.transferStateInfoList?.map((item) => ({
                     value: item.transferStateId,
                     label: item.transferState
@@ -231,7 +233,7 @@ const TransactionDetailReport = () => {
                       : null
                   }
                   onChange={(selected: OptionType | null) => field.onChange(selected?.value || '')}
-                  placeholder="Choose Format"
+                  placeholder={t('ui.choose_format')}
                 />
               )}
             />
@@ -257,9 +259,7 @@ const TransactionDetailReport = () => {
               isDisabled={!isValid || !runButtonState}
               onClick={onDownloadChangeHandler}
               w={{ base: "100%", sm: "auto" }}
-            >
-              Download
-            </Button>
+            >{t('ui.download')}</Button>
           </FormControl>
         </SimpleGrid>
 

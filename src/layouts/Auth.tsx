@@ -22,9 +22,11 @@ import { isEmpty } from 'lodash-es'
 import { useCallback, useEffect, useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import moment from 'moment'
+import { useTranslation } from 'react-i18next'
 
 const Auth = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   /* Disclosure */
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -72,7 +74,7 @@ const Auth = () => {
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="brand" variant="ghost" onClick={onClose}>
-              Ok
+              {t('ui.ok')}
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -82,7 +84,7 @@ const Auth = () => {
       {!isEmpty(data) ? (
         <Box py="2.5" px="5" zIndex={1}>
           <HStack align="center" justify="space-between" mb="2">
-            <Heading fontSize="3xl">Announcements</Heading>
+            <Heading fontSize="3xl">{t('ui.announcements')}</Heading>
             <Flex
               w={10}
               h={6}

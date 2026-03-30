@@ -1,4 +1,5 @@
 {
+  // Navigation
   "ui.logout": "Logout",
   "ui.operation_portal": "Operation Portal",
   "ui.operational_portal": "Operational Portal",
@@ -9,6 +10,8 @@
   "ui.return_home": "Return Home",
   "ui.settlement": "Settlement",
   "ui.transfers": "Transfers",
+
+  // Auth
   "ui.change_password": "Change Password",
   "ui.confirm_password": "Confirm Password*",
   "ui.failed_to_reset_password": "Failed to reset password",
@@ -25,9 +28,13 @@
   "ui.show_password_aria": "Show Password",
   "ui.sign_in": "Sign in",
   "ui.sign_in_to_your_account": "Sign In to your account",
+
+  // Home
   "ui.home": "Home",
   "ui.latest_announcement": "Latest Announcement",
   "ui.welcome_to_the_operation_portal": "Welcome to the Operation Portal!",
+
+  // User Management
   "ui.add_new_user": "Add New User",
   "ui.edit_user": "Edit User",
   "ui.failed_to_fetch_users": "Failed to fetch users",
@@ -48,6 +55,8 @@
   "ui.user_management": "User Management",
   "ui.user_status_updated_successfully": "User status updated successfully",
   "ui.user_updated_successfully": "User updated successfully",
+
+  // Participant
   "ui.account_name": "Account Name",
   "ui.account_name_is_required": "Account Name is required",
   "ui.account_number": "Account Number",
@@ -85,6 +94,8 @@
   "ui.sync_participant": "Sync Participant",
   "ui.view_focal_contacts_for_support": "View focal contacts for support",
   "ui.contacts": "Contacts",
+
+  // Transfer
   "ui.cannot_retrieve_net_transfer_amount": "Cannot retrieve net transfer amount",
   "ui.payee_dfsp_commission": "Payee DFSP Commission",
   "ui.payee_dfsp_fee": "Payee DFSP Fee",
@@ -111,6 +122,8 @@
   "ui.id_type": "ID Type",
   "ui.id_value": "ID Value",
   "ui.sub_scenario": "Sub Scenario",
+
+  // Settlement
   "ui.auto_close_disabled": "Auto-close disabled",
   "ui.auto_close_enabled": "Auto-close enabled",
   "ui.choose_settlement_model": "Choose Settlement Model",
@@ -142,12 +155,16 @@
   "ui.settlement_window_closed_successfully": "Settlement Window Closed Successfully",
   "ui.settlement_windows": "Settlement Windows",
   "ui.window_id": "Window ID",
+
+  // Reports
   "ui.audit_report": "Audit Report",
   "ui.choose_format": "Choose Format",
   "ui.management_summary_report": "Management Summary Report",
   "ui.pdf": "PDF",
   "ui.transaction_detail_report": "Transaction Detail Report",
   "ui.xlsx": "XLSX",
+
+  // Support Center
   "ui.content_type_not_supported": "Content type not supported",
   "ui.contact_list": "Contact List",
   "ui.dfsp_list": "DFSP List",
@@ -159,6 +176,8 @@
   "ui.submit_dispute": "Submit Dispute",
   "ui.support_center": "Support Center",
   "ui.this_feature_is_currently_unavailable": "This feature is currently unavailable.",
+
+  // Forms Validation
   "ui.currency_is_required": "Currency is required",
   "ui.email_is_required": "Email is required",
   "ui.email_required": "Email*",
@@ -180,6 +199,8 @@
   "ui.should_be_less_than_end_date": "Should be less than end date",
   "ui.should_be_less_than_to_date": "Should be less than to date",
   "ui.to_date_must_not_earlier_than_from_date": "To Date must not earlier than From Date",
+
+  // Feedback Messages
   "ui.an_unexpected_error_occurred": "An unexpected error occurred",
   "ui.an_unknown_error_occurred": "An unknown error occurred",
   "ui.copied": "Copied!",
@@ -201,10 +222,15 @@
   "ui.settlement_model_not_found_or_missing_id": "Settlement model not found or missing ID.",
   "ui.toggle_failed": "Toggle failed",
   "ui.update_failed": "Update failed",
+
+  // Accessibility
   "ui.skip_to_end": "Skip to end",
   "ui.skip_to_start": "Skip to start",
   "ui.toggle_sidebar": "Toggle sidebar",
   "ui.toggle_sidebar_aria": "Toggle sidebar",
+
+  // Shared
+  // Shared Core
   "ui.add": "Add",
   "ui.action": "Action",
   "ui.all": "ALL",
@@ -282,6 +308,7 @@
   "ui.to": "To",
   "ui.toggle_row_id": "Toggle row id:",
   "ui.trace_id": "Trace ID",
+  // Shared Transfer Labels
   "ui.today": "Today",
   "ui.inbound": "Inbound",
   "ui.outbound": "Outbound",
@@ -296,6 +323,8 @@
   "ui.payee_dfsp_id": "Payee DFSP ID",
   "ui.payee_dfsp_name": "Payee DFSP Name",
   "ui.loading": "Loading",
+
+  // Shared Settlement Scheduler Labels
   "ui.daily": "Daily",
   "ui.weekdays": "Weekdays",
   "ui.weekends": "Weekends",
@@ -350,6 +379,8 @@
   "ui.delete_schedule_question": "Delete schedule?",
   "ui.are_you_sure_you_want_to_delete": "Are you sure you want to delete",
   "ui.this_action_cannot_be_undone": "This action cannot be undone",
+
+  // Shared Participant Position Labels
   "ui.balance": "Balance",
   "ui.current_position": "Current Position",
   "ui.ndc_percent": "NDC %",
@@ -377,6 +408,8 @@
   "ui.amount_is_invalid_this_transaction_amount_results_in_ndc_lower_than_the_current_position": "Amount is invalid. This transaction amount results in NDC lower than the Current Position.",
   "ui.ndc_value_cannot_be_lower_than_the_current_position": "NDC value cannot be lower than the Current Position.",
   "ui.ndc_value_cannot_exceed_the_participants_balance": "NDC value cannot exceed the participant's Balance.",
+
+  // Shared Settlement Window Labels
   "ui.close_window": "Close Window",
   "ui.create_settlement": "Create Settlement",
   "ui.settlements_submitted": "Settlement(s) Submitted",
@@ -405,6 +438,8 @@
   "ui.created_date": "Created Date",
   "ui.finalized_date": "Finalized Date",
   "ui.please_contact_the_system_administrator_or_check_configuration_settings": "Please contact the system administrator or check configuration settings.",
+
+  // Shared Admin / Approval Labels
   "ui.organization": "Organization",
   "ui.organization_profile": "Organization Profile",
   "ui.organization_profile_updated_successfully": "Organization profile updated successfully.",
@@ -423,6 +458,8 @@
   "ui.reject": "Reject",
   "ui.are_you_sure_you_want_to": "Are you sure you want to",
   "ui.the_request_from": "the request from",
+
+  // Shared Form Entity Labels
   "ui.active": "Active",
   "ui.inactive": "Inactive",
   "ui.start_date": "Start Date",
@@ -435,6 +472,8 @@
   "ui.address": "Address",
   "ui.description": "Description",
   "ui.logo": "Logo",
+
+  // Shared Profile & Funding Labels
   "ui.old_password": "Old Password",
   "ui.new_password": "New Password",
   "ui.only_png_and_jpeg_formats_are_allowed_file_name": "Only PNG and JPEG formats are allowed. File: {{fileName}}",
@@ -449,6 +488,8 @@
   "ui.loading_dfsp_list": "Loading dfsp list",
   "ui.loading_contact_list": "Loading contact list...",
   "ui.loading_transfer_details": "Loading transfer details...",
+
+  // Shared Actions
   "ui.update": "Update",
   "ui.update_schedule": "Update schedule",
   "ui.use_case": "Use Case",

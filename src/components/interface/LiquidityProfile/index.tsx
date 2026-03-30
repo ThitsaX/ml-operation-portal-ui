@@ -34,6 +34,7 @@ import { useRef } from 'react';
 import { Cell, HeaderCell } from '../Table';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
+import { useTranslation } from 'react-i18next';
 import { hasActionPermission } from '@helpers/permissions';
 
 const defaultForm: ILiquidityProfile = {
@@ -49,6 +50,7 @@ interface LiquidityProfileProps {
 }
 
 const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) => {
+    const { t } = useTranslation();
 
     const borderColor = useColorModeValue('gray', 'gray.600');
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -84,9 +86,9 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
         action
             .then(() => {
                 toast({
-                    title: 'Success',
+                    title: t('ui.success'),
                     position: 'top',
-                    description: isEdit ? 'Liquidity Profile updated successfully' : 'Liquidity Profile created successfully',
+                    description: isEdit ? t('ui.liquidity_profile_updated_successfully') : t('ui.liquidity_profile_created_successfully'),
                     status: 'success',
                     duration: 3000,
                     isClosable: true,
@@ -103,7 +105,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
             .catch((err: IApiErrorResponse) => {
                 toast({
                     position: 'top',
-                    description: getErrorMessage(err) || 'Failed to save liquidity profile',
+                    description: getErrorMessage(err) || t('ui.failed_to_save_liquidity_profile'),
                     status: 'error',
                     duration: 3000,
                     isClosable: true,
@@ -112,7 +114,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
             .finally(() => {
                 setIsSaving(false);
             });
-    }, [form, isEdit, toast, onClose, refetch]);
+    }, [form, isEdit, onClose, refetch, t, toast]);
 
     const confirmDelete = useCallback(() => {
         if (!deleteItem?.liquidityProfileId) return;
@@ -123,9 +125,9 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
         })
             .then(() => {
                 toast({
-                    title: 'Success',
+                    title: t('ui.success'),
                     position: 'top',
-                    description: 'Liquidity Profile deleted successfully',
+                    description: t('ui.liquidity_profile_deleted_successfully'),
                     status: 'success',
                     isClosable: true,
                     duration: 3000
@@ -135,7 +137,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
             .catch((err: IApiErrorResponse) => {
                 toast({
                     position: 'top',
-                    description: getErrorMessage(err) || 'Failed to delete liquidity profile',
+                    description: getErrorMessage(err) || t('ui.failed_to_delete_liquidity_profile'),
                     status: 'error',
                     isClosable: true,
                     duration: 3000
@@ -145,7 +147,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                 onConfirmClose();
                 setDeleteItem(null);
             });
-    }, [deleteItem, toast, refetch, onConfirmClose, user]);
+    }, [deleteItem, onConfirmClose, refetch, t, toast, user]);
 
     const handleDeleteClick = (item: ILiquidityProfile) => {
         setDeleteItem(item);
@@ -180,7 +182,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
         <VStack align="flex-start" spacing={4} w="full">
             <HStack justify="space-between" align="center" w="full">
                 <Text fontSize="lg" fontWeight="bold" lineHeight="1.2">
-                    Liquidity Profile
+                    {t('ui.liquidity_profile')}
                 </Text>
                 {hasActionPermission("CreateLiquidityProfile") && (
                     <Button colorScheme="blue" size="md" onClick={() => {
@@ -191,7 +193,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                         setIsEdit(false);
                         onOpen()
                     }}>
-                        Add
+                        {t('ui.add')}
                     </Button>
                 )}
             </HStack>
@@ -210,13 +212,13 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                 <Table variant="unstyled">
                     <Thead bg={headerBg}>
                         <Tr>
-                            <HeaderCell borderColor={borderColor}>Bank Name</HeaderCell>
-                            <HeaderCell borderColor={borderColor}>Account Name</HeaderCell>
-                            <HeaderCell borderColor={borderColor}>Account Number</HeaderCell>
-                            <HeaderCell borderColor={borderColor}>Currency</HeaderCell>
+                            <HeaderCell borderColor={borderColor}>{t('ui.bank_name')}</HeaderCell>
+                            <HeaderCell borderColor={borderColor}>{t('ui.account_name')}</HeaderCell>
+                            <HeaderCell borderColor={borderColor}>{t('ui.account_number')}</HeaderCell>
+                            <HeaderCell borderColor={borderColor}>{t('ui.currency')}</HeaderCell>
                             {(hasActionPermission("ModifyLiquidityProfile") || hasActionPermission("RemoveLiquidityProfile")) && (
                                 <HeaderCell borderColor={borderColor}>
-                                    Action
+                                    {t('ui.action')}
                                 </HeaderCell>
                             )}
                         </Tr>
@@ -224,7 +226,7 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                     <Tbody>
                         {data?.length === 0 && !isLoading && (
                             <Tr>
-                                <Cell colSpan={(hasActionPermission("ModifyLiquidityProfile") || hasActionPermission("RemoveLiquidityProfile")) ? 5 : 4}>No Liquidity found</Cell>
+                                <Cell colSpan={(hasActionPermission("ModifyLiquidityProfile") || hasActionPermission("RemoveLiquidityProfile")) ? 5 : 4}>{t('ui.no_liquidity_found')}</Cell>
                             </Tr>
                         )}
                         {data?.map((item, idx) => (
@@ -241,10 +243,10 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                                     <Td border={`1px solid ${borderColor}`} px={4} py={2}>
                                         <HStack spacing={3} justify="center">
                                             {hasActionPermission("ModifyLiquidityProfile") && (
-                                                <Tooltip label='Edit Liquidity Profile' bg='white' color='black'>
+                                                <Tooltip label={t('ui.edit_liquidity_profile')} bg='white' color='black'>
                                                     <IconButton
                                                         icon={<FiEdit2 />}
-                                                        aria-label="Edit"
+                                                        aria-label={t('ui.edit')}
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => handleEdit(item)}
@@ -253,10 +255,10 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                                             )}
 
                                             {hasActionPermission("RemoveLiquidityProfile") && (
-                                                <Tooltip label='Delete Liquidity Profile' bg='white' color='black'>
+                                                <Tooltip label={t('ui.delete_liquidity_profile')} bg='white' color='black'>
                                                     <IconButton
                                                         icon={<FiTrash2 />}
-                                                        aria-label="Delete"
+                                                        aria-label={t('ui.delete')}
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() =>
@@ -281,19 +283,19 @@ const LiquidityProfile: React.FC<LiquidityProfileProps> = ({ participantId }) =>
                 <AlertDialogOverlay>
                     <AlertDialogContent>
                         <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                            Delete Liquidity Profile
+                            {t('ui.delete_liquidity_profile')}
                         </AlertDialogHeader>
 
                         <AlertDialogBody>
-                            Are you sure you want to delete this liquidity profile? This action cannot be undone.
+                            {t('ui.are_you_sure_you_want_to_delete_this_liquidity_profile')}
                         </AlertDialogBody>
 
                         <AlertDialogFooter>
                             <Button ref={cancelRef} onClick={onConfirmClose}>
-                                Cancel
+                                {t('ui.cancel')}
                             </Button>
                             <Button colorScheme="red" onClick={confirmDelete} ml={3}>
-                                Delete
+                                {t('ui.delete')}
                             </Button>
                         </AlertDialogFooter>
                     </AlertDialogContent>
