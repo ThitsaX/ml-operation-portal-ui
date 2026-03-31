@@ -415,3 +415,75 @@ export const downloadFile = (
   downloadLink.target = '_blank';
   downloadLink.click();
 };
+
+export const getReportDownloadStatus = async (
+  user: IUserState,
+  params: any
+) => {
+  const normalizedParams = typeof params === 'string' ? { requestId: params } : params;
+ 
+ 
+  const accessToken = await generateAccessToken({
+    method: 'GET',
+    uri: routes.getReportDownloadStatus,
+    secret: user.auth?.secretKey as string
+  });
+ 
+  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
+  return axios
+    .get<any>(routes.getReportDownloadStatus, {
+      params: normalizedParams
+    })
+    .then((d) => {
+      return d.data;
+    })
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
+};
+ 
+export const getReportDownloadUrlCloud = async (
+  user: IUserState,
+  params: any
+) => {
+ 
+  const accessToken = await generateAccessToken({
+    method: 'POST',
+    uri: routes.getReportDownloadUrl,
+    secret: user.auth?.secretKey as string,
+    payload:params
+  });
+ 
+  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
+  return axios
+    .post<any>(routes.getReportDownloadUrl, params)
+    .then((d) => {
+      return d.data;
+    })
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
+};
+ 
+export const getReportDownloadStatusByRequestId = async (
+  user: IUserState,
+  requestId: string
+) => {
+  return getReportDownloadStatus(user, { requestId });
+};
