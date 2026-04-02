@@ -18,6 +18,22 @@ export default defineConfig(({ mode }) => {
     ],
     define: {
       'process.env': env
-    }
+    },
+    build: {
+      rollupOptions: {
+        onwarn(warning, warn) {
+          // Chakra UI / TanStack ship "use client" directives for RSC-aware bundlers.
+          // Rollup (via Vite) warns when bundling them; safe to ignore for Vite SPA builds.
+          if (
+            warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
+            typeof warning.message === 'string' &&
+            warning.message.includes('"use client"')
+          ) {
+            return;
+          }
+          warn(warning);
+        },
+      },
+    },
   };
 });

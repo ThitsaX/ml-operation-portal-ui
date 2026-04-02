@@ -1,5 +1,6 @@
 import { UserActions } from '@store/features/user';
 import AxiosRequest, { routes } from '@helpers/api';
+import { describe, expect, it, jest } from '@jest/globals';
 
 jest.mock('@helpers/api', () => ({
     __esModule: true,
@@ -14,10 +15,10 @@ describe('login thunk', () => {
             secretKey: 'any-secret-key',
         };
 
-        const mockAxios = { post: jest.fn().mockResolvedValue({ data: mockResponse }) };
+        const mockAxios = { post: jest.fn(() => Promise.resolve({ data: mockResponse })) };
 
         // Make AxiosRequest return our fake axios instance
-        (AxiosRequest as jest.Mock).mockReturnValue({ axios: mockAxios });
+        (AxiosRequest as unknown as jest.Mock).mockReturnValue({ axios: mockAxios });
 
         const thunk = UserActions.login({ email: 'abc@email.com', password: '123' });
         const dispatch = jest.fn();
@@ -33,13 +34,15 @@ describe('login thunk', () => {
 
     it('dispatches rejected on error', async () => {
         const mockAxios = {
-            post: jest.fn().mockRejectedValue({
-                response: { data: { error: { message: 'Unauthorized' } } },
-            }),
+            post: jest.fn(() =>
+                Promise.reject({
+                    response: { data: { error: { message: 'Unauthorized' } } },
+                })
+            ),
         };
 
         // Make AxiosRequest return our fake axios instance
-        (AxiosRequest as jest.Mock).mockReturnValue({ axios: mockAxios });
+        (AxiosRequest as unknown as jest.Mock).mockReturnValue({ axios: mockAxios });
 
         const thunk = UserActions.login({ email: 'abc@email.com', password: 'wrong' });
         const dispatch = jest.fn();
