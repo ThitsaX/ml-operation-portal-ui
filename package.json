@@ -6,7 +6,7 @@
     "i18n:validate": "node scripts/validate-locales-jsonc.mjs",
     "i18n:sync": "node scripts/sync-locales-jsonc.mjs && npm run i18n:validate",
     "dev": "npm run i18n:sync && vite",
-    "build": "npm run i18n:sync && tsc && vite build",
+    "build": "npm run i18n:sync && tsc --ignoreDeprecations 6.0 && vite build",
     "preview": "npm run i18n:sync && vite preview",
     "gen:theme-typings": "chakra-cli tokens ./src/theme/index.ts",
     "postinstall": "yarn run gen:theme-typings && husky install",
