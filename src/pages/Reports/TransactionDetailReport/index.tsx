@@ -4,6 +4,9 @@ import {
   FormErrorMessage,
   FormLabel,
   Heading,
+  HStack,
+  Spinner,
+  Text,
   Stack,
   useToast,
   VStack,
@@ -35,6 +38,14 @@ import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker
 import { REPORT_NOT_FOUND_ERROR } from '@helpers';
 import { showDataNotFound } from '@utils';
 import { useTranslation } from 'react-i18next';
+import { useReportDownloadState } from '@hooks/useReportDownloadState';
+
+
+const statusLabel: Record<string, string> = {
+  PENDING: 'Queuing report...',
+  RUNNING: 'Generating report...',
+  READY: 'Downloading...',
+};
 
 const transactionDetailReportHelper = new TransactionDetailReportHelper();
 const initialFileName = 'TransactionDetailReport';
@@ -84,6 +95,100 @@ const TransactionDetailReport = () => {
   }, [selectedTimezone, setValue]);
 
   /* Handlers */
+  const { downloadStatus, isDownloading, readyFile, startPolling, consumeDownload } = useReportDownloadState(
+    'TransactionDetailReport',
+    (_fileName) => {
+      toast({
+        position: 'top',
+        title: 'Report ready',
+        description: 'Your report is ready. Click the download link to save the file.',
+        status: 'success',
+        isClosable: true,
+        duration: 5000,
+      });
+    },
+    (message: any) => {
+      if (message.error_code === REPORT_NOT_FOUND_ERROR) {
+        showDataNotFound(toast);
+        return;
+      }
+      toast({
+        position: 'top',
+        description: getErrorMessage(message) || 'Failed to request report',
+        status: 'error',
+        isClosable: true,
+        duration: 3000,
+      });
+    }
+  );
+
+  const onDownloadClick = async () => {
+    if (!isValid) {
+      toast({
+        position: 'top',
+        description: 'Please fill required fields before downloading.',
+        status: 'warning',
+        isClosable: true,
+        duration: 2000,
+      });
+      return;
+    }
+
+    if (isDownloading) return;
+
+    start();
+
+    const formData = getValues();
+    const fileType = formData.fileType;
+
+    const StartDate = moment.tz(formData.startDate, selectedTimezone?.value)
+      .format('YYYY-MM-DDTHH:mm:ss[Z]');
+
+    const EndDate = moment.tz(formData.endDate, selectedTimezone?.value)
+      .format('YYYY-MM-DDTHH:mm:ss[Z]');
+
+    let tzOffSet: string = moment().tz(selectedTZString).format('ZZ').replace('+', '');
+
+    try {
+      const res = await generateTransactionDetailReport(user, {
+      startDate: StartDate,
+      endDate: EndDate,
+      state: formData.state,
+      fileType: fileType,
+      timezoneOffset: tzOffSet,
+      dfspId: isHubUser ? 'all' : user?.data?.participantName
+      });
+
+      const requestId = res?.requestId ?? res?.reqId ?? res?.reportRequestId;
+
+      if (typeof requestId === 'string' && requestId.length > 0) {
+        startPolling(requestId, fileType);
+      } else {
+        toast({
+          position: 'top',
+          description: 'No request ID returned from server',
+          status: 'error',
+          isClosable: true,
+          duration: 3000,
+        });
+      }
+    } catch (error: any) {
+      if (error.error_code === REPORT_NOT_FOUND_ERROR) {
+        showDataNotFound(toast);
+      } else {
+        toast({
+          position: 'top',
+          description: getErrorMessage(error) || 'Failed to request report',
+          status: 'error',
+          isClosable: true,
+          duration: 3000,
+        });
+      }
+    } finally {
+      complete();
+    }
+  };
+
   const onDownloadChangeHandler = (e: any) => {
     start();
     setRunButtonState(false);
@@ -137,7 +242,7 @@ const TransactionDetailReport = () => {
   return (
     <VStack align="flex-start" h="full" p="3" mt={10} w="full">
       <Heading fontSize="2xl" fontWeight="bold" mb={6}>
-{t('ui.transaction_detail_report')}
+        {t('ui.transaction_detail_report')}
       </Heading>
 
       <Stack borderWidth="1px" borderRadius="lg" p={4} spacing={6} w="full">
@@ -256,12 +361,68 @@ const TransactionDetailReport = () => {
             <Button
               flex={{ base: '1', md: '0 0 50%' }}
               colorScheme="blue"
-              isDisabled={!isValid || !runButtonState}
-              onClick={onDownloadChangeHandler}
+              isDisabled={isDownloading}
+              isLoading={isDownloading}
+              loadingText="Download"
+              onClick={onDownloadClick}
               w={{ base: "100%", sm: "auto" }}
             >{t('ui.download')}</Button>
           </FormControl>
         </SimpleGrid>
+
+        {isDownloading && (
+          <HStack
+            w="full"
+            bg="blue.50"
+            borderWidth="1px"
+            borderColor="blue.200"
+            borderRadius="md"
+            px={4}
+            py={3}
+            spacing={3}
+          >
+            <Spinner size="sm" color="blue.500" flexShrink={0} />
+            <Box>
+              <Text fontSize="sm" fontWeight="semibold" color="blue.700">
+                {statusLabel[downloadStatus] ?? 'Processing...'}
+              </Text>
+              <Text fontSize="xs" color="blue.500">
+                You can navigate away. The report will continue processing in the background.
+              </Text>
+            </Box>
+          </HStack>
+        )}
+
+        {readyFile && (
+          <HStack
+            w="full"
+            bg="green.50"
+            borderWidth="1px"
+            borderColor="green.200"
+            borderRadius="md"
+            px={4}
+            py={3}
+            spacing={3}
+            justify="space-between"
+          >
+            <Box overflow="hidden">
+              <Text fontSize="sm" fontWeight="semibold" color="green.700">
+                Report ready
+              </Text>
+              <Text fontSize="xs" color="green.600" noOfLines={1} title={readyFile.fileName}>
+                {readyFile.fileName}
+              </Text>
+            </Box>
+            <Button
+              size="sm"
+              colorScheme="green"
+              flexShrink={0}
+              onClick={consumeDownload}
+            >
+              Click to Download
+            </Button>
+          </HStack>
+        )}
 
       </Stack>
     </VStack>
