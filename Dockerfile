@@ -23,6 +23,9 @@ RUN yarn install --immutable
 
 # Set placeholder environment variables for build
 ENV VITE_API_URL=__VITE_API_URL__
+ENV VITE_JOB_TTL_MIN=__VITE_JOB_TTL_MIN__
+ENV VITE_READY_TTL_HOURS=__VITE_READY_TTL_HOURS__
+ENV VITE_POLL_INTERVAL_SEC=__VITE_POLL_INTERVAL_SEC__
 
 # Build the React app with placeholders
 RUN yarn build
