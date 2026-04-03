@@ -87,6 +87,8 @@ export const privateRoutes = {
 
   getServiceRequestLink: '/secured/getServiceRequestLink',
   getDisputeLink: '/secured/getDisputeLink',
+  getReportDownloadStatus: '/secured/getReportDownloadStatus',
+  getReportDownloadUrl: '/secured/getReportDownloadUrl',
 };
 
 const routes = {
