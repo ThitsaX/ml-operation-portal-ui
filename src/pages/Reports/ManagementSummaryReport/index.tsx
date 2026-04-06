@@ -52,12 +52,16 @@ const ManagementSummaryReport = () => {
     const fileType = formData.fileType;
 
     const StartDate = moment.tz(formData.startDate, selectedTimezone?.value)
-      .format('YYYY-MM-DDTHH:mm:ss[Z]');
+                      .utc()
+                      .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
     const EndDate = moment.tz(formData.endDate, selectedTimezone?.value)
-      .format('YYYY-MM-DDTHH:mm:ss[Z]');
+                    .utc()
+                    .format('YYYY-MM-DDTHH:mm:ss[Z]');
 
-    let tzOffSet: string = moment().tz(selectedTZString).format('ZZ').replace('+', '');
+    const tzOffSet = selectedTimezone?.offset === 0 ? '0000'
+                        : moment().tz(selectedTimezone?.value).format('ZZ').replace('+', '');
+                  
 
     generateManagementSummaryReport(user, {
       startDate: StartDate,
