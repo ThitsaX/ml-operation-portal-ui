@@ -6,6 +6,7 @@ import {
   type IBusinessContact, type ILiquidityProfile,
   type ICurrency,
   type IParticipantProfile, type IGetParticipantList,
+  type IParticipant,
   IParticipantUserRole,
   IParticipantOrganization,
   type IParticipantPositionData
@@ -13,6 +14,17 @@ import {
 import { type ICreateUserValues, type IModifyUserValues, type IResetPasswordValues } from '@typescript/form'
 import { type AxiosError } from 'axios'
 import { IApprovalRequest } from '@typescript/services'
+
+type ParticipantProfileApi = Omit<IParticipantProfile, 'connectedParticipants'> & {
+  connectedParticipants: IParticipant[]
+}
+
+const formatConnectedParticipants = (value: IParticipant[]): string => {
+  if (value.length === 0) return '-'
+  return value
+    .map(p => `${p.participantName} (${p.participantDescription})`)
+    .join(', ')
+}
 
 export const getParticipantPositionList = async () => {
   const {
@@ -450,7 +462,7 @@ export const getHubCurrency = async () => {
     })
 }
 
-export const getParticipantProfile = async (participantId: string) => {
+export const getParticipantProfile = async (participantId: string): Promise<IParticipantProfile> => {
   const {
     user: { auth, data }
   } = store.getState()
@@ -464,12 +476,18 @@ export const getParticipantProfile = async (participantId: string) => {
   })
   const { axios } = AxiosRequest(accessToken, accessKey)
   return axios
-    .get<IParticipantProfile>(uri, {
+    .get<ParticipantProfileApi>(uri, {
       params: {
         participantId: participantId
       }
     })
-    .then((d) => d.data)
+    .then((d) => {
+      const profile = d.data
+      return {
+        ...profile,
+        connectedParticipants: formatConnectedParticipants(profile.connectedParticipants as IParticipant[])
+      }
+    })
     .catch((error: AxiosError<IApiErrorResponse>) => {
       const { code, message, ...rest } = axiosErrorHandler(error)
       if (code && message) {

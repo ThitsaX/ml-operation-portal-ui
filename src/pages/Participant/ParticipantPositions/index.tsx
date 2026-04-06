@@ -656,15 +656,20 @@ const ParticipantPositions = () => {
                     rounded="lg">
                     <Table variant="simple" {...getTableProps()}>
                         <Thead bg="gray.100">
-                            {headerGroups.map((headerGroup) => (
-                                <Tr {...headerGroup.getHeaderGroupProps()}>
-                                    {headerGroup.headers.map((column) => (
-                                        <Th px={3}
-                                            {...column.getHeaderProps(
-                                                column.disableSortBy
-                                                    ? undefined
-                                                    : column.getSortByToggleProps()
-                                            )}>
+                            {headerGroups.map((headerGroup) => {
+                                const headerGroupProps = headerGroup.getHeaderGroupProps()
+                                const { key: headerGroupKey, ...headerGroupRest } = headerGroupProps
+                                return (
+                                <Tr key={headerGroupKey} {...headerGroupRest}>
+                                    {headerGroup.headers.map((column) => {
+                                        const headerProps = column.getHeaderProps(
+                                            column.disableSortBy
+                                                ? undefined
+                                                : column.getSortByToggleProps()
+                                        )
+                                        const { key: headerKey, ...headerRest } = headerProps
+                                        return (
+                                        <Th key={headerKey} px={3} {...headerRest}>
                                             <HStack align="center" spacing="2" flex={1}>
                                                 {column.render('Header')}
                                                 {column.disableSortBy ? null : (
@@ -698,25 +703,34 @@ const ParticipantPositions = () => {
                                                 )}
                                             </HStack>
                                         </Th>
-                                    ))}
+                                        )
+                                    })}
                                 </Tr>
-                            ))}
+                                )
+                            })}
                         </Thead>
                         <Tbody maxH={300} overflowY="auto" {...getTableBodyProps()}>
                             {page.map((row) => {
                                 prepareRow(row);
+                                const rowProps = row.getRowProps()
+                                const { key: rowKey, ...rowRest } = rowProps
                                 return (
                                     <Tr
+                                        key={rowKey}
                                         fontSize="sm"
                                         cursor="pointer"
                                         _hover={{ bg: 'muted.50' }}
-                                        {...row.getRowProps()}
+                                        {...rowRest}
                                     >
-                                        {row.cells.map((cell) => (
-                                            <Td {...cell.getCellProps()}
-                                                py={2}
-                                                px={3}>{cell.render('Cell')}</Td>
-                                        ))}
+                                        {row.cells.map((cell) => {
+                                            const cellProps = cell.getCellProps()
+                                            const { key: cellKey, ...cellRest } = cellProps
+                                            return (
+                                                <Td key={cellKey} {...cellRest} py={2} px={3}>
+                                                    {cell.render('Cell')}
+                                                </Td>
+                                            )
+                                        })}
                                     </Tr>
                                 );
                             })}

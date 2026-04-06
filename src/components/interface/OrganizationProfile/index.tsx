@@ -40,6 +40,8 @@ const defaultFormValues: IParticipantProfile = {
   mobile: '',
   logo: '',
   logoFileType: '',
+  connectionType: '-',
+  connectedParticipants: '-',
 };
 
 const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId }) => {
@@ -76,6 +78,8 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
     mobile: profile.mobile ?? '',
     logo: profile.logo ?? '',
     logoFileType: profile.logoFileType ?? '',
+    connectionType: profile.connectionType ?? '-',
+    connectedParticipants: profile.connectedParticipants ?? '-',
   });
 
   useEffect(() => {
@@ -165,7 +169,8 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
   const organizationHandler = async (values: IParticipantProfile) => {
     setIsSubmitting(true);
     try {
-      await modifyParticipant(values);
+      const { connectionType, connectedParticipants, ...payload } = values;
+      await modifyParticipant(payload as IParticipantProfile);
       toast({
         title: t('ui.profile_updated'),
         position: 'top',
@@ -212,7 +217,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
           <FormControl isInvalid={!isEmpty(errors.description)} flex={1} isDisabled={!hasEditPermission}>
             <FormLabel fontSize="sm" fontWeight="semibold">{t('ui.description')}</FormLabel>
             <Controller
-              name="description" 
+              name="description"
               control={control}
               render={({ field }) => (
                 <Input {...field} fontSize="md" />
@@ -267,7 +272,7 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
                 <input type="hidden" {...register('logo')} />
                 <input type="hidden" {...register('logoFileType')} />
               </Box>
-              
+
               {preview && (
                 <Box
                   position="relative"
@@ -317,6 +322,32 @@ const OrganizationProfile: React.FC<OrganizationProfileProps> = ({ participantId
                 </Box>
               )}
             </Flex>
+          </FormControl>
+        </Stack>
+
+        <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
+          <FormControl isInvalid={!isEmpty(errors.connectionType)} flex={1} isDisabled>
+            <FormLabel fontSize="sm" fontWeight="semibold">{t('ui.connectionType')}</FormLabel>
+            <Controller
+              name="connectionType"
+              control={control}
+              render={({ field }) => (
+                <Input {...field} fontSize="md" isReadOnly/>
+              )}
+            />
+            <FormErrorMessage fontSize="xs">{errors.connectionType?.message}</FormErrorMessage>
+          </FormControl>
+
+          <FormControl isInvalid={!isEmpty(errors.connectedParticipants)} flex={1} isDisabled>
+            <FormLabel fontSize="sm" fontWeight="semibold">{t('ui.connectedParticipants')}</FormLabel>
+            <Controller
+              name='connectedParticipants'
+              control={control}
+              render={({ field }) => (
+                <Input {...field} fontSize="md" isReadOnly />
+              )}
+            />
+            <FormErrorMessage fontSize="xs">{errors.connectedParticipants?.message}</FormErrorMessage>
           </FormControl>
         </Stack>
 

@@ -469,6 +469,8 @@ export class OrganizationHelper extends FormHelper {
       logoFileType: z.string().nullable().optional(),
       logo: z.string().optional(),
       createdDate: z.number().optional(),
+      connectionType: z.string().optional(),
+      connectedParticipants: z.string().optional(),
     });
   }
 }
