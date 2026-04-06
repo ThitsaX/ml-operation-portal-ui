@@ -71,6 +71,8 @@ export interface IParticipantProfile {
   logoFileType: string | null;
   logo: string | null;
   createdDate?: number;
+  connectionType?:string;
+  connectedParticipants?:string;
 }
 
 export interface IGetParticipantList {
@@ -138,4 +140,9 @@ export enum BusinessContactType {
   LEVEL2 = 'LEVEL2',
   LEVEL3 = 'LEVEL3',
   LEVEL4 = 'LEVEL4',
+}
+
+export interface IParticipant {
+  participantName: string;
+  participantDescription: string;
 }

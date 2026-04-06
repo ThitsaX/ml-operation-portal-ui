@@ -271,6 +271,8 @@
   "ui.go_previous": "Go Previous",
   "ui.loading_audit_details": "Loading audit details...",
   "ui.logo_preview": "Logo Preview",
+  "ui.connectionType": "Connection Type",
+  "ui.connectedParticipants": "Sponsor / Sponsored Participants",
   "ui.made_by": "Made By",
   "ui.new_status": "New status:",
   "ui.no": "No",
