@@ -13,6 +13,7 @@ import {
   SimpleGrid,
   Box
 } from '@chakra-ui/react';
+import { CheckCircleIcon, WarningIcon } from '@chakra-ui/icons';
 import { TransactionDetailReportHelper } from '@helpers/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { downloadFile, generateTransactionDetailReport, getSettlementIds } from '@services/report';
@@ -56,6 +57,7 @@ const TransactionDetailReport = () => {
   const toast = useToast();
   const { t } = useTranslation();
   const [runButtonState, setRunButtonState] = useState(true);
+  const readyToastId = 'transaction-detail-report-ready';
 
   // Redux
   const selectedTimezone = useSelector<RootState, ITimezoneOption>(s => s.app.selectedTimezone);
@@ -95,30 +97,37 @@ const TransactionDetailReport = () => {
   }, [selectedTimezone, setValue]);
 
   /* Handlers */
-  const { downloadStatus, isDownloading, readyFile, startPolling, consumeDownload } = useReportDownloadState(
+  const { downloadStatus, isDownloading, readyFile, failedMessage, startPolling, consumeDownload, clearDownloadState } = useReportDownloadState(
     'TransactionDetailReport',
     (_fileName) => {
-      toast({
-        position: 'top',
-        title: 'Report ready',
-        description: 'Your report is ready. Click the download link to save the file.',
-        status: 'success',
-        isClosable: true,
-        duration: 5000,
-      });
+      if (!toast.isActive(readyToastId)) {
+        toast({
+          id: readyToastId,
+          position: 'top',
+          title: 'Report ready',
+          description: 'Your report is ready. Click the download link to save the file.',
+          status: 'success',
+          isClosable: true,
+          duration: 5000,
+        });
+      }
     },
-    (message: any) => {
-      if (message.error_code === REPORT_NOT_FOUND_ERROR) {
+    (error: IApiErrorResponse) => {
+      if (error.error_code === REPORT_NOT_FOUND_ERROR) {
         showDataNotFound(toast);
         return;
       }
+
       toast({
         position: 'top',
-        description: getErrorMessage(message) || 'Failed to request report',
+        description: getErrorMessage(error) || 'Failed to request report',
         status: 'error',
         isClosable: true,
-        duration: 3000,
+        duration: 10000,
       });
+
+      clearDownloadState();
+
     }
   );
 
@@ -151,12 +160,12 @@ const TransactionDetailReport = () => {
 
     try {
       const res = await generateTransactionDetailReport(user, {
-      startDate: StartDate,
-      endDate: EndDate,
-      state: formData.state,
-      fileType: fileType,
-      timezoneOffset: tzOffSet,
-      dfspId: isHubUser ? 'all' : user?.data?.participantName
+        startDate: StartDate,
+        endDate: EndDate,
+        state: formData.state,
+        fileType: fileType,
+        timezoneOffset: tzOffSet,
+        dfspId: isHubUser ? 'all' : user?.data?.participantName
       });
 
       const requestId = res?.requestId ?? res?.reqId ?? res?.reportRequestId;
@@ -387,7 +396,7 @@ const TransactionDetailReport = () => {
                 {statusLabel[downloadStatus] ?? 'Processing...'}
               </Text>
               <Text fontSize="xs" color="blue.500">
-                You can navigate away. The report will continue processing in the background.
+                You can leave this page. Your report will be available here once it’s ready.
               </Text>
             </Box>
           </HStack>
@@ -405,14 +414,17 @@ const TransactionDetailReport = () => {
             spacing={3}
             justify="space-between"
           >
-            <Box overflow="hidden">
-              <Text fontSize="sm" fontWeight="semibold" color="green.700">
-                Report ready
-              </Text>
-              <Text fontSize="xs" color="green.600" noOfLines={1} title={readyFile.fileName}>
-                {readyFile.fileName}
-              </Text>
-            </Box>
+            <HStack spacing={3} overflow="hidden">
+              <CheckCircleIcon color="green.500" boxSize={5} flexShrink={0} />
+              <Box overflow="hidden">
+                <Text fontSize="sm" fontWeight="semibold" color="green.700">
+                  Report ready
+                </Text>
+                <Text fontSize="xs" color="green.600" noOfLines={1} title={readyFile.fileName}>
+                  {readyFile.fileName} - Link expires in 24 hours
+                </Text>
+              </Box>
+            </HStack>
             <Button
               size="sm"
               colorScheme="green"
@@ -420,6 +432,41 @@ const TransactionDetailReport = () => {
               onClick={consumeDownload}
             >
               Click to Download
+            </Button>
+          </HStack>
+        )}
+
+        {downloadStatus === 'FAILED' && failedMessage && (
+          <HStack
+            w="full"
+            bg="red.50"
+            borderWidth="1px"
+            borderColor="red.200"
+            borderRadius="md"
+            px={4}
+            py={3}
+            spacing={3}
+            justify="space-between"
+          >
+            <HStack spacing={3} overflow="hidden">
+              <WarningIcon color="red.500" boxSize={5} flexShrink={0} />
+              <Box overflow="hidden">
+                <Text fontSize="sm" fontWeight="semibold" color="red.700">
+                  Report generation failed
+                </Text>
+                <Text fontSize="xs" color="red.600" noOfLines={2} title={failedMessage}>
+                  {failedMessage}
+                </Text>
+              </Box>
+            </HStack>
+            <Button
+              size="sm"
+              variant="outline"
+              colorScheme="red"
+              flexShrink={0}
+              onClick={clearDownloadState}
+            >
+              OK
             </Button>
           </HStack>
         )}

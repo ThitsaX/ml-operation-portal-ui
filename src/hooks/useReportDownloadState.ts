@@ -5,7 +5,7 @@ import moment from 'moment';
 import { IApiErrorResponse } from '@typescript/services';
 import { REPORT_DOWNLOAD_CONFIG } from '@configs/report-download';
 
-export type DownloadStatus = 'IDLE' | 'PENDING' | 'RUNNING' | 'READY';
+export type DownloadStatus = 'IDLE' | 'PENDING' | 'RUNNING' | 'READY' | 'FAILED';
 
 export interface ReadyFile {
   url: string;
@@ -26,12 +26,14 @@ interface PersistedDownloadState {
   fileUrl?: string;
   fileName?: string;
   urlFetchedAt?: number; // epoch ms — used for 24-h URL expiry check
+  failedMessage?: string;
 }
 
 interface UseReportDownloadStateReturn {
   downloadStatus: DownloadStatus;
   isDownloading: boolean;
   readyFile: ReadyFile | null;
+  failedMessage: string | null;
   startPolling: (requestId: string, fileType: string) => void;
   consumeDownload: () => void;
   clearDownloadState: () => void;
@@ -77,6 +79,10 @@ function computeInitialState(storageKey: string, jobTtlMs: number, readyTtlMs: n
         localStorage.removeItem(storageKey);
         return { status: 'IDLE', readyFile: null };
       }
+    }
+
+    if (stored.status === 'FAILED') {
+      return { status: 'FAILED', readyFile: null };
     }
 
     return { status: stored.status as DownloadStatus, readyFile: null };
@@ -131,6 +137,7 @@ export function useReportDownloadState(
   // Read localStorage once at mount — avoids IDLE → RUNNING flicker
   const [downloadStatus, setDownloadStatus] = useState<DownloadStatus>('IDLE');
   const [readyFile, setReadyFile] = useState<ReadyFile | null>(null);
+  const [failedMessage, setFailedMessage] = useState<string | null>(null);
 
   // Each polling session owns its abort token; the previous session is cancelled
   // before a new one starts or when the component unmounts.
@@ -157,6 +164,14 @@ export function useReportDownloadState(
     [storageKey, readStorage]
   );
 
+  const setStorage = useCallback(
+    (state: PersistedDownloadState) => {
+      if (!storageKey) return;
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    },
+    [storageKey]
+  );
+
   const clearStorage = useCallback(() => {
     if (!storageKey) return;
     localStorage.removeItem(storageKey);
@@ -167,6 +182,7 @@ export function useReportDownloadState(
     clearStorage();
     setDownloadStatus('IDLE');
     setReadyFile(null);
+    setFailedMessage(null);
   }, [clearStorage]);
 
   // Called by the user clicking the download link — browser allows the download
@@ -187,7 +203,14 @@ export function useReportDownloadState(
 
     const downloadBlob = async (url: string) => {
       const resp = await fetch(url);
-      if (!resp.ok && resp.status== 403) throw new Error(`The download link has expired. Please generate the report again.`);
+      if (resp.status === 403) {
+        const error = new Error('LINK_EXPIRED');
+        (error as any).code = 'LINK_EXPIRED';
+        throw error;
+      }
+      if (!resp.ok) {
+        throw new Error('DOWNLOAD_FAILED');
+      }
       return resp.blob();
     };
 
@@ -197,14 +220,22 @@ export function useReportDownloadState(
       clearStorage();
       setDownloadStatus('IDLE');
       setReadyFile(null);
+      setFailedMessage(null);
       return;
-    } catch(err: any) {
+    } catch (err: any) {
+      if (err?.code === 'LINK_EXPIRED') {
         onErrorRef.current({
-          description: err?.message || 'Download link expired. Please try again.',
+          description: 'The download link has expired. Please generate the report again.',
           default_error_message: '',
-          error_code: '',
+          error_code: 'LINK_EXPIRED',
         });
-      
+        return;
+      }
+      onErrorRef.current({
+        description: err?.description || 'Failed to download report.',
+        default_error_message: '',
+        error_code: err?.code || '',
+      });
     }
   }, [readyFile, clearStorage, readStorage, writeStorage]);
 
@@ -224,19 +255,165 @@ export function useReportDownloadState(
     []
   );
 
+  const toApiError = useCallback(
+    (description: string, default_error_message = '', error_code = ''): IApiErrorResponse => ({
+      description,
+      default_error_message,
+      error_code
+    }),
+    []
+  );
+
+  const setIdleWithError = useCallback(
+    (error?: IApiErrorResponse) => {
+      clearStorage();
+      setDownloadStatus('IDLE');
+      setFailedMessage(null);
+      if (error) onErrorRef.current(error);
+    },
+    [clearStorage]
+  );
+
+  const persistFailed = useCallback(
+    (requestId: string, fileType: string, message: string, error: IApiErrorResponse) => {
+      const existing = readStorage();
+      if (existing) {
+        setStorage({ ...existing, status: 'FAILED', failedMessage: message });
+      } else {
+        setStorage({
+          requestId,
+          fileType,
+          status: 'FAILED',
+          startedAt: Date.now(),
+          failedMessage: message
+        });
+      }
+      setDownloadStatus('FAILED');
+      setReadyFile(null);
+      setFailedMessage(message);
+      onErrorRef.current(error);
+    },
+    [readStorage, setStorage]
+  );
+
+  const handleFailedStatus = useCallback(
+    async (requestId: string, fileType: string, statusRes: any) => {
+      const fallbackMessage = 'Something went wrong while generating your report. Please try again.';
+      let message = fallbackMessage;
+      let failedToast = toApiError(fallbackMessage);
+      try {
+        const urlRes = await getReportDownloadUrlCloud(userRef.current as any, { requestId });
+        message =
+          urlRes?.message ||
+          urlRes?.default_error_message ||
+          urlRes?.description ||
+          message;
+        failedToast = toApiError(
+          message,
+          urlRes?.default_error_message || '',
+          urlRes?.error_code || ''
+        );
+      } catch (err: any) {
+        message =
+          err?.default_error_message ||
+          err?.description ||
+          err?.error_code ||
+          message;
+        failedToast = toApiError(
+          err?.description || message,
+          err?.default_error_message || '',
+          err?.error_code || ''
+        );
+      }
+      persistFailed(requestId, fileType, message, failedToast);
+    },
+    [persistFailed, toApiError]
+  );
+
+  const handleReadyStatus = useCallback(
+    async (requestId: string, fileType: string, abort: { aborted: boolean }) => {
+      let urlRes: any;
+      try {
+        urlRes = await getReportDownloadUrlCloud(userRef.current as any, { requestId });
+      } catch (err: any) {
+        if (abort.aborted) return;
+        setIdleWithError(toApiError(
+          err?.description || 'Failed to retrieve download URL',
+          err?.default_error_message || '',
+          err?.error_code || ''
+        ));
+        return;
+      }
+
+      if (abort.aborted) return;
+
+      const url: string = urlRes?.fileUrl ?? '';
+      if (!url) {
+        setIdleWithError(toApiError('Download URL was empty'));
+        return;
+      }
+
+      const keyBasedName =
+        typeof urlRes?.fileKey === 'string' && urlRes.fileKey.length > 0
+          ? urlRes.fileKey.split('/').pop()
+          : null;
+      const fileName =
+        keyBasedName || `${reportNameRef.current}-${moment().format('DDMMMYYYY')}.${fileType}`;
+
+      // Persist the URL so it survives navigation within the 14-min window
+      writeStorage({ status: 'READY', fileUrl: url, fileName, urlFetchedAt: Date.now() });
+
+      const file: ReadyFile = { url, fileName };
+      setReadyFile(file);
+      setDownloadStatus('READY');
+      setFailedMessage(null);
+      onDownloadReadyRef.current(fileName);
+    },
+    [writeStorage, setIdleWithError, toApiError]
+  );
+
+  const pollHelpers = useMemo(
+    () => ({
+      readStorage,
+      clearStorage,
+      writeStorage,
+      setStorage,
+      waitForVisible,
+      jobTtlMs,
+      pollIntervalMs,
+      toApiError,
+      setIdleWithError,
+      persistFailed,
+      handleFailedStatus,
+      handleReadyStatus
+    }),
+    [
+      readStorage,
+      clearStorage,
+      writeStorage,
+      setStorage,
+      waitForVisible,
+      jobTtlMs,
+      pollIntervalMs,
+      toApiError,
+      setIdleWithError,
+      persistFailed,
+      handleFailedStatus,
+      handleReadyStatus
+    ]
+  );
+
   const runPollLoop = useCallback(
     async (requestId: string, fileType: string, abort: { aborted: boolean }) => {
       const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
       let attempt = 0;
 
-      const startTime = readStorage()?.startedAt ?? Date.now();
+      const startTime = pollHelpers.readStorage()?.startedAt ?? Date.now();
       while (!abort.aborted) {
         let statusRes: any;
 
-        if (Date.now() - startTime > jobTtlMs) {
-          clearStorage();
-          setDownloadStatus('IDLE');
-          onErrorRef.current({ description: 'Report is taking too long. Please try again.', default_error_message: '', error_code: '' });
+        if (Date.now() - startTime > pollHelpers.jobTtlMs) {
+          pollHelpers.setIdleWithError(pollHelpers.toApiError('Report is taking too long. Please try again.'));
           return;
         }
 
@@ -244,9 +421,11 @@ export function useReportDownloadState(
           statusRes = await getReportDownloadStatus(userRef.current as any, requestId);
         } catch (err: any) {
           if (abort.aborted) return;
-          onErrorRef.current({ description: err?.message || 'Failed to check report status', default_error_message: '', error_code: '' });
-          clearStorage();
-          setDownloadStatus('IDLE');
+          pollHelpers.setIdleWithError(pollHelpers.toApiError(
+            err?.description || 'Failed to check report status',
+            err?.default_error_message || '',
+            err?.error_code || ''
+          ));
           return;
         }
 
@@ -256,82 +435,42 @@ export function useReportDownloadState(
 
         if (rawStatus === '' || rawStatus === 'PENDING') {
           setDownloadStatus('PENDING');
-          writeStorage({ status: 'PENDING' });
+          pollHelpers.writeStorage({ status: 'PENDING' });
           // await delay(Math.min(POLL_INITIAL_MS * 2 ** attempt, POLL_MAX_MS));
-          await delay(pollIntervalMs);
+          await delay(pollHelpers.pollIntervalMs);
           attempt++;
-          await waitForVisible(abort);
+          await pollHelpers.waitForVisible(abort);
           continue;
         }
 
         if (rawStatus === 'RUNNING') {
           setDownloadStatus('RUNNING');
-          writeStorage({ status: 'RUNNING' });
+          pollHelpers.writeStorage({ status: 'RUNNING' });
           // await delay(Math.min(POLL_INITIAL_MS * 2 ** attempt, POLL_MAX_MS));
-          await delay(pollIntervalMs);
+          await delay(pollHelpers.pollIntervalMs);
           attempt++;
-          await waitForVisible(abort);
+          await pollHelpers.waitForVisible(abort);
           continue;
         }
 
         if (rawStatus === 'FAILED') {
-          try {
-            const urlRes = await getReportDownloadUrlCloud(userRef.current as any, { requestId });
-          } catch (err: any) {
-            if (abort.aborted) return;
-            clearStorage();
-            setDownloadStatus('IDLE');
-            onErrorRef.current(err);
-            return;
-          }
-        }
-
-        if (rawStatus === 'READY') {
-          let urlRes: any;
-          try {
-            urlRes = await getReportDownloadUrlCloud(userRef.current as any, { requestId });
-          } catch (err: any) {
-            if (abort.aborted) return;
-            clearStorage();
-            setDownloadStatus('IDLE');
-            onErrorRef.current({ description: 'Failed to retrieve download URL', default_error_message: '', error_code: '' });
-            return;
-          }
-
-          if (abort.aborted) return;
-
-          const url: string = urlRes?.fileUrl ?? '';
-          if (!url) {
-            clearStorage();
-            setDownloadStatus('IDLE');
-            onErrorRef.current({ description: 'Download URL was empty', default_error_message: '', error_code: '' });
-            return;
-          }
-
-          const keyBasedName =
-            typeof urlRes?.fileKey === 'string' && urlRes.fileKey.length > 0
-              ? urlRes.fileKey.split('/').pop()
-              : null;
-          const fileName =
-            keyBasedName || `${reportNameRef.current}-${moment().format('DDMMMYYYY')}.${fileType}`;
-
-          // Persist the URL so it survives navigation within the 14-min window
-          writeStorage({ status: 'READY', fileUrl: url, fileName, urlFetchedAt: Date.now() });
-
-          const file: ReadyFile = { url, fileName };
-          setReadyFile(file);
-          setDownloadStatus('READY');
-          onDownloadReadyRef.current(fileName);
+          await pollHelpers.handleFailedStatus(requestId, fileType, statusRes);
           return;
         }
 
-        clearStorage();
+        if (rawStatus === 'READY') {
+          await pollHelpers.handleReadyStatus(requestId, fileType, abort);
+          return;
+        }
+
+        pollHelpers.clearStorage();
         setDownloadStatus('IDLE');
-        onErrorRef.current({ description: `Unexpected report status: "${rawStatus || '(empty)'}`, default_error_message: '', error_code: '' });
+        setFailedMessage(null);
+        onErrorRef.current(pollHelpers.toApiError(`Unexpected report status: "${rawStatus || '(empty)'}`));
         return;
       }
     },
-    [readStorage, clearStorage, writeStorage, waitForVisible, jobTtlMs, pollIntervalMs]
+    [pollHelpers]
   );
 
   // Hydrate from user-scoped localStorage and resume polling if needed.
@@ -354,9 +493,16 @@ export function useReportDownloadState(
     const initial = computeInitialState(storageKey, jobTtlMs, readyTtlMs);
     setDownloadStatus(initial.status);
     setReadyFile(initial.readyFile);
+    setFailedMessage(null);
 
     const stored = readStorage();
     if (!stored) return;
+
+    if (stored.status === 'FAILED') {
+      setDownloadStatus('FAILED');
+      setFailedMessage(stored.failedMessage || 'Something went wrong while generating your report. Please try again.');
+      return;
+    }
 
     if (stored.status === 'PENDING' || stored.status === 'RUNNING') {
       const abort = { aborted: false };
@@ -377,6 +523,7 @@ export function useReportDownloadState(
     if (!storageKey) {
       setDownloadStatus('IDLE');
       setReadyFile(null);
+      setFailedMessage(null);
       onErrorRef.current({ description: 'User profile not ready. Please try again.', default_error_message: '', error_code: '' });
       return;
     }
@@ -391,10 +538,12 @@ export function useReportDownloadState(
     localStorage.setItem(storageKey, JSON.stringify(state));
     setDownloadStatus('PENDING');
     setReadyFile(null);
+    setFailedMessage(null);
     void runPollLoop(requestId, fileType, abort);
   }, [storageKey, runPollLoop]);
 
   const isDownloading = downloadStatus === 'PENDING' || downloadStatus === 'RUNNING';
 
-  return { downloadStatus, isDownloading, readyFile, startPolling, consumeDownload, clearDownloadState };
+  return { downloadStatus, isDownloading, readyFile, failedMessage, startPolling, consumeDownload, clearDownloadState };
 }
+
