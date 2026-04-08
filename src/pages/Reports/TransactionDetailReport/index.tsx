@@ -104,8 +104,7 @@ const TransactionDetailReport = () => {
         toast({
           id: readyToastId,
           position: 'top',
-          title: 'Report ready',
-          description: 'Your report is ready. Click the download link to save the file.',
+          description: `Your Transaction Detail Report is ready.`,
           status: 'success',
           isClosable: true,
           duration: 5000,
@@ -113,11 +112,6 @@ const TransactionDetailReport = () => {
       }
     },
     (error: IApiErrorResponse) => {
-      if (error.error_code === REPORT_NOT_FOUND_ERROR) {
-        showDataNotFound(toast);
-        return;
-      }
-
       toast({
         position: 'top',
         description: getErrorMessage(error) || 'Failed to request report',
@@ -125,8 +119,6 @@ const TransactionDetailReport = () => {
         isClosable: true,
         duration: 10000,
       });
-
-      clearDownloadState();
 
     }
   );

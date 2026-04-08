@@ -229,13 +229,15 @@ export function useReportDownloadState(
           default_error_message: '',
           error_code: 'LINK_EXPIRED',
         });
-        return;
       }
-      onErrorRef.current({
-        description: err?.description || 'Failed to download report.',
-        default_error_message: '',
-        error_code: err?.code || '',
-      });
+      else {
+        onErrorRef.current({
+          description: err?.description,
+          default_error_message: err?.default_error_message,
+          error_code: err?.code,
+        });
+      }
+      clearDownloadState();
     }
   }, [readyFile, clearStorage, readStorage, writeStorage]);
 
@@ -296,6 +298,17 @@ export function useReportDownloadState(
     [readStorage, setStorage]
   );
 
+  const formatReportName = (reportName: string): string => {
+    if (!reportName) return '';
+
+    return reportName
+      // insert space before capital letters
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      // optional: handle ALL CAPS sequences like "APIReport" → "API Report"
+      .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+      .trim();
+  };
+
   const handleFailedStatus = useCallback(
     async (requestId: string, fileType: string, statusRes: any) => {
       const fallbackMessage = 'Something went wrong while generating your report. Please try again.';
@@ -320,9 +333,7 @@ export function useReportDownloadState(
           err?.error_code ||
           message;
         failedToast = toApiError(
-          err?.description || message,
-          err?.default_error_message || '',
-          err?.error_code || ''
+          formatReportName(reportNameRef.current) + ` generation failed.`
         );
       }
       persistFailed(requestId, fileType, message, failedToast);
@@ -338,7 +349,7 @@ export function useReportDownloadState(
       } catch (err: any) {
         if (abort.aborted) return;
         setIdleWithError(toApiError(
-          err?.description || 'Failed to retrieve download URL',
+          err?.description,
           err?.default_error_message || '',
           err?.error_code || ''
         ));
@@ -422,7 +433,7 @@ export function useReportDownloadState(
         } catch (err: any) {
           if (abort.aborted) return;
           pollHelpers.setIdleWithError(pollHelpers.toApiError(
-            err?.description || 'Failed to check report status',
+            err?.description,
             err?.default_error_message || '',
             err?.error_code || ''
           ));
