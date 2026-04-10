@@ -6,6 +6,9 @@ import {
   Heading,
   Input,
   Stack,
+  HStack,
+  Spinner,
+  Text,
   useToast,
   Box,
   VStack,
@@ -40,9 +43,17 @@ import { CustomDateTimePicker } from '@components/interface/CustomDateTimePicker
 import { REPORT_NOT_FOUND_ERROR } from '@helpers';
 import { showDataNotFound } from '@utils';
 import { useTranslation } from 'react-i18next';
+import { CheckCircleIcon, WarningIcon } from '@chakra-ui/icons';
+import { useReportDownloadState } from '@hooks/useReportDownloadState';
 
 const settlementDetailReportHelper = new SettlementDetailReportHelper();
 const initialFileName = 'DFSPSettlementDetailReport';
+
+const statusLabel: Record<string, string> = {
+  PENDING: 'Queuing report...',
+  RUNNING: 'Generating report...',
+  READY: 'Downloading...',
+};
 
 const SettlementDetailReport = () => {
   const { start, complete } = useLoadingContext();
@@ -50,7 +61,7 @@ const SettlementDetailReport = () => {
   const { t } = useTranslation();
   const [runButtonState, setRunButtonState] = useState(true);
   const [settlementIdOptions, setSettlementIdOptions] = useState<any[]>([]);
-
+  const readyToastId = 'dfsp-settlement-detail-report-ready';
 
   const [settlementId, setSettlementId] = useState("");
 
@@ -63,6 +74,33 @@ const SettlementDetailReport = () => {
     () => (selectedTimezone.value),
     [selectedTimezone]
   );
+
+  /* Handlers */
+  const { downloadStatus, isDownloading, readyFile, failedMessage, startPolling, consumeDownload, clearDownloadState } = useReportDownloadState(
+    'DFSPSettlementDetailReport',
+    (_fileName) => {
+      if (!toast.isActive(readyToastId)) {
+        toast({
+          id: readyToastId,
+          position: 'top',
+          description: `Your DFSP Settlement Detail Report is ready.`,
+          status: 'success',
+          isClosable: true,
+          duration: 5000,
+        });
+      }
+    },
+    (error: IApiErrorResponse) => {
+      toast({
+        position: 'top',
+        description: getErrorMessage(error) || 'Failed to request report',
+        status: 'error',
+        isClosable: true,
+        duration: 10000,
+      });
+    }
+  );
+
   const { data: participantList } = useGetParticipantList();
 
   const isHubUser =
@@ -122,6 +160,66 @@ const SettlementDetailReport = () => {
       setValue('fspId', participantName);
     }
   }, [isHubUser, user, setValue]);
+
+  const onDownloadClick = async () => {
+    if (!isValid) {
+      toast({
+        position: 'top',
+        description: 'Please fill required fields before downloading.',
+        status: 'warning',
+        isClosable: true,
+        duration: 2000,
+      });
+      return;
+    }
+
+    if (isDownloading) return;
+
+    start();
+
+    const formData = getValues();
+    const fileType = formData.fileType;
+
+    const selectedTZString = selectedTimezone.value;
+    let tzOffSet: string = moment().tz(selectedTZString).format('ZZ').replace('+', '');
+
+    try {
+      const res = await generateSettlementDetailReport({
+        settlementId: formData.settlementId,
+        fspId: isHubUser ? formData.fspId : user?.data?.participantName,
+        fileType: fileType,
+        timezoneOffset: tzOffSet
+      })
+
+      const requestId = res?.requestId ?? res?.reqId ?? res?.reportRequestId;
+
+      if (typeof requestId === 'string' && requestId.length > 0) {
+        startPolling(requestId, fileType);
+      } else {
+        toast({
+          position: 'top',
+          description: 'No request ID returned from server',
+          status: 'error',
+          isClosable: true,
+          duration: 3000,
+        });
+      }
+    } catch (error: any) {
+      if (error.error_code === REPORT_NOT_FOUND_ERROR) {
+        showDataNotFound(toast);
+      } else {
+        toast({
+          position: 'top',
+          description: getErrorMessage(error) || 'Failed to request report',
+          status: 'error',
+          isClosable: true,
+          duration: 3000,
+        });
+      }
+    } finally {
+      complete();
+    }
+  };
 
   const onDownloadChangeHandler = (e: any) => {
     start();
@@ -426,12 +524,106 @@ const SettlementDetailReport = () => {
               <Button
                 flex={{ base: '1', md: '0 0 50%' }}
                 colorScheme="blue"
-                isDisabled={!fspIdValue || !settlementId || !runButtonState}
-                onClick={onDownloadChangeHandler}
+                isDisabled={!fspIdValue || !settlementId || isDownloading}
+                isLoading={isDownloading}
+                loadingText="Download"
+                onClick={onDownloadClick}
               >{t('ui.download')}</Button>
             </FormControl>
           </SimpleGrid>
         </Stack>
+      )}
+
+      {isDownloading && (
+        <HStack
+          w="full"
+          bg="blue.50"
+          borderWidth="1px"
+          borderColor="blue.200"
+          borderRadius="md"
+          px={4}
+          py={3}
+          spacing={3}
+        >
+          <Spinner size="sm" color="blue.500" flexShrink={0} />
+          <Box>
+            <Text fontSize="sm" fontWeight="semibold" color="blue.700">
+              {statusLabel[downloadStatus] ?? 'Processing...'}
+            </Text>
+            <Text fontSize="xs" color="blue.500">
+              You can leave this page. Your report will be available here once it’s ready.
+            </Text>
+          </Box>
+        </HStack>
+      )}
+
+      {readyFile && (
+        <HStack
+          w="full"
+          bg="green.50"
+          borderWidth="1px"
+          borderColor="green.200"
+          borderRadius="md"
+          px={4}
+          py={3}
+          spacing={3}
+          justify="space-between"
+        >
+          <HStack spacing={3} overflow="hidden">
+            <CheckCircleIcon color="green.500" boxSize={5} flexShrink={0} />
+            <Box overflow="hidden">
+              <Text fontSize="sm" fontWeight="semibold" color="green.700">
+                Report ready
+              </Text>
+              <Text fontSize="xs" color="green.600" noOfLines={1} title={readyFile.fileName}>
+                {readyFile.fileName} - Link expires in 24 hours
+              </Text>
+            </Box>
+          </HStack>
+          <Button
+            size="sm"
+            colorScheme="green"
+            flexShrink={0}
+            onClick={consumeDownload}
+          >
+            Click to Download
+          </Button>
+        </HStack>
+      )}
+
+      {downloadStatus === 'FAILED' && failedMessage && (
+        <HStack
+          w="full"
+          bg="red.50"
+          borderWidth="1px"
+          borderColor="red.200"
+          borderRadius="md"
+          px={4}
+          py={3}
+          spacing={3}
+          justify="space-between"
+        >
+          <HStack spacing={3} overflow="hidden">
+            <WarningIcon color="red.500" boxSize={5} flexShrink={0} />
+            <Box overflow="hidden">
+              <Text fontSize="sm" fontWeight="semibold" color="red.700">
+                Report generation failed
+              </Text>
+              <Text fontSize="xs" color="red.600" noOfLines={2} title={failedMessage}>
+                {failedMessage}
+              </Text>
+            </Box>
+          </HStack>
+          <Button
+            size="sm"
+            variant="outline"
+            colorScheme="red"
+            flexShrink={0}
+            onClick={clearDownloadState}
+          >
+            OK
+          </Button>
+        </HStack>
       )}
     </VStack>
   );
