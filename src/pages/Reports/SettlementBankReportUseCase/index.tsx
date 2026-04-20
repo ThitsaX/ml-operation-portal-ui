@@ -80,7 +80,7 @@ const SettlementBankReportUseCase = () => {
         toast({
           id: readyToastId,
           position: 'top',
-          description: `Your Settlement Bank Report UseCase is ready.`,
+          description: `Your Settlement Bank Report (Use Case) is ready.`,
           status: 'success',
           isClosable: true,
           duration: 5000,
