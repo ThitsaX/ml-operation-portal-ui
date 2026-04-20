@@ -406,14 +406,20 @@ const Audit = () => {
         <TableContainer mt={2} w="full" borderWidth={1} borderColor="gray.100" rounded="lg">
           <Table variant="simple">
             <Thead bg="gray.100">
-              {headerGroups.map((headerGroup) => (
-                <Tr {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map((column) => (
-                    <Th
-                      {...column.getHeaderProps(
-                        column.disableSortBy ? undefined : column.getSortByToggleProps()
-                      )}
-                    >
+              {headerGroups.map((headerGroup) => {
+                const headerGroupProps = headerGroup.getHeaderGroupProps();
+                const { key: headerGroupKey, ...headerGroupRest } = headerGroupProps;
+
+                return (
+                <Tr key={headerGroupKey} {...headerGroupRest}>
+                  {headerGroup.headers.map((column) => {
+                    const headerProps = column.getHeaderProps(
+                      column.disableSortBy ? undefined : column.getSortByToggleProps()
+                    );
+                    const { key: headerKey, ...headerRest } = headerProps;
+
+                    return (
+                    <Th key={headerKey} {...headerRest}>
                       <HStack align="center" spacing="2" flex={1}>
                         {column.render('Header')}
                         {!column.disableSortBy && (
@@ -444,36 +450,49 @@ const Audit = () => {
                         )}
                       </HStack>
                     </Th>
-                  ))}
+                    );
+                  })}
                 </Tr>
-              ))}
+                );
+              })}
             </Thead>
 
             <Tbody>
               {rows.map((row) => {
                 prepareRow(row);
+                const rowProps = row.getRowProps();
+                const { key: rowKey, ...rowRest } = rowProps;
+
                 return (
                   <Tr
+                    key={rowKey}
                     fontSize="sm"
                     cursor="pointer"
                     _hover={{ bg: 'muted.50' }}
-                    {...row.getRowProps()}
-                    
+                    {...rowRest}
                   >
+                    {row.cells.map((cell) => {
+                      const cellProps = cell.getCellProps();
+                      const { key: cellKey, ...cellRest } = cellProps;
 
-                    {row.cells.map((cell) => (
-                      <Td {...cell.getCellProps()} py={2}
-                        onClick={() => {
-                          if (cell.column.id === 'traceId') return;
-                          handleRowClick(row.original.auditId);
-                        }}>
-                        {cell.column.id === 'action' || cell.column.id === 'madeBy'
-                          ? cell.render('Cell')
-                          : isNumber(cell.value)
-                            ? moment.unix(cell.value).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')
-                            : cell.value}
-                      </Td>
-                    ))}
+                      return (
+                        <Td
+                          key={cellKey}
+                          {...cellRest}
+                          py={2}
+                          onClick={() => {
+                            if (cell.column.id === 'traceId') return;
+                            handleRowClick(row.original.auditId);
+                          }}
+                        >
+                          {cell.column.id === 'action' || cell.column.id === 'madeBy'
+                            ? cell.render('Cell')
+                            : isNumber(cell.value)
+                              ? moment.unix(cell.value).tz(selectedTZString).format('YYYY-MM-DDTHH:mm:ssZ')
+                              : cell.value}
+                        </Td>
+                      );
+                    })}
                   </Tr>
                 );
               })}
