@@ -160,6 +160,12 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
                 menuId: 'settlement_bank_report',
               },
               {
+                id: 'settlementBankReportUseCase',
+                label: t('ui.settlement_bank_report_usecase'),
+                to: 'reports/settlement-bank-report-usecase',
+                menuId: 'settlement_bank_report_usecase',
+              },
+              {
                 id: 'settlementOverviewReport',
                 label: t('ui.dfsp_settlement_overview_report'),
                 to: 'reports/dfsp-settlement-overview-report',

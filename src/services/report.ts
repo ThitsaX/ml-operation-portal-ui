@@ -209,6 +209,44 @@ export const generateSettlementBankReport = async (
     });
 };
 
+export const generateSettlementBankReportUseCase = async (
+  user: IUserState,
+  paramsValues: any
+) => {
+  const params = {
+    settlementId: paramsValues.settlementId,
+    currencyId: paramsValues.currencyId,
+    fileType: paramsValues.fileType,
+    timezoneOffset: paramsValues.timezoneOffset,
+  };
+
+  const accessToken = await generateAccessToken({
+    method: 'POST',
+    uri: routes.generateSettlementBankReportUseCase,
+    secret: user.auth?.secretKey as string
+  });
+
+  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
+  return axios
+    .post<any>(routes.generateSettlementBankReportUseCase, null, {
+      params
+    })
+    .then((d) => {
+      return d.data;
+    })
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
+};
+
 export const generateSettlementBankOverviewReport = async (
   user: IUserState,
   paramsValues: any

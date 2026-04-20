@@ -906,65 +906,83 @@ const Transfer = () => {
         mt="4">
         <Table variant="simple" {...getTableProps()}>
           <Thead bg="gray.100">
-            {headerGroups.map((headerGroup) => (
-              <Tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column) => (
-                  <Th
-                    {...column.getHeaderProps(
+            {headerGroups.map((headerGroup) => {
+              const headerGroupProps = headerGroup.getHeaderGroupProps();
+              const { key: headerGroupKey, ...headerGroupRest } = headerGroupProps;
+
+              return (
+                <Tr key={headerGroupKey} {...headerGroupRest}>
+                  {headerGroup.headers.map((column) => {
+                    const headerProps = column.getHeaderProps(
                       column.disableSortBy
                         ? undefined
                         : column.getSortByToggleProps()
-                    )}>
-                    <HStack align="center" spacing="2" flex={1}>
-                      {column.render('Header')}
-                      {column.disableSortBy ? null : (
-                        <VStack
-                          display="inline-flex"
-                          align="center"
-                          spacing={0}>
-                          <Icon
-                            as={IoChevronUp}
-                            size={12}
-                            color={
-                              !column.isSorted
-                                ? 'gray.400'
-                                : !column.isSortedDesc
-                                  ? 'gray.700'
-                                  : 'gray.400'
-                            }
-                          />
-                          <Icon
-                            as={IoChevronDown}
-                            size={12}
-                            color={
-                              !column.isSorted
-                                ? 'gray.400'
-                                : column.isSortedDesc
-                                  ? 'gray.700'
-                                  : 'gray.400'
-                            }
-                          />
-                        </VStack>
-                      )}
-                    </HStack>
-                  </Th>
-                ))}
-              </Tr>
-            ))}
+                    );
+                    const { key: headerKey, ...headerRest } = headerProps;
+
+                    return (
+                      <Th key={headerKey} {...headerRest}>
+                        <HStack align="center" spacing="2" flex={1}>
+                          {column.render('Header')}
+                          {column.disableSortBy ? null : (
+                            <VStack
+                              display="inline-flex"
+                              align="center"
+                              spacing={0}>
+                              <Icon
+                                as={IoChevronUp}
+                                size={12}
+                                color={
+                                  !column.isSorted
+                                    ? 'gray.400'
+                                    : !column.isSortedDesc
+                                      ? 'gray.700'
+                                      : 'gray.400'
+                                }
+                              />
+                              <Icon
+                                as={IoChevronDown}
+                                size={12}
+                                color={
+                                  !column.isSorted
+                                    ? 'gray.400'
+                                    : column.isSortedDesc
+                                      ? 'gray.700'
+                                      : 'gray.400'
+                                }
+                              />
+                            </VStack>
+                          )}
+                        </HStack>
+                      </Th>
+                    );
+                  })}
+                </Tr>
+              );
+            })}
           </Thead>
           <Tbody maxH={300} overflowY="auto" {...getTableBodyProps()}>
             {rows.map((row) => {
               prepareRow(row);
+              const rowProps = row.getRowProps();
+              const { key: rowKey, ...rowRest } = rowProps;
+
               return (
                 <Tr
+                  key={rowKey}
                   fontSize="sm"
                   cursor="pointer"
                   _hover={{ bg: 'muted.50' }}
-                  {...row.getRowProps()}
+                  {...rowRest}
                   onClick={() => onTrClickHandler(row.original.transferId)}>
-                  {row.cells.map((cell) => (
-                    <Td {...cell.getCellProps()} py={2}>{cell.render('Cell')}</Td>
-                  ))}
+                  {row.cells.map((cell) => {
+                    const cellProps = cell.getCellProps();
+                    const { key: cellKey, ...cellRest } = cellProps;
+
+                    return (
+                      <Td key={cellKey} {...cellRest} py={2}>{cell.render('Cell')}</Td>
+                    );
+                  })}
                 </Tr>
               );
             })}

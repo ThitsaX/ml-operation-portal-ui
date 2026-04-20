@@ -81,6 +81,7 @@
   "ui.select_contact_type": "Sélectionner le type de contact",
   "ui.select_currency": "Sélectionner la devise",
   "ui.settlement_bank_report": "Rapport bancaire de règlement",
+  "ui.settlement_bank_report_usecase": "Rapport bancaire de règlement (détaillé)",
   "ui.support_contacts": "Contacts de support",
   "ui.sync_participant": "Synchroniser le participant",
   "ui.view_focal_contacts_for_support": "Voir les contacts clés pour le support",

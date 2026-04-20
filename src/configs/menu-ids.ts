@@ -22,5 +22,6 @@ export const menuIds : Record<string, number>= {
     'support_center': 22,
     'transaction_detail_report': 23,
     'management_summary_report': 24,
-    'dfsp_settlement_overview_report':25
+    'dfsp_settlement_overview_report':25,
+    'settlement_bank_report_usecase':26
 }
