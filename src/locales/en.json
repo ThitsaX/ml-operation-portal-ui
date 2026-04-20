@@ -81,6 +81,7 @@
   "ui.select_contact_type": "Select Contact Type",
   "ui.select_currency": "Select Currency",
   "ui.settlement_bank_report": "Settlement Bank Report",
+  "ui.settlement_bank_report_usecase": "Settlement Bank Report (Use Case)",
   "ui.support_contacts": "Support Contacts",
   "ui.sync_participant": "Sync Participant",
   "ui.view_focal_contacts_for_support": "View focal contacts for support",

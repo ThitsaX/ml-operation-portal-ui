@@ -33,10 +33,19 @@ export const actionIds = {
     "GetTransferStateList": "GetTransferStateList",
     "GetTransferDetail": "GetTransferDetail",
     "GetTransferList": "GetTransferList",
-    "ModifySettlementModel":"ModifySettlementModel",
-    "CloseSettlementWindows":"CloseSettlementWindows",
-    "CreateSettlement":"CreateSettlement",
-    "FinalizeSettlement":"FinalizeSettlement"
+    "ModifySettlementModel": "ModifySettlementModel",
+    "CloseSettlementWindows": "CloseSettlementWindows",
+    "CreateSettlement": "CreateSettlement",
+    "FinalizeSettlement": "FinalizeSettlement",
+    "GenerateAuditReport": "GenerateAuditReport",
+    "GenerateManagementSummaryReport": "GenerateManagementSummaryReport",
+    "GenerateSettlementAuditReport": "GenerateSettlementAuditReport",
+    "GenerateSettlementBankReport": "GenerateSettlementBankReport",
+    "GenerateSettlementBankReportUseCase": "GenerateSettlementBankReportUseCase",
+    "GenerateSettlementDetailReport": "GenerateSettlementDetailReport",
+    "GenerateSettlementStatementReport": "GenerateSettlementStatementReport",
+    "GenerateSettlementSummaryReport": "GenerateSettlementSummaryReport",
+    "GenerateTransactionDetailReport": "GenerateTransactionDetailReport",
 } as const;
 
 export type ActionId = keyof typeof actionIds;

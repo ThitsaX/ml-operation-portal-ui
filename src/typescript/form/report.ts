@@ -7,6 +7,15 @@ export interface ISettlementBankReport {
   timezoneOffset: string
 }
 
+export interface ISettlementBankReportUseCase {
+  startDate: string
+  endDate: string
+  settlementId: string
+  currency: string
+  fileType: string
+  timezoneOffset: string
+}
+
 export interface ISettlementReport {
   startDate: string
   endDate: string
