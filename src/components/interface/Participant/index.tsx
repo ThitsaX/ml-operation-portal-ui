@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     Modal, ModalOverlay, ModalContent, ModalHeader,
     ModalCloseButton, ModalBody, ModalFooter,
@@ -19,9 +19,11 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, onSubmit }
     const [amount, setAmount] = useState<string>("");
     const {isValid, errorMessage} = validateAmount(amount, t('ui.amount'));
     const [isTouched, setIsTouched] = useState(false);
+    const submitLockedRef = useRef(false);
 
     const handleSubmit = () => {
-        if (!isValid) return;
+        if (!isValid || submitLockedRef.current) return;
+        submitLockedRef.current = true;
         onSubmit(amount);
         onClose();
     };
@@ -37,6 +39,7 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, onSubmit }
         if (isOpen) {
             setAmount("");
             setIsTouched(false);
+            submitLockedRef.current = false;
         }
     }, [isOpen]);
 
@@ -70,7 +73,11 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose, onSubmit }
                 </ModalBody>
                 <ModalFooter>
                     <Button variant="ghost" onClick={onClose} mr={3}>{t('ui.cancel')}</Button>
-                    <Button colorScheme="blue" isDisabled={!isValid} onClick={handleSubmit}>
+                    <Button
+                        colorScheme="blue"
+                        isDisabled={!isValid}
+                        onClick={handleSubmit}
+                    >
                         {t('ui.submit')}
                     </Button>
                 </ModalFooter>

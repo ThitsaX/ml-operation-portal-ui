@@ -17,7 +17,7 @@ import {
   Divider,
   Icon,
 } from '@chakra-ui/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FiCheckCircle, FiXCircle } from 'react-icons/fi';
 import { TfiAngleDoubleLeft, TfiAngleDoubleRight, TfiAngleLeft, TfiAngleRight } from 'react-icons/tfi';
 import { useGetPendingApprovalList } from '@hooks/services';
@@ -71,11 +71,11 @@ const PendingApprovals = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState<IPendingApproval | null>(null);
   const [actionType, setActionType] = useState<PendingApprovalStatus | null>(null);
+  const [isActionSubmitting, setIsActionSubmitting] = useState(false);
+  const confirmActionLockedRef = useRef(false);
 
   useEffect(() => {
-    const filtered = data?.filter(request =>
-      filterStatus === 'PENDING' ? true : request.action === filterStatus
-    ) ?? [];
+    const filtered = data?.filter((request) => (request.action ?? '').toUpperCase() === filterStatus) ?? [];
     setFilteredRequests(filtered);
   }, [filterStatus, data])
 
@@ -93,36 +93,42 @@ const PendingApprovals = () => {
   };
 
   //  Action Handlers 
-  const handleConfirmAction = () => {
-    if (!selectedRow || !actionType) return;
-    handleAction(selectedRow);
-    closeConfirmDialog();
+  const handleAction = async (row: IPendingApproval, type: PendingApprovalStatus) => {
+    try {
+      await modifyApprovalAction(row.approvalRequestId, type);
+      toast({
+        title: `${type}`,
+        position: 'top',
+        description: `${row.requestedBy}'s ${t('ui.request').toLowerCase()} ${type.toLowerCase()}.`,
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      refetch();
+    } catch (error) {
+      toast({
+        title: t('ui.error'),
+        position: 'top',
+        description: getErrorMessage(error as IApiErrorResponse) || `Failed to ${type.toLowerCase()} request.`,
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
-  const handleAction = (row: IPendingApproval) => {
-    if (!actionType) return;
-    modifyApprovalAction(row.approvalRequestId, actionType)
-      .then(() => {
-        toast({
-          title: `${actionType}`,
-          position: 'top',
-          description: `${row.requestedBy}'s ${t('ui.request').toLowerCase()} ${actionType?.toLowerCase()}.`,
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        });
-        refetch();
-      })
-      .catch((error: IApiErrorResponse) => {
-        toast({
-          title: t('ui.error'),
-          position: 'top',
-          description: getErrorMessage(error) || `Failed to ${actionType?.toLowerCase()} request.`,
-          status: 'error',
-          duration: 3000,
-          isClosable: true,
-        });
-      });
+  const handleConfirmAction = async () => {
+    if (!selectedRow || !actionType) return;
+    if (confirmActionLockedRef.current) return;
+    confirmActionLockedRef.current = true;
+    setIsActionSubmitting(true);
+    try {
+      await handleAction(selectedRow, actionType);
+      closeConfirmDialog();
+    } finally {
+      setIsActionSubmitting(false);
+      confirmActionLockedRef.current = false;
+    }
   };
 
   // Table setup
@@ -461,6 +467,7 @@ const PendingApprovals = () => {
         onCancel={closeConfirmDialog}
         confirmText={actionType === PendingApprovalStatus.APPROVED ? t('ui.approve') : t('ui.reject')}
         cancelText={t('ui.cancel')}
+        isLoading={isActionSubmitting}
       />
     </VStack>
   );
