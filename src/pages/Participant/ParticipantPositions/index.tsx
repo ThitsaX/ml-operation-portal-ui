@@ -28,7 +28,7 @@ import {
 import { FiChevronDown } from 'react-icons/fi';
 import { IoReload, IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import { TfiAngleDoubleLeft, TfiAngleDoubleRight, TfiAngleLeft, TfiAngleRight } from 'react-icons/tfi';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { usePagination, useSortBy, useTable, Column, Row } from 'react-table';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -57,6 +57,7 @@ const ParticipantPositions = () => {
     const [pageNumber, setPageNumber] = useState<String>('1');
     const [tableData, setTableData] = useState<IParticipantPositionData[]>([]);
     const toast = useToast();
+    const approvalRequestLockedRef = useRef(false);
     const [selectedParticipant, setSelectedParticipant] = useState<IParticipantPositionData | null>(null);
     const [participantPositionList, setParticipantPositionList] = useState<IParticipantPositionData[]>([]);
     const selectedTimezone = useSelector<RootState, ITimezoneOption>(
@@ -420,6 +421,8 @@ const ParticipantPositions = () => {
         actionLabel: string,
         onSuccess?: () => void
     ) => {
+        if (approvalRequestLockedRef.current) return;
+        approvalRequestLockedRef.current = true;
         try {
             const res = await createApprovalRequest(data);
             toast({
@@ -445,6 +448,8 @@ const ParticipantPositions = () => {
                 duration: 3000,
                 isClosable: true,
             });
+        } finally {
+            approvalRequestLockedRef.current = false;
         }
     };
 

@@ -13,7 +13,7 @@ import {
     FormLabel,
     FormErrorMessage
 } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import CustomSelect from "../CustomSelect";
 import { validateAmount } from "@helpers/validation";
 import { numericInputRegex } from "@helpers";
@@ -36,6 +36,7 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
     const [fixedAmount, setFixedAmount] = useState<string>("");
     const [percentage, setPercentage] = useState<string>("");
     const [isTouched, setIsTouched] = useState(false);
+    const submitLockedRef = useRef(false);
 
     const inputValue = selectedType === "fixed" ? fixedAmount : percentage;
     const inputLabel = selectedType === "fixed" ? t('ui.amount') : t('ui.percentage');
@@ -44,12 +45,18 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (selectedType === "fixed" && fixedAmount) {
-            await onSubmit("fixed", fixedAmount);
-        } else if (selectedType === "percentage" && percentage) {
-            await onSubmit("percentage", percentage);
+        if (!isValid || submitLockedRef.current) return;
+        submitLockedRef.current = true;
+        try {
+            if (selectedType === "fixed" && fixedAmount) {
+                await onSubmit("fixed", fixedAmount);
+            } else if (selectedType === "percentage" && percentage) {
+                await onSubmit("percentage", percentage);
+            }
+            onClose();
+        } catch {
+            submitLockedRef.current = false;
         }
-        onClose();
     };
 
     const handleNumericInputChange = ( value: string, setter: (v: string) => void) => {
@@ -65,6 +72,7 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
             setPercentage("");
             setSelectedType("");
             setIsTouched(false);
+            submitLockedRef.current = false;
         }
     }, [isOpen]);
 
@@ -130,7 +138,11 @@ const NetDebitCapModal = ({ isOpen, onClose, onSubmit }: NetDebitCapModalProps) 
                         <Button variant="ghost" onClick={onClose} mr={3}>
                             Cancel
                         </Button>
-                        <Button colorScheme="blue" isDisabled={!isValid} type="submit">
+                        <Button
+                            colorScheme="blue"
+                            isDisabled={!isValid}
+                            type="submit"
+                        >
                             Submit
                         </Button>
                     </ModalFooter>
