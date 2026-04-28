@@ -161,7 +161,7 @@
   "ui.audit_report": "Audit Report",
   "ui.choose_format": "Choose Format",
   "ui.management_summary_report": "Management Summary Report",
-  "ui.transfer_settlement_report": "MT 971 Transfer Settlement Report — transaction amount only",
+  "ui.transfer_settlement_report": "MT 971 Transfer Settlement Report",
   "ui.pdf": "PDF",
   "ui.transaction_detail_report": "Transaction Detail Report",
   "ui.xlsx": "XLSX",
