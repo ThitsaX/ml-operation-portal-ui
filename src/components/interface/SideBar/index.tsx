@@ -213,6 +213,12 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
                 to: 'reports/management-summary-report',
                 menuId: 'management_summary_report',
               },
+              {
+                id: 'TransferSettlementReport',
+                label: t('ui.transfer_settlement_report'),
+                to: 'reports/transfer-settlement-report',
+                menuId: 'transfer_settlement_report',
+              },
             ]}
           />
 

@@ -12,7 +12,8 @@ import moment from 'moment';
 const contentTypes = {
   csv: 'text/csv;',
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;',
-  pdf: 'application/pdf;'
+  pdf: 'application/pdf;',
+  xml: 'application/xml;'
 };
 
 export const generateSettlementDetailReport = async (params: any) => {
@@ -191,6 +192,44 @@ export const generateSettlementBankReport = async (
   const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
   return axios
     .post<any>(routes.generateSettlementBankReport, null, {
+      params
+    })
+    .then((d) => {
+      return d.data;
+    })
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
+};
+
+export const generateTransactionAmountReport = async (
+  user: IUserState,
+  paramsValues: any
+) => {
+  const params = {
+    settlementId: paramsValues.settlementId,
+    currencyId: paramsValues.currencyId,
+    fileType: paramsValues.fileType,
+    timezoneOffset: paramsValues.timezoneOffset,
+  };
+
+  const accessToken = await generateAccessToken({
+    method: 'POST',
+    uri: routes.generateTransactionAmountReport,
+    secret: user.auth?.secretKey as string
+  });
+
+  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
+  return axios
+    .post<any>(routes.generateTransactionAmountReport, null, {
       params
     })
     .then((d) => {
@@ -441,6 +480,8 @@ export const downloadFile = (
     downloadContentType = contentTypes.xlsx;
   }else if (fileType == 'pdf') {
     downloadContentType = contentTypes.pdf;
+  }else if (fileType == 'xml') {
+    downloadContentType = contentTypes.xml;
   } 
   else {
     throw 'Content type not supported';

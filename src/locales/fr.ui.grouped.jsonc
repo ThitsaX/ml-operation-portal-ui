@@ -161,6 +161,7 @@
   "ui.audit_report": "Rapport d'audit",
   "ui.choose_format": "Choisir le format",
   "ui.management_summary_report": "Rapport de synthèse de gestion",
+  "ui.transfer_settlement_report": "Rapport de règlement des transferts MT 971 — montant des transactions uniquement",
   "ui.pdf": "PDF",
   "ui.transaction_detail_report": "Rapport détaillé des transactions",
   "ui.xlsx": "XLSX",

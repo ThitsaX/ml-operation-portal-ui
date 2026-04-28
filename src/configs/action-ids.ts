@@ -46,6 +46,7 @@ export const actionIds = {
     "GenerateSettlementStatementReport": "GenerateSettlementStatementReport",
     "GenerateSettlementSummaryReport": "GenerateSettlementSummaryReport",
     "GenerateTransactionDetailReport": "GenerateTransactionDetailReport",
+    "GenerateTransactionAmountSwiftReport": "GenerateTransactionAmountSwiftReport",
 } as const;
 
 export type ActionId = keyof typeof actionIds;

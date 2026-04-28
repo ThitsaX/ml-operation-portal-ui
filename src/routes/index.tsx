@@ -5,8 +5,10 @@ import { Auth, Main } from '@layouts';
 import ErrorPage from '@pages/ErrorPage';
 import Login from '@pages/Login';
 import ChangePassword from '@pages/ChangePassword';
-import { SettlementBankReport, SettlementBankReportUseCase, SettlementOverviewReport, SettlementDetailReport, SettlementSummaryReport, 
- SettlementStatementReport, SettlementAuditReport, AuditReport, TransactionDetailReport, ManagementSummaryReport } from '@pages/Reports';
+import {
+  SettlementBankReport, SettlementBankReportUseCase, SettlementOverviewReport, SettlementDetailReport, SettlementSummaryReport,
+  SettlementStatementReport, SettlementAuditReport, AuditReport, TransactionDetailReport, ManagementSummaryReport, TransferSettlementReport
+} from '@pages/Reports';
 import Transfer from '@pages/Transfer';
 import User from '@pages/UserManagement/User';
 import Home from '@pages/Home';
@@ -185,6 +187,14 @@ export const router = createBrowserRouter([
             element: (
               <ProtectedRoute allowedMenuId="management_summary_report">
                 <ManagementSummaryReport />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "transfer-settlement-report",
+            element: (
+              <ProtectedRoute allowedMenuId="transfer_settlement_report">
+                <TransferSettlementReport />
               </ProtectedRoute>
             ),
           },
