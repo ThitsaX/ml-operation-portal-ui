@@ -40,7 +40,7 @@ import { showDataNotFound } from '@utils';
 import { useTranslation } from 'react-i18next';
 
 const transferSettlementReport = new TransferSettlementReportHelper();
-const initialFileName = 'MT971TransactionAmountSettlementReport';
+const initialFileName = 'MT971TransferSettlementReport';
 
 const TransferSettlementReport = () => {
 
