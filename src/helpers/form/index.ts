@@ -479,6 +479,30 @@ export class SettlementAuditReportHelper extends FormHelper {
   }
 }
 
+export class TransferSettlementReportHelper extends FormHelper {
+  get schema() {
+    return z
+      .object({
+        startDate: z.coerce.date({
+          required_error: 'Required'
+        }),
+        endDate: z.coerce.date({
+          required_error: 'Required'
+        }),
+        currency: z.string().optional(),
+        settlementId: z.string().optional(),
+      })
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be less than end date',
+        path: ['startDate']
+      })
+      .refine((value) => value.startDate < value.endDate, {
+        message: 'Should be greater than start date',
+        path: ['endDate']
+      });
+  }
+}
+
 export class OrganizationHelper extends FormHelper {
   get schema() {
     return z.object({

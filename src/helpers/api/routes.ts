@@ -50,6 +50,7 @@ export const privateRoutes = {
   modifyUser: '/secured/modifyUser',
   modifyUserStatus: '/secured/modifyUserStatus',
   generateSettlementBankReport: '/secured/generateSettlementBankReport',
+  generateTransactionAmountReport: '/secured/generateTransactionAmountReport',
   generateSettlementBankReportUseCase: '/secured/generateSettlementBankReportUseCase',
   generateSettlementBankOverviewReport: '/secured/generateSettlementBankOverviewReport',
 
