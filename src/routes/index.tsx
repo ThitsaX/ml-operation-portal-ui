@@ -9,7 +9,7 @@ import Login from '@pages/Login';
 import ChangePassword from '@pages/ChangePassword';
 import {
   SettlementBankReport, SettlementBankReportUseCase, SettlementOverviewReport, SettlementDetailReport, SettlementSummaryReport,
-  SettlementStatementReport, SettlementAuditReport, AuditReport, TransactionDetailReport, ManagementSummaryReport, TransferSettlementReport, FeeSettlementReport, FeeSettlementSummaryReport, FeeSummaryReport
+  SettlementStatementReport, SettlementAuditReport, AuditReport, TransactionDetailReport, ManagementSummaryReport, TransferSettlementReport, FeeSettlementReport, FeeSettlementSummaryReport, FeeSummaryReport, RevenueSharingSummaryReport, RevenueSharingDetailReport
 } from '@pages/Reports';
 import Transfer from '@pages/Transfer';
 import User from '@pages/UserManagement/User';
@@ -24,6 +24,9 @@ import ProtectedRoute from "./ProtectedRoute";
 import SystemAdmin from '@pages/SystemAdmin';
 import NdcAlertSettings from '@pages/SystemAdmin/NdcAlertSettings';
 import NotificationDeliveryLog from '@pages/NotificationDeliveryLog';
+import PartyRegistry from '@pages/RevenueSharing/PartyRegistry';
+import RevenueConfig from '@pages/RevenueSharing/RevenueConfig';
+import RevenueRoundingSetting from '@pages/RevenueSharing/RevenueRoundingSetting';
 
 
 export const router = createBrowserRouter([
@@ -213,6 +216,22 @@ export const router = createBrowserRouter([
             ),
           },
           {
+            path: "revenue-sharing-summary-report",
+            element: (
+              <ProtectedRoute allowedMenuId="revenue_sharing_summary_report">
+                <RevenueSharingSummaryReport />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "revenue-sharing-detail-report",
+            element: (
+              <ProtectedRoute allowedMenuId="revenue_sharing_detail_report">
+                <RevenueSharingDetailReport />
+              </ProtectedRoute>
+            ),
+          },
+          {
             path: "fee-settlement-report",
             element: (
               <ProtectedRoute allowedMenuId="fee_settlement_report">
@@ -321,6 +340,35 @@ export const router = createBrowserRouter([
             <NdcAlertSettings />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: "revenue-sharing",
+        children: [
+          {
+            path: "party-registry",
+            element: (
+              <ProtectedRoute allowedMenuId="party_registry">
+                <PartyRegistry />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "revenue-config",
+            element: (
+              <ProtectedRoute allowedMenuId="revenue_config">
+                <RevenueConfig />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "revenue-rounding-setting",
+            element: (
+              <ProtectedRoute allowedMenuId="revenue_rounding_setting">
+                <RevenueRoundingSetting />
+              </ProtectedRoute>
+            ),
+          },
+        ],
       }
     ]
   },

@@ -59,6 +59,8 @@ export const privateRoutes = {
   generateFeeAmountReport: '/secured/generateFeeAmountReport',
   generateFeeSummaryReport: '/secured/generateFeeSummaryReport',
   generateFeeSettlementSummaryReport: '/secured/generateFeeSettlementSummaryReport',
+  generateRevenueSharingSummaryReport: '/secured/generateRevenueSharingSummaryReport',
+  generateRevenueSharingDetailReport: '/secured/generateRevenueSharingDetailReport',
 
   resetPassword: '/secured/resetPassword',
   getAllIdType: '/secured/getAllIdType',
@@ -114,7 +116,18 @@ export const privateRoutes = {
   modifyNdcThresholdApprovalDecision: '/secured/ndc/threshold-approvals',
   getThresholdDfspList: '/secured/threshold/dfspList',
   getSchedulerConfigById: '/secured/getSchedulerConfigById',
-  getSchedulerConfigByJobName: '/secured/getSchedulerConfigByJobName'
+  getSchedulerConfigByJobName: '/secured/getSchedulerConfigByJobName',
+
+  createRevenueParty: '/secured/createRevenueParty',
+  modifyRevenueParty: '/secured/modifyRevenueParty',
+  modifyRevenuePartyStatus: '/secured/modifyRevenuePartyStatus',
+  getRevenuePartyList: '/secured/getRevenuePartyList',
+  getRevenueConfigList: '/secured/getRevenueConfigList',
+  createRevenueApprovalRequest: '/secured/createRevenueApprovalRequest',
+  getPendingRevenueApprovalList: '/secured/getPendingRevenueApprovalList',
+  modifyRevenueApprovalAction: '/secured/modifyRevenueApprovalAction',
+  createRevenueRoundingPolicy: '/secured/createRevenueRoundingPolicy',
+  getRevenueRoundingPolicy: '/secured/getRevenueRoundingPolicy'
 };
 
 const routes = {

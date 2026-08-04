@@ -20,6 +20,7 @@ import { hasActionPermission } from '@helpers/permissions';
 import { type RootState } from '@store';
 import NdcThresholdApprovalsTab from './components/NdcThresholdApprovalsTab';
 import ParticipantApprovalsTab from './components/ParticipantApprovalsTab';
+import RevenueSharingApprovalsTab from './components/RevenueSharingApprovalsTab';
 
 
 const PendingApprovals = () => {
@@ -28,10 +29,13 @@ const PendingApprovals = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [participantCount, setParticipantCount] = useState(0);
   const [ndcThresholdCount, setNdcThresholdCount] = useState(0);
+  const [revenueSharingCount, setRevenueSharingCount] = useState(0);
   const canViewNdcThresholdTab =
     hasActionPermission('SubmitNdcThresholdApproval') &&
     hasActionPermission('GetNdcThresholdApprovalList') &&
     hasActionPermission('ModifyNdcThresholdApprovalAction');
+  const canViewRevenueSharingTab = hasActionPermission('GetPendingRevenueApprovalList');
+  const revenueSharingTabIndex = canViewNdcThresholdTab ? 2 : 1;
 
   const handleParticipantCountChange = useCallback((count: number) => {
     setParticipantCount(count);
@@ -39,6 +43,10 @@ const PendingApprovals = () => {
 
   const handleNdcThresholdCountChange = useCallback((count: number) => {
     setNdcThresholdCount(count);
+  }, []);
+
+  const handleRevenueSharingCountChange = useCallback((count: number) => {
+    setRevenueSharingCount(count);
   }, []);
 
   return (
@@ -79,6 +87,23 @@ const PendingApprovals = () => {
               </HStack>
             </Tab>
           )}
+          {canViewRevenueSharingTab && (
+            <Tab
+              px={1}
+              pb={3}
+              color="gray.700"
+              borderBottom="3px solid"
+              borderColor="transparent"
+              fontWeight="semibold"
+              _selected={{ color: 'primary', borderColor: 'primary' }}>
+              <HStack spacing={3}>
+                <Text>{t('ui.revenue_sharing')}</Text>
+                <Badge borderRadius="full" px={3} py={1} bg="purple.50" color="primary" fontSize="sm">
+                  {revenueSharingCount}
+                </Badge>
+              </HStack>
+            </Tab>
+          )}
         </TabList>
 
         <TabPanels>
@@ -94,6 +119,15 @@ const PendingApprovals = () => {
                 isActive={activeTab === 1}
                 selectedTZString={selectedTimezone.value}
                 onCountChange={handleNdcThresholdCountChange}
+              />
+            </TabPanel>
+          )}
+          {canViewRevenueSharingTab && (
+            <TabPanel px={0} pt={6} pb={0}>
+              <RevenueSharingApprovalsTab
+                isActive={activeTab === revenueSharingTabIndex}
+                selectedTZString={selectedTimezone.value}
+                onCountChange={handleRevenueSharingCountChange}
               />
             </TabPanel>
           )}
