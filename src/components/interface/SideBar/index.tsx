@@ -4,7 +4,7 @@ import { memo } from 'react';
 import { Box, IconButton, Link, VStack } from '@chakra-ui/react';
 import SideBarAccordion from './SideBarAccordion';
 import SideBarItem from './SideBarItem';
-import { FiHome, FiRepeat, FiBarChart2, FiHelpCircle, FiMenu, FiBell, FiFileText, FiSettings as FiAdmin } from 'react-icons/fi';
+import { FiHome, FiRepeat, FiBarChart2, FiHelpCircle, FiMenu, FiBell, FiFileText, FiSettings as FiAdmin, FiDollarSign } from 'react-icons/fi';
 import { HiOutlineBuildingLibrary } from 'react-icons/hi2';
 import { AiOutlineAudit } from 'react-icons/ai';
 import { MdPendingActions } from 'react-icons/md';
@@ -239,6 +239,18 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
                 to: 'reports/fee-summary-report',
                 menuId: 'fee_summary_report',
               },
+              {
+                id: 'revenueSharingSummaryReport',
+                label: t('ui.revenue_sharing_summary_report'),
+                to: 'reports/revenue-sharing-summary-report',
+                menuId: 'revenue_sharing_summary_report',
+              },
+              {
+                id: 'revenueSharingDetailReport',
+                label: t('ui.revenue_sharing_detail_report'),
+                to: 'reports/revenue-sharing-detail-report',
+                menuId: 'revenue_sharing_detail_report',
+              },
             ]}
           />
 
@@ -300,6 +312,33 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
                 to: '/system-admin/role-permission',
                 menuId: 'role_permission'
               }
+            ]}
+          />
+
+          <SideBarAccordion
+            icon={<FiDollarSign />}
+            label={t('ui.revenue_sharing_settings')}
+            collapsed={collapsed}
+            menuId="revenue_sharing_settings"
+            items={[
+              {
+                id: 'partyRegistry',
+                label: t('ui.party_registry'),
+                to: '/revenue-sharing/party-registry',
+                menuId: 'party_registry',
+              },
+              {
+                id: 'revenueConfig',
+                label: t('ui.revenue_config'),
+                to: '/revenue-sharing/revenue-config',
+                menuId: 'revenue_config',
+              },
+              {
+                id: 'revenueRoundingSetting',
+                label: t('ui.revenue_rounding_setting'),
+                to: '/revenue-sharing/revenue-rounding-setting',
+                menuId: 'revenue_rounding_setting',
+              },
             ]}
           />
 

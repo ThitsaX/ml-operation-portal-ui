@@ -113,6 +113,7 @@ export class UserManagementHelper extends FormHelper {
       jobTitle: z.string().optional(),
       status: z.string().optional(),
       userId: z.string().optional(),
+      allowNotification: z.boolean().optional(),
       password: newPasswordSchema,
       confirmPassword: z.string(),
     }).refine((data) => data.password === data.confirmPassword, {
@@ -131,6 +132,7 @@ export class UserManagementHelper extends FormHelper {
       jobTitle: z.string().optional(),
       status: z.string().optional(),
       userId: z.string().optional(),
+      allowNotification: z.boolean().optional(),
     });
   }
 }

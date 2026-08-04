@@ -9,3 +9,4 @@ export * from './audit';
 export * from './pending-approvals';
 export * from './user';
 export * from './ndc-configurations';
+export * from './revenue-sharing';

@@ -16,6 +16,7 @@ import {
   Button,
   FormControl,
   FormErrorMessage,
+  FormLabel,
   SimpleGrid,
   InputGroup,
   InputRightElement,
@@ -23,7 +24,8 @@ import {
   Box,
   Text,
   Spinner,
-  Tooltip
+  Tooltip,
+  Switch
 } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -40,7 +42,6 @@ import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5';
 import { useTranslation } from 'react-i18next';
 
 const userSchema = new UserManagementHelper();
-
 
 interface EditUserModalProps {
   isOpen: boolean;
@@ -85,6 +86,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       roleIdList: [],
       jobTitle: '',
       status: UserStatus.ACTIVE,
+      allowNotification: false,
       password: '',
       confirmPassword: '',
     },
@@ -126,6 +128,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             roleIdList: selectedIds,
             jobTitle: selectedUser.jobTitle ?? '',
             status: selectedUser.status ?? UserStatus.ACTIVE,
+            allowNotification: selectedUser.allowNotification ?? true,
             password: '',
             confirmPassword: '',
           });
@@ -141,6 +144,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
           roleIdList: [],
           jobTitle: '',
           status: UserStatus.ACTIVE,
+          allowNotification: false,
           password: '',
           confirmPassword: '',
         });
@@ -294,6 +298,24 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             <FormControl isInvalid={!isEmpty(errors.jobTitle)}>
               <Input placeholder={t('ui.job_title')} {...register('jobTitle')} />
               <FormErrorMessage>{errors.jobTitle?.message}</FormErrorMessage>
+            </FormControl>
+
+            <FormControl display="flex" alignItems="center" justifyContent="space-between">
+              <FormLabel>
+                {t('ui.allow_user_receive_notifications')}
+              </FormLabel>
+              <Controller
+                control={control}
+                name="allowNotification"
+                render={({ field }) => (
+                  <Switch
+                    id="allow-notification"
+                    colorScheme="green"
+                    isChecked={Boolean(field.value)}
+                    onChange={(event) => field.onChange(event.target.checked)}
+                  />
+                )}
+              />
             </FormControl>
 
             {!isEdit && (

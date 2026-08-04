@@ -9,29 +9,33 @@ import {
     AlertDialogOverlay,
     Button
 } from '@chakra-ui/react';
-import { useRef } from 'react';
+import { ReactNode, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface ConfirmDialogProps {
     isOpen: boolean;
     title?: string;
-    message?: string;
+    message?: ReactNode;
+    children?: ReactNode;
     onConfirm: () => void;
     onCancel: () => void;
     confirmText?: string;
     cancelText?: string;
     isLoading?: boolean;
+    isConfirmDisabled?: boolean;
 }
 
 export const ConfirmDialog = ({
     isOpen,
     title,
     message,
+    children,
     onConfirm,
     onCancel,
     confirmText,
     cancelText,
-    isLoading = false
+    isLoading = false,
+    isConfirmDisabled = false
 }: ConfirmDialogProps) => {
     const { t } = useTranslation();
     const cancelRef = useRef<HTMLButtonElement>(null);
@@ -51,7 +55,7 @@ export const ConfirmDialog = ({
                         {resolvedTitle}
                     </AlertDialogHeader>
 
-                    <AlertDialogBody>{resolvedMessage}</AlertDialogBody>
+                    <AlertDialogBody>{children || resolvedMessage}</AlertDialogBody>
 
                     <AlertDialogFooter>
                         <Button ref={cancelRef} onClick={onCancel}>
@@ -62,6 +66,7 @@ export const ConfirmDialog = ({
                             onClick={onConfirm}
                             ml={3}
                             isLoading={isLoading}
+                            isDisabled={isConfirmDisabled}
                         >
                             {resolvedConfirmText}
                         </Button>

@@ -49,6 +49,8 @@ export const actionIds = {
     "GenerateSettlementSummaryReport": "GenerateSettlementSummaryReport",
     "GenerateTransactionDetailReport": "GenerateTransactionDetailReport",
     "GenerateTransactionAmountSwiftReport": "GenerateTransactionAmountSwiftReport",
+    "GenerateRevenueSharingSummaryReport": "GenerateRevenueSharingSummaryReport",
+    "GenerateRevenueSharingDetailReport": "GenerateRevenueSharingDetailReport",
     "SubmitNdcThresholdApproval": "SubmitNdcThresholdApproval",
     "GetNdcThresholdApprovalList": "GetNdcThresholdApprovalList",
     "ModifyNdcThresholdApprovalAction": "ModifyNdcThresholdApprovalAction",
@@ -57,6 +59,16 @@ export const actionIds = {
     "ModifyThresholdConfiguration": "ModifyThresholdConfiguration",
     "GetSchedulerConfigByJobName": "GetSchedulerConfigByJobName",
     "ModifySchedulerConfig": "ModifySchedulerConfig",
+    "CreateRevenueParty": "CreateRevenueParty",
+    "ModifyRevenueParty": "ModifyRevenueParty",
+    "ModifyRevenuePartyStatus": "ModifyRevenuePartyStatus",
+    "GetRevenuePartyList": "GetRevenuePartyList",
+    "GetRevenueConfigList": "GetRevenueConfigList",
+    "CreateRevenueApprovalRequest": "CreateRevenueApprovalRequest",
+    "GetPendingRevenueApprovalList": "GetPendingRevenueApprovalList",
+    "ModifyRevenueApprovalAction": "ModifyRevenueApprovalAction",
+    "CreateRevenueRoundingPolicy": "CreateRevenueRoundingPolicy",
+    "GetRevenueRoundingPolicy": "GetRevenueRoundingPolicy",
 } as const;
 
 export type ActionId = keyof typeof actionIds;

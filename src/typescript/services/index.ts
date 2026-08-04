@@ -11,3 +11,4 @@ export * from './pending-approvals';
 export * from './settlements';
 export * from './system-admin'
 export * from './ndc-configurations'
+export * from './revenue-sharing'

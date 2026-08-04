@@ -16,6 +16,7 @@ export interface IParticipantUser {
   status: UserStatus;
   password: string;
   confirmPassword?: string;
+  allowNotification: boolean;
 }
 
 export type IParticipantUserForm = Omit<IParticipantUser, 'roleList'> & {
@@ -27,7 +28,10 @@ export interface IModifyUser {
   email: string;
   firstName: string;
   lastName: string;
+  participantId: string;
   jobTitle: string;
+  roleIdList: string[];
+  allowNotification: boolean;
   status: UserStatus;
 }
 

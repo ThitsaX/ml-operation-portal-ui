@@ -33,5 +33,11 @@ export const menuIds : Record<string, number>= {
     'fee_summary_report': 31,
     'role_permission': 32,
     'ndc_alert_settings': 33,
-    'notification_delivery_log': 34
+    'notification_delivery_log': 34,
+    'revenue_sharing_settings': 1000,
+    'party_registry': 1001,
+    'revenue_config': 1002,
+    'revenue_rounding_setting': 1003,
+    'revenue_sharing_summary_report': 1004,
+    'revenue_sharing_detail_report': 1005,
 }
