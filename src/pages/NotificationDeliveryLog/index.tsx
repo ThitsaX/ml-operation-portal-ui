@@ -32,7 +32,7 @@ import { Column, useSortBy, useTable } from 'react-table';
 import { CustomSelect } from '@components/interface';
 import { getErrorMessage } from '@helpers/errors';
 import { formatEpochToTZ } from '@helpers/dateHelper';
-import { useGetNdcDeliveryLogs } from '@hooks/services/ndc-configurations';
+import { useGetDeliveryLogs } from '@hooks/services/ndc-configurations';
 import { RootState } from '@store';
 import type { IApiErrorResponse, INdcDeliveryLog, NdcDeliveryStatus } from '@typescript/services';
 import { useTranslation } from 'react-i18next';
@@ -90,7 +90,7 @@ const NotificationDeliveryLog = () => {
     pageSize,
   }), [deliveryStatus, pageNumber, pageSize]);
 
-  const { data, isLoading, isFetching, isError, error } = useGetNdcDeliveryLogs(queryParams);
+  const { data, isLoading, isFetching, isError, error } = useGetDeliveryLogs(queryParams);
   const deliveryLogs = useMemo(() => data?.deliveryLogs ?? [], [data?.deliveryLogs]);
   const totalPages = Math.max(1, data?.totalPages ?? 1);
   const canPreviousPage = pageNumber > 1;

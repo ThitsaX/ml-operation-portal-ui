@@ -54,7 +54,7 @@ import {
   createNdcDfspConfiguration,
   createNdcThresholdApproval,
   getNdcDfspConfiguration,
-  getNdcThresholdDetails,
+  getThresholdDetailList,
   modifyNdcDfspConfiguration
 } from '@services/ndc-configurations';
 import { type INdcThresholdForm } from '@typescript/form';
@@ -93,6 +93,8 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
   const ndcThresholdHelper = new NdcThresholdHelper();
   const canSubmitNdcThresholdApproval = hasActionPermission('SubmitNdcThresholdApproval');
   const canModifyNdcThresholdApproval = hasActionPermission('ModifyNdcThresholdApprovalAction');
+  const canModifyDfspThresholdConfiguration = hasActionPermission('ModifyDfspThresholdConfiguration');
+  const isConfigurationSwitchPermissionDisabled = !canModifyDfspThresholdConfiguration;
   const thresholdTableColumnCount = canModifyNdcThresholdApproval ? 4 : 3;
 
   const [thresholdForm, setThresholdForm] =
@@ -126,8 +128,8 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
   const thresholdConfigurationId = getConfigId(configQuery.data);
 
   const thresholdsQuery = useQuery<INdcThresholdDetail[], IApiErrorResponse>({
-    queryKey: ['getNdcThresholdDetails', thresholdConfigurationId, true],
-    queryFn: () => getNdcThresholdDetails({ thresholdConfigurationId, status: true }),
+    queryKey: ['getThresholdDetailList', thresholdConfigurationId, true],
+    queryFn: () => getThresholdDetailList({ thresholdConfigurationId, status: true }),
     enabled: Boolean(thresholdConfigurationId),
     refetchOnWindowFocus: false
   });
@@ -176,6 +178,7 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
   };
 
   const toggleConfiguration = async (nextEnabled: boolean) => {
+    if (!canModifyDfspThresholdConfiguration) return;
     setIsSavingConfig(true);
     try {
       const id = await ensureConfiguration(nextEnabled);
@@ -359,12 +362,28 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
                 color={enabled ? 'green.600' : 'gray.500'}>
                 {enabled ? t('ui.active') : t('ui.inactive')}
               </Text>
-              <Switch
-                colorScheme="green"
-                isChecked={enabled}
-                isDisabled={isSavingConfig || isConfigLoading || !dfspId}
-                onChange={(event) => toggleConfiguration(event.target.checked)}
-              />
+              <Tooltip
+                label={t('ui.no_permission_modify_dfsp_ndc_threshold_setting')}
+                isDisabled={!isConfigurationSwitchPermissionDisabled}
+                placement="top"
+                hasArrow
+                maxW="260px"
+                px={3}
+                py={2}
+                borderRadius="md"
+                bg="white"
+                color="gray.800"
+                boxShadow="md"
+                fontSize="sm">
+                <Box as="span" display="inline-flex">
+                  <Switch
+                    colorScheme="green"
+                    isChecked={enabled}
+                    isDisabled={isSavingConfig || isConfigLoading || !dfspId || isConfigurationSwitchPermissionDisabled}
+                    onChange={(event) => toggleConfiguration(event.target.checked)}
+                  />
+                </Box>
+              </Tooltip>
             </HStack>
           </HStack>
 

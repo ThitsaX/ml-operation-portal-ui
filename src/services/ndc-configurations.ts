@@ -35,11 +35,11 @@ const parseJsonWithLargeIntegersAsStrings = (data: string) => {
   return JSON.parse(data.replace(/:\s*(-?\d{16,})(?=[,\]}])/g, ': "$1"'));
 };
 
-export const getNdcSchemeConfiguration = async () => {
+export const getSchemeThresholdConfiguration = async () => {
   const {
     user: { auth }
   } = store.getState();
-  const uri = routes.getNdcSchemeConfiguration;
+  const uri = routes.getSchemeThresholdConfiguration;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
   const accessToken = await generateAccessToken({
@@ -73,7 +73,7 @@ export const modifyNdcSchemeConfiguration = async (
   const {
     user: { auth }
   } = store.getState();
-  const uri = routes.modifyNdcConfiguration;
+  const uri = routes.modifyThresholdConfiguration;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
   const accessToken = await generateAccessToken({
@@ -167,14 +167,14 @@ export const getNdcWorkerConfigurationByJobName = async (
       throw rest;
     });
 };
-export const modifyNdcWorkerConfiguration = async (
+export const modifyWorkerConfig = async (
   id: string,
   data: IModifyNdcWorkerConfigurationRequest
 ) => {
   const {
     user: { auth }
   } = store.getState();
-  const uri = routes.modifyNdcWorkerConfiguration;
+  const uri = routes.modifyWorkerConfig;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
   const accessToken = await generateAccessToken({
@@ -240,7 +240,7 @@ export const createNdcDfspConfiguration = async (
   const {
     user: { auth }
   } = store.getState();
-  const uri = routes.modifyNdcConfiguration;
+  const uri = routes.createThresholdConfiguration;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
   const accessToken = await generateAccessToken({
@@ -275,7 +275,7 @@ export const modifyNdcDfspConfiguration = async (
   const {
     user: { auth }
   } = store.getState();
-  const uri = routes.modifyNdcConfiguration;
+  const uri = routes.modifyThresholdConfiguration;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
   const accessToken = await generateAccessToken({
@@ -304,7 +304,7 @@ export const modifyNdcDfspConfiguration = async (
     });
 };
 
-export const getNdcDeliveryLogs = async ({
+export const getDeliveryLogs = async ({
   deliveryStatus,
   page,
   pageSize
@@ -312,7 +312,7 @@ export const getNdcDeliveryLogs = async ({
   const {
     user: { auth }
   } = store.getState();
-  const uri = routes.getNdcDeliveryLogs;
+  const uri = routes.getDeliveryLogs;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
   const accessToken = await generateAccessToken({
@@ -445,11 +445,11 @@ export const modifyNdcThresholdApprovalDecision = async (
     });
 };
 
-export const getNdcThresholdDetails = async (params: INdcThresholdDetailsRequest) => {
+export const getThresholdDetailList = async (params: INdcThresholdDetailsRequest) => {
   const {
     user: { auth }
   } = store.getState();
-  const uri = routes.getNdcThresholdDetails;
+  const uri = routes.getThresholdDetailList;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
   const accessToken = await generateAccessToken({

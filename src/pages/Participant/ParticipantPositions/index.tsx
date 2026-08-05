@@ -44,7 +44,7 @@ import DepositModal from '@components/interface/Participant';
 import WithdrawModal from '@components/interface/Participant/WidthdrawModal';
 import NetDebitCapModal from '@components/interface/Participant/NetDebitCardModal';
 import { createApprovalRequest, updateParticipantStatus,
-    syncHubParticipantsToPortal, getParticipantPositionList, getThresholdDfspList
+    syncHubParticipantsToPortal, getParticipantPositionList, getDfspVisualConfigList
  } from '@services/participant';
 import { type IApiErrorResponse } from '@typescript/services';
 import { getErrorMessage } from '@helpers/errors';
@@ -92,7 +92,7 @@ const ParticipantPositions = () => {
     useEffect(() => {
         const loadData = async () => {
             await syncHubParticipantsToPortal();
-            await Promise.all([getPositionList(), getThresholdDfspListData()]);
+            await Promise.all([getPositionList(), getDfspVisualConfigListData()]);
         };
 
         loadData();
@@ -115,12 +115,12 @@ const ParticipantPositions = () => {
         }
     };
 
-    const getThresholdDfspListData = async () => {
+    const getDfspVisualConfigListData = async () => {
         setIsThresholdDfspListLoading(true);
         setIsThresholdDfspListReady(false);
         setIsThresholdDfspListError(false);
         try {
-            const data = await getThresholdDfspList();
+            const data = await getDfspVisualConfigList();
             setThresholdDfspList(data);
             setIsThresholdDfspListReady(true);
         } catch (error: any) {
@@ -142,7 +142,7 @@ const ParticipantPositions = () => {
         try {
             setStringDateTime(handleTimeZone(stringTimezone));
             await syncHubParticipantsToPortal();
-            await Promise.all([getPositionList(), getThresholdDfspListData()]);
+            await Promise.all([getPositionList(), getDfspVisualConfigListData()]);
             toast({
                 title: t('ui.data_refreshed'),
                 position: 'top',

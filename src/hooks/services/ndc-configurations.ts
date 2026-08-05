@@ -2,10 +2,10 @@
 // Copyright 2024-2026 ThitsaWorks Pte. Ltd.
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 import {
-  getNdcSchemeConfiguration,
-  getNdcDeliveryLogs,
+  getDeliveryLogs,
   getNdcThresholdApprovals,
-  getNdcWorkerConfigurationByJobName
+  getNdcWorkerConfigurationByJobName,
+  getSchemeThresholdConfiguration
 } from '@services/ndc-configurations';
 import {
   type IApiErrorResponse,
@@ -22,14 +22,14 @@ type NdcQueryOptions<TData> = Omit<
   'queryKey' | 'queryFn'
 >;
 
-export const useGetNdcDeliveryLogs = (
+export const useGetDeliveryLogs = (
   params: INdcDeliveryLogsRequest,
   options?: NdcQueryOptions<INdcDeliveryLogsResponse>
 ) =>
   useQuery<INdcDeliveryLogsResponse, IApiErrorResponse, INdcDeliveryLogsResponse>(
     {
-      queryKey: ['getNdcDeliveryLogs', params],
-      queryFn: () => getNdcDeliveryLogs(params),
+      queryKey: ['getDeliveryLogs', params],
+      queryFn: () => getDeliveryLogs(params),
       keepPreviousData: true,
       ...options
     }
@@ -47,13 +47,13 @@ export const useGetNdcThresholdApprovals = (
     }
   );
 
-export const useGetNdcSchemeConfiguration = (
+export const useGetSchemeThresholdConfiguration = (
   options?: NdcQueryOptions<INdcSchemeConfiguration>
 ) =>
   useQuery<INdcSchemeConfiguration, IApiErrorResponse, INdcSchemeConfiguration>(
     {
-      queryKey: ['getNdcSchemeConfiguration'],
-      queryFn: getNdcSchemeConfiguration,
+      queryKey: ['getSchemeThresholdConfiguration'],
+      queryFn: getSchemeThresholdConfiguration,
       ...options
     }
   );

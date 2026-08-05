@@ -20,12 +20,12 @@ import { getErrorMessage } from '@helpers/errors';
 import { hasActionPermission } from '@helpers/permissions';
 import { type RootState } from '@store';
 import {
-  useGetNdcSchemeConfiguration,
-  useGetNdcWorkerConfigurationByJobName
+  useGetSchemeThresholdConfiguration,
+  useGetNdcWorkerConfigurationByJobName,
 } from '@hooks/services/ndc-configurations';
 import {
   modifyNdcSchemeConfiguration,
-  modifyNdcWorkerConfiguration
+  modifyWorkerConfig
 } from '@services/ndc-configurations';
 import {
   InfoCard,
@@ -61,7 +61,7 @@ const NdcAlertSettings = () => {
     isFetching: isSchemeConfigurationFetching,
     isLoading: isSchemeConfigurationLoading,
     refetch: refetchSchemeConfiguration
-  } = useGetNdcSchemeConfiguration({
+  } = useGetSchemeThresholdConfiguration({
     refetchOnWindowFocus: false
   });
 
@@ -203,7 +203,7 @@ const NdcAlertSettings = () => {
     setIsSavingWorker(true);
 
     try {
-      await modifyNdcWorkerConfiguration(
+      await modifyWorkerConfig(
         workerConfigId,
         buildWorkerPayload(
           workerConfiguration,

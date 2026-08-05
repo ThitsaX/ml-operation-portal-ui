@@ -27,7 +27,6 @@ import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import { TfiAngleDoubleLeft, TfiAngleDoubleRight, TfiAngleLeft, TfiAngleRight } from 'react-icons/tfi';
 import { Column, useSortBy, useTable } from 'react-table';
 import { CustomSelect } from '@components/interface';
-import { OptionType } from '@components/interface/CustomSelect';
 import { ConfirmDialog } from '@components/interface/ConfirmationDialog';
 import GlobalFilter from '@components/interface/GlobalFilter';
 import { formatEpochToTZ } from '@helpers/dateHelper';
@@ -41,19 +40,10 @@ import { PAGE_SIZE_OPTIONS } from '@utils/constants';
 interface NdcThresholdApprovalsTabProps {
   isActive: boolean;
   selectedTZString: string;
+  filterStatus: NdcThresholdApprovalStatus;
   onCountChange: (count: number) => void;
 }
 
-const STATUS_OPTIONS = [
-  { value: 'PENDING', labelKey: 'ui.pending' },
-  { value: 'APPROVED', labelKey: 'ui.approved' },
-  { value: 'REJECTED', labelKey: 'ui.rejected' }
-] as const;
-
-const getStatusLabel = (status: NdcThresholdApprovalStatus, t: (key: string) => string) =>
-  STATUS_OPTIONS.find((option) => option.value === status)?.labelKey
-    ? t(STATUS_OPTIONS.find((option) => option.value === status)?.labelKey as string)
-    : status;
 
 const formatNdcOperation = (operation: string) =>
   operation
@@ -65,10 +55,9 @@ const formatNdcOperation = (operation: string) =>
 const formatThresholdValue = (value: number | null) =>
   value === null || value === undefined ? '-' : `${value}%`;
 
-const NdcThresholdApprovalsTab = ({ isActive, selectedTZString, onCountChange }: NdcThresholdApprovalsTabProps) => {
+const NdcThresholdApprovalsTab = ({ isActive, selectedTZString, filterStatus, onCountChange }: NdcThresholdApprovalsTabProps) => {
   const { t } = useTranslation();
   const toast = useToast();
-  const [filterStatus, setFilterStatus] = useState<NdcThresholdApprovalStatus>('PENDING');
   const [search, setSearch] = useState<string | undefined>(undefined);
   const [pageNumber, setPageNumber] = useState(1);
   const [pageInput, setPageInput] = useState('1');
@@ -127,7 +116,6 @@ const NdcThresholdApprovalsTab = ({ isActive, selectedTZString, onCountChange }:
 
     return approvals.filter((approval) =>
       [
-        approval.approvalRequestId,
         approval.operation,
         approval.participantName,
         approval.currency,
@@ -220,50 +208,46 @@ const NdcThresholdApprovalsTab = ({ isActive, selectedTZString, onCountChange }:
   };
 
   const showActionColumn = filterStatus === 'PENDING' && hasActionPermission('ModifyNdcThresholdApprovalAction');
-  const tableColumnCount = showActionColumn ? 10 : 9;
-  const emptyMessage = `No ${getStatusLabel(filterStatus, t).toLowerCase()} NDC threshold approvals found.`;
+  const tableColumnCount = showActionColumn ? 9 : 8;
+  const emptyMessage = `No ${filterStatus.toLowerCase()} NDC threshold approvals found.`;
 
   const columns = useMemo(() => {
     const baseColumns: Column<INdcThresholdApproval>[] = [
       {
-        Header: () => <Text fontWeight="semibold" fontSize="sm">Request ID</Text>,
-        accessor: 'approvalRequestId'
-      },
-      {
-        Header: () => <Text fontWeight="semibold" fontSize="sm">Requested Action</Text>,
+        Header: () => <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Requested Action</Text>,
         accessor: 'operation',
         Cell: ({ value }: any) => formatNdcOperation(value)
       },
       {
-        Header: () => <Text fontWeight="semibold" fontSize="sm">DFSP</Text>,
+        Header: () => <Text flex={1} fontWeight="semibold" fontSize="sm">DFSP</Text>,
         accessor: 'participantName'
       },
       {
-        Header: () => <Text fontWeight="semibold" fontSize="sm">Currency</Text>,
+        Header: () => <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Currency</Text>,
         accessor: 'currency',
         Cell: ({ value }: any) => <Text textAlign="center">{value}</Text>
       },
       {
-        Header: () => <Text fontWeight="semibold" fontSize="sm">Visual Alert</Text>,
+        Header: () => <Text flex={1} textAlign="right" fontWeight="semibold" fontSize="sm" textTransform="capitalize">Visual Alert</Text>,
         accessor: 'requestedVisualConfig',
-        Cell: ({ value }: any) => formatThresholdValue(value)
+        Cell: ({ value }: any) => <Box textAlign="right">{formatThresholdValue(value)}</Box>
       },
       {
-        Header: () => <Text fontWeight="semibold" fontSize="sm">Notification Alert</Text>,
+        Header: () => <Text flex={1} textAlign="right" fontWeight="semibold" fontSize="sm" textTransform="capitalize">Notification Alert</Text>,
         accessor: 'requestedNotificationConfig',
-        Cell: ({ value }: any) => formatThresholdValue(value)
+        Cell: ({ value }: any) => <Box textAlign="right">{formatThresholdValue(value)}</Box>
       },
       {
-        Header: () => <Text fontWeight="semibold" fontSize="sm">Submitted By</Text>,
+        Header: () => <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Submitted By</Text>,
         accessor: 'requestedBy'
       },
       {
-        Header: () => <Text fontWeight="semibold" fontSize="sm">Submitted At</Text>,
+        Header: () => <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Submitted At</Text>,
         accessor: 'requestedAt',
         Cell: ({ value }: any) => formatDate(value)
       },
       {
-        Header: () => <Text fontWeight="semibold" fontSize="sm">Status</Text>,
+        Header: () => <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">Status</Text>,
         accessor: 'status'
       }
     ];
@@ -313,20 +297,12 @@ const NdcThresholdApprovalsTab = ({ isActive, selectedTZString, onCountChange }:
 
   return (
     <>
-      <HStack w="full" justifyContent="space-between">
-        <CustomSelect
-          width="200px"
-          options={STATUS_OPTIONS.map((option) => ({ value: option.value, label: t(option.labelKey) }))}
-          value={{ value: filterStatus, label: getStatusLabel(filterStatus, t) }}
-          onChange={(selectedOption: OptionType | null) => setFilterStatus((selectedOption?.value || 'PENDING') as NdcThresholdApprovalStatus)}
-        />
-      </HStack>
 
       <VStack w="full" align="flex-start" spacing={2}>
         <GlobalFilter mt={5} globalFilter={search} setGlobalFilter={setSearch} />
 
         <Box w="full">
-          <TableContainer w="full" borderWidth={1} borderColor="gray.100" rounded="lg" mt="4">
+          <TableContainer w="full" borderWidth={1} borderColor="gray.100" rounded="lg">
             <Table variant="simple" {...getTableProps()}>
               <Thead bg="gray.100">
                 {headerGroups.map((headerGroup) => {

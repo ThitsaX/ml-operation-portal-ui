@@ -471,11 +471,11 @@ export const getParticipantListByDirectIndirect = async () => {
     })
 }
 
-export const getThresholdDfspList = async () => {
+export const getDfspVisualConfigList = async () => {
   const {
     user: { auth }
   } = store.getState()
-  const uri = routes.getThresholdDfspList
+  const uri = routes.getDfspVisualConfigList
   const accessKey = auth?.accessKey as string
   const secretKey = auth?.secretKey as string
   const accessToken = await generateAccessToken({

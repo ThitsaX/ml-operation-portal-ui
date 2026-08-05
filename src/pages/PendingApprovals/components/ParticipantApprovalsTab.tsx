@@ -24,8 +24,6 @@ import { FiCheckCircle, FiXCircle } from 'react-icons/fi';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import { TfiAngleDoubleLeft, TfiAngleDoubleRight, TfiAngleLeft, TfiAngleRight } from 'react-icons/tfi';
 import { Column, useGlobalFilter, usePagination, useSortBy, useTable } from 'react-table';
-import { CustomSelect } from '@components/interface';
-import { OptionType } from '@components/interface/CustomSelect';
 import { ConfirmDialog } from '@components/interface/ConfirmationDialog';
 import GlobalFilter from '@components/interface/GlobalFilter';
 import { formatEpochToTZ } from '@helpers/dateHelper';
@@ -39,24 +37,14 @@ import { formatNumberWithCommas } from '@utils';
 
 interface ParticipantApprovalsTabProps {
   selectedTZString: string;
+  filterStatus: PendingApprovalStatus;
   onCountChange: (count: number) => void;
 }
 
-const STATUS_OPTIONS = [
-  { value: 'PENDING', labelKey: 'ui.pending' },
-  { value: 'APPROVED', labelKey: 'ui.approved' },
-  { value: 'REJECTED', labelKey: 'ui.rejected' }
-] as const;
 
-const getStatusLabel = (status: PendingApprovalStatus, t: (key: string) => string) =>
-  STATUS_OPTIONS.find((option) => option.value === status)?.labelKey
-    ? t(STATUS_OPTIONS.find((option) => option.value === status)?.labelKey as string)
-    : status;
-
-const ParticipantApprovalsTab = ({ selectedTZString, onCountChange }: ParticipantApprovalsTabProps) => {
+const ParticipantApprovalsTab = ({ selectedTZString, filterStatus, onCountChange }: ParticipantApprovalsTabProps) => {
   const { t } = useTranslation();
   const toast = useToast();
-  const [filterStatus, setFilterStatus] = useState<PendingApprovalStatus>(PendingApprovalStatus.PENDING);
   const [pageNumber, setPageNumber] = useState<String>('1');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedRow, setSelectedRow] = useState<IPendingApproval | null>(null);
@@ -241,20 +229,12 @@ const ParticipantApprovalsTab = ({ selectedTZString, onCountChange }: Participan
 
   return (
     <>
-      <HStack w="full" justifyContent="space-between">
-        <CustomSelect
-          width="200px"
-          options={STATUS_OPTIONS.map((option) => ({ value: option.value, label: t(option.labelKey) }))}
-          value={{ value: filterStatus, label: getStatusLabel(filterStatus, t) }}
-          onChange={(selectedOption: OptionType | null) => setFilterStatus((selectedOption?.value || 'PENDING') as PendingApprovalStatus)}
-        />
-      </HStack>
 
       <VStack w="full" align="flex-start" spacing={2}>
         <GlobalFilter mt={5} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
 
         <Box w="full">
-          <TableContainer w="full" borderWidth={1} borderColor="gray.100" rounded="lg" mt="4">
+          <TableContainer w="full" borderWidth={1} borderColor="gray.100" rounded="lg">
             <Table variant="simple" {...getTableProps()}>
               <Thead bg="gray.100">
                 {headerGroups.map((headerGroup) => {

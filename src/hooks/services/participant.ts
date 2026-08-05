@@ -7,7 +7,7 @@ import {
   getRoleList,
   getParticipantCurrencyListByDfspId,
   getParticipantListByDirectIndirect,
-  getThresholdDfspList,
+  getDfspVisualConfigList,
 } from '@services/participant'
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
 import {
@@ -78,14 +78,14 @@ export const useGetParticipantListByDirectIndirect = (
     ...options
   })
 
-export const useGetThresholdDfspList = (
+export const useGetDfspVisualConfigList = (
   options?: UseQueryOptions<IThresholdDetail[],
     IApiErrorResponse
   >
 ) =>
   useQuery<IThresholdDetail[], IApiErrorResponse>({
-    queryKey: ['getThresholdDfspList'],
-    queryFn: getThresholdDfspList,
+    queryKey: ['getDfspVisualConfigList'],
+    queryFn: getDfspVisualConfigList,
     ...options
   })
 export const useGetParticipantCurrencyList = (

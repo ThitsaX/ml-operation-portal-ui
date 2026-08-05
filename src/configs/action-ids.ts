@@ -54,6 +54,7 @@ export const actionIds = {
     "ModifyNdcThresholdApprovalAction": "ModifyNdcThresholdApprovalAction",
     "GetSchemeThresholdConfiguration": "GetSchemeThresholdConfiguration",
     "CreateThresholdConfiguration": "CreateThresholdConfiguration",
+    "ModifyDfspThresholdConfiguration": "ModifyDfspThresholdConfiguration",
     "ModifyThresholdConfiguration": "ModifyThresholdConfiguration",
     "GetSchedulerConfigByJobName": "GetSchedulerConfigByJobName",
     "ModifySchedulerConfig": "ModifySchedulerConfig",
