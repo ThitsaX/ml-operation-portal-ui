@@ -417,7 +417,7 @@ export const modifyNdcThresholdApprovalDecision = async (
   const {
     user: { auth }
   } = store.getState();
-  const uri = `${routes.modifyNdcThresholdApprovalDecision}/${approvalRequestId}/decision`;
+  const uri = `${routes.modifyNdcThresholdApprovalDecision}/${approvalRequestId}`;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
   const accessToken = await generateAccessToken({

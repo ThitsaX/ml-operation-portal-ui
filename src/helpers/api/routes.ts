@@ -104,7 +104,7 @@ export const privateRoutes = {
   modifyRoleGrantList: '/secured/modifyRoleGrantList',
 
   getSchemeThresholdConfiguration: '/secured/ndc/getSchemeThresholdConfiguration',
-  getNdcDfspConfiguration: '/secured/ndc/configurations/dfsp',
+  getNdcDfspConfiguration: '/secured/ndc/getDfspThresholdConfiguration',
   modifyThresholdConfiguration: '/secured/ndc/modifyThresholdConfiguration',
   createThresholdConfiguration:'/secured/ndc/createThresholdConfiguration',
   modifyWorkerConfig: '/secured/ndc/modifyWorkerConfig',
