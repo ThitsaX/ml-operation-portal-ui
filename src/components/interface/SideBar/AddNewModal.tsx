@@ -15,8 +15,6 @@ import {
   Input,
   FormControl,
   FormLabel,
-  Switch,
-  Box,
   Flex,
   useToast,
 } from '@chakra-ui/react';
@@ -36,9 +34,9 @@ const AddNewModal = ({ isOpen, onClose, onSuccess }: AddNewModalProps) => {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [roleName, setRoleName] = useState('');
-  const [isDfsp, setIsDfsp] = useState(false);
+  const [roleType, setRoleType] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const isRoleNameEmpty = !roleName.trim();
+  const isCreateDisabled = !roleName.trim() || !roleType.trim();
 
   const handleSubmit = async (event?: FormEvent) => {
     event?.preventDefault();
@@ -47,7 +45,7 @@ const AddNewModal = ({ isOpen, onClose, onSuccess }: AddNewModalProps) => {
     try {
       await createRole({
         name: roleName.trim(),
-        isDfsp,
+        roleType: roleType.trim(),
       });
       await queryClient.invalidateQueries({ queryKey: ['getRoleList'] });
       toast({
@@ -81,7 +79,7 @@ const AddNewModal = ({ isOpen, onClose, onSuccess }: AddNewModalProps) => {
 
   const resetForm = () => {
     setRoleName('');
-    setIsDfsp(false);
+    setRoleType('');
   };
 
   return (
@@ -98,7 +96,7 @@ const AddNewModal = ({ isOpen, onClose, onSuccess }: AddNewModalProps) => {
         <ModalBody>
           <VStack spacing={4} align="stretch">
             <FormControl isRequired>
-              <FormLabel>Role name</FormLabel>
+              <FormLabel>Role Name</FormLabel>
               <Input
                 placeholder="e.g. dataAnalyst"
                 value={roleName}
@@ -107,30 +105,14 @@ const AddNewModal = ({ isOpen, onClose, onSuccess }: AddNewModalProps) => {
               />
             </FormControl>
 
-            <Box
-              p={4}
-              bg="gray.50"
-              borderRadius="lg"
-              border="1px solid"
-              borderColor="gray.200"
-            >
-              <FormControl display="flex" alignItems="center" justifyContent="space-between">
-                <VStack align="flex-start" spacing={1}>
-                  <FormLabel mb="0" fontWeight="semibold" color="gray.800">
-                    Is DFSP Role
-                  </FormLabel>
-                  <Text fontSize="sm" color="gray.500">
-                    Enable if this role represents a DFSP participant
-                  </Text>
-                </VStack>
-                <Switch
-                  colorScheme="blue"
-                  size="lg"
-                  isChecked={isDfsp}
-                  onChange={(e) => setIsDfsp(e.target.checked)}
-                />
-              </FormControl>
-            </Box>
+            <FormControl isRequired>
+              <FormLabel>Role Type</FormLabel>
+              <Input
+                placeholder="INDIRECT_DFSP"
+                value={roleType}
+                onChange={(e) => setRoleType(e.target.value)}
+              />
+            </FormControl>
           </VStack>
         </ModalBody>
 
@@ -143,7 +125,7 @@ const AddNewModal = ({ isOpen, onClose, onSuccess }: AddNewModalProps) => {
               colorScheme="blue"
               type="submit"
               isLoading={isLoading}
-              isDisabled={isRoleNameEmpty}
+              isDisabled={isCreateDisabled}
               loadingText="Creating..."
             >
               Create role

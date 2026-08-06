@@ -49,6 +49,7 @@ import { HeaderCell, Cell } from '@components/interface/Table';
 import { getErrorMessage } from '@helpers/errors';
 import { hasActionPermission } from '@helpers/permissions';
 import { NdcThresholdHelper } from '@helpers/form';
+import { useGetSchemeThresholdConfiguration } from '@hooks/services/ndc-configurations';
 import { useGetParticipantCurrencyListByDfspId } from '@hooks/services/participant';
 import {
   createNdcDfspConfiguration,
@@ -106,6 +107,11 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
   const [isSavingThreshold, setIsSavingThreshold] = useState(false);
   const [isDeletingThreshold, setIsDeletingThreshold] = useState(false);
 
+  const schemeQuery = useGetSchemeThresholdConfiguration({
+    retry: false,
+    refetchOnWindowFocus: false
+  });
+
   const {
     control,
     handleSubmit,
@@ -136,8 +142,16 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
 
   const enabled = Boolean(configQuery.data?.thresholdEnabled);
   const thresholds = thresholdsQuery.data ?? [];
+  const isSchemeConfigLoading = schemeQuery.isLoading || schemeQuery.isFetching;
+  const isSchemeThresholdGateOff = schemeQuery.data?.thresholdEnabled === false;
   const isConfigLoading = configQuery.isLoading || configQuery.isFetching;
   const isThresholdsLoading = Boolean(thresholdConfigurationId) && (thresholdsQuery.isLoading || thresholdsQuery.isFetching);
+  const configurationSwitchTooltipLabel = isConfigurationSwitchPermissionDisabled
+    ? t('ui.no_permission_modify_dfsp_ndc_threshold_setting')
+    : isSchemeThresholdGateOff
+      ? t('ui.scheme_ndc_threshold_gate_off')
+      : '';
+  const isConfigurationSwitchTooltipHidden = !configurationSwitchTooltipLabel;
 
   const currencyOptions = useMemo(
     () =>
@@ -178,7 +192,7 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
   };
 
   const toggleConfiguration = async (nextEnabled: boolean) => {
-    if (!canModifyDfspThresholdConfiguration) return;
+    if (!canModifyDfspThresholdConfiguration || isSchemeThresholdGateOff) return;
     setIsSavingConfig(true);
     try {
       const id = await ensureConfiguration(nextEnabled);
@@ -363,8 +377,8 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
                 {enabled ? t('ui.active') : t('ui.inactive')}
               </Text>
               <Tooltip
-                label={t('ui.no_permission_modify_dfsp_ndc_threshold_setting')}
-                isDisabled={!isConfigurationSwitchPermissionDisabled}
+                label={configurationSwitchTooltipLabel}
+                isDisabled={isConfigurationSwitchTooltipHidden}
                 placement="top"
                 hasArrow
                 maxW="260px"
@@ -379,7 +393,7 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
                   <Switch
                     colorScheme="green"
                     isChecked={enabled}
-                    isDisabled={isSavingConfig || isConfigLoading || !dfspId || isConfigurationSwitchPermissionDisabled}
+                    isDisabled={isSavingConfig || isConfigLoading || isSchemeConfigLoading || !dfspId || isConfigurationSwitchPermissionDisabled || isSchemeThresholdGateOff}
                     onChange={(event) => toggleConfiguration(event.target.checked)}
                   />
                 </Box>
@@ -387,7 +401,24 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
             </HStack>
           </HStack>
 
-          {isConfigLoading ? (
+          {isSchemeConfigLoading ? (
+            <HStack color="gray.600">
+              <Spinner size="sm" />
+              <Text fontSize="sm">Loading scheme NDC threshold configuration...</Text>
+            </HStack>
+          ) : isSchemeThresholdGateOff ? (
+            <Box
+              p={3}
+              bg="orange.50"
+              border="1px solid"
+              borderColor="orange.200"
+              rounded="md"
+              w="full">
+              <Text fontSize="sm" color="orange.800">
+                {t('ui.enable_scheme_ndc_threshold_gate_first')}
+              </Text>
+            </Box>
+          ) : isConfigLoading ? (
             <HStack color="gray.600">
               <Spinner size="sm" />
               <Text fontSize="sm">Loading DFSP configuration...</Text>
@@ -401,7 +432,7 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
               rounded="md"
               w="full">
               <Text fontSize="sm" color="orange.800">
-                Activate the NDC threshold setting for {dfspId} first. Then add a threshold after the configuration is created.
+                Activate the NDC threshold setting for {dfspId} first.
               </Text>
             </Box>
           ) : null}
@@ -479,7 +510,7 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
                 colorScheme="blue"
                 size="md"
                 onClick={openAddModal}
-                isDisabled={!dfspId}>
+                isDisabled={!dfspId || isSchemeConfigLoading || isSchemeThresholdGateOff}>
                 {t('ui.add')}
               </Button>
             ) : null}
@@ -521,7 +552,7 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
                 ) : configQuery.isError || !thresholdConfigurationId ? (
                   <Tr>
                     <Cell borderColor={borderColor} colSpan={thresholdTableColumnCount}>
-                      Activate the NDC threshold setting first. Then add a threshold after the configuration is created.
+                      NDC threshold notifications are not active yet.
                     </Cell>
                   </Tr>
                 ) : thresholdsQuery.isError ? (
@@ -559,7 +590,8 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
                       <Td border={`1px solid ${borderColor}`} px={4} py={2}>
                         <HStack spacing={3} justify="center">
                           <Tooltip
-                            label="Edit threshold"
+                            label={isSchemeThresholdGateOff ? t('ui.enable_scheme_ndc_threshold_gate_first') : 'Edit threshold'}
+                            shouldWrapChildren
                             bg="white"
                             color="black">
                             <IconButton
@@ -567,11 +599,13 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
                               icon={<FiEdit2 />}
                               size="sm"
                               variant="ghost"
+                              isDisabled={isSchemeThresholdGateOff}
                               onClick={() => openEditModal(item)}
                             />
                           </Tooltip>
                           <Tooltip
-                            label="Delete threshold"
+                            label={isSchemeThresholdGateOff ? t('ui.enable_scheme_ndc_threshold_gate_first') : 'Delete threshold'}
+                            shouldWrapChildren
                             bg="white"
                             color="black">
                             <IconButton
@@ -579,6 +613,7 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
                               icon={<FiTrash2 />}
                               size="sm"
                               variant="ghost"
+                              isDisabled={isSchemeThresholdGateOff}
                               onClick={() => setDeleteItem(item)}
                             />
                           </Tooltip>

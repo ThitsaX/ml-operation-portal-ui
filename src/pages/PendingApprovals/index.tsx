@@ -12,7 +12,7 @@ import {
   Text,
   VStack
 } from '@chakra-ui/react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { type ITimezoneOption } from 'react-timezone-select';
@@ -42,6 +42,7 @@ const PendingApprovals = () => {
   const [filterStatus, setFilterStatus] = useState<PendingApprovalStatus>(PendingApprovalStatus.PENDING);
   const [participantCount, setParticipantCount] = useState(0);
   const [ndcThresholdCount, setNdcThresholdCount] = useState(0);
+  const canViewParticipantTab = hasActionPermission('GetPendingApprovalList');
   const canViewNdcThresholdTab =
     hasActionPermission('SubmitNdcThresholdApproval') &&
     hasActionPermission('GetNdcThresholdApprovalList') &&
@@ -54,6 +55,13 @@ const PendingApprovals = () => {
   const handleNdcThresholdCountChange = useCallback((count: number) => {
     setNdcThresholdCount(count);
   }, []);
+
+  useEffect(() => {
+    const availableTabCount = Number(canViewParticipantTab) + Number(canViewNdcThresholdTab);
+    if (availableTabCount > 0 && activeTab >= availableTabCount) {
+      setActiveTab(0);
+    }
+  }, [activeTab, canViewNdcThresholdTab, canViewParticipantTab]);
 
   return (
     <VStack align="flex-start" w="full" h="full" p="3" spacing={0} mt={10}>
@@ -70,21 +78,23 @@ const PendingApprovals = () => {
 
       <Tabs index={activeTab} onChange={setActiveTab} w="full" variant="unstyled" mt={6}>
         <TabList borderBottom="1px solid" borderColor="gray.200" gap={6}>
-          <Tab
-            px={1}
-            pb={3}
-            color="gray.700"
-            borderBottom="3px solid"
-            borderColor="transparent"
-            fontWeight="semibold"
-            _selected={{ color: 'primary', borderColor: 'primary' }}>
-            <HStack spacing={3}>
-              <Text>{t('ui.participant')}</Text>
-              <Badge borderRadius="full" px={3} py={1} bg="purple.50" color="primary" fontSize="sm">
-                {participantCount}
-              </Badge>
-            </HStack>
-          </Tab>
+          {canViewParticipantTab && (
+            <Tab
+              px={1}
+              pb={3}
+              color="gray.700"
+              borderBottom="3px solid"
+              borderColor="transparent"
+              fontWeight="semibold"
+              _selected={{ color: 'primary', borderColor: 'primary' }}>
+              <HStack spacing={3}>
+                <Text>{t('ui.participant')}</Text>
+                <Badge borderRadius="full" px={3} py={1} bg="purple.50" color="primary" fontSize="sm">
+                  {participantCount}
+                </Badge>
+              </HStack>
+            </Tab>
+          )}
           {canViewNdcThresholdTab && (
             <Tab
               px={1}
@@ -105,17 +115,19 @@ const PendingApprovals = () => {
         </TabList>
 
         <TabPanels>
-          <TabPanel px={0} pt={0} pb={0}>
-            <ParticipantApprovalsTab
-              selectedTZString={selectedTimezone.value}
-              filterStatus={filterStatus}
-              onCountChange={handleParticipantCountChange}
-            />
-          </TabPanel>
+          {canViewParticipantTab && (
+            <TabPanel px={0} pt={0} pb={0}>
+              <ParticipantApprovalsTab
+                selectedTZString={selectedTimezone.value}
+                filterStatus={filterStatus}
+                onCountChange={handleParticipantCountChange}
+              />
+            </TabPanel>
+          )}
           {canViewNdcThresholdTab && (
             <TabPanel px={0} pt={0} pb={0}>
               <NdcThresholdApprovalsTab
-                isActive={activeTab === 1}
+                isActive={activeTab === (canViewParticipantTab ? 1 : 0)}
                 selectedTZString={selectedTimezone.value}
                 filterStatus={filterStatus}
                 onCountChange={handleNdcThresholdCountChange}
@@ -129,5 +141,3 @@ const PendingApprovals = () => {
 };
 
 export default PendingApprovals;
-
-

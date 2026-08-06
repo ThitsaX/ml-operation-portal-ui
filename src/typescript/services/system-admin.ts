@@ -2,7 +2,7 @@
 // Copyright 2024-2026 ThitsaWorks Pte. Ltd.
 export interface ICreateRoleRequest {
   name: string
-  isDfsp: boolean
+  roleType: string
 }
 
 export interface IModifyRoleGrantListRequest {
