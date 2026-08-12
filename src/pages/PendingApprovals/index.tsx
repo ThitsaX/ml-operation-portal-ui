@@ -127,7 +127,6 @@ const PendingApprovals = () => {
           {canViewNdcThresholdTab && (
             <TabPanel px={0} pt={0} pb={0}>
               <NdcThresholdApprovalsTab
-                isActive={activeTab === (canViewParticipantTab ? 1 : 0)}
                 selectedTZString={selectedTimezone.value}
                 filterStatus={filterStatus}
                 onCountChange={handleNdcThresholdCountChange}

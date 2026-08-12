@@ -38,7 +38,6 @@ import { IApiErrorResponse, INdcThresholdApproval, NdcThresholdApprovalStatus } 
 import { PAGE_SIZE_OPTIONS } from '@utils/constants';
 
 interface NdcThresholdApprovalsTabProps {
-  isActive: boolean;
   selectedTZString: string;
   filterStatus: NdcThresholdApprovalStatus;
   onCountChange: (count: number) => void;
@@ -55,7 +54,7 @@ const formatNdcOperation = (operation: string) =>
 const formatThresholdValue = (value: number | null) =>
   value === null || value === undefined ? '-' : `${value}%`;
 
-const NdcThresholdApprovalsTab = ({ isActive, selectedTZString, filterStatus, onCountChange }: NdcThresholdApprovalsTabProps) => {
+const NdcThresholdApprovalsTab = ({ selectedTZString, filterStatus, onCountChange }: NdcThresholdApprovalsTabProps) => {
   const { t } = useTranslation();
   const toast = useToast();
   const [search, setSearch] = useState<string | undefined>(undefined);
@@ -84,9 +83,7 @@ const NdcThresholdApprovalsTab = ({ isActive, selectedTZString, filterStatus, on
     isError,
     error,
     refetch
-  } = useGetNdcThresholdApprovals(queryParams, {
-    enabled: isActive
-  });
+  } = useGetNdcThresholdApprovals(queryParams);
 
   const approvals = useMemo(() => data?.approvals ?? [], [data?.approvals]);
   const hasServerPagination = data?.total !== undefined || data?.totalPages !== undefined;
@@ -127,14 +124,15 @@ const NdcThresholdApprovalsTab = ({ isActive, selectedTZString, filterStatus, on
     );
   }, [approvals, search]);
 
+  const badgeCount = hasServerPagination ? data?.total ?? approvals.length : approvals.length;
   const totalRecords = hasServerPagination ? data?.total ?? approvals.length : filteredApprovals.length;
   const totalPages = Math.max(1, data?.totalPages ?? Math.ceil(totalRecords / pageSize));
   const canPreviousPage = pageNumber > 1;
   const canNextPage = pageNumber < totalPages;
 
   useEffect(() => {
-    onCountChange(totalRecords);
-  }, [onCountChange, totalRecords]);
+    onCountChange(badgeCount);
+  }, [badgeCount, onCountChange]);
 
   useEffect(() => {
     setPageNumber(1);

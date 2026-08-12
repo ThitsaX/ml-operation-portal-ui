@@ -2,11 +2,13 @@
 // Copyright 2024-2026 ThitsaWorks Pte. Ltd.
 import {
   Box,
+  Center,
   Divider,
   HStack,
   Icon,
   IconButton,
   Input,
+  Spinner,
   Table,
   TableContainer,
   Tbody,
@@ -41,7 +43,6 @@ interface ParticipantApprovalsTabProps {
   onCountChange: (count: number) => void;
 }
 
-
 const ParticipantApprovalsTab = ({ selectedTZString, filterStatus, onCountChange }: ParticipantApprovalsTabProps) => {
   const { t } = useTranslation();
   const toast = useToast();
@@ -52,12 +53,13 @@ const ParticipantApprovalsTab = ({ selectedTZString, filterStatus, onCountChange
   const [isActionSubmitting, setIsActionSubmitting] = useState(false);
   const confirmActionLockedRef = useRef(false);
 
-  const { data, isError, error, refetch } = useGetPendingApprovalList();
+  const { data, isLoading, isFetching, isError, error, refetch } = useGetPendingApprovalList();
 
   const filteredRequests = useMemo(
     () => data?.filter((request) => (request.action ?? '').toUpperCase() === filterStatus) ?? [],
     [data, filterStatus]
   );
+  const isTableLoading = isLoading || isFetching;
 
   useEffect(() => {
     onCountChange(filteredRequests.length);
@@ -184,6 +186,9 @@ const ParticipantApprovalsTab = ({ selectedTZString, filterStatus, onCountChange
     return [...baseColumns, ...statusColumn];
   }, [filterStatus, selectedTZString, t]);
 
+  const tableColumnCount = columns.length;
+  const emptyMessage = `No ${filterStatus.toLowerCase()} participant approvals found.`;
+
   const {
     getTableProps,
     getTableBodyProps,
@@ -229,7 +234,6 @@ const ParticipantApprovalsTab = ({ selectedTZString, filterStatus, onCountChange
 
   return (
     <>
-
       <VStack w="full" align="flex-start" spacing={2}>
         <GlobalFilter mt={5} globalFilter={globalFilter} setGlobalFilter={setGlobalFilter} />
 
@@ -264,29 +268,48 @@ const ParticipantApprovalsTab = ({ selectedTZString, filterStatus, onCountChange
                 })}
               </Thead>
               <Tbody maxH={300} overflowY="auto" {...getTableBodyProps()}>
-                {page.map((row) => {
-                  prepareRow(row);
-                  const rowProps = row.getRowProps();
-                  const { key: rowKey, ...rowRest } = rowProps;
-                  return (
-                    <Tr key={rowKey} fontSize="sm" cursor="pointer" _hover={{ bg: 'muted.50' }} {...rowRest}>
-                      {row.cells.map((cell) => {
-                        const cellProps = cell.getCellProps();
-                        const { key: cellKey, ...cellRest } = cellProps;
-                        return <Td key={cellKey} {...cellRest} py={2}>{cell.render('Cell')}</Td>;
-                      })}
-                    </Tr>
-                  );
-                })}
+                {isTableLoading ? (
+                  <Tr>
+                    <Td colSpan={tableColumnCount} py={12}>
+                      <Center>
+                        <VStack spacing={3}>
+                          <Spinner color="blue.500" />
+                          <Text fontSize="sm" color="gray.600">Loading participant approvals...</Text>
+                        </VStack>
+                      </Center>
+                    </Td>
+                  </Tr>
+                ) : page.length === 0 ? (
+                  <Tr>
+                    <Td colSpan={tableColumnCount} py={10} textAlign="center" color="gray.600">
+                      {emptyMessage}
+                    </Td>
+                  </Tr>
+                ) : (
+                  page.map((row) => {
+                    prepareRow(row);
+                    const rowProps = row.getRowProps();
+                    const { key: rowKey, ...rowRest } = rowProps;
+                    return (
+                      <Tr key={rowKey} fontSize="sm" cursor="pointer" _hover={{ bg: 'muted.50' }} {...rowRest}>
+                        {row.cells.map((cell) => {
+                          const cellProps = cell.getCellProps();
+                          const { key: cellKey, ...cellRest } = cellProps;
+                          return <Td key={cellKey} {...cellRest} py={2}>{cell.render('Cell')}</Td>;
+                        })}
+                      </Tr>
+                    );
+                  })
+                )}
               </Tbody>
             </Table>
           </TableContainer>
           <HStack spacing={2} justify="space-between" w="full" px={4} py={3} bg="gray.50" borderTopWidth="1px">
             <HStack flex={2}>
-              <IconButton aria-label={t('ui.skip_to_start')} variant="ghost" icon={<TfiAngleDoubleLeft />} isDisabled={!canPreviousPage} onClick={() => gotoPage(0)} />
-              <IconButton aria-label={t('ui.go_previous')} variant="ghost" icon={<TfiAngleLeft />} isDisabled={!canPreviousPage} onClick={previousPage} />
-              <IconButton aria-label={t('ui.go_next')} variant="ghost" icon={<TfiAngleRight />} isDisabled={!canNextPage} onClick={nextPage} />
-              <IconButton aria-label={t('ui.skip_to_end')} variant="ghost" icon={<TfiAngleDoubleRight />} isDisabled={!canNextPage} onClick={() => gotoPage(pageCount - 1)} />
+              <IconButton aria-label={t('ui.skip_to_start')} variant="ghost" icon={<TfiAngleDoubleLeft />} isDisabled={!canPreviousPage || isTableLoading} onClick={() => gotoPage(0)} />
+              <IconButton aria-label={t('ui.go_previous')} variant="ghost" icon={<TfiAngleLeft />} isDisabled={!canPreviousPage || isTableLoading} onClick={previousPage} />
+              <IconButton aria-label={t('ui.go_next')} variant="ghost" icon={<TfiAngleRight />} isDisabled={!canNextPage || isTableLoading} onClick={nextPage} />
+              <IconButton aria-label={t('ui.skip_to_end')} variant="ghost" icon={<TfiAngleDoubleRight />} isDisabled={!canNextPage || isTableLoading} onClick={() => gotoPage(pageCount - 1)} />
             </HStack>
             <Text>{t('ui.page')}{' '}<strong>{pageIndex + 1} {t('ui.of')} {pageOptions.length || 1}</strong></Text>
             <Box h="6"><Divider orientation="vertical" /></Box>
@@ -299,6 +322,7 @@ const ParticipantApprovalsTab = ({ selectedTZString, filterStatus, onCountChange
                 type="number"
                 min={pageIndex + 1}
                 max={pageOptions.length}
+                isDisabled={isTableLoading}
                 onChange={(e) => {
                   handlePageValidation(e.target.value);
                   const nextPageNumber = e.target.value ? Number(e.target.value) - 1 : 0;
