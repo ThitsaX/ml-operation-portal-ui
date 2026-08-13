@@ -275,7 +275,7 @@ export const modifyNdcDfspConfiguration = async (
   const {
     user: { auth }
   } = store.getState();
-  const uri = routes.modifyThresholdConfiguration;
+  const uri = routes.modifyDfspThresholdConfiguration;
   const accessKey = auth?.accessKey as string;
   const secretKey = auth?.secretKey as string;
   const accessToken = await generateAccessToken({
