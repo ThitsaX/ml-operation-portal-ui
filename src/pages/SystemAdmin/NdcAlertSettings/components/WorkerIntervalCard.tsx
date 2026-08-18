@@ -19,6 +19,7 @@ interface WorkerIntervalCardProps {
   isSaving: boolean;
   isSaveDisabled: boolean;
   isControlDisabled?: boolean;
+  maxIntervalMinutes: number;
   onIntervalChange: (value: string) => void;
   onIntervalBlur: () => void;
   onSave: () => void;
@@ -30,6 +31,7 @@ const WorkerIntervalCard = ({
   isSaving,
   isSaveDisabled,
   isControlDisabled = false,
+  maxIntervalMinutes,
   onIntervalChange,
   onIntervalBlur,
   onSave
@@ -73,13 +75,17 @@ const WorkerIntervalCard = ({
               Interval minutes
             </Text>
             <Text color="gray.600" fontSize="sm" mt={2}>
-              Choose the worker cadence. Use a value of at least 1 minute.
+              Choose the worker cadence. Use a value from 1 to{' '}
+              {maxIntervalMinutes} minutes.
             </Text>
           </Box>
           <VStack align="flex-start" spacing={2} flexShrink={0}>
             <Input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               min={1}
+              max={maxIntervalMinutes}
               value={intervalMinutes}
               maxW="130px"
               h="52px"
@@ -88,7 +94,7 @@ const WorkerIntervalCard = ({
               onBlur={onIntervalBlur}
               onChange={(event) => onIntervalChange(event.target.value)}
             />
-            <StatusPill colorScheme="gray">min 1m</StatusPill>
+            <StatusPill colorScheme="gray">1-{maxIntervalMinutes}m</StatusPill>
           </VStack>
         </HStack>
         <FormErrorMessage>{intervalError}</FormErrorMessage>
@@ -113,7 +119,14 @@ const WorkerIntervalCard = ({
         color="white"
         bg="primary"
         _hover={{ bg: 'primary', opacity: 0.4 }}
-        onClick={onSave}
+        onClick={(event) => {
+          if (isSaveDisabled || isSaving || isControlDisabled) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+          onSave();
+        }}
         isDisabled={isSaveDisabled || isSaving || isControlDisabled}
         isLoading={isSaving}>
         Save worker interval

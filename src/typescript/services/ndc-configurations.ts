@@ -56,6 +56,7 @@ export interface IModifyNdcWorkerConfigurationResponse {
 export interface INdcDfspConfiguration extends INdcSchemeConfiguration {
   thresholdScopeType: 'DFSP' | string;
   dfspId: string;
+  schemeEnabled?: boolean;
   createBy?: string | null;
 }
 

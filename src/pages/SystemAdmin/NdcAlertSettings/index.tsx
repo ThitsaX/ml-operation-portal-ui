@@ -34,11 +34,31 @@ import {
 } from './components';
 import {
   DEFAULT_WORKER_MINUTES,
+  MAX_WORKER_MINUTES,
   buildWorkerPayload,
   getConfigId,
   intervalToMinutes,
   normalizeIntervalInput
 } from './utils';
+
+const getWorkerIntervalError = (value: string) => {
+  if (!value) return 'Minimum interval is 1 minute.';
+
+  if (!/^\d+$/.test(value)) {
+    return 'Use whole minutes only.';
+  }
+
+  const minutes = Number(value);
+  if (!Number.isFinite(minutes) || minutes < 1) {
+    return 'Minimum interval is 1 minute.';
+  }
+
+  if (minutes > MAX_WORKER_MINUTES) {
+    return `Maximum interval is ${MAX_WORKER_MINUTES} minutes.`;
+  }
+
+  return '';
+};
 
 const NdcAlertSettings = () => {
   const toast = useToast();
@@ -104,12 +124,14 @@ const NdcAlertSettings = () => {
     !intervalMinutes ||
     !Number.isFinite(normalizedIntervalMinutes) ||
     normalizedIntervalMinutes < 1 ||
+    normalizedIntervalMinutes > MAX_WORKER_MINUTES ||
     Boolean(intervalError);
   const isLoading =
     isSchemeConfigurationLoading || isWorkerConfigurationLoading;
   const schemeStatus = schemeEnabled ? 'ON' : 'OFF';
   const canModifyThresholdConfiguration = hasActionPermission('ModifyThresholdConfiguration');
   const canModifySchedulerConfig = hasActionPermission('ModifySchedulerConfig');
+  const isWorkerIntervalSaveDisabled = isWorkerIntervalInvalid || !canModifySchedulerConfig;
 
   const saveSchemeState = async (nextValue: boolean) => {
     const id = getConfigId(schemeConfiguration?.thresholdConfigurationId);
@@ -159,26 +181,19 @@ const NdcAlertSettings = () => {
   const handleIntervalChange = (value: string) => {
     const nextValue = normalizeIntervalInput(value);
     setIntervalMinutes(nextValue);
-    setIntervalError(
-      !nextValue || Number(nextValue) >= 1
-        ? ''
-        : 'Minimum interval is 1 minute.'
-    );
+    setIntervalError(getWorkerIntervalError(nextValue));
   };
 
   const handleIntervalBlur = () => {
-    if (!intervalMinutes) {
-      setIntervalMinutes('1');
-      setIntervalError('');
-      return;
-    }
-
-    if (Number(intervalMinutes) < 1) {
-      setIntervalError('Minimum interval is 1 minute.');
-    }
+    setIntervalError(getWorkerIntervalError(intervalMinutes));
   };
 
   const saveWorkerInterval = async () => {
+    if (isWorkerIntervalSaveDisabled) {
+      setIntervalError(getWorkerIntervalError(intervalMinutes));
+      return;
+    }
+
     if (!workerConfigId) {
       toast({
         position: 'top',
@@ -190,11 +205,9 @@ const NdcAlertSettings = () => {
       return;
     }
 
-    if (
-      !Number.isFinite(normalizedIntervalMinutes) ||
-      normalizedIntervalMinutes < 1
-    ) {
-      setIntervalError('Minimum interval is 1 minute.');
+    const nextIntervalError = getWorkerIntervalError(intervalMinutes);
+    if (nextIntervalError) {
+      setIntervalError(nextIntervalError);
       return;
     }
 
@@ -331,8 +344,9 @@ const NdcAlertSettings = () => {
             intervalMinutes={intervalMinutes}
             intervalError={intervalError}
             isSaving={isSavingWorker}
-            isSaveDisabled={isWorkerIntervalInvalid}
+            isSaveDisabled={isWorkerIntervalSaveDisabled}
             isControlDisabled={!canModifySchedulerConfig}
+            maxIntervalMinutes={MAX_WORKER_MINUTES}
             onIntervalChange={handleIntervalChange}
             onIntervalBlur={handleIntervalBlur}
             onSave={saveWorkerInterval}
