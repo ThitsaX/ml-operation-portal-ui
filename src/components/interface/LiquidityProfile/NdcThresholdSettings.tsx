@@ -48,6 +48,7 @@ import { CustomSelect } from '@components/interface';
 import { HeaderCell, Cell } from '@components/interface/Table';
 import { getErrorMessage } from '@helpers/errors';
 import { hasActionPermission } from '@helpers/permissions';
+import NumericInput from '@components/common/NumericInput';
 import { NdcThresholdHelper } from '@helpers/form';
 import { useGetParticipantCurrencyListByDfspId } from '@hooks/services/participant';
 import {
@@ -668,14 +669,21 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
                       name="visualConfig"
                       control={control}
                       render={({ field }) => (
-                        <Input
-                          type="number"
+                        <NumericInput
+                          value={field.value ?? ''}
+                          onChange={(v) => field.onChange(v)}
+                          onBlur={(v) => {
+                            field.onChange(v);
+                            // mark touched in react-hook-form
+                            try {
+                              field.onBlur();
+                            } catch {}
+                          }}
+                          placeholder="0.00"
+                          maxDecimals={2}
                           min={0}
                           max={100}
-                          value={field.value ?? ''}
-                          onChange={(event) =>
-                            field.onChange(event.target.value)
-                          }
+                          aria-label="visual-alert"
                         />
                       )}
                     />
@@ -690,14 +698,20 @@ const NdcThresholdSettings = ({ dfspId }: NdcThresholdSettingsProps) => {
                       name="ndcConfig"
                       control={control}
                       render={({ field }) => (
-                        <Input
-                          type="number"
+                        <NumericInput
+                          value={field.value ?? ''}
+                          onChange={(v) => field.onChange(v)}
+                          onBlur={(v) => {
+                            field.onChange(v);
+                            try {
+                              field.onBlur();
+                            } catch {}
+                          }}
+                          placeholder="0.00"
+                          maxDecimals={2}
                           min={0}
                           max={100}
-                          value={field.value ?? ''}
-                          onChange={(event) =>
-                            field.onChange(event.target.value)
-                          }
+                          aria-label="notification-alert"
                         />
                       )}
                     />

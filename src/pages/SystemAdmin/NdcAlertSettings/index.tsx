@@ -45,7 +45,7 @@ const getWorkerIntervalError = (value: string) => {
   if (!value) return 'Minimum interval is 1 minute.';
 
   if (!/^\d+$/.test(value)) {
-    return 'Use whole minutes only.';
+      return `Worker interval must be between 1 and ${MAX_WORKER_MINUTES} minutes.`;
   }
 
   const minutes = Number(value);
