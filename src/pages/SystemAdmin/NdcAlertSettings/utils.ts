@@ -61,6 +61,11 @@ export const minutesToRunEvery = (minutes: number) => {
   return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:00`;
 };
 
+export const minutesToWorkerDescription = (minutes: number) => {
+  const safeMinutes = Math.min(MAX_WORKER_MINUTES, Math.max(1, Math.floor(minutes)));
+  return `Executes every ${safeMinutes} ${safeMinutes === 1 ? 'minute' : 'minutes'} to evaluate NDC threshold alerts.`;
+};
+
 export const formatTimezoneOffset = (timezone?: string) => {
   if (timezone && moment.tz.zone(timezone)) {
     return moment().tz(timezone).format('Z');
@@ -84,8 +89,7 @@ export const buildWorkerPayload = (
 ) => ({
   name: worker?.name || 'ndc-worker-config',
   jobName: worker?.jobName || 'NdcThresholdWorker',
-  description:
-    worker?.description || 'Calculate NDC usage and process threshold alerts',
+  description: minutesToWorkerDescription(intervalMinutes),
   runEvery: minutesToRunEvery(intervalMinutes),
   zoneId: formatTimezoneOffset(timezone || worker?.zoneId),
   active: worker?.active ?? true
