@@ -138,60 +138,63 @@ const NotificationDeliveryLog = () => {
 
   const columns = useMemo<Column<INdcDeliveryLog>[]>(() => [
     {
-      Header: () => <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.id')}</Text>,
+      Header: () => <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.id')}</Text>,
       id: 'id',
       accessor: (log) => formatDeliveryLogId(log.ndcNotificationDispatchLogId),
+      disableSortBy: true,
       Cell: ({ value }: { value: string }) => <Text whiteSpace="nowrap">{value}</Text>,
     },
     {
-      Header: () => <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.dfsp')}</Text>,
+      Header: () => <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.dfsp')}</Text>,
       accessor: 'participantName',
       Cell: ({ value }) => value || '-',
     },
     {
-      Header: () => <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.currency')}</Text>,
+      Header: () => <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.currency')}</Text>,
       accessor: 'currency',
-      Cell: ({ value }) => value || '-',
+      Cell: ({ value }) => <Text textAlign="center">{value || '-'}</Text>,
     },
     {
-      Header: () => <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.recipient')}</Text>,
+      Header: () => <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.recipient')}</Text>,
       accessor: 'recipientEmail',
       Cell: ({ value }) => value || '-',
     },
     {
-      Header: () => <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.recipient_type')}</Text>,
+      Header: () => <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.recipient_type')}</Text>,
       accessor: 'recipientType',
       Cell: ({ value }) => value || '-',
     },
     {
-      Header: () => <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.status')}</Text>,
+      Header: () => <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.status')}</Text>,
       accessor: 'deliveryStatus',
       Cell: ({ value }) => {
         const statusStyle = getStatusColor(value);
 
         return (
-          <Badge
-            px={3}
-            py={1}
-            borderRadius="full"
-            textTransform="none"
-            bg={statusStyle.bg}
-            color={statusStyle.color}
-            fontSize="xs"
-            fontWeight="bold"
-          >
-            {STATUS_LABELS[value] ?? value}
-          </Badge>
+          <Box textAlign="center">
+            <Badge
+              px={3}
+              py={1}
+              borderRadius="full"
+              textTransform="none"
+              bg={statusStyle.bg}
+              color={statusStyle.color}
+              fontSize="xs"
+              fontWeight="bold"
+            >
+              {STATUS_LABELS[value] ?? value}
+            </Badge>
+          </Box>
         );
       },
     },
     {
-      Header: () => <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.attempts')}</Text>,
+      Header: () => <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.attempts')}</Text>,
       accessor: 'attemptNo',
-      Cell: ({ value }) => value ?? '-',
+      Cell: ({ value }) => <Text textAlign="right">{value ?? '-'}</Text>,
     },
     {
-      Header: () => <Text fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.last_update')}</Text>,
+      Header: () => <Text flex={1} fontWeight="semibold" fontSize="sm" textTransform="capitalize">{t('ui.last_update')}</Text>,
       id: 'lastUpdate',
       accessor: (log) => formatLastUpdate(log),
       Cell: ({ value }: { value: string }) => <Text whiteSpace="nowrap">{value}</Text>,
@@ -283,8 +286,8 @@ const NotificationDeliveryLog = () => {
                         const { key: headerKey, ...headerRest } = headerProps;
 
                         return (
-                          <Th key={headerKey} px={3} textAlign="center" {...headerRest}>
-                            <HStack align="center" justify="center" spacing="2" flex={1}>
+                          <Th key={headerKey} px={3} {...headerRest}>
+                            <HStack align="center" spacing="2" flex={1}>
                               {column.render('Header')}
                               {column.disableSortBy ? null : (
                                 <VStack display="inline-flex" align="center" spacing={0}>
@@ -340,7 +343,7 @@ const NotificationDeliveryLog = () => {
                           const { key: cellKey, ...cellRest } = cellProps;
 
                           return (
-                            <Td key={cellKey} py={2} px={3} textAlign="center" {...cellRest}>
+                            <Td key={cellKey} py={2} px={3} {...cellRest}>
                               {cell.render('Cell')}
                             </Td>
                           );
