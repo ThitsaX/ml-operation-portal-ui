@@ -152,6 +152,8 @@
   "ui.fee_summary_report": "Rapport de synthèse des frais",
   "ui.transfer_settlement_report": "Rapport de règlement de transfert MT 971",
   "ui.fee_settlement_report": "Rapport de règlement des frais MT 971",
+  "ui.pacs_029_transaction_settlement_report": "Pacs 029 Transaction Settlement Report",
+  "ui.pacs_029_fee_settlement_report": "Pacs 029 Fee Settlement Report",
   "ui.fee_settlement_summary_report": "Rapport de synthèse du règlement des frais",
   "ui.pdf": "PDF",
   "ui.transaction_detail_report": "Rapport détaillé des transactions",

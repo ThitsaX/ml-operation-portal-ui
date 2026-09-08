@@ -160,6 +160,8 @@
   "ui.fee_summary_report": "Relatório de Resumo de Taxas",
   "ui.transfer_settlement_report": "Relatório de Liquidação de Transferência MT 971",
   "ui.fee_settlement_report": "Relatório de Liquidação de Taxas MT 971",
+  "ui.pacs_029_transaction_settlement_report": "Pacs 029 Transaction Settlement Report",
+  "ui.pacs_029_fee_settlement_report": "Pacs 029 Fee Settlement Report",
   "ui.fee_settlement_summary_report": "Relatório de Resumo da Liquidação de Taxas",
   "ui.pdf": "PDF",
   "ui.transaction_detail_report": "Relatório de Detalhes da Transação",

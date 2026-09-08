@@ -239,6 +239,18 @@ const SideBar = ({ collapsed, toggleCollapse, width = DEFAULT_WIDTH, headerHeigh
                 to: 'reports/fee-summary-report',
                 menuId: 'fee_summary_report',
               },
+              {
+                id: 'Pacs029TransactionSettlementReport',
+                label: t('ui.pacs_029_transaction_settlement_report'),
+                to: 'reports/pacs-029-transaction-settlement-report',
+                menuId: 'pacs_029_transaction_settlement_report',
+              },
+              {
+                id: 'Pacs029FeeSettlementReport',
+                label: t('ui.pacs_029_fee_settlement_report'),
+                to: 'reports/pacs-029-fee-settlement-report',
+                menuId: 'pacs_029_fee_settlement_report',
+              },
             ]}
           />
 
