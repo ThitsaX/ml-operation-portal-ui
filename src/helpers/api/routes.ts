@@ -59,7 +59,9 @@ export const privateRoutes = {
   generateFeeAmountReport: '/secured/generateFeeAmountReport',
   generateFeeSummaryReport: '/secured/generateFeeSummaryReport',
   generateFeeSettlementSummaryReport: '/secured/generateFeeSettlementSummaryReport',
-
+  generatePacsTransactionAmountReport: '/secured/generatePacsTransactionAmountReport',
+  generatePacsFeeAmountReport: '/secured/generatePacsFeeAmountReport',
+  
   resetPassword: '/secured/resetPassword',
   getAllIdType: '/secured/getAllIdType',
   getAllTransferState: '/secured/getAllTransferState',

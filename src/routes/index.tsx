@@ -9,7 +9,7 @@ import Login from '@pages/Login';
 import ChangePassword from '@pages/ChangePassword';
 import {
   SettlementBankReport, SettlementBankReportUseCase, SettlementOverviewReport, SettlementDetailReport, SettlementSummaryReport,
-  SettlementStatementReport, SettlementAuditReport, AuditReport, TransactionDetailReport, ManagementSummaryReport, TransferSettlementReport, FeeSettlementReport, FeeSettlementSummaryReport, FeeSummaryReport
+  SettlementStatementReport, SettlementAuditReport, AuditReport, TransactionDetailReport, ManagementSummaryReport, TransferSettlementReport, FeeSettlementReport, FeeSettlementSummaryReport, FeeSummaryReport, Pacs029TransactionSettlementReport, Pacs029FeeSettlementReport
 } from '@pages/Reports';
 import Transfer from '@pages/Transfer';
 import User from '@pages/UserManagement/User';
@@ -225,6 +225,22 @@ export const router = createBrowserRouter([
             element: (
               <ProtectedRoute allowedMenuId="fee_settlement_summary_report">
                 <FeeSettlementSummaryReport />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "pacs-029-transaction-settlement-report",
+            element: (
+              <ProtectedRoute allowedMenuId="pacs_029_transaction_settlement_report">
+                <Pacs029TransactionSettlementReport />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "pacs-029-fee-settlement-report",
+            element: (
+              <ProtectedRoute allowedMenuId="pacs_029_fee_settlement_report">
+                <Pacs029FeeSettlementReport />
               </ProtectedRoute>
             ),
           },

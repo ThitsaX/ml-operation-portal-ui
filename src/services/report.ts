@@ -287,6 +287,80 @@ export const generateFeeAmountReport = async (
     });
 };
 
+export const generatePacsTransactionAmountReport = async (
+  user: IUserState,
+  paramsValues: any
+) => {
+  const params = {
+    settlementId: paramsValues.settlementId,
+    currencyId: paramsValues.currencyId,
+    timezoneOffset: paramsValues.timezoneOffset,
+  };
+
+  const accessToken = await generateAccessToken({
+    method: 'POST',
+    uri: routes.generatePacsTransactionAmountReport,
+    secret: user.auth?.secretKey as string
+  });
+
+  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
+  return axios
+    .post<any>(routes.generatePacsTransactionAmountReport, null, {
+      params
+    })
+    .then((d) => {
+      return d.data;
+    })
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
+};
+
+export const generatePacsFeeAmountReport = async (
+  user: IUserState,
+  paramsValues: any
+) => {
+  const params = {
+    settlementId: paramsValues.settlementId,
+    currencyId: paramsValues.currencyId,
+    timezoneOffset: paramsValues.timezoneOffset,
+  };
+
+  const accessToken = await generateAccessToken({
+    method: 'POST',
+    uri: routes.generatePacsFeeAmountReport,
+    secret: user.auth?.secretKey as string
+  });
+
+  const { axios } = AxiosRequest(accessToken, user.auth?.accessKey);
+  return axios
+    .post<any>(routes.generatePacsFeeAmountReport, null, {
+      params
+    })
+    .then((d) => {
+      return d.data;
+    })
+    .catch((error: AxiosError<IApiErrorResponse>) => {
+      const { code, message, ...rest } = axiosErrorHandler(error);
+      if (code && message) {
+        throw {
+          error_code: code,
+          default_error_message: getErrorMessageByCode(code),
+          i18n_error_messages: null
+        };
+      }
+      throw rest;
+    });
+};
+
 export const generateFeeSummaryReport = async (
   user: IUserState,
   paramsValues: any
@@ -586,7 +660,8 @@ export const generateManagementSummaryReport = async (
 export const downloadFile = (
   initialFileName: string,
   fileType: string,
-  base64String: string
+  base64String: string,
+  downloadFileName?: string
 ) => {
   let downloadContentType = '';
 
@@ -606,7 +681,7 @@ export const downloadFile = (
   const downloadLink = document.createElement('a');
   const linkSource = `data:${downloadContentType}base64,${base64String}`;
   downloadLink.href = linkSource;
-  downloadLink.download = `${initialFileName}-${moment().format('DDMMMYYYY')}`;
+  downloadLink.download = downloadFileName || `${initialFileName}-${moment().format('DDMMMYYYY')}`;
   downloadLink.target = '_blank';
   downloadLink.click();
 };
